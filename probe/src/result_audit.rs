@@ -4,7 +4,6 @@ use mod_api_stable::{ClientSceneKindV1, RecordKindV1, StableClient};
 use serde_json::{json, Value};
 use std::{
     collections::BTreeSet,
-    path::Path,
     time::{Duration, Instant},
 };
 
@@ -163,10 +162,15 @@ impl ResultAudit {
         if self.last_report.as_ref() == Some(&report) {
             return;
         }
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .unwrap_or(Path::new("."));
-        let path = root.join("research").join(format!(
+        let Some(root) = log.directory() else { return };
+        let reports = root.join("research");
+        if let Err(reason) = std::fs::create_dir_all(&reports) {
+            log.write(&format!(
+                "RESULT AUDIT diagnostic folder unavailable: {reason}"
+            ));
+            return;
+        }
+        let path = reports.join(format!(
             "session-result-{}-set{}-seed{}-run{}-{}.json",
             key.1,
             key.2,

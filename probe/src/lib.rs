@@ -11,6 +11,7 @@ mod own_selection;
 mod platform_input;
 mod player_hud;
 mod result_audit;
+mod runtime_storage;
 mod session_ui;
 mod sprite_picking;
 mod team_info;
@@ -27,7 +28,7 @@ use mod_api_stable::{
 };
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -36,7 +37,8 @@ const MOD_ID: &str = "lt_direct_control_probe";
 const LINE_LIMIT: usize = 12_000;
 
 struct LogState {
-    file: File,
+    file: Option<File>,
+    directory: Option<PathBuf>,
     lines: usize,
     background_lines: usize,
 }
@@ -44,6 +46,9 @@ struct LogState {
 struct Logger(Mutex<LogState>);
 
 impl Logger {
+    fn directory(&self) -> Option<PathBuf> {
+        self.0.lock().ok()?.directory.clone()
+    }
     fn next_session(&self) {
         if let Ok(mut s) = self.0.lock() {
             s.lines = 0;
@@ -56,6 +61,9 @@ impl Logger {
 
     fn write_sample(&self, text: &str, background: bool) {
         let Ok(mut state) = self.0.lock() else { return };
+        if state.file.is_none() {
+            return;
+        }
         if background {
             if state.background_lines >= 200 {
                 return;
@@ -69,11 +77,11 @@ impl Logger {
         let stamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_or(0, |duration| duration.as_millis());
-        let _ = writeln!(state.file, "{stamp} {text}");
+        let _ = writeln!(state.file.as_mut().unwrap(), "{stamp} {text}");
         state.lines += 1;
         if state.lines == LINE_LIMIT {
             let _ = writeln!(
-                state.file,
+                state.file.as_mut().unwrap(),
                 "LOG LIMIT REACHED; session continues with startup/heartbeat recovery guards"
             );
         }
@@ -928,22 +936,18 @@ impl StablePlayerAi for AiProbe {
 
 fn init(host: &StableHost) -> StableMod {
     let mut declaration = StableMod::new(MOD_ID);
-    let project = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap_or(Path::new("."));
-    let path = project.join("probe.log");
-    if path.exists() {
-        let _ = std::fs::copy(&path, project.join("probe.previous.log"));
-    }
-    let Ok(file) = File::create(&path) else {
-        host.log(
-            LogLevel::Warn,
-            "LT Direct Control probe cannot open its project log; no observers registered",
-        );
-        return declaration;
+    let (file, directory) = match runtime_storage::open_log() {
+        Ok((file, directory)) => (Some(file), Some(directory)),
+        Err(reason) => {
+            host.log(LogLevel::Warn, &format!(
+                "LT Direct Control cannot open a diagnostic log: {reason}; control remains available"
+            ));
+            (None, None)
+        }
     };
     let logger = Arc::new(Logger(Mutex::new(LogState {
         file,
+        directory: directory.clone(),
         lines: 0,
         background_lines: 0,
     })));
@@ -957,40 +961,39 @@ fn init(host: &StableHost) -> StableMod {
         env!("CARGO_PKG_VERSION")
     ));
     sprite_picking::initialize(&logger);
-    let pacing_enabled = project.join("pacing-test.enabled").exists();
-    let movement_enabled = pacing_enabled && project.join("movement-test.enabled").exists();
-    logger.write(&format!(
-        "TIMING native_enabled={pacing_enabled} wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=2 movement_enabled={movement_enabled}"
-    ));
-    let timing = Arc::new(native_timing::NativeTiming::new(pacing_enabled));
-    let movement = Arc::new(movement_test::MovementTest::new(movement_enabled));
+    logger.write(
+        "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=2 movement_enabled=true"
+    );
+    let timing = Arc::new(native_timing::NativeTiming::new(true));
+    let movement = Arc::new(movement_test::MovementTest::new(true));
     let camera = Arc::new(camera::CameraControl::default());
     let abilities = Arc::new(abilities::Abilities::default());
     let hud = Arc::new(player_hud::PlayerHud::default());
     let team = Arc::new(team_status::TeamStatus::default());
     let session_gate = Arc::new(RwLock::new(()));
-    let native_enabled = if pacing_enabled {
-        match native_adapter::configure(
-            timing.clone(),
-            logger.clone(),
-            movement.clone(),
-            camera.clone(),
-            abilities.clone(),
-        ) {
-            Ok(()) => true,
-            Err(reason) => {
-                timing.installed(false, reason, &logger);
-                false
-            }
+    let native_enabled = match native_adapter::configure(
+        timing.clone(),
+        logger.clone(),
+        movement.clone(),
+        camera.clone(),
+        abilities.clone(),
+    ) {
+        Ok(()) => true,
+        Err(reason) => {
+            timing.installed(false, reason, &logger);
+            false
         }
-    } else {
-        false
     };
     host.log(
         LogLevel::Info,
-        &format!(
-            "LT Direct Control diagnostic probe recording to {}",
-            path.display()
+        &directory.map_or_else(
+            || "LT Direct Control enabled; file diagnostics unavailable".to_owned(),
+            |root| {
+                format!(
+                    "LT Direct Control enabled; recording to {}",
+                    root.join("probe.log").display()
+                )
+            },
         ),
     );
     declaration.set_extension(ClientProbe {

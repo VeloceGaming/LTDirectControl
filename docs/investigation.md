@@ -1137,3 +1137,13 @@ palette/fingerprint verification. Native UI rendering, event hit tests and
 localized tooltip wrapping await TESTING-26.md. Unknown tooltip formula values
 are deliberately ellipses; exact per-skill damage interpolation is not exposed
 by the stable SDK. Previously proven match 33 series record remains unchanged.
+# 0.26.1 portable release follow-up
+
+The first public ZIP exposed a development-only dependency: initialization used
+the compiler's project directory for logs and activation flags, and failed log
+creation returned before registering control. The C:-only laptop cannot use it.
+0.26.1 enables control when the mod is enabled and writes diagnostics under
+Windows LOCALAPPDATA with TEMP fallback. Failure to open both locations leaves
+control available without file diagnostics. Read-only result reports use the
+selected diagnostic directory. Native hooks, executable guards, UI and gameplay
+remain unchanged; this does not claim the other laptop or native UI was tested.
