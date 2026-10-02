@@ -1,0 +1,16 @@
+{
+  "mod_id": "lt_direct_control_probe",
+  "name": "LT Direct Control",
+  "author": "LTDirectControl",
+  "version": "0.26.0",
+  "mod_type": "native",
+  "contains_code": true,
+  "description": "Direct control for Teamfight Manager 2 0.6.2. Portrait-only champion selection while the battlefield is held; icon controls and grayscale HUD with yellow active accents. Localized skill/item descriptions, numeric death timers and cast feedback. Gameplay, camera, targeting and match results retained.",
+  "last_updated": "2026-10-02",
+  "dependencies": [
+    {
+      "mod_id": "base",
+      "version": ">=0.6.2"
+    }
+  ]
+}

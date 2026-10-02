@@ -1,0 +1,314 @@
+{
+  "fighter": [
+    27.0,
+    47.0
+  ],
+  "bomber": [
+    25.0,
+    51.0
+  ],
+  "gunner": [
+    33.0,
+    55.0
+  ],
+  "astrologer": [
+    31.0,
+    49.0
+  ],
+  "lancer": [
+    55.0,
+    47.0
+  ],
+  "hypnotist": [
+    33.0,
+    53.0
+  ],
+  "sand_mage": [
+    47.0,
+    51.0
+  ],
+  "pole_warrior": [
+    25.0,
+    55.0
+  ],
+  "circus_blade": [
+    31.0,
+    47.0
+  ],
+  "whip_master": [
+    41.0,
+    47.0
+  ],
+  "archer": [
+    33.0,
+    47.0
+  ],
+  "executioner": [
+    37.0,
+    65.0
+  ],
+  "ghost": [
+    29.0,
+    51.0
+  ],
+  "wind_mage": [
+    25.0,
+    63.0
+  ],
+  "hitman": [
+    23.0,
+    49.0
+  ],
+  "voodoo_shaman": [
+    23.0,
+    49.0
+  ],
+  "taoist": [
+    29.0,
+    49.0
+  ],
+  "alchemist": [
+    25.0,
+    53.0
+  ],
+  "soldier": [
+    51.0,
+    43.0
+  ],
+  "demon": [
+    31.0,
+    45.0
+  ],
+  "inquisitor": [
+    43.0,
+    47.0
+  ],
+  "lightning_mage": [
+    47.0,
+    59.0
+  ],
+  "knight": [
+    45.0,
+    51.0
+  ],
+  "werewolf": [
+    53.0,
+    61.0
+  ],
+  "harpooner": [
+    41.0,
+    55.0
+  ],
+  "berserker": [
+    47.0,
+    63.0
+  ],
+  "siege_breaker_ult": [
+    39.0,
+    69.0
+  ],
+  "ferryman": [
+    33.0,
+    53.0
+  ],
+  "white_mage": [
+    29.0,
+    59.0
+  ],
+  "poison_dart_hunter": [
+    37.0,
+    49.0
+  ],
+  "shadowmancer": [
+    21.0,
+    53.0
+  ],
+  "ogre": [
+    51.0,
+    69.0
+  ],
+  "spirit_caller": [
+    25.0,
+    55.0
+  ],
+  "siege_breaker": [
+    37.0,
+    67.0
+  ],
+  "boomerang_hunter": [
+    35.0,
+    51.0
+  ],
+  "spellbreaker": [
+    55.0,
+    45.0
+  ],
+  "necromancer": [
+    43.0,
+    65.0
+  ],
+  "jiangshi": [
+    31.0,
+    57.0
+  ],
+  "druid": [
+    29.0,
+    53.0
+  ],
+  "bard": [
+    35.0,
+    49.0
+  ],
+  "hunter": [
+    35.0,
+    47.0
+  ],
+  "clown_ult": [
+    31.0,
+    55.0
+  ],
+  "jiangshi_ult": [
+    31.0,
+    57.0
+  ],
+  "magic_knight": [
+    41.0,
+    69.0
+  ],
+  "enchanter": [
+    33.0,
+    49.0
+  ],
+  "dancer": [
+    27.0,
+    49.0
+  ],
+  "cavalry_knight": [
+    47.0,
+    61.0
+  ],
+  "prisoner": [
+    31.0,
+    49.0
+  ],
+  "chef": [
+    25.0,
+    49.0
+  ],
+  "gambler": [
+    29.0,
+    53.0
+  ],
+  "exorcist": [
+    25.0,
+    49.0
+  ],
+  "barrier_magician": [
+    33.0,
+    49.0
+  ],
+  "vampire": [
+    37.0,
+    53.0
+  ],
+  "strongman": [
+    43.0,
+    47.0
+  ],
+  "dual_blader": [
+    43.0,
+    55.0
+  ],
+  "pyromancer": [
+    29.0,
+    51.0
+  ],
+  "magic_knight_ult": [
+    41.0,
+    69.0
+  ],
+  "crossbowman": [
+    35.0,
+    51.0
+  ],
+  "shield_bearer": [
+    55.0,
+    71.0
+  ],
+  "ghost_ult": [
+    31.0,
+    53.0
+  ],
+  "clown": [
+    31.0,
+    55.0
+  ],
+  "monk": [
+    29.0,
+    51.0
+  ],
+  "hammerer": [
+    41.0,
+    55.0
+  ],
+  "android": [
+    27.0,
+    47.0
+  ],
+  "nightmare": [
+    29.0,
+    51.0
+  ],
+  "ghoul": [
+    27.0,
+    25.0
+  ],
+  "swordman": [
+    49.0,
+    51.0
+  ],
+  "plague_doctor": [
+    35.0,
+    55.0
+  ],
+  "dokkaebi": [
+    35.0,
+    63.0
+  ],
+  "guardian_spirit": [
+    33.0,
+    53.0
+  ],
+  "gladiator": [
+    53.0,
+    55.0
+  ],
+  "ice_mage": [
+    35.0,
+    51.0
+  ],
+  "illusionist": [
+    27.0,
+    57.0
+  ],
+  "priest": [
+    25.0,
+    53.0
+  ],
+  "dark_mage": [
+    27.0,
+    53.0
+  ],
+  "ninja": [
+    41.0,
+    43.0
+  ],
+  "bombardier": [
+    37.0,
+    55.0
+  ],
+  "pythoness": [
+    29.0,
+    41.0
+  ]
+}
