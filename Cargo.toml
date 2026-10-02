@@ -1,0 +1,10 @@
+[package]
+name = "lt-direct-control-core"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Targeting rules for a future Teamfight Manager 2 direct-control mod"
+
+[workspace]
+
+[dependencies]

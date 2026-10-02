@@ -1,0 +1,2239 @@
+{
+  "champions": {
+    "hammerer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "hammerer_0",
+        "hammerer_1",
+        "hammerer_2"
+      ]
+    },
+    "wind_mage": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "wind_mage_0",
+        "wind_mage_1",
+        "wind_mage_2"
+      ]
+    },
+    "ghost": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "ghost_0",
+        "ghost_1",
+        "ghost_2"
+      ]
+    },
+    "dokkaebi": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "dokkaebi_0",
+        "dokkaebi_1",
+        "dokkaebi_2"
+      ]
+    },
+    "werewolf": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "werewolf_0",
+        "werewolf_1",
+        "werewolf_2"
+      ]
+    },
+    "pythoness": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "pythoness_0",
+        "pythoness_1",
+        "pythoness_2"
+      ]
+    },
+    "strongman": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "strongman_0",
+        "strongman_1",
+        "strongman_2"
+      ]
+    },
+    "magic_knight": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "magic_knight_0",
+        "magic_knight_1",
+        "magic_knight_2"
+      ]
+    },
+    "executioner": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "executioner_0",
+        "executioner_1",
+        "executioner_2"
+      ]
+    },
+    "shadowmancer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "shadowmancer_0",
+        "shadowmancer_1",
+        "shadowmancer_2"
+      ]
+    },
+    "illusionist": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "illusionist_0",
+        "illusionist_1",
+        "illusionist_2"
+      ]
+    },
+    "inquisitor": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "inquisitor_0",
+        "inquisitor_1",
+        "inquisitor_2"
+      ]
+    },
+    "spellbreaker": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "spellbreaker_0",
+        "spellbreaker_1",
+        "spellbreaker_2"
+      ]
+    },
+    "astrologer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "astrologer_0",
+        "astrologer_1",
+        "astrologer_2"
+      ]
+    },
+    "bombardier": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "bombardier_0",
+        "bombardier_1",
+        "bombardier_2"
+      ]
+    },
+    "dancer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "dancer_0",
+        "dancer_1",
+        "dancer_2"
+      ]
+    },
+    "android": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "android_0",
+        "android_1",
+        "android_2"
+      ]
+    },
+    "alchemist": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "alchemist_0",
+        "alchemist_1",
+        "alchemist_2"
+      ]
+    },
+    "enchanter": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "enchanter_0",
+        "enchanter_1",
+        "enchanter_2"
+      ]
+    },
+    "jiangshi": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "jiangshi_0",
+        "jiangshi_1",
+        "jiangshi_2"
+      ]
+    },
+    "knight": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "knight_0",
+        "knight_1",
+        "knight_2"
+      ]
+    },
+    "bard": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "bard_0",
+        "bard_1",
+        "bard_2"
+      ]
+    },
+    "gunner": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "gunner_0",
+        "gunner_1",
+        "gunner_2"
+      ]
+    },
+    "clown": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "clown_0",
+        "clown_1",
+        "clown_2"
+      ]
+    },
+    "pyromancer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "pyromancer_0",
+        "pyromancer_1",
+        "pyromancer_2"
+      ]
+    },
+    "necromancer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "necromancer_0",
+        "necromancer_1",
+        "necromancer_2"
+      ]
+    },
+    "gambler": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "gambler_0",
+        "gambler_1",
+        "gambler_2"
+      ]
+    },
+    "barrier_magician": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "barrier_magician_0",
+        "barrier_magician_1",
+        "barrier_magician_2"
+      ]
+    },
+    "fighter": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "fighter_0",
+        "fighter_1",
+        "fighter_2"
+      ]
+    },
+    "circus_blade": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "circus_blade_0",
+        "circus_blade_1",
+        "circus_blade_2"
+      ]
+    },
+    "ogre": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "ogre_0",
+        "ogre_1",
+        "ogre_2"
+      ]
+    },
+    "hitman": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "hitman_0",
+        "hitman_1",
+        "hitman_2"
+      ]
+    },
+    "sand_mage": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "sand_mage_0",
+        "sand_mage_1",
+        "sand_mage_2"
+      ]
+    },
+    "guardian_spirit": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "guardian_spirit_0",
+        "guardian_spirit_1",
+        "guardian_spirit_2"
+      ]
+    },
+    "chef": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "chef_0",
+        "chef_1",
+        "chef_2"
+      ]
+    },
+    "prisoner": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "prisoner_0",
+        "prisoner_1",
+        "prisoner_2"
+      ]
+    },
+    "pole_warrior": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "pole_warrior_0",
+        "pole_warrior_1",
+        "pole_warrior_2"
+      ]
+    },
+    "monk": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "monk_0",
+        "monk_1",
+        "monk_2"
+      ]
+    },
+    "shield_bearer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "shield_bearer_0",
+        "shield_bearer_1",
+        "shield_bearer_2"
+      ]
+    },
+    "taoist": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "taoist_0",
+        "taoist_1",
+        "taoist_2"
+      ]
+    },
+    "exorcist": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "exorcist_0",
+        "exorcist_1",
+        "exorcist_2"
+      ]
+    },
+    "swordman": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "swordman_0",
+        "swordman_1",
+        "swordman_2"
+      ]
+    },
+    "poison_dart_hunter": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "poison_dart_hunter_0",
+        "poison_dart_hunter_1",
+        "poison_dart_hunter_2"
+      ]
+    },
+    "dark_mage": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "dark_mage_0",
+        "dark_mage_1",
+        "dark_mage_2"
+      ]
+    },
+    "white_mage": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "white_mage_0",
+        "white_mage_1",
+        "white_mage_2"
+      ]
+    },
+    "vampire": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "vampire_0",
+        "vampire_1",
+        "vampire_2"
+      ]
+    },
+    "boomerang_hunter": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "boomerang_hunter_0",
+        "boomerang_hunter_1",
+        "boomerang_hunter_2"
+      ]
+    },
+    "berserker": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "berserker_0",
+        "berserker_1",
+        "berserker_2"
+      ]
+    },
+    "plague_doctor": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "plague_doctor_0",
+        "plague_doctor_1",
+        "plague_doctor_2"
+      ]
+    },
+    "hypnotist": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "hypnotist_0",
+        "hypnotist_1",
+        "hypnotist_2"
+      ]
+    },
+    "crossbowman": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "crossbowman_0",
+        "crossbowman_1",
+        "crossbowman_2"
+      ]
+    },
+    "bomber": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "bomber_0",
+        "bomber_1",
+        "bomber_2"
+      ]
+    },
+    "spirit_caller": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "spirit_caller_0",
+        "spirit_caller_1",
+        "spirit_caller_2"
+      ]
+    },
+    "ninja": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "ninja_0",
+        "ninja_1",
+        "ninja_2"
+      ]
+    },
+    "whip_master": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "whip_master_0",
+        "whip_master_1",
+        "whip_master_2"
+      ]
+    },
+    "archer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "archer_0",
+        "archer_1",
+        "archer_2"
+      ]
+    },
+    "soldier": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "soldier_0",
+        "soldier_1",
+        "soldier_2"
+      ]
+    },
+    "dual_blader": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "dual_blader_0",
+        "dual_blader_1",
+        "dual_blader_2"
+      ]
+    },
+    "ferryman": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "ferryman_0",
+        "ferryman_1",
+        "ferryman_2"
+      ]
+    },
+    "lightning_mage": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "lightning_mage_0",
+        "lightning_mage_1",
+        "lightning_mage_2"
+      ]
+    },
+    "ice_mage": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "ice_mage_0",
+        "ice_mage_1",
+        "ice_mage_2"
+      ]
+    },
+    "siege_breaker": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "siege_breaker_0",
+        "siege_breaker_1",
+        "siege_breaker_2"
+      ]
+    },
+    "nightmare": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "nightmare_0",
+        "nightmare_1",
+        "nightmare_2"
+      ]
+    },
+    "priest": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "priest_0",
+        "priest_1",
+        "priest_2"
+      ]
+    },
+    "demon": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "demon_0",
+        "demon_1",
+        "demon_2"
+      ]
+    },
+    "voodoo_shaman": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "voodoo_shaman_0",
+        "voodoo_shaman_1",
+        "voodoo_shaman_2"
+      ]
+    },
+    "lancer": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "lancer_0",
+        "lancer_1",
+        "lancer_2"
+      ]
+    },
+    "druid": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "druid_0",
+        "druid_1",
+        "druid_2"
+      ]
+    },
+    "gladiator": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "gladiator_0",
+        "gladiator_1",
+        "gladiator_2"
+      ]
+    },
+    "hunter": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "hunter_0",
+        "hunter_1",
+        "hunter_2"
+      ]
+    },
+    "cavalry_knight": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/skill_icon",
+      "tags": [
+        "cavalry_knight_0",
+        "cavalry_knight_1",
+        "cavalry_knight_2"
+      ]
+    },
+    "harpooner": {
+      "source": "asset/base/aseprite_resources/UI_aseprite/harpooner_skill_icon",
+      "tags": [
+        "harpooner_0",
+        "harpooner_1",
+        "harpooner_2"
+      ]
+    }
+  },
+  "items": {
+    "iron_blade": {
+      "key": "ironsword",
+      "icon": "t1_0",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 15,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "soldiers_longsword"
+      ],
+      "tags": [
+        "AD"
+      ],
+      "category": "AD",
+      "name": "iron_blade"
+    },
+    "ironsword": {
+      "key": "ironsword",
+      "icon": "t1_0",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 15,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "soldiers_longsword"
+      ],
+      "tags": [
+        "AD"
+      ],
+      "category": "AD",
+      "name": "iron_blade"
+    },
+    "soldiers_longsword": {
+      "key": "soldiers_longsword",
+      "icon": "t2_0",
+      "price": 500,
+      "tier": 1,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 30,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "ruinous_blade"
+      ],
+      "tags": [
+        "AD"
+      ],
+      "category": "AD",
+      "name": "soldiers_longsword"
+    },
+    "ruinous_blade": {
+      "key": "ruinous_blade",
+      "icon": "t3_0",
+      "price": 800,
+      "tier": 2,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 50,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 5,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "conquerors_greatsword"
+      ],
+      "tags": [
+        "AD",
+        "Vamp"
+      ],
+      "category": "AD",
+      "name": "ruinous_blade"
+    },
+    "conquerors_greatsword": {
+      "key": "conquerors_greatsword",
+      "icon": "t4_0",
+      "price": 1400,
+      "tier": 3,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 75,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 10,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "warlords_final_judgement"
+      ],
+      "tags": [
+        "AD",
+        "Vamp"
+      ],
+      "category": "AD",
+      "name": "conquerors_greatsword"
+    },
+    "warlords_final_judgement": {
+      "key": "warlords_final_judgement",
+      "icon": "t5_0",
+      "price": 2000,
+      "tier": 4,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 100,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 15,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 20,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [],
+      "tags": [
+        "AD",
+        "Vamp",
+        "DefensePenetration"
+      ],
+      "category": "AD",
+      "name": "warlords_final_judgement"
+    },
+    "dagger": {
+      "key": "dagger",
+      "icon": "t1_1",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 10,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "wind_dagger"
+      ],
+      "tags": [
+        "AS"
+      ],
+      "category": "AttackSpeed",
+      "name": "dagger"
+    },
+    "wind_dagger": {
+      "key": "wind_dagger",
+      "icon": "t2_1",
+      "price": 500,
+      "tier": 1,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 20,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "twin_stormblade"
+      ],
+      "tags": [
+        "AS"
+      ],
+      "category": "AttackSpeed",
+      "name": "wind_dagger"
+    },
+    "twin_stormblade": {
+      "key": "twin_stormblade",
+      "icon": "t3_1",
+      "price": 800,
+      "tier": 2,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 30,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 10,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "thunderclaw"
+      ],
+      "tags": [
+        "AS"
+      ],
+      "category": "AttackSpeed",
+      "name": "twin_stormblade"
+    },
+    "thunderclaw": {
+      "key": "thunderclaw",
+      "icon": "t4_1",
+      "price": 1400,
+      "tier": 3,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 45,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 20,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "storm_sovereign"
+      ],
+      "tags": [
+        "AS"
+      ],
+      "category": "AttackSpeed",
+      "name": "thunderclaw"
+    },
+    "storm_sovereign": {
+      "key": "storm_sovereign",
+      "icon": "t5_1",
+      "price": 2000,
+      "tier": 4,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 10,
+        "attack_speed_mult": 60,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 25,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [],
+      "tags": [
+        "AS",
+        "MoveSpeed"
+      ],
+      "category": "AttackSpeed",
+      "name": "storm_sovereign"
+    },
+    "steel_armor": {
+      "key": "steel_armor",
+      "icon": "t1_2",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 20,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "gatekeepers_armor"
+      ],
+      "tags": [
+        "Defense"
+      ],
+      "category": "Defense",
+      "name": "steel_armor"
+    },
+    "gatekeepers_armor": {
+      "key": "gatekeepers_armor",
+      "icon": "t2_2",
+      "price": 500,
+      "tier": 1,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 40,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "black_knights_heavy_plate"
+      ],
+      "tags": [
+        "Defense"
+      ],
+      "category": "Defense",
+      "name": "gatekeepers_armor"
+    },
+    "black_knights_heavy_plate": {
+      "key": "black_knights_heavy_plate",
+      "icon": "t3_2",
+      "price": 800,
+      "tier": 2,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 70,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 5,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "eternal_iron_plate"
+      ],
+      "tags": [
+        "Defense"
+      ],
+      "category": "Defense",
+      "name": "black_knights_heavy_plate"
+    },
+    "eternal_iron_plate": {
+      "key": "eternal_iron_plate",
+      "icon": "t4_2",
+      "price": 1400,
+      "tier": 3,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 100,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 8,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "impregnable_fortress"
+      ],
+      "tags": [
+        "Defense"
+      ],
+      "category": "Defense",
+      "name": "eternal_iron_plate"
+    },
+    "impregnable_fortress": {
+      "key": "impregnable_fortress",
+      "icon": "t5_2",
+      "price": 2000,
+      "tier": 4,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 130,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 12,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [],
+      "flat_damage": 10,
+      "defence_ratio": 2,
+      "tags": [
+        "Defense",
+        "ReflectDamage"
+      ],
+      "category": "Defense",
+      "name": "impregnable_fortress"
+    },
+    "mystic_cloak": {
+      "key": "mystic_cloak",
+      "icon": "t1_3",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 50,
+        "hp_regen": 0,
+        "magic_resistance": 30,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "night_hood"
+      ],
+      "tags": [
+        "MagicResistance"
+      ],
+      "category": "MagicResistance",
+      "name": "mystic_cloak"
+    },
+    "night_hood": {
+      "key": "night_hood",
+      "icon": "t2_3",
+      "price": 500,
+      "tier": 1,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 150,
+        "hp_regen": 0,
+        "magic_resistance": 60,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "dusk_raven"
+      ],
+      "tags": [
+        "MagicResistance"
+      ],
+      "category": "MagicResistance",
+      "name": "night_hood"
+    },
+    "dusk_raven": {
+      "key": "dusk_raven",
+      "icon": "t3_3",
+      "price": 800,
+      "tier": 2,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 200,
+        "hp_regen": 0,
+        "magic_resistance": 100,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 5,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "souls_edge"
+      ],
+      "tags": [
+        "MagicResistance"
+      ],
+      "category": "MagicResistance",
+      "name": "dusk_raven"
+    },
+    "souls_edge": {
+      "key": "souls_edge",
+      "icon": "t4_3",
+      "price": 1400,
+      "tier": 3,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 300,
+        "hp_regen": 0,
+        "magic_resistance": 150,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 30,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 15,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "veil_of_annihilation"
+      ],
+      "tags": [
+        "MagicResistance"
+      ],
+      "category": "MagicResistance",
+      "name": "souls_edge"
+    },
+    "veil_of_annihilation": {
+      "key": "veil_of_annihilation",
+      "icon": "t5_3",
+      "price": 2000,
+      "tier": 4,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 400,
+        "hp_regen": 0,
+        "magic_resistance": 200,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 50,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 20,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [],
+      "tags": [
+        "MagicResistance",
+        "Toughness"
+      ],
+      "category": "MagicResistance",
+      "name": "veil_of_annihilation"
+    },
+    "arcane_crystal": {
+      "key": "arcane_crystal",
+      "icon": "t1_4",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 30,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "spirit_crystal"
+      ],
+      "tags": [
+        "AP"
+      ],
+      "category": "Magic",
+      "name": "arcane_crystal"
+    },
+    "spirit_crystal": {
+      "key": "spirit_crystal",
+      "icon": "t2_4",
+      "price": 500,
+      "tier": 1,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 60,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "staff_of_rapture"
+      ],
+      "tags": [
+        "AP"
+      ],
+      "category": "Magic",
+      "name": "spirit_crystal"
+    },
+    "staff_of_rapture": {
+      "key": "staff_of_rapture",
+      "icon": "t3_4",
+      "price": 800,
+      "tier": 2,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 100,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 10,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "angels_fang"
+      ],
+      "tags": [
+        "AP",
+        "CooltimeReduce"
+      ],
+      "category": "Magic",
+      "name": "staff_of_rapture"
+    },
+    "angels_fang": {
+      "key": "angels_fang",
+      "icon": "t4_4",
+      "price": 1400,
+      "tier": 3,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 150,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 10,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "prophet_of_the_abyss"
+      ],
+      "tags": [
+        "AP",
+        "CooltimeReduce"
+      ],
+      "category": "Magic",
+      "name": "angels_fang"
+    },
+    "prophet_of_the_abyss": {
+      "key": "prophet_of_the_abyss",
+      "icon": "t5_4",
+      "price": 2000,
+      "tier": 4,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 200,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 0,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 15,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 15,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [],
+      "tags": [
+        "AP",
+        "CooltimeReduce",
+        "MRPenetration"
+      ],
+      "category": "Magic",
+      "name": "prophet_of_the_abyss"
+    },
+    "vital_orb": {
+      "key": "vital_orb",
+      "icon": "t1_5",
+      "price": 500,
+      "tier": 0,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 100,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "hardened_heart"
+      ],
+      "tags": [
+        "HP"
+      ],
+      "category": "Hp",
+      "name": "vital_orb"
+    },
+    "hardened_heart": {
+      "key": "hardened_heart",
+      "icon": "t2_5",
+      "price": 500,
+      "tier": 1,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 200,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "ring_of_reincarnation"
+      ],
+      "tags": [
+        "HP"
+      ],
+      "category": "Hp",
+      "name": "hardened_heart"
+    },
+    "ring_of_reincarnation": {
+      "key": "ring_of_reincarnation",
+      "icon": "t3_5",
+      "price": 800,
+      "tier": 2,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 300,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "hourglass_of_eternity"
+      ],
+      "flat_regen": 5,
+      "max_hp_regen_ratio": 0,
+      "tags": [
+        "HP",
+        "HPRegen"
+      ],
+      "category": "Hp",
+      "name": "ring_of_reincarnation"
+    },
+    "hourglass_of_eternity": {
+      "key": "hourglass_of_eternity",
+      "icon": "t4_5",
+      "price": 1400,
+      "tier": 3,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 500,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [
+        "giants_horn_shard"
+      ],
+      "flat_regen": 20,
+      "max_hp_regen_ratio": 0,
+      "tags": [
+        "HP",
+        "HPRegen"
+      ],
+      "category": "Hp",
+      "name": "hourglass_of_eternity"
+    },
+    "giants_horn_shard": {
+      "key": "giants_horn_shard",
+      "icon": "t5_5",
+      "price": 2000,
+      "tier": 4,
+      "stat": {
+        "name": "",
+        "duration": "Permanent",
+        "attack": 0,
+        "attack_mult": 0,
+        "magic_power": 0,
+        "magic_power_mult": 0,
+        "defence": 0,
+        "defence_mult": 0,
+        "hp": 800,
+        "hp_regen": 0,
+        "magic_resistance": 0,
+        "magic_resistance_mult": 0,
+        "vamp": 0,
+        "hp_mult": 0,
+        "move_speed_mult": 0,
+        "attack_speed_mult": 0,
+        "skill_cooldown_mult": 0,
+        "damage_reflect": 0,
+        "damaged_amplify": 0,
+        "defence_penetration": 0,
+        "magic_resistance_penetration": 0,
+        "toughness": 0,
+        "heal_reduce": 0,
+        "range": 0,
+        "base_attack_enemy_max_hp_damage": 0,
+        "self_max_hp_damage": 0,
+        "skill_enemy_max_hp_damage": 0,
+        "damaged_reduce": 0,
+        "dot_amplify": 0,
+        "cc_immune": false,
+        "ult_cooldown_mult": 0,
+        "radius_mult": 0,
+        "crit_chance": 0,
+        "base_attack_damaged_reduce": 0,
+        "skill_damaged_reduce": 0,
+        "undying": false,
+        "ignore_wall": false
+      },
+      "next_tier": [],
+      "flat_regen": 40,
+      "max_hp_regen_ratio": 0,
+      "flat_aoe_damage": 10,
+      "max_hp_aoe_ratio": 1,
+      "aoe_range": 30000,
+      "tags": [
+        "HP",
+        "HPRegen",
+        "DotDamage"
+      ],
+      "category": "Hp",
+      "name": "giants_horn_shard"
+    }
+  }
+}
