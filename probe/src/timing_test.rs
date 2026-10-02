@@ -8,9 +8,25 @@ pub(crate) mod tests {
             .join("target")
             .join(format!("timing-{name}.log"));
         Logger(Mutex::new(LogState {
-            file: File::create(path).expect("test log"),
+            directory: path.parent().map(std::path::Path::to_owned),
+            file: Some(File::create(path).expect("test log")),
             lines: 0,
             background_lines: 0,
         }))
+    }
+
+    #[test]
+    fn unavailable_file_diagnostics_do_not_abort_control_callers() {
+        let logger = Logger(Mutex::new(LogState {
+            file: None,
+            directory: None,
+            lines: 0,
+            background_lines: 0,
+        }));
+        logger.write("control enabled without a file logger");
+        crate::native_adapter::capture_trace("diagnostics unavailable", &logger);
+        logger.next_session();
+        assert!(logger.directory().is_none());
+        assert_eq!(logger.0.lock().unwrap().lines, 0);
     }
 }

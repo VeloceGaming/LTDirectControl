@@ -4,6 +4,13 @@ Personal direct-control mod project for Teamfight Manager 2 on Windows/Steam.
 
 ## Current status
 
+Build **0.26.1** removes the development-folder requirement. Enable the mod;
+no D: drive or activation files are needed. Logs use
+`%LOCALAPPDATA%\LTDirectControl`, falling back to `%TEMP%\LTDirectControl`.
+Failure to open either log folder no longer prevents direct control.
+Match-result diagnostic reports use the same selected folder under `research`.
+The 0.26 UI and gameplay are retained and still await the next in-game test.
+
 Build **0.26.0** adds portrait-only selection while the battlefield is held.
 Click one of your five champions, then the triangle to start; selection locks
 only when playing starts. Preparation has no automatic 120-second release.
@@ -86,6 +93,18 @@ that deferred camera controls until HUD work.
 
 ## Development and first game test
 
+### Install the downloadable mod
+
+Download the ZIP from [Releases](https://github.com/VeloceGaming/LTDirectControl/releases).
+Close the game, then extract its `lt_direct_control_probe` folder into
+`Teamfight Manager2/mods/`. Enable **LT Direct Control** and restart the game.
+Keep the included `ui` folder alongside the DLL and `mod.mod_info`.
+After drafting, choose your champion portrait and click the triangle to start.
+Use game version **0.6.2** on Windows x64; native executable checks still apply.
+See [TESTING-26.1.md](TESTING-26.1.md) for the portable-install test.
+
+### Build and diagnostics
+
 The user confirmed that no demo/source link is available: develop independently.
 The standalone targeting core lives in `src/lib.rs`; `cargo test --offline`
 passes nine targeting tests and nine historical timing-policy tests. Probe
@@ -95,10 +114,10 @@ This library does not dispatch game commands.
 
 The `probe` project builds against a copy of the installed 0.6.2 stable SDK.
 It observes client scenes and simulation origins through the stable SDK.
-With `pacing-test.enabled`, probe 0.25.0 installs four in-memory
+When enabled, probe 0.26.1 installs four in-memory
 CALL redirects and one movement-consumer tail JMP redirect at title, after verifying the executable SHA256 and loaded code.
-It leaves the executable file and saves untouched. `movement-test.enabled`
-also enables selected-champion mouse movement and stop. Native AI remains in use until explicit
+It leaves the executable file and saves untouched. Selected-champion mouse
+movement and stop are enabled without flag files. Native AI remains in use until explicit
 Start and is restored on release. Startup has a client-enforced 15-second guard; Ready expires
 only on Start/AI or a missing heartbeat; running has no timed cutoff. Ctrl+End,
 heartbeat loss after Ready (including pause) and battlefield exit release coordination. One
@@ -111,8 +130,10 @@ cargo build --release --offline --manifest-path probe/Cargo.toml
 ```
 
 Its installed/package folder must be named `lt_direct_control_probe` and contain
-`lt_direct_control_probe.dll` and `mod.mod_info`. It logs to this project's
-`probe.log`, retaining the prior recording as `probe.previous.log` on launch.
+`lt_direct_control_probe.dll`, `mod.mod_info`, and the included `ui` folder.
+It logs to `%LOCALAPPDATA%\LTDirectControl\probe.log`, retaining the prior
+recording as `probe.previous.log` on launch. If that folder is unavailable,
+it tries `%TEMP%\LTDirectControl`; logging failure does not disable the mod.
 Unknown/background samples are capped so they do not consume the foreground
 log budget.
 
@@ -148,7 +169,7 @@ resolved. Probe 0.6.0 rejects incomplete ownership reads and tests a 60-tick
 bootstrap before holding. That boundary is a hypothesis informed by the earlier
 readiness at tick 63; actual publication and playback coordination remain pending.
 
-See [TESTING-26.md](TESTING-26.md) for the next test. Previous recordings and
+See [TESTING-26.1.md](TESTING-26.1.md) for the next test. Previous recordings and
 summaries are retained in `research/`. Ctrl+1..5 selects an own-team lane before
 the match. Ownership is resolved after management data loads, from the human
 team ID and athlete contracts, then matched to the current simulation roster.

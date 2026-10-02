@@ -14,7 +14,7 @@ version = "0.1.0"
 
 [[package]]
 name = "lt_direct_control_probe"
-version = "0.26.0"
+version = "0.26.1"
 dependencies = [
  "lt-direct-control-core",
  "mod-api-stable",
