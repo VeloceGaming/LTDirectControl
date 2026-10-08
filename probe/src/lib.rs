@@ -1,18 +1,39 @@
-//! Diagnostic prototype: native publication-boundary coordination on 0.6.2.
+//! Diagnostic prototype: native publication-boundary coordination on 0.6.3.
 
 mod abilities;
+mod attack_trace;
 mod camera;
 mod combat;
+mod cursor;
 mod hud_icons;
+mod hud_motion;
+mod hud_style;
+mod input_trace;
+mod inventory;
+mod map_path;
+mod minimap;
 mod movement_test;
 mod native_adapter;
+mod native_items;
+mod native_preview;
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod native_profile;
 mod native_timing;
 mod own_selection;
+mod perf;
 mod platform_input;
 mod player_hud;
+mod purchase_tracker;
 mod result_audit;
 mod runtime_storage;
+mod screen_effect;
 mod session_ui;
+mod settings;
+mod settings_ui;
+mod shop;
+mod shop_trace;
+mod shop_ui;
+mod skill_preview;
 mod sprite_picking;
 mod team_info;
 mod team_status;
@@ -35,12 +56,15 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 const MOD_ID: &str = "lt_direct_control_probe";
 const LINE_LIMIT: usize = 12_000;
+const LOG_BYTES_LIMIT: usize = 4 * 1024 * 1024;
 
 struct LogState {
     file: Option<File>,
     directory: Option<PathBuf>,
     lines: usize,
     background_lines: usize,
+    bytes: usize,
+    rotating: bool,
 }
 
 struct Logger(Mutex<LogState>);
@@ -60,7 +84,9 @@ impl Logger {
     }
 
     fn write_sample(&self, text: &str, background: bool) {
+        let since = std::time::Instant::now();
         let Ok(mut state) = self.0.lock() else { return };
+        perf::waited(perf::Wait::Logger, since);
         if state.file.is_none() {
             return;
         }
@@ -70,16 +96,28 @@ impl Logger {
             }
             state.background_lines += 1;
         }
-        if state.lines >= LINE_LIMIT {
+        if state.rotating && state.bytes.saturating_add(text.len() + 32) >= LOG_BYTES_LIMIT {
+            let directory = state.directory.clone().unwrap();
+            if runtime_storage::rotate_log(state.file.as_mut().unwrap(), &directory).is_err() {
+                return;
+            }
+            state.bytes = 0;
+            let marker = "LOG SEGMENT continued; prior records in probe.segment.log and probe.segment.previous.log\n";
+            let _ = state.file.as_mut().unwrap().write_all(marker.as_bytes());
+            state.bytes += marker.len();
+        } else if !state.rotating && state.lines >= LINE_LIMIT {
             return;
         }
         // Clock is diagnostic annotation only, never a simulation input.
         let stamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_or(0, |duration| duration.as_millis());
-        let _ = writeln!(state.file.as_mut().unwrap(), "{stamp} {text}");
+        let record = format!("{stamp} {text}\n");
+        let _ = state.file.as_mut().unwrap().write_all(record.as_bytes());
+        state.bytes = state.bytes.saturating_add(record.len());
+        perf::logged(record.len());
         state.lines += 1;
-        if state.lines == LINE_LIMIT {
+        if !state.rotating && state.lines == LINE_LIMIT {
             let _ = writeln!(
                 state.file.as_mut().unwrap(),
                 "LOG LIMIT REACHED; session continues with startup/heartbeat recovery guards"
@@ -99,8 +137,12 @@ struct ClientObservations {
     hud_ui: player_hud::HudUi,
     targeting: platform_input::ChampionOnlyToggle,
     session_ui: session_ui::SessionUi,
+    settings_ui: settings_ui::SettingsUi,
+    shop_ui: shop_ui::ShopUi,
     result_audit: result_audit::ResultAudit,
     team_ui: team_status::TeamUi,
+    early_input: Option<(u64, platform_input::Keys)>,
+    screen_effect: screen_effect::Effect,
 }
 
 struct ClientProbe {
@@ -109,6 +151,7 @@ struct ClientProbe {
     timing: Arc<native_timing::NativeTiming>,
     movement: Arc<movement_test::MovementTest>,
     camera: Arc<camera::CameraControl>,
+    cursor: cursor::Cursor,
     abilities: Arc<abilities::Abilities>,
     hud: Arc<player_hud::PlayerHud>,
     team: Arc<team_status::TeamStatus>,
@@ -120,45 +163,63 @@ struct ClientProbe {
 
 impl Drop for ClientProbe {
     fn drop(&mut self) {
+        settings::MODAL.store(false, Ordering::Relaxed);
+        self.cursor.shutdown(&self.logger);
         wheel::shutdown();
         self.timing
             .cancel("Client extension detached", &self.logger);
     }
 }
 
-fn topology(ctx: &StableClient<'_>) -> Vec<String> {
-    let mut nodes = ctx
-        .ui_child_names("")
-        .into_iter()
-        .rev()
-        .map(|name| (name, 0))
-        .collect::<Vec<_>>();
-    let mut result = Vec::new();
-    while let Some((path, depth)) = nodes.pop() {
-        if result.len() >= 240 {
-            break;
-        }
-        if !ctx.ui_exists(&path) {
-            continue;
-        }
-        result.push(format!(
-            "{path}: {:?} visible={:?} text={:?}",
-            ctx.ui_runner_name(&path),
-            ctx.ui_visible(&path),
-            ctx.ui_text(&path)
-                .map(|text| text.chars().take(100).collect::<String>())
-        ));
-        if depth < 4 {
-            for child in ctx.ui_child_names(&path).into_iter().take(50).rev() {
-                nodes.push((format!("{path}.{child}"), depth + 1));
+impl ClientProbe {
+    fn resolve_targeting(&self, keys: &mut platform_input::Keys, controls: bool) {
+        if let Ok(mut o) = self.observations.lock() {
+            let before = o.targeting.enabled;
+            keys.champion_only = o
+                .targeting
+                .update(*keys, controls, self.movement.hud_identity());
+            if before != keys.champion_only {
+                self.logger.write(&format!(
+                    "CHAMPION_ONLY enabled={} buttons={:?} active={controls}",
+                    keys.champion_only, keys.champion_toggle
+                ));
             }
         }
     }
-    result
+    fn gameplay_input(&self, keys: platform_input::Keys, active: bool) {
+        let action = self
+            .abilities
+            .update(keys, active, &self.camera, &self.logger);
+        self.movement.apply_ability_action(action);
+        self.movement.update_mouse_with_cast(
+            keys,
+            active,
+            &self.camera,
+            &self.logger,
+            action.left_reserved,
+        );
+    }
 }
 
-impl StableExtension for ClientProbe {
-    fn post_update(&self, ctx: &mut StableClient<'_>, dt_micros: u64) {
+impl ClientProbe {
+    fn pre_update_inner(&self, ctx: &mut StableClient<'_>) {
+        if ctx.client_scene_kind() != Some(mod_api_stable::ClientSceneKindV1::InGame)
+            || settings::MODAL.load(Ordering::Relaxed)
+            || !self.timing.client_early_input()
+        {
+            return;
+        }
+        // Use the last rendered camera and visible UI masks. These describe
+        // what the user clicked, before the host advances camera/playback.
+        let mut keys = platform_input::poll();
+        self.resolve_targeting(&mut keys, true);
+        self.movement.update(keys, true, false, &self.logger);
+        self.gameplay_input(keys, true);
+        if let Ok(mut o) = self.observations.lock() {
+            o.early_input = Some((self.timing.generation(), keys));
+        }
+    }
+    fn post_update_inner(&self, ctx: &mut StableClient<'_>, dt_micros: u64) {
         if self.native_enabled && !self.install_attempted.load(Ordering::Relaxed) {
             match ctx.scene_kind() {
                 Some(mod_api_stable::SceneKindV1::Title) => {
@@ -166,7 +227,7 @@ impl StableExtension for ClientProbe {
                     match native_adapter::install() {
                         Ok(()) => self.timing.installed(
                             true,
-                            "verified 0.6.2 SHA256; worker, viewer, movement, input and attack-observer branches installed at title",
+                            "verified 0.6.3 SHA256; worker, viewer, movement, input and attack-observer branches installed at title",
                             &self.logger,
                         ),
                         Err(reason) => self.timing.installed(false, &reason, &self.logger),
@@ -207,21 +268,31 @@ impl StableExtension for ClientProbe {
                 && (pre_match || battlefield),
         );
         self.movement.load_own_team(ctx, &self.logger);
-        let mut keys = platform_input::poll();
-        self.movement.update(
-            keys,
-            battlefield,
-            matches!(
-                scene,
-                Some(
-                    mod_api_stable::ClientSceneKindV1::Match
-                        | mod_api_stable::ClientSceneKindV1::StadiumEntrance
-                        | mod_api_stable::ClientSceneKindV1::Main
-                        | mod_api_stable::ClientSceneKindV1::Lineup
-                )
-            ),
-            &self.logger,
-        );
+        let early = self
+            .observations
+            .lock()
+            .ok()
+            .and_then(|mut o| o.early_input.take())
+            .filter(|(g, _)| {
+                *g == self.timing.generation() && battlefield && self.timing.client_running()
+            });
+        let mut keys = early.map_or_else(platform_input::poll, |(_, keys)| keys);
+        if early.is_none() {
+            self.movement.update(
+                keys,
+                battlefield,
+                matches!(
+                    scene,
+                    Some(
+                        mod_api_stable::ClientSceneKindV1::Match
+                            | mod_api_stable::ClientSceneKindV1::StadiumEntrance
+                            | mod_api_stable::ClientSceneKindV1::Main
+                            | mod_api_stable::ClientSceneKindV1::Lineup
+                    )
+                ),
+                &self.logger,
+            );
+        }
         let prepared_choice = self.observations.lock().ok().and_then(|o| {
             o.session_ui.take_choice(
                 self.timing.phase(),
@@ -262,6 +333,7 @@ impl StableExtension for ClientProbe {
                 self.abilities.reset_session(keys);
                 self.hud.reset_session();
                 self.team.reset_session();
+                shop::SHOP.reset_session();
                 self.camera.reset_session(keys);
                 native_adapter::reset_session();
                 if let Ok(mut observations) = self.observations.lock() {
@@ -289,60 +361,158 @@ impl StableExtension for ClientProbe {
             &self.logger,
         );
         let running = self.timing.client_running();
-        let gameplay_active = running && session_action.is_none();
+        let gameplay_active =
+            running && session_action.is_none() && !settings::MODAL.load(Ordering::Relaxed);
         let controls = self.timing.client_controls(None);
-        if let Ok(mut observations) = self.observations.lock() {
-            let before = observations.targeting.enabled;
-            keys.champion_only =
-                observations
-                    .targeting
-                    .update(keys, controls, self.movement.hud_identity());
-            if before != keys.champion_only {
-                self.logger.write(&format!(
-                    "CHAMPION_ONLY enabled={} buttons={:?} active={controls}",
-                    keys.champion_only, keys.champion_toggle
-                ));
-            }
+        if early.is_none() || !gameplay_active {
+            self.resolve_targeting(&mut keys, controls);
         }
-        let snapshot = self.hud.snapshot(self.movement.hud_identity(), running);
+        let identity = self.movement.hud_identity();
+        let snapshot = self.hud.snapshot(identity, running);
+        let artwork = snapshot
+            .is_none()
+            .then(|| self.hud.artwork(identity))
+            .flatten();
+        native_adapter::set_death_greyscale(
+            controls && snapshot.as_ref().is_some_and(|s| !s.alive),
+        );
         let skills = self.abilities.hud_skills();
         let status = self.abilities.feedback().unwrap_or_default();
         let mut hud_bounds = Vec::new();
+        let mut hovered_skill = None;
         if let Ok(mut observations) = self.observations.lock() {
+            let team_open = keys.team_info || observations.session_ui.team_open();
+            let t = perf::time(perf::Section::Info);
             observations.info.apply(
                 ctx,
                 self.timing.client_controls(None),
                 keys.focused,
-                keys.team_info,
+                false, // The styled Tab panel owns visibility during direct control.
                 &self.logger,
             );
+            drop(t);
+            let t = perf::time(perf::Section::Hud);
             observations.hud_ui.apply(
                 ctx,
                 controls,
+                matches!(
+                    self.timing.phase(),
+                    Some(native_timing::Phase::Running | native_timing::Phase::Paused)
+                ),
                 snapshot.as_ref(),
+                artwork.as_ref(),
                 skills,
-                keys.champion_only,
-                self.camera.locked(),
-                self.movement.recalling(),
                 &status,
                 keys.cursor.filter(|_| keys.focused),
+                keys.left && keys.focused,
+                &self.hud,
                 &self.logger,
             );
+            if controls && keys.focused && snapshot.as_ref().is_some_and(|s| s.alive) {
+                hovered_skill = observations.hud_ui.hovered_skill(ctx, keys.cursor);
+            }
             hud_bounds = observations.hud_ui.bounds(ctx);
-            hud_bounds.extend(observations.team_ui.apply(
-                ctx,
-                controls,
-                &self.team.snapshot(self.timing.match_key(), running),
-                self.movement.selected(),
-                &self.logger,
-            ));
+            drop(t);
+            let t = perf::time(perf::Section::Team);
+            {
+                let ClientObservations {
+                    team_ui, hud_ui, ..
+                } = &mut *observations;
+                let team_active = controls && keys.focused && team_open;
+                let roster = if team_active {
+                    self.team.snapshot(self.timing.match_key(), running)
+                } else {
+                    Vec::new()
+                };
+                team_ui.apply(
+                    ctx,
+                    team_active,
+                    &roster,
+                    self.movement.selected(),
+                    hud_ui,
+                    &self.logger,
+                );
+            }
+            drop(t);
+            let t = perf::time(perf::Section::Session);
             hud_bounds.extend(observations.session_ui.apply(
                 ctx,
                 &self.timing,
                 &self.movement.own_players(),
                 self.movement.selected(),
+                &self.camera,
+                &self.cursor.settings,
+                keys.cursor.filter(|_| keys.focused),
+                keys.left && keys.focused,
                 &self.logger,
             ));
+            if observations.session_ui.take_settings() {
+                observations.settings_ui.open(
+                    &self.timing,
+                    &self.cursor.settings,
+                    keys,
+                    &self.logger,
+                );
+                self.movement.clear_commands();
+                self.abilities.clear_commands();
+            }
+            drop(t);
+            let t = perf::time(perf::Section::Settings);
+            let camera_lock_before = self.cursor.settings.number("camera_lock");
+            hud_bounds.extend(observations.settings_ui.apply(
+                ctx,
+                &self.timing,
+                &self.cursor.settings,
+                keys,
+                &self.logger,
+            ));
+            let camera_lock_after = self.cursor.settings.number("camera_lock");
+            if camera_lock_before != camera_lock_after {
+                self.camera.set_locked(camera_lock_after == 1.);
+            }
+            drop(t);
+            let t = perf::time(perf::Section::Shop);
+            {
+                let ClientObservations {
+                    shop_ui, hud_ui, ..
+                } = &mut *observations;
+                if hud_ui.take_shop_click() {
+                    shop_ui.toggle();
+                }
+                // Open from champion lock (incl. the Start-control wait, to
+                // buy starting items) until control returns to the AI.
+                let shop_active = battlefield
+                    && self.movement.hud_identity().is_some()
+                    && matches!(
+                        self.timing.phase(),
+                        Some(
+                            native_timing::Phase::Ready
+                                | native_timing::Phase::Running
+                                | native_timing::Phase::Paused
+                        )
+                    );
+                hud_bounds.extend(shop_ui.apply(
+                    ctx,
+                    keys,
+                    shop_active,
+                    &self.timing,
+                    hud_ui,
+                    &self.logger,
+                ));
+            }
+            drop(t);
+            let t = perf::time(perf::Section::Effect);
+            observations.screen_effect.update(
+                self.cursor.settings.low_health(),
+                controls && battlefield,
+                snapshot.as_ref(),
+                dt_micros,
+            );
+            observations
+                .screen_effect
+                .apply(ctx, &self.camera, &self.logger);
+            drop(t);
+            let _t = perf::time(perf::Section::Audit);
             let last_player = self.hud.snapshot(self.movement.hud_identity(), false);
             observations.result_audit.update(
                 ctx,
@@ -368,7 +538,6 @@ impl StableExtension for ClientProbe {
             "ingame.speed_buttons",
             "ingame.strategy_info",
             "ingame.player_detail",
-            "ingame.lt_player_hud",
         ] {
             let visible = ctx.ui_visible(path) == Some(true)
                 && path
@@ -388,17 +557,57 @@ impl StableExtension for ClientProbe {
         }
         self.camera.set_blocked(blocked);
         self.camera.set_command_blocked(command_blocked);
-        let ability_action =
-            self.abilities
-                .update(keys, gameplay_active, &self.camera, &self.logger);
-        self.movement.apply_ability_action(ability_action);
-        self.movement.update_mouse_with_cast(
-            keys,
-            gameplay_active,
+        if early.is_none() || !gameplay_active {
+            self.gameplay_input(
+                keys,
+                gameplay_active && !settings::MODAL.load(Ordering::Relaxed),
+            );
+        }
+        self.abilities.set_hud_hover(hovered_skill);
+        let hover_timer = perf::time(perf::Section::Hover);
+        let (hover, attack) = self.movement.refresh_hover(
             &self.camera,
-            &self.logger,
-            ability_action.left_reserved,
+            self.native_enabled && gameplay_active && battlefield && keys.focused,
+            self.abilities.hover_target(keys.alt),
         );
+        let outline_enabled = self.cursor.settings.number("hover_outline") == 1.;
+        native_adapter::set_outline_targets(
+            hover.filter(|_| outline_enabled),
+            attack.filter(|_| outline_enabled),
+            self.movement
+                .attack_click_feedback()
+                .filter(|_| outline_enabled),
+        );
+        drop(hover_timer);
+        let cursor_timer = perf::time(perf::Section::Cursor);
+        // The reason is diagnostic only (0.65 cursor trace).
+        let cursor_style = (|| {
+            if !(self.native_enabled && battlefield && controls) {
+                return Err("not_controlling");
+            }
+            if !keys.focused {
+                return Err("unfocused");
+            }
+            let point = keys.cursor.ok_or("no_cursor_point")?;
+            let frame = self.camera.frame().ok_or("no_camera_frame")?;
+            if self.camera.command_blocked(point) {
+                return Err("over_hud_or_minimap");
+            }
+            if frame.unproject(point).is_none() {
+                return Err("off_battlefield");
+            }
+            let playable = gameplay_active && snapshot.as_ref().is_some_and(|s| s.alive);
+            Ok(cursor::Style::choose(
+                keys.champion_only,
+                playable && self.movement.attack_move_armed(),
+                playable && self.movement.cursor_enemy().is_some(),
+                playable
+                    .then(|| self.abilities.cursor_feedback(keys.alt))
+                    .flatten(),
+            ))
+        })();
+        self.cursor.update(cursor_style, keys.cursor, &self.logger);
+        drop(cursor_timer);
         let Ok(mut observations) = self.observations.lock() else {
             return;
         };
@@ -406,7 +615,7 @@ impl StableExtension for ClientProbe {
         for event in ctx.input_events() {
             if matches!(
                 event.key.as_str(),
-                "Q" | "W" | "R" | "A" | "LShift" | "RShift" | "Home" | "End"
+                "Q" | "W" | "R" | "A" | "LShift" | "RShift" | "F11" | "F12"
             ) {
                 self.logger
                     .write(&format!("KEY {:?} {}", event.kind, event.key));
@@ -474,7 +683,7 @@ impl StableExtension for ClientProbe {
                 observations.elapsed_micros,
                 std::thread::current().id()
             ));
-            self.logger.write(&format!("UI {:?}", topology(ctx)));
+            // No full UI-tree dump here: walking it took ~200 ms at match start (0.65 log).
             if self.native_enabled
                 && matches!(
                     ctx.client_scene_kind(),
@@ -489,7 +698,7 @@ impl StableExtension for ClientProbe {
         }
     }
 
-    fn post_render(&self, ctx: &mut StableClient<'_>) {
+    fn post_render_inner(&self, ctx: &mut StableClient<'_>) {
         if !matches!(
             ctx.client_scene_kind(),
             Some(
@@ -504,24 +713,24 @@ impl StableExtension for ClientProbe {
             return;
         }
         self.abilities.draw(ctx, &self.camera);
+        minimap::draw_frame(ctx, &self.camera);
         if self.timing.client_running() {
             self.movement.draw_attack_range(ctx, &self.camera);
-            self.movement.draw_targets(ctx, &self.camera);
-        }
-        if let (Some(frame), Some(marker)) = (self.camera.frame(), self.movement.marker()) {
-            if let Some((x, y)) = frame.project(marker) {
-                if !self.camera.blocked((x, y)) {
-                    ctx.draw_circle("UI", x, y, 5., 1002, 0xffd700ff);
-                    ctx.draw_rect("UI", x - 12., y - 1., 24., 2., 1002, 0., 0xffd700ff);
-                    ctx.draw_rect("UI", x - 1., y - 12., 2., 24., 1002, 0., 0xffd700ff);
-                }
+            self.movement.draw_targets(
+                ctx,
+                &self.camera,
+                self.cursor.settings.number("selection_debug") == 1.,
+            );
+            if self.cursor.settings.number("map_path") == 1. {
+                self.movement.draw_minimap_path(ctx, &self.camera);
             }
+            cursor::draw_clicks(ctx, &self.camera, &self.movement.click_feedback());
         }
         // Normal status is conveyed by icons. Only exceptional release reasons
         // require text; routine Start/Pause/AI transitions stay silent.
         if self.timing.ui_phase() == Some(native_timing::Phase::Released) {
             let message = self.timing.describe();
-            if !message.contains("Ctrl+End")
+            if !message.contains("F12")
                 && !message.contains("Return to AI button")
                 && !message.contains("Left battlefield")
             {
@@ -539,6 +748,27 @@ impl StableExtension for ClientProbe {
                 );
             }
         }
+    }
+}
+
+impl StableExtension for ClientProbe {
+    fn pre_update(&self, ctx: &mut StableClient<'_>, _dt_micros: u64) {
+        let _t = perf::time(perf::Section::Pre);
+        self.pre_update_inner(ctx);
+    }
+    fn post_update(&self, ctx: &mut StableClient<'_>, dt_micros: u64) {
+        let scene = ctx.client_scene_kind();
+        perf::frame(
+            scene == Some(mod_api_stable::ClientSceneKindV1::InGame),
+            &scene,
+            &self.logger,
+        );
+        let _t = perf::time(perf::Section::Post);
+        self.post_update_inner(ctx, dt_micros);
+    }
+    fn post_render(&self, ctx: &mut StableClient<'_>) {
+        let _t = perf::time(perf::Section::Render);
+        self.post_render_inner(ctx);
     }
 }
 
@@ -592,7 +822,7 @@ impl StablePlayerAi for AiProbe {
         let athlete = ctx.athlete_id();
         let lane = ctx.lane().map(|lane| lane.code() as usize);
         let side = ctx.team();
-        let (selected, proposal, position, actor, match_key, skill_units) = {
+        let (selected, proposal, position, actor, match_key, skill_units, live_worker) = {
             let sim = ctx.sim()?;
             let Some(origin) = sim.sim_origin() else {
                 if self.last_sample.is_none() {
@@ -632,6 +862,31 @@ impl StablePlayerAi for AiProbe {
             let selected = origin.kind == 2
                 && self.timing.owns_worker(key)
                 && self.movement.hud_identity() == Some((key, player_id));
+            // Startup tick 1 precedes presentation readiness. Capture roster
+            // HUD data here rather than hiding it behind accepts_sample(),
+            // whose battlefield gate only opens after startup is held.
+            if origin.kind == 2 && tick == 1 && self.timing.owns_worker(key) {
+                for index in 0..sim.player_count() {
+                    if let Some(p) = sim.player_at(index) {
+                        let c = p.champion();
+                        self.hud.observe_prepared(player_hud::Snapshot {
+                            key,
+                            player: p.id(),
+                            champion: c.as_ref().and_then(|c| c.name()).unwrap_or_default(),
+                            level: p.level(),
+                            hp: c.as_ref().map(|c| c.hp()),
+                            alive: p.is_alive(),
+                            respawn: p.respawn_time(),
+                            gold: p.gold(),
+                            kda: (p.kills(), p.deaths(), p.assists()),
+                            cs: p.cs(),
+                            cooldowns: p.cooldowns().map_or([0; 3], |(_, q, w, r)| [q, w, r]),
+                            items: p.item_keys(),
+                            build: self.hud.build(&sim, p.id()),
+                        });
+                    }
+                }
+            }
             // Any living actor can read all ten players, including dead ones.
             // Copy only SDK scalars on this session's original live worker.
             if origin.kind == 2
@@ -648,31 +903,130 @@ impl StablePlayerAi for AiProbe {
                             champion: p.champion().and_then(|c| c.name()).unwrap_or_default(),
                             alive: Some(p.is_alive()),
                             respawn: p.respawn_time(),
+                            level: p.level(),
+                            gold: p.gold(),
+                            kda: (p.kills(), p.deaths(), p.assists()),
+                            cs: p.cs(),
+                            items: p.item_keys(),
+                            build: self.hud.build(&sim, p.id()),
+                            fresh: true,
                         })
                     })
                     .collect();
-                if tick == 1 {
-                    for index in 0..sim.player_count() {
-                        if let Some(p) = sim.player_at(index) {
-                            let c = p.champion();
-                            self.hud.observe_prepared(player_hud::Snapshot {
-                                key,
-                                player: p.id(),
-                                champion: c.as_ref().and_then(|c| c.name()).unwrap_or_default(),
-                                level: p.level(),
-                                hp: c.as_ref().map(|c| c.hp()),
-                                alive: p.is_alive(),
-                                respawn: p.respawn_time(),
-                                gold: p.gold(),
-                                kda: (p.kills(), p.deaths(), p.assists()),
-                                cs: p.cs(),
-                                cooldowns: p.cooldowns().map_or([0; 3], |(_, q, w, r)| [q, w, r]),
-                                items: p.item_keys(),
-                            });
-                        }
+                self.team.observe(key, players, &self.logger);
+            }
+            // Read-only shop investigation: every purchase step of all ten
+            // players, plus a once-per-match check of the native buyer code.
+            if origin.kind == 2
+                && self.timing.accepts_sample(key)
+                && shop_trace::SHOP_TRACE.due(key, tick)
+            {
+                if shop_trace::SHOP_TRACE.take_anchor_check() {
+                    for line in native_adapter::buyer_anchor_report() {
+                        self.logger.write(&line);
                     }
                 }
-                self.team.observe(key, players, &self.logger);
+                let players = (0..sim.player_count())
+                    .filter_map(|index| {
+                        let p = sim.player_at(index)?;
+                        Some((p.id(), p.team(), p.gold()))
+                    })
+                    .collect::<Vec<_>>();
+                shop_trace::SHOP_TRACE.observe(
+                    tick,
+                    &players,
+                    |id| {
+                        sim.get_player(id)
+                            .map(|p| p.item_keys())
+                            .unwrap_or_default()
+                    },
+                    |id| shop_trace::Detail {
+                        champion: sim
+                            .get_player(id)
+                            .and_then(|p| p.champion())
+                            .and_then(|c| c.name())
+                            .unwrap_or_default(),
+                        build: self.hud.build(&sim, id),
+                        native_owned: native_adapter::player_owned_len(&sim, id),
+                    },
+                    |line| self.logger.write(line),
+                );
+            }
+            // Manual shopping: once per tick, from whichever actor runs first,
+            // publish the controlled champion's shop data and next purchase
+            // step. Once the champion's native object is known with Manual
+            // shopping on, missing item data fails closed (buys nothing).
+            // Owning the worker suffices: starting items are bought in the
+            // first ticks, before the battlefield view (accepts_sample) opens.
+            if origin.kind == 2
+                && (self.timing.accepts_sample(key) || self.timing.owns_worker(key))
+                && shop::SHOP.due(key, tick)
+            {
+                let controlled = self
+                    .movement
+                    .hud_identity()
+                    .filter(|(hud_key, _)| *hud_key == key)
+                    .map(|(_, player)| player);
+                let keys = self.hud.catalog_keys();
+                let cat = shop::SHOP.catalogue_for(key, || {
+                    let meta = self.hud.item_metadata(key)?;
+                    shop::catalogue(&keys, meta.as_ref())
+                });
+                let live = controlled.and_then(|id| {
+                    let player = sim.get_player(id)?;
+                    let index = |k: &String| keys.iter().position(|x| x == k);
+                    Some(shop::Live {
+                        owned: player
+                            .item_keys()
+                            .iter()
+                            .map(index)
+                            .collect::<Option<Vec<_>>>()?,
+                        build: native_adapter::player_build(&sim, id)?,
+                        gold: player.gold(),
+                        capacity: native_adapter::item_slot_capacity().unwrap_or(0),
+                    })
+                });
+                let mode = if settings::option("manual_shop") != 1. {
+                    shop::Mode::Native("Manual shopping off")
+                } else if !native_adapter::shop_ready() {
+                    shop::Mode::Native("buyer hooks unavailable")
+                } else if !matches!(
+                    self.timing.worker_phase(key),
+                    Some(
+                        native_timing::Phase::Loading
+                            | native_timing::Phase::Ready
+                            | native_timing::Phase::Running
+                            | native_timing::Phase::Paused
+                    )
+                ) {
+                    // From champion lock (including loading and the
+                    // Start-control wait, when the game buys starting items)
+                    // until control returns to the AI (F12).
+                    shop::Mode::Native("AI control")
+                } else if matches!(
+                    self.timing.worker_phase(key),
+                    Some(native_timing::Phase::Loading | native_timing::Phase::Ready)
+                ) {
+                    // Starting items are bought at tick 1, while the lane may
+                    // still change: hold every champion of this match (by its
+                    // native object, so other simulations are untouched)
+                    // until Start; the others then buy on the next tick.
+                    shop::Mode::Prestart {
+                        controlled: controlled
+                            .and_then(|id| native_adapter::native_player(&sim, id)),
+                        hold: (0..sim.player_count())
+                            .filter_map(|i| {
+                                native_adapter::native_player(&sim, sim.player_at(i)?.id())
+                            })
+                            .collect(),
+                    }
+                } else {
+                    match controlled.and_then(|id| native_adapter::native_player(&sim, id)) {
+                        Some(pointer) => shop::Mode::Manual(pointer),
+                        None => shop::Mode::Native("controlled champion object unknown"),
+                    }
+                };
+                shop::SHOP.publish(mode, cat, live, |line| self.logger.write(line));
             }
             // Other living actors still run think while the selected champion
             // is dead. Read the selected player from this same worker's sim.
@@ -706,6 +1060,7 @@ impl StablePlayerAi for AiProbe {
                                 cs: player.cs(),
                                 cooldowns,
                                 items: player.item_keys(),
+                                build: self.hud.build(&sim, hud_player),
                             },
                             tick,
                             &self.logger,
@@ -739,9 +1094,13 @@ impl StablePlayerAi for AiProbe {
                 );
                 if let (Some(c), Some(p)) = (living, sim.get_player(player_id)) {
                     self.abilities.observe_level(key, c.id(), p.level());
+                    self.abilities.observe_champion(key, c.id(), c.name());
                 }
             }
-            let skill_units = if selected && self.timing.allows_input(key) {
+            let collect_units = selected
+                && self.timing.allows_input(key)
+                && current_champion.as_ref().is_some_and(|c| c.is_alive());
+            let skill_units = if collect_units {
                 (0..sim.entity_count())
                     .filter_map(|index| {
                         let unit = sim.entity_at(index)?;
@@ -753,15 +1112,33 @@ impl StablePlayerAi for AiProbe {
                             position: unit.pos(),
                             radius: unit.radius() as u64,
                             is_champion: unit.is_champion(),
-                            body: unit
-                                .is_champion()
-                                .then(|| sprite_picking::body(unit.name().as_deref())),
+                            is_minion: unit.is_minion(),
+                            friendly: unit.team() == side,
+                            in_cc: (0..unit.cc_count().min(64))
+                                .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
+                            is_tower: unit.is_tower() || unit.name().as_deref() == Some("nexus"),
+                            body: sprite_picking::entity_body(
+                                unit.name().as_deref(),
+                                unit.is_champion(),
+                                unit.is_minion(),
+                                unit.is_tower(),
+                                unit.radius() as u64,
+                            ),
                         })
                     })
                     .collect::<Vec<_>>()
             } else {
                 Vec::new()
             };
+            // This callback also runs for other players and background matches.
+            // Their empty local list must never erase the live player's allies.
+            if let Some(c) = current_champion.as_ref().filter(|_| collect_units) {
+                self.movement
+                    .observe_hover_units(key, player_id, c.id(), &skill_units);
+            }
+            if let Some(c) = current_champion.as_ref().filter(|c| c.is_alive()) {
+                self.abilities.observe_units(key, c.id(), &skill_units);
+            }
             let candidate = if selected && self.timing.allows_input(key) {
                 current_champion
                     .as_ref()
@@ -780,9 +1157,19 @@ impl StablePlayerAi for AiProbe {
                                     position: unit.pos(),
                                     radius: unit.radius() as u64,
                                     is_champion: unit.is_champion(),
-                                    body: unit
-                                        .is_champion()
-                                        .then(|| sprite_picking::body(unit.name().as_deref())),
+                                    is_minion: unit.is_minion(),
+                                    friendly: false,
+                                    in_cc: (0..unit.cc_count().min(64))
+                                        .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
+                                    is_tower: unit.is_tower()
+                                        || unit.name().as_deref() == Some("nexus"),
+                                    body: sprite_picking::entity_body(
+                                        unit.name().as_deref(),
+                                        unit.is_champion(),
+                                        unit.is_minion(),
+                                        unit.is_tower(),
+                                        unit.radius() as u64,
+                                    ),
                                 })
                             })
                             .collect();
@@ -846,8 +1233,19 @@ impl StablePlayerAi for AiProbe {
                 .as_ref()
                 .filter(|c| c.is_alive())
                 .map(|c| c.id());
-            (selected, candidate, position, actor, key, skill_units)
+            (
+                selected,
+                candidate,
+                position,
+                actor,
+                key,
+                skill_units,
+                origin.kind == 2 && self.timing.owns_worker(key),
+            )
         };
+        if live_worker {
+            self.hud.capture_items(ctx, match_key, &self.logger);
+        }
         let skill = actor
             .zip(position)
             .filter(|_| selected && self.timing.allows_input(match_key))
@@ -911,6 +1309,20 @@ impl StablePlayerAi for AiProbe {
         {
             self.logger.write(&format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} base={_base:?}"));
         }
+        if valid && live_worker {
+            let stamp = skill
+                .and_then(|input| self.abilities.dispatched_stamp(input.kind))
+                .or_else(|| {
+                    skill
+                        .is_none()
+                        .then(|| self.movement.take_command_stamp())
+                        .flatten()
+                });
+            if let (Some(stamp), Some(input)) = (stamp, candidate.as_ref()) {
+                self.timing
+                    .trace_dispatch(match_key, stamp, input, &self.logger);
+            }
+        }
         self.last_manual = valid;
         self.last_manual_mode = mode;
         if selected {
@@ -950,6 +1362,8 @@ fn init(host: &StableHost) -> StableMod {
         directory: directory.clone(),
         lines: 0,
         background_lines: 0,
+        bytes: 0,
+        rotating: directory.is_some(),
     })));
     let version = host.game_version();
     logger.write(&format!(
@@ -961,13 +1375,17 @@ fn init(host: &StableHost) -> StableMod {
         env!("CARGO_PKG_VERSION")
     ));
     sprite_picking::initialize(&logger);
+    skill_preview::initialize(&logger);
     logger.write(
-        "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=2 movement_enabled=true"
+        "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=1 movement_enabled=true"
     );
     let timing = Arc::new(native_timing::NativeTiming::new(true));
     let movement = Arc::new(movement_test::MovementTest::new(true));
     let camera = Arc::new(camera::CameraControl::default());
-    let abilities = Arc::new(abilities::Abilities::default());
+    let cast_on_release = runtime_storage::cast_on_release(directory.as_deref());
+    let cursor = cursor::Cursor::new(directory.as_deref());
+    logger.write(&format!("CONTROLS cast_on_release={cast_on_release}; default quickcast; Shift normal cast; Alt self cast"));
+    let abilities = Arc::new(abilities::Abilities::new(cast_on_release));
     let hud = Arc::new(player_hud::PlayerHud::default());
     let team = Arc::new(team_status::TeamStatus::default());
     let session_gate = Arc::new(RwLock::new(()));
@@ -1002,6 +1420,7 @@ fn init(host: &StableHost) -> StableMod {
         timing: timing.clone(),
         movement: movement.clone(),
         camera,
+        cursor,
         abilities: abilities.clone(),
         hud: hud.clone(),
         team: team.clone(),
@@ -1010,6 +1429,8 @@ fn init(host: &StableHost) -> StableMod {
         management_seen: AtomicBool::new(false),
         session_gate: session_gate.clone(),
     });
+    declaration.add_item_build_hook(purchase_tracker::BuildObserver(hud.clone()));
+    declaration.set_map_customizer(map_path::MapObserver(movement.clone(), logger.clone()));
     declaration.add_player_input_ai(AiProbe {
         session_gate,
         logger,

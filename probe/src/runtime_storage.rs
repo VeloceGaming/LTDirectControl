@@ -1,7 +1,7 @@
 //! Per-user diagnostic files; never depend on the compiler's project folder.
 use std::{
     fs::{self, File},
-    io,
+    io::{self, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
 };
 
@@ -40,6 +40,26 @@ pub fn open_log() -> io::Result<(File, PathBuf)> {
     let local = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
     open_in(&candidates(local.as_deref(), &std::env::temp_dir()))
 }
+/// Keep two bounded earlier segments, then continue on the same open handle.
+pub fn rotate_log(file: &mut File, directory: &Path) -> io::Result<()> {
+    file.flush()?;
+    let segment = directory.join("probe.segment.log");
+    if segment.is_file() {
+        fs::copy(&segment, directory.join("probe.segment.previous.log"))?;
+    }
+    fs::copy(directory.join("probe.log"), segment)?;
+    file.set_len(0)?;
+    file.seek(SeekFrom::Start(0))?;
+    Ok(())
+}
+/// Optional preference; an absent or malformed file preserves quickcast.
+pub fn cast_on_release(root: Option<&Path>) -> bool {
+    root.and_then(|root| fs::read(root.join("controls.json")).ok())
+        .filter(|bytes| bytes.len() <= 4096)
+        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
+        .and_then(|value| value.get("cast_on_release").and_then(|v| v.as_bool()))
+        .unwrap_or(false)
+}
 
 #[cfg(test)]
 mod tests {
@@ -49,6 +69,45 @@ mod tests {
         sync::atomic::{AtomicUsize, Ordering},
     };
     static NEXT: AtomicUsize = AtomicUsize::new(0);
+    #[test]
+    fn rolling_log_keeps_late_match_records_and_two_prior_segments() {
+        let root = scratch();
+        let (file, _) = open_in(std::slice::from_ref(&root)).unwrap();
+        let logger = crate::Logger(std::sync::Mutex::new(crate::LogState {
+            file: Some(file),
+            directory: Some(root.clone()),
+            lines: 12_001,
+            background_lines: 0,
+            bytes: 0,
+            rotating: true,
+        }));
+        logger.write("MATCH 06:48 goal accepted");
+        logger.0.lock().unwrap().bytes = crate::LOG_BYTES_LIMIT;
+        logger.write("MATCH 07:00 skill committed");
+        assert!(fs::read_to_string(root.join("probe.segment.log"))
+            .unwrap()
+            .contains("06:48"));
+        logger.0.lock().unwrap().bytes = crate::LOG_BYTES_LIMIT;
+        logger.write("MATCH 10:00 result");
+        drop(logger);
+        assert!(fs::read_to_string(root.join("probe.segment.previous.log"))
+            .unwrap()
+            .contains("06:48"));
+        assert!(fs::read_to_string(root.join("probe.segment.log"))
+            .unwrap()
+            .contains("07:00"));
+        assert!(fs::read_to_string(root.join("probe.log"))
+            .unwrap()
+            .contains("10:00"));
+        for name in [
+            "probe.log",
+            "probe.segment.log",
+            "probe.segment.previous.log",
+        ] {
+            fs::remove_file(root.join(name)).unwrap();
+        }
+        fs::remove_dir(root).unwrap();
+    }
 
     fn scratch() -> PathBuf {
         let root = std::env::temp_dir().join(format!(

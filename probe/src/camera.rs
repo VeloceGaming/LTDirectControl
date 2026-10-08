@@ -32,6 +32,21 @@ pub struct CameraFrame {
     pub minimap: Rect,
 }
 impl CameraFrame {
+    pub fn unproject_minimap(self, point: (f32, f32)) -> Option<(u64, u64)> {
+        if !self.valid() || !self.minimap.contains(point) {
+            return None;
+        }
+        Some((
+            ((point.0 - self.minimap.x) / self.minimap.w * 960_000.).round() as u64,
+            ((point.1 - self.minimap.y) / self.minimap.h * 960_000.).round() as u64,
+        ))
+    }
+    pub fn project_minimap(self, point: (u64, u64)) -> (f32, f32) {
+        (
+            self.minimap.x + point.0.min(960_000) as f32 / 960_000. * self.minimap.w,
+            self.minimap.y + point.1.min(960_000) as f32 / 960_000. * self.minimap.h,
+        )
+    }
     pub fn valid(self) -> bool {
         self.viewport.valid()
             && self.minimap.valid()
@@ -78,6 +93,32 @@ pub enum Request {
     Free((f32, f32)),
     Follow(usize),
 }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Vision {
+    #[default]
+    Own,
+    Other,
+    All,
+}
+impl Vision {
+    pub fn native(self, side: usize) -> Option<u8> {
+        if side > 1 {
+            return None;
+        }
+        Some(match self {
+            Self::All => 0,
+            Self::Own => side as u8 + 1,
+            Self::Other => 2 - side as u8,
+        })
+    }
+    pub fn index(self) -> usize {
+        match self {
+            Self::Own => 0,
+            Self::Other => 1,
+            Self::All => 2,
+        }
+    }
+}
 #[derive(Default)]
 struct State {
     frame: Option<(CameraFrame, Instant)>,
@@ -86,18 +127,28 @@ struct State {
     engaged: bool,
     running: bool,
     locked: bool,
+    toggle_requested: bool,
     previous_y: bool,
     previous_middle: bool,
     drag_active: bool,
     previous_cursor: Option<(f32, f32)>,
     expected_follow: bool,
     interrupted_space: bool,
+    vision: Vision,
 }
 #[derive(Default)]
 pub struct CameraControl {
     state: Mutex<State>,
 }
 impl CameraControl {
+    pub fn set_vision(&self, vision: Vision) {
+        if let Ok(mut s) = self.state.lock() {
+            s.vision = vision;
+        }
+    }
+    pub fn vision(&self) -> Vision {
+        self.state.lock().map_or(Vision::Own, |s| s.vision)
+    }
     pub fn set_blocked(&self, rects: Vec<Rect>) {
         if let Ok(mut s) = self.state.lock() {
             s.blocked = rects;
@@ -113,6 +164,11 @@ impl CameraControl {
         self.state
             .lock()
             .map_or(true, |s| s.command_blocked.iter().any(|r| r.contains(p)))
+    }
+    pub fn overlay_blockers(&self) -> Vec<Rect> {
+        self.state
+            .lock()
+            .map_or_else(|_| Vec::new(), |s| s.blocked.clone())
     }
     pub fn capture(&self, frame: CameraFrame) {
         if let Ok(mut s) = self.state.lock() {
@@ -156,6 +212,16 @@ impl CameraControl {
             }
         })
     }
+    pub fn request_toggle(&self) {
+        if let Ok(mut s) = self.state.lock() {
+            s.toggle_requested = !s.toggle_requested;
+        }
+    }
+    pub fn set_locked(&self, locked: bool) {
+        if let Ok(mut s) = self.state.lock() {
+            s.locked = locked;
+        }
+    }
     pub fn locked(&self) -> bool {
         self.state
             .lock()
@@ -175,12 +241,15 @@ impl CameraControl {
         dt: f32,
         log: &Logger,
     ) -> Option<Request> {
+        if crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed) {
+            return None;
+        }
         let champion = champion.into();
         let mut s = self.state.lock().ok()?;
         let mut recenter = !s.engaged || running && !s.running;
         if !s.engaged {
             s.engaged = true;
-            s.locked = false;
+            s.locked = keys.camera_lock_default;
         }
         let minimap_navigation =
             keys.focused && keys.left && keys.cursor.is_some_and(|p| frame.minimap.contains(p));
@@ -190,7 +259,8 @@ impl CameraControl {
             s.interrupted_space = keys.space;
             log.write("CAMERA explicit minimap navigation; unlocked");
         }
-        if keys.focused && keys.camera_toggle && !s.previous_y {
+        if s.toggle_requested || keys.focused && keys.camera_toggle && !s.previous_y {
+            s.toggle_requested = false;
             s.locked = !s.locked;
             s.interrupted_space = false;
             log.write(&format!("CAMERA Y locked={}", s.locked));
@@ -200,7 +270,7 @@ impl CameraControl {
         }
         let mut request = None;
         let mut drag = false;
-        if !keys.focused || !keys.middle {
+        if !keys.focused || !keys.middle || keys.camera_options.is_some_and(|o| !o.1) {
             s.drag_active = false;
         } else if !s.previous_middle {
             s.drag_active = keys.cursor.is_some_and(|p| {
@@ -240,6 +310,7 @@ impl CameraControl {
             if keys.focused && !keys.middle {
                 if let Some(p) = keys
                     .cursor
+                    .filter(|_| keys.camera_options.is_none_or(|o| o.0))
                     .filter(|p| (0.0..1920.0).contains(&p.0) && (0.0..1080.0).contains(&p.1))
                 {
                     let dx = if p.0 < 12.0 {
@@ -263,12 +334,34 @@ impl CameraControl {
                             0.0
                         };
                         request = Some(Request::Free((
-                            frame.center.0 + dx * 800.0 * elapsed * frame.extent.0 / 2048.0,
-                            frame.center.1 + dy * 800.0 * elapsed * frame.extent.1 / 2048.0,
+                            frame.center.0
+                                + dx * 800.0
+                                    * elapsed
+                                    * keys.camera_options.map_or(1., |o| o.3 / 1.4)
+                                    * frame.extent.0
+                                    / 2048.0,
+                            frame.center.1
+                                + dy * 800.0
+                                    * elapsed
+                                    * keys.camera_options.map_or(1., |o| o.3 / 1.4)
+                                    * frame.extent.1
+                                    / 2048.0,
                         )));
                     }
                 }
             }
+        }
+        if !following && !drag && keys.focused && (keys.dx != 0 || keys.dy != 0) {
+            let elapsed = if dt.is_finite() {
+                dt.clamp(0., 0.05)
+            } else {
+                0.
+            };
+            let speed = 800. * elapsed * keys.camera_options.map_or(1., |o| o.3 / 1.4);
+            request = Some(Request::Free((
+                frame.center.0 + keys.dx as f32 * speed * frame.extent.0 / 2048.,
+                frame.center.1 + keys.dy as f32 * speed * frame.extent.1 / 2048.,
+            )));
         }
         s.expected_follow = following && !drag;
         s.previous_y = keys.camera_toggle;
@@ -282,6 +375,42 @@ impl CameraControl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn vision_modes_follow_controlled_side_and_clear_for_next_session() {
+        assert_eq!(Vision::Own.native(0), Some(1));
+        assert_eq!(Vision::Own.native(1), Some(2));
+        assert_eq!(Vision::Other.native(0), Some(2));
+        assert_eq!(Vision::Other.native(1), Some(1));
+        for side in 0..2 {
+            assert_eq!(Vision::All.native(side), Some(0));
+        }
+        assert_eq!(Vision::Own.native(2), None);
+        let camera = CameraControl::default();
+        camera.set_vision(Vision::Other);
+        camera.reset_session(Keys::default());
+        assert_eq!(camera.vision(), Vision::Own);
+    }
+    #[test]
+    fn minimap_projection_is_independent_of_camera_pan_and_zoom() {
+        let mut f = frame();
+        for (point, screen) in [
+            ((0, 0), (1581., 740.)),
+            ((480_000, 480_000), (1741., 900.)),
+            ((960_000, 960_000), (1901., 1060.)),
+        ] {
+            assert_eq!(f.project_minimap(point), screen);
+            if point == (960_000, 960_000) {
+                assert!(f.unproject_minimap(screen).is_none()); // Rect excludes its right/bottom edge.
+            } else {
+                assert_eq!(f.unproject_minimap(screen), Some(point));
+            }
+        }
+        f.center = (180., 790.);
+        f.extent = (2048., 2048.);
+        assert_eq!(f.unproject_minimap((1741., 900.)), Some((480_000, 480_000)));
+        assert!(f.unproject_minimap((1580., 900.)).is_none());
+        assert!(f.unproject_minimap((f32::NAN, 900.)).is_none());
+    }
     fn frame() -> CameraFrame {
         CameraFrame {
             viewport: Rect {

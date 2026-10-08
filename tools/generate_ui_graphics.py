@@ -6,7 +6,7 @@ root = Path(__file__).resolve().parents[1]
 out = root / 'probe/ui'
 out.mkdir(exist_ok=True)
 names = ['play', 'pause', 'controller', 'chip', 'camera', 'camera_lock',
-         'target', 'coin', 'minion', 'lock', 'recall', 'hourglass']
+         'target', 'coin', 'minion', 'lock', 'recall', 'hourglass', 'more', 'check']
 sheet = Image.new('RGB', (len(names) * 64, 64), '#141414')
 for i, name in enumerate(names):
     im = Image.new('RGBA', (128, 128)); d = ImageDraw.Draw(im)
@@ -47,6 +47,9 @@ for i, name in enumerate(names):
         d.arc((20,20,108,108),35,310,fill=white,width=8)
         d.polygon([(92,15),(111,46),(78,45)],fill=white)
         d.polygon([(43,74),(64,54),(85,74)],outline=white,width=6); line([(49,72),(49,94),(79,94),(79,72)])
+    elif name == 'more':
+        for x in [28,64,100]: d.ellipse((x-6,58,x+6,70),fill=white)
+    elif name == 'check': line([(20,64),(49,94),(110,30)])
     else:
         line([(30,18),(98,18)]); line([(30,110),(98,110)])
         line([(38,20),(38,38),(90,90),(90,108)]); line([(90,20),(90,38),(38,90),(38,108)])

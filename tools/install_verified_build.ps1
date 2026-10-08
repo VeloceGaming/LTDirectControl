@@ -1,12 +1,23 @@
-param([Parameter(Mandatory=$true)][string]$Version)
+param([Parameter(Mandatory=$true)][string]$Version, [Parameter(Mandatory=$true)][string]$PreviousVersion, [switch]$AllowRunningWithModUnloaded)
 $ErrorActionPreference = 'Stop'
-if (@(Get-Process -Name TeamfightManager2 -ErrorAction SilentlyContinue).Count -ne 0) { throw 'Close the game before installing.' }
+$taskGameProcesses = @(Get-Process -Name TeamfightManager2 -ErrorAction SilentlyContinue)
+if ($taskGameProcesses.Count -ne 0) {
+    if (-not $AllowRunningWithModUnloaded) { throw 'Close the game before installing.' }
+    foreach ($taskGameProcess in $taskGameProcesses) {
+        $taskModules = @($taskGameProcess.Modules)
+        if ($taskModules.Count -eq 0) { throw 'Cannot verify that the running game has unloaded the mod.' }
+        if (@($taskModules | Where-Object { $_.ModuleName -ieq 'lt_direct_control_probe.dll' }).Count -ne 0) {
+            throw 'The mod DLL is loaded; close the game before installing.'
+        }
+    }
+    Write-Output 'Running game checked: the mod DLL is not loaded. Restart the game after installation.'
+}
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $packageRoot = Join-Path $taskRoot 'dist\lt_direct_control_probe'
 $gameRoot = 'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2'
 $installRoot = Join-Path $gameRoot 'mods\lt_direct_control_probe'
 $newRecord = Get-Content -LiteralPath (Join-Path $taskRoot "dist\build-$Version.json") -Raw | ConvertFrom-Json
-$oldRecord = Get-Content -LiteralPath (Join-Path $taskRoot 'dist\build-0.25.0.json') -Raw | ConvertFrom-Json
+$oldRecord = Get-Content -LiteralPath (Join-Path $taskRoot "dist\build-$PreviousVersion.json") -Raw | ConvertFrom-Json
 if ($newRecord.version -ne $Version) { throw 'Version mismatch.' }
 function Assert-Hash([string]$Path, [string]$Expected) {
     if ((Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw "Fingerprint mismatch: $Path" }
@@ -25,6 +36,7 @@ foreach ($entry in $graphics.files.PSObject.Properties) {
 }
 New-Item -ItemType Directory -Path (Join-Path $installRoot 'ui') -Force | Out-Null
 foreach ($entry in $graphics.files.PSObject.Properties) {
+    New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $installRoot $entry.Name)) -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $packageRoot $entry.Name) -Destination (Join-Path $installRoot $entry.Name) -Force
 }
 Copy-Item -LiteralPath (Join-Path $packageRoot 'lt_direct_control_probe.dll') -Destination (Join-Path $installRoot 'lt_direct_control_probe.dll') -Force

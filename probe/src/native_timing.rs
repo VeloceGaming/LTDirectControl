@@ -1,7 +1,7 @@
 //! No waiting from an SDK callback. The only wait is between published frames.
 use crate::{platform_input::Keys, Logger};
-use std::collections::BTreeSet;
-use std::sync::Mutex;
+use std::collections::{BTreeSet, VecDeque};
+use std::sync::{Condvar, Mutex};
 use std::time::{Duration, Instant};
 
 pub type MatchKey = (u64, u64, u64);
@@ -23,6 +23,9 @@ pub enum SessionAction {
 }
 struct State {
     generation: u64,
+    traces: VecDeque<crate::input_trace::FrameTrace>,
+    trace_count: usize,
+    native_trace_count: usize,
     retired: BTreeSet<MatchKey>,
     binding_window: bool,
     phase: Phase,
@@ -54,6 +57,7 @@ struct State {
 }
 pub struct NativeTiming {
     state: Mutex<State>,
+    wake: Condvar,
     enabled: bool,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -64,11 +68,30 @@ pub enum ViewMode {
     Running,
 }
 impl NativeTiming {
+    #[cfg(test)]
+    pub(crate) fn running_test_worker(key: MatchKey) -> Self {
+        let t = Self::new(true);
+        {
+            let mut s = t.state.lock().unwrap();
+            s.phase = Phase::Running;
+            s.key = Some(key);
+            s.worker = Some(crate::platform_input::thread_id());
+            s.selected = true;
+            s.battlefield = true;
+            s.installed = true;
+            s.heartbeat = Some(Instant::now());
+        }
+        t
+    }
     pub fn new(enabled: bool) -> Self {
         Self {
             enabled,
+            wake: Condvar::new(),
             state: Mutex::new(State {
                 generation: 0,
+                traces: VecDeque::new(),
+                trace_count: 0,
+                native_trace_count: 0,
                 retired: BTreeSet::new(),
                 binding_window: true,
                 phase: Phase::Armed,
@@ -102,6 +125,7 @@ impl NativeTiming {
     }
     pub fn installed(&self, ok: bool, reason: &str, log: &Logger) {
         let Ok(mut s) = self.state.lock() else { return };
+        self.wake.notify_all();
         s.installed = ok;
         log.write(&format!("NATIVE install ok={ok} {reason}"));
         if !ok {
@@ -125,11 +149,13 @@ impl NativeTiming {
     }
     pub fn cancel(&self, reason: &str, log: &Logger) {
         if let Ok(mut s) = self.state.lock() {
+            self.wake.notify_all();
             Self::release(&mut s, reason, log);
         }
     }
     pub fn heartbeat(&self, battlefield: bool, selected: bool, keys: Keys, log: &Logger) {
         let Ok(mut s) = self.state.lock() else { return };
+        self.wake.notify_all();
         let was_battlefield = s.battlefield;
         s.client = Some(crate::platform_input::thread_id());
         s.heartbeat = Some(Instant::now());
@@ -138,7 +164,7 @@ impl NativeTiming {
         // The deadline must work even if neither native hook ever arrives.
         Self::check_limits(&mut s, log);
         if keys.release {
-            Self::release(&mut s, "Ctrl+End", log);
+            Self::release(&mut s, "F12", log);
         }
         if was_battlefield && !battlefield && s.key.is_some() {
             Self::release(&mut s, "Left battlefield", log);
@@ -162,7 +188,7 @@ impl NativeTiming {
         if keys.start && !s.previous_start && matches!(s.phase, Phase::Ready | Phase::Paused) {
             s.phase = Phase::Running;
             s.running.get_or_insert_with(Instant::now);
-            log.write("NATIVE START/RESUME backup Ctrl+Home; playback=1x maximum frame lead=2");
+            log.write("NATIVE START/RESUME backup F11; playback=1x maximum frame lead=1");
         }
         s.previous_start = keys.start;
     }
@@ -197,6 +223,7 @@ impl NativeTiming {
     /// released. Native patches remain installed; old pointers are forgotten.
     pub fn rearm(&self, save_exit: bool, keys: Keys, log: &Logger) {
         let Ok(mut s) = self.state.lock() else { return };
+        self.wake.notify_all();
         if !s.installed || s.battlefield || !save_exit && s.phase != Phase::Released {
             return;
         }
@@ -206,6 +233,9 @@ impl NativeTiming {
             s.retired.insert(key);
         }
         s.generation = s.generation.wrapping_add(1);
+        s.traces.clear();
+        s.trace_count = 0;
+        s.native_trace_count = 0;
         s.phase = Phase::Armed;
         s.reason.clear();
         s.key = None;
@@ -227,6 +257,13 @@ impl NativeTiming {
         s.worker_bind_base = s.worker_calls;
         s.viewer_bind_base = s.viewer_calls;
         log.write(&format!("SESSION REARM generation={} save_exit={save_exit} retired_keys={}; waiting for new foreground worker tick 1", s.generation, s.retired.len()));
+    }
+    /// Session phase as seen by this match's simulation worker. `phase()`
+    /// answers only on the bound client thread and is None on the worker.
+    pub fn worker_phase(&self, key: MatchKey) -> Option<Phase> {
+        let s = self.state.lock().ok()?;
+        (s.key == Some(key) && s.worker == Some(crate::platform_input::thread_id()))
+            .then_some(s.phase)
     }
     pub fn owns_worker(&self, key: MatchKey) -> bool {
         self.state.lock().is_ok_and(|s| {
@@ -270,6 +307,7 @@ impl NativeTiming {
     }
     pub fn apply_action(&self, action: SessionAction, log: &Logger) {
         let Ok(mut s) = self.state.lock() else { return };
+        self.wake.notify_all();
         if !Self::client_owned(&s, None) {
             return;
         }
@@ -279,7 +317,7 @@ impl NativeTiming {
                 s.phase = Phase::Running;
                 s.running.get_or_insert_with(Instant::now);
                 log.write(&format!(
-                    "SESSION {action:?}; full-match pacing=1x frame_lead=2"
+                    "SESSION {action:?}; full-match pacing=1x frame_lead=1"
                 ));
             }
             (SessionAction::Pause, Phase::Running) => {
@@ -380,6 +418,21 @@ impl NativeTiming {
             }
             s.sender = Some(sender);
             s.produced += 1;
+            let published = s.produced;
+            for trace in s
+                .traces
+                .iter_mut()
+                .filter(|t| !t.published && t.frame <= published)
+            {
+                trace.published = true;
+                log.write(&format!(
+                    "INPUT TRACE published id={} kind={} frame={} capture_age_us={}",
+                    trace.stamp.id,
+                    trace.stamp.label,
+                    trace.frame,
+                    trace.stamp.at.elapsed().as_micros()
+                ));
+            }
             if !s.boundary_seen {
                 s.boundary_seen = true;
                 log.write(
@@ -390,30 +443,36 @@ impl NativeTiming {
         };
         loop {
             let keys = crate::platform_input::poll();
-            let wait = {
-                let Ok(mut s) = self.state.lock() else { return };
-                // A released worker can still be waking from its old wait.
-                // It must not poll keys, release or wait on the next session.
-                if s.generation != generation
-                    || s.worker != Some(crate::platform_input::thread_id())
-                    || s.sender != Some(sender)
-                {
-                    return;
-                }
-                if keys.release {
-                    Self::release(&mut s, "Ctrl+End at worker boundary", log);
-                }
-                Self::check_limits(&mut s, log);
-                match s.phase {
-                    Phase::Released | Phase::Armed => false,
-                    Phase::Loading | Phase::Ready | Phase::Paused => true,
-                    Phase::Running => s.produced.saturating_sub(s.consumed) >= 2,
-                }
+            let Ok(mut s) = self.state.lock() else { return };
+            // Check generation under the same lock used by the wait. A wake
+            // from an old session must never mutate a newly armed match.
+            if s.generation != generation
+                || s.worker != Some(crate::platform_input::thread_id())
+                || s.sender != Some(sender)
+            {
+                return;
+            }
+            if keys.release {
+                Self::release(&mut s, "F12 at worker boundary", log);
+            }
+            Self::check_limits(&mut s, log);
+            let wait = match s.phase {
+                Phase::Released | Phase::Armed => false,
+                Phase::Loading | Phase::Ready | Phase::Paused => true,
+                Phase::Running => s.produced.saturating_sub(s.consumed) >= 1,
             };
             if !wait {
                 return;
             }
-            std::thread::sleep(Duration::from_millis(2));
+            // The viewer/phase transitions signal immediately. The timeout
+            // keeps emergency keys and heartbeat recovery working if the
+            // client freezes; it is not the normal running wake-up policy.
+            let since = Instant::now();
+            let waited = self.wake.wait_timeout(s, Duration::from_millis(25));
+            crate::perf::waited(crate::perf::Wait::Pacing, since);
+            if waited.is_err() {
+                return;
+            }
         }
     }
     fn check_limits(s: &mut State, log: &Logger) {
@@ -434,6 +493,7 @@ impl NativeTiming {
         let Ok(mut s) = self.state.lock() else {
             return ViewMode::Native;
         };
+        self.wake.notify_all();
         Self::check_limits(&mut s, log);
         if !s.installed
             || s.key.is_none()
@@ -474,10 +534,34 @@ impl NativeTiming {
             return;
         }
         let Ok(mut s) = self.state.lock() else { return };
+        self.wake.notify_all();
         let previous_played = s.played_tick;
         s.played_tick = played;
         let used = before.saturating_sub(after);
         s.consumed += used;
+        let consumed = s.consumed;
+        while s
+            .traces
+            .front()
+            .is_some_and(|t| t.published && t.frame <= consumed)
+        {
+            let trace = s.traces.pop_front().unwrap();
+            log.write(&format!("INPUT TRACE played id={} kind={} frame={} played_tick={played} capture_to_playback_us={}; frame playback, not measured movement/projectile onset", trace.stamp.id, trace.stamp.label, trace.frame, trace.stamp.at.elapsed().as_micros()));
+        }
+        if mode == ViewMode::Running
+            && before == 0
+            && s.running
+                .is_some_and(|t| t.elapsed() > Duration::from_millis(250))
+        {
+            // Bounded samples include empty queues: do not claim every empty
+            // queue is a hitch without observing the host's rendered motion.
+            if s.viewer_calls.is_multiple_of(60) {
+                log.write(&format!(
+                    "PACING empty_queue played_tick={played} produced={} consumed={} mode={mode:?}",
+                    s.produced, s.consumed
+                ));
+            }
+        }
         if mode == ViewMode::Bootstrap && used > 0 {
             s.bootstrap_applied = true;
             log.write(&format!("NATIVE INITIAL_FRAME applied={used} played_tick={played} queue_remaining={after}; zero-gameplay advance is NOT assumed"));
@@ -495,6 +579,48 @@ impl NativeTiming {
         if used > 2 || s.consumed > s.produced + 1 {
             Self::release(&mut s, "Unexpected publication/playback frame counts", log);
         }
+    }
+    pub fn trace_dispatch(
+        &self,
+        key: MatchKey,
+        stamp: crate::input_trace::Stamp,
+        input: &mod_api_stable::InputV1,
+        log: &Logger,
+    ) {
+        let Ok(mut s) = self.state.lock() else { return };
+        if s.key != Some(key)
+            || s.worker != Some(crate::platform_input::thread_id())
+            || s.phase != Phase::Running
+            || s.trace_count >= 300
+        {
+            return;
+        }
+        s.trace_count += 1;
+        let frame = s.produced + 1;
+        s.traces.push_back(crate::input_trace::FrameTrace {
+            stamp,
+            frame,
+            published: false,
+        });
+        log.write(&format!(
+            "INPUT TRACE dispatched id={} kind={} frame={frame} capture_age_us={} input={input:?}",
+            stamp.id,
+            stamp.label,
+            stamp.at.elapsed().as_micros()
+        ));
+    }
+    pub fn permit_native_trace(&self) -> bool {
+        let Ok(mut s) = self.state.lock() else {
+            return false;
+        };
+        if s.phase != Phase::Running
+            || s.worker != Some(crate::platform_input::thread_id())
+            || s.native_trace_count >= 600
+        {
+            return false;
+        }
+        s.native_trace_count += 1;
+        true
     }
     pub fn allows_input(&self, key: MatchKey) -> bool {
         // Direction freshness is enforced by MovementTest with a hold command,
@@ -515,6 +641,11 @@ impl NativeTiming {
             s.key == Some(key)
                 && s.battlefield
                 && s.worker == Some(crate::platform_input::thread_id())
+        })
+    }
+    pub fn client_early_input(&self) -> bool {
+        self.state.lock().is_ok_and(|s| {
+            s.phase == Phase::Running && s.pending_action.is_none() && Self::client_owned(&s, None)
         })
     }
     pub fn client_running(&self) -> bool {
@@ -553,7 +684,7 @@ impl NativeTiming {
                 env!("CARGO_PKG_VERSION")
             ),
             Phase::Loading if !s.boundary_seen => format!(
-                "Waiting for live worker hook | worker calls={} viewer calls={} | Ctrl+End cancels",
+                "Waiting for live worker hook | worker calls={} viewer calls={} | F12 cancels",
                 s.worker_calls, s.viewer_calls
             ),
             Phase::Loading if !s.pause_acknowledged => format!(
@@ -564,7 +695,7 @@ impl NativeTiming {
                 "Playback hold acknowledged; waiting for battlefield and your champion".into()
             }
             Phase::Ready => format!(
-                "Ready: click Start control | native tick={} | Ctrl+End emergency release",
+                "Ready: click Start control | native tick={} | F12 emergency release",
                 s.played_tick
             ),
             Phase::Running => format!(
@@ -594,6 +725,61 @@ mod tests {
         s.client = Some(crate::platform_input::thread_id());
         drop(s);
         t
+    }
+    #[test]
+    fn the_simulation_worker_sees_the_phase_the_client_only_api_hides() {
+        let t = active();
+        {
+            let mut s = t.state.lock().unwrap();
+            // A different client thread: this test thread is only the worker.
+            s.client = Some(u64::MAX);
+            s.worker = Some(crate::platform_input::thread_id());
+            s.phase = Phase::Loading;
+        }
+        assert_eq!(t.phase(), None);
+        assert_eq!(t.worker_phase((1, 2, 3)), Some(Phase::Loading));
+        assert_eq!(t.worker_phase((9, 9, 9)), None);
+    }
+    #[test]
+    fn pending_pause_prevents_early_capture_and_trace_does_not_cross_sessions() {
+        let t = active();
+        let log = logger("early-phase-and-trace");
+        t.heartbeat(true, true, Keys::default(), &log);
+        {
+            let mut s = t.state.lock().unwrap();
+            s.phase = Phase::Running;
+            s.worker = Some(crate::platform_input::thread_id());
+        }
+        assert!(t.client_early_input());
+        t.request_action(true);
+        assert!(!t.client_early_input());
+        let stamp = crate::input_trace::Stamp::new("right-click");
+        t.trace_dispatch(
+            (1, 2, 4),
+            stamp,
+            &mod_api_stable::InputV1::move_to(20, 20),
+            &log,
+        );
+        assert!(t.state.lock().unwrap().traces.is_empty());
+        t.trace_dispatch(
+            (1, 2, 3),
+            stamp,
+            &mod_api_stable::InputV1::move_to(20, 20),
+            &log,
+        );
+        assert_eq!(t.state.lock().unwrap().traces.len(), 1);
+        {
+            let mut s = t.state.lock().unwrap();
+            s.produced = 1;
+            s.traces[0].published = true;
+        }
+        t.after_view(ViewMode::Running, 1, 0, 1, &log);
+        assert!(t.state.lock().unwrap().traces.is_empty());
+        t.cancel("test", &log);
+        t.heartbeat(false, false, Keys::default(), &log);
+        t.rearm(false, Keys::default(), &log);
+        assert_eq!(t.state.lock().unwrap().trace_count, 0);
+        assert!(!t.client_early_input());
     }
     #[test]
     fn portrait_selection_waits_for_start_without_a_ready_expiry_but_keeps_heartbeat_guard() {
@@ -895,6 +1081,8 @@ mod tests {
         assert_eq!(t.before_view(100, 1, 1, &log), ViewMode::Paused);
         t.after_view(ViewMode::Paused, 1, 1, 1, &log);
         t.apply_action(SessionAction::Resume, &log);
+        assert!(receive.recv_timeout(Duration::from_millis(10)).is_err());
+        t.after_view(ViewMode::Running, 1, 0, 2, &log);
         assert_eq!(
             receive.recv_timeout(Duration::from_secs(1)).unwrap(),
             "resumed"
@@ -1023,6 +1211,8 @@ mod tests {
             receive.recv_timeout(Duration::from_secs(1)).unwrap(),
             "tick 2 permitted"
         );
+        assert!(receive.recv_timeout(Duration::from_millis(10)).is_err());
+        t.after_view(ViewMode::Running, 1, 0, 2, &log);
         assert_eq!(
             receive.recv_timeout(Duration::from_secs(1)).unwrap(),
             "tick 3 permitted"

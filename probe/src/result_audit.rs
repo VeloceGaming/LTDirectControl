@@ -217,6 +217,7 @@ mod tests {
             cs: 30,
             cooldowns: [0; 3],
             items: vec![],
+            build: None,
         };
         audit.observe_player((1, 2, 3), true, Some(&player));
         let mut replay = player.clone();

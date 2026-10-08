@@ -12,6 +12,8 @@ pub(crate) mod tests {
             file: Some(File::create(path).expect("test log")),
             lines: 0,
             background_lines: 0,
+            bytes: 0,
+            rotating: false,
         }))
     }
 
@@ -22,6 +24,8 @@ pub(crate) mod tests {
             directory: None,
             lines: 0,
             background_lines: 0,
+            bytes: 0,
+            rotating: false,
         }));
         logger.write("control enabled without a file logger");
         crate::native_adapter::capture_trace("diagnostics unavailable", &logger);

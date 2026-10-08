@@ -10,6 +10,7 @@ pub struct TeamInfo {
     info_tooltip_checked: bool,
     info_tooltip_found: bool,
     info_tooltip_reports: usize,
+    reported_visibility: Option<bool>,
 }
 impl TeamInfo {
     pub fn apply(
@@ -112,7 +113,7 @@ impl TeamInfo {
                     ctx.ui_set_visible(path, false);
                 }
             }
-            if !ctx.ui_set_properties(PANEL, "x: 0px; y: 0px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; ignore_event: true;") && !self.layout_failure_logged {
+            if !ctx.ui_set_properties(PANEL, "x: 0px; y: 0px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; ignore_event: true; color: #292929ff;") && !self.layout_failure_logged {
                 log.write("HUD centered scoreboard properties rejected");
                 self.layout_failure_logged = true;
             }
@@ -124,7 +125,7 @@ impl TeamInfo {
                 ctx.ui_set_visible(path, visible);
             }
             if let Some((x, y)) = self.original_position.take() {
-                ctx.ui_set_properties(PANEL, &format!("x: {x}px; y: {y}px; anchor_x: 0; pivot_x: 0; anchor_y: 0; pivot_y: 0; ignore_event: false;"));
+                ctx.ui_set_properties(PANEL, &format!("x: {x}px; y: {y}px; anchor_x: 0; pivot_x: 0; anchor_y: 0; pivot_y: 0; ignore_event: false; color: #161721ff;"));
             }
             self.engaged = false;
             self.layout_failure_logged = false;
@@ -137,9 +138,12 @@ impl TeamInfo {
         if let Some(desired) = self.visibility(active, focused, tab, native) {
             if native != Some(desired) {
                 let applied = ctx.ui_set_visible(PANEL, desired);
-                log.write(&format!(
-                    "HUD team info visible={desired} applied={applied}; centered hold Tab"
-                ));
+                if self.reported_visibility != Some(desired) {
+                    self.reported_visibility = Some(desired);
+                    log.write(&format!(
+                        "HUD team info visible={desired} applied={applied}; centered hold Tab"
+                    ));
+                }
             }
         }
     }

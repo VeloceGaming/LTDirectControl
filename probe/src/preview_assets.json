@@ -1,0 +1,761 @@
+{
+  "nightmare": {
+    "skill": {
+      "range": 46000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "ViewEffect",
+            "name": "nightmare_skill_cast",
+            "range": 46000,
+            "speed": 6500,
+            "time": 8
+          },
+          {
+            "type": "LinearProjectile",
+            "penetrate": false,
+            "speed": 6500,
+            "range": 46000,
+            "name": "nightmare_skill_projectile",
+            "y_offset": 900,
+            "shape": {
+              "Circle": {
+                "radius": 5000
+              }
+            },
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 35,
+                  "attack_ratio": 80
+                },
+                "casting_type": "Targeting"
+              }
+            ],
+            "end_effects": []
+          }
+        ]
+      }
+    },
+    "skill2": {
+      "range": 60000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "MoveTo",
+            "speed": 5600,
+            "range": 60000,
+            "end_effects": [
+              {
+                "type": "CasterInvisible",
+                "tick": 150
+              },
+              {
+                "type": "CasterViewEffect",
+                "name": "nightmare_vanish"
+              },
+              {
+                "type": "CasterAnimation",
+                "name": "skill2_attack",
+                "tick": 18
+              },
+              {
+                "type": "ViewEffect",
+                "name": "nightmare_skill2_burst",
+                "radius": 40000
+              },
+              {
+                "type": "RangeEffect",
+                "shape": {
+                  "Circle": {
+                    "radius": 40000
+                  }
+                },
+                "target": "EnemyWithoutTower",
+                "effects": [
+                  {
+                    "type": "Attack",
+                    "damage": 50,
+                    "attack_ratio": 90
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "ult": {
+      "range": 80000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "nightmare_ult",
+        "speed": 6800,
+        "range": 80000,
+        "damage": 150,
+        "attack_ratio": 140,
+        "teleport_offset": 2000
+      }
+    }
+  },
+  "strongman": {
+    "skill": {
+      "range": 30000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "strongman_skill1",
+        "speed": 4000,
+        "damage": 60,
+        "attack_ratio": 90,
+        "stun": 30,
+        "move_distance": 20000
+      }
+    },
+    "skill2": {
+      "range": 42000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "WithSelf",
+            "effects": [
+              {
+                "type": "ViewEffect",
+                "name": "strongman_skill2_swing",
+                "radius": 42000,
+                "time": 24
+              }
+            ]
+          },
+          {
+            "type": "RangeEffect",
+            "shape": {
+              "Circle": {
+                "radius": 42000
+              }
+            },
+            "target": "EnemyWithoutTower",
+            "apply_type": "AroundCaster",
+            "effects": [
+              {
+                "type": "Attack",
+                "damage": 70,
+                "attack_ratio": 100
+              },
+              {
+                "type": "ViewEffect",
+                "name": "strongman_skill2_hit"
+              },
+              {
+                "type": "TargetSfx",
+                "name": "strongman_skill2_hit"
+              },
+              {
+                "type": "Knockback",
+                "speed": 2800,
+                "tick": 12
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "ult": {
+      "range": 90000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "strongman_ult",
+        "speed": 6000,
+        "damage": 110,
+        "attack_ratio": 90,
+        "stun": 90,
+        "ally_range": 50000,
+        "shield": 300,
+        "shield_duration": 240,
+        "radius": 30000,
+        "self_stun": 60
+      }
+    }
+  },
+  "astrologer": {
+    "skill": {
+      "range": 85000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "astrologer_skill1",
+        "damage": 80,
+        "attack_ratio": 65,
+        "radius": 34000,
+        "delay": 30,
+        "slow_ratio": 30,
+        "slow_duration": 90
+      }
+    },
+    "skill2": {
+      "range": 80000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "astrologer_skill2",
+        "damage": 70,
+        "attack_ratio": 75,
+        "line_width": 32000,
+        "mark_duration": 300
+      }
+    },
+    "ult": {
+      "range": 90000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "astrologer_ult",
+        "damage": 110,
+        "attack_ratio": 70,
+        "radius": 60000,
+        "delay": 90,
+        "mark_duration": 180,
+        "amplify": 10,
+        "max_amplify_targets": 4,
+        "mark_bonus_attack_ratio": 25
+      }
+    }
+  },
+  "crossbowman": {
+    "skill": {
+      "range": 150000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "crossbowman_skill1_cast"
+          },
+          {
+            "type": "Native",
+            "effect_ref": "crossbowman_skill1",
+            "speed": 6000,
+            "range": 150000,
+            "y_offset": 1200,
+            "projectile_radius": 3000,
+            "attack_ratio": 200,
+            "mark_bonus_attack_ratio": 60
+          }
+        ]
+      }
+    },
+    "skill2": {
+      "range": 150000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "crossbowman_skill2_cast"
+          },
+          {
+            "type": "Native",
+            "effect_ref": "crossbowman_skill2",
+            "speed": 6000,
+            "range": 150000,
+            "y_offset": 1200,
+            "projectile_radius": 6000,
+            "attack_ratio": 130,
+            "mark_bonus_attack_ratio": 50,
+            "backstep_speed": 3000,
+            "backstep_tick": 20
+          }
+        ]
+      }
+    },
+    "ult": {
+      "range": 150000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "crossbowman_ult_cast"
+          },
+          {
+            "type": "Native",
+            "effect_ref": "crossbowman_ult",
+            "speed": 6000,
+            "range": 150000,
+            "y_offset": 1200,
+            "projectile_radius": 8000,
+            "attack_ratio": 80,
+            "buff_duration": 300,
+            "cooldown_reduce": 90
+          }
+        ]
+      }
+    }
+  },
+  "harpooner": {
+    "skill": {
+      "range": 90000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "harpooner_skill1",
+        "speed": 7000,
+        "y_offset": 0,
+        "projectile_radius": 11000,
+        "damage": 120,
+        "attack_ratio": 110,
+        "target_pull_speed": 5000,
+        "move_distance": 30000
+      }
+    },
+    "skill2": {
+      "range": 110000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "harpooner_skill2",
+        "speed": 7500,
+        "y_offset": 0,
+        "projectile_radius": 11000,
+        "damage": 150,
+        "attack_ratio": 140,
+        "missing_hp_ratio": 12
+      }
+    },
+    "ult": {
+      "range": 130000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "harpooner_ult",
+        "speed": 7000,
+        "y_offset": 0,
+        "projectile_radius": 9000,
+        "damage": 150,
+        "attack_ratio": 110,
+        "link_duration": 240,
+        "link_range": 50000,
+        "slow_ratio": 30,
+        "pull_speed": 5000,
+        "projectile_count": 5,
+        "fan_angle": 36,
+        "shot_interval": 5,
+        "tension_slow_ratio": 60
+      }
+    }
+  },
+  "alchemist": {
+    "skill": {
+      "range": 70000,
+      "effect": {
+        "type": "ParabolicProjectile",
+        "name": "alchemist_skill1_projectile",
+        "travel_time": 28,
+        "range": 70000,
+        "shape": {
+          "Circle": {
+            "radius": 9000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [],
+        "end_effects": [
+          {
+            "type": "TargetSfx",
+            "name": "alchemist_skill_hit"
+          },
+          {
+            "type": "RangePeriodProjectile",
+            "name": "alchemist_skill1_cloud",
+            "shape": {
+              "Circle": {
+                "radius": 32000
+              }
+            },
+            "tick": 180,
+            "period": 30,
+            "first_delay": 0,
+            "applied_target": "EnemyWithoutTower",
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "AddCasted",
+                  "duration": 180,
+                  "period": 30,
+                  "casted_type": "Poison",
+                  "effects": [
+                    {
+                      "type": "ApAttack",
+                      "damage": 8,
+                      "attack_ratio": 10
+                    }
+                  ]
+                },
+                "casting_type": "Targeting"
+              },
+              {
+                "effect": {
+                  "type": "AddBuff",
+                  "buff_state": {
+                    "name": "alchemist_skill1_heal_reduce",
+                    "duration": {
+                      "Time": {
+                        "tick": 60
+                      }
+                    },
+                    "heal_reduce": 50
+                  }
+                },
+                "casting_type": "Targeting"
+              }
+            ],
+            "end_effects": []
+          }
+        ]
+      }
+    },
+    "skill2": {
+      "range": 70000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "CasterViewEffect",
+            "name": "alchemist_skill2_caster"
+          },
+          {
+            "type": "TargetSfx",
+            "name": "alchemist_skill2_hit"
+          },
+          {
+            "type": "ViewEffect",
+            "name": "alchemist_skill2_target_back"
+          },
+          {
+            "type": "ViewEffect",
+            "name": "alchemist_skill2_target"
+          },
+          {
+            "type": "ApAttack",
+            "damage": 90,
+            "attack_ratio": 55
+          },
+          {
+            "type": "AddBuff",
+            "buff_state": {
+              "name": "alchemist_skill2_debuff",
+              "duration": {
+                "Time": {
+                  "tick": 150
+                }
+              },
+              "heal_reduce": 100,
+              "move_speed_mult": -35
+            }
+          }
+        ]
+      }
+    },
+    "ult": {
+      "range": 92000,
+      "effect": {
+        "type": "LinearProjectile",
+        "penetrate": false,
+        "speed": 6500,
+        "range": 92000,
+        "name": "alchemist_ult_projectile",
+        "y_offset": 1500,
+        "shape": {
+          "Circle": {
+            "radius": 12000
+          }
+        },
+        "applied_target": "EnemyChampion",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "TargetSfx",
+              "name": "alchemist_ult_hit"
+            },
+            "casting_type": "Targeting"
+          },
+          {
+            "effect": {
+              "type": "ShrinkingBarrier",
+              "name": "alchemist_ult_cloud",
+              "start_radius": 12000,
+              "end_radius": 50000,
+              "shrink_per_tick": 220,
+              "tick": 240,
+              "edge_thickness": 3000,
+              "anchor_on_target_lost": true,
+              "filled": true,
+              "applied_target": "EnemyWithoutTower",
+              "applied_effects": [
+                {
+                  "effect": {
+                    "type": "AddCasted",
+                    "duration": 240,
+                    "period": 30,
+                    "casted_type": "Poison",
+                    "effects": [
+                      {
+                        "type": "ApAttack",
+                        "damage": 20,
+                        "attack_ratio": 20
+                      }
+                    ]
+                  },
+                  "casting_type": "Targeting"
+                },
+                {
+                  "effect": {
+                    "type": "AddStatScaledBuff",
+                    "buff_state": {
+                      "name": "alchemist_ult_corrosion",
+                      "duration": {
+                        "Time": {
+                          "tick": 180
+                        }
+                      },
+                      "defence": -8,
+                      "magic_resistance": -8
+                    },
+                    "scale": {
+                      "magic_power_to_defence": -5,
+                      "magic_power_to_magic_resistance": -5
+                    }
+                  },
+                  "casting_type": "Targeting"
+                }
+              ]
+            },
+            "casting_type": "Targeting"
+          }
+        ],
+        "end_effects": []
+      }
+    }
+  },
+  "sand_mage": {
+    "skill": {
+      "range": 70000,
+      "effect": {
+        "type": "RangeProjectile",
+        "name": "sand_mage_skill",
+        "delay": 20,
+        "apply": 12,
+        "shape": {
+          "Circle": {
+            "radius": 26000
+          }
+        },
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "ApAttack",
+              "damage": 100,
+              "attack_ratio": 80,
+              "can_crit": true
+            },
+            "casting_type": "Targeting"
+          }
+        ]
+      }
+    },
+    "skill2": {
+      "range": 0,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "Heal",
+            "amount": 80,
+            "attack_ratio": 0,
+            "ap_ratio": 45,
+            "heal_type": "Caster"
+          },
+          {
+            "type": "AddStatScaledBuff",
+            "target": "Caster",
+            "buff_state": {
+              "name": "sand_mage_skill2",
+              "duration": {
+                "Time": {
+                  "tick": 180
+                }
+              },
+              "move_speed_mult": 20
+            },
+            "scale": {
+              "magic_power_to_move_speed_mult": 6
+            }
+          }
+        ]
+      }
+    },
+    "ult": {
+      "range": 90000,
+      "effect": {
+        "type": "RangePeriodProjectile",
+        "name": "sand_mage_ult",
+        "shape": {
+          "Circle": {
+            "radius": 42000
+          }
+        },
+        "tick": 150,
+        "period": 30,
+        "first_delay": 0,
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "ApAttack",
+              "damage": 28,
+              "attack_ratio": 22
+            },
+            "casting_type": "Targeting"
+          },
+          {
+            "effect": {
+              "type": "Pull",
+              "speed": 1800,
+              "tick": 12
+            },
+            "casting_type": "Targeting"
+          }
+        ],
+        "end_effects": []
+      }
+    }
+  },
+  "spellbreaker": {
+    "skill": {
+      "range": 38000,
+      "effect": {
+        "type": "LineRangeProjectile",
+        "width": 28000,
+        "length": 38000,
+        "delay": 8,
+        "apply": 3,
+        "name": "spellbreaker_skill1",
+        "applied_target": "EnemyWithoutTower",
+        "applied_effects": [
+          {
+            "effect": {
+              "type": "Attack",
+              "damage": 72,
+              "attack_ratio": 100
+            },
+            "casting_type": "Targeting"
+          },
+          {
+            "effect": {
+              "type": "AddBuff",
+              "buff_state": {
+                "name": "spellbreaker_skill1_slow",
+                "duration": {
+                  "Time": {
+                    "tick": 90
+                  }
+                },
+                "move_speed_mult": -30
+              }
+            },
+            "casting_type": "Targeting"
+          },
+          {
+            "effect": {
+              "type": "ViewEffect",
+              "name": "spellbreaker_skill1_hit"
+            },
+            "casting_type": "Targeting"
+          },
+          {
+            "effect": {
+              "type": "TargetSfx",
+              "name": "spellbreaker_skill1_hit"
+            },
+            "casting_type": "Targeting"
+          }
+        ]
+      }
+    },
+    "skill2": {
+      "range": 48000,
+      "effect": {
+        "type": "Combine",
+        "effects": [
+          {
+            "type": "ViewEffect",
+            "name": "spellbreaker_skill2_dash",
+            "range": 48000,
+            "time": 8
+          },
+          {
+            "type": "Rush",
+            "speed": 6000,
+            "range": 15000,
+            "casting_target": "EnemyWithoutTower",
+            "penetrate": false,
+            "applied_effects": [
+              {
+                "effect": {
+                  "type": "Attack",
+                  "damage": 82,
+                  "attack_ratio": 105
+                },
+                "casting_type": "Targeting"
+              },
+              {
+                "effect": {
+                  "type": "ViewEffect",
+                  "name": "spellbreaker_skill2_hit"
+                },
+                "casting_type": "Targeting"
+              },
+              {
+                "effect": {
+                  "type": "TargetSfx",
+                  "name": "spellbreaker_skill2_hit"
+                },
+                "casting_type": "Targeting"
+              }
+            ]
+          },
+          {
+            "type": "Delayed",
+            "tick": 8,
+            "effects": [
+              {
+                "type": "AddCasterBuff",
+                "buff_state": {
+                  "name": "spellbreaker_skill2_guard",
+                  "duration": {
+                    "Time": {
+                      "tick": 150
+                    }
+                  },
+                  "damaged_reduce": 25
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "ult": {
+      "range": 60000,
+      "effect": {
+        "type": "Native",
+        "effect_ref": "spellbreaker_ult",
+        "damage": 140,
+        "bonus_damage": 120,
+        "attack_ratio": 100,
+        "stun": 60,
+        "radius": 60000,
+        "block_duration": 180
+      }
+    }
+  }
+}

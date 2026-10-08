@@ -1,0 +1,285 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Athlete Cursor Set</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: Endfield "dark console" spec page. Cursor sheet (6 cursors, enlarged with hotspot + true size),
+   click markers, then a 1:1 playground on the vanilla battlefield where the real cursors run.
+   Tokens follow endfield_ui_lab/tokens.css 2.0. */
+:root{
+  color-scheme:dark;
+  --signal-yellow:#fdee00; --signal-lime:#b3d543; --signal-cyan:#53b8e4; --signal-warning:#ff642e;
+  --base:#1c1a18; --row:#3a3837; --edge:#4b4a49; --track:#5b5b5b; --control:#eeecec;
+  --t1:#ffffff; --t2:#cbc9c7; --t3:#989694; --on-control:#393939;
+  --r:2px; --cap:999px; --rail:6px;
+  --f-display:"Archivo","Manrope",system-ui,sans-serif;
+  --f-ui:"Manrope",system-ui,"Segoe UI",sans-serif;
+  --f-tech:"Iosevka","IBM Plex Mono",ui-monospace,monospace;
+  --d-hover:100ms; --ease-tonal:cubic-bezier(.4,.1,.5,1); --ease-move:cubic-bezier(.15,.8,.3,1);
+}
+*{box-sizing:border-box}
+body{background:var(--base);color:var(--t1);font:15px/1.55 var(--f-ui)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:30px 80px;display:grid;gap:22px}
+.wrap>*{min-width:0}
+.title{display:flex;gap:14px;align-items:stretch}
+.title .rail{width:var(--rail);background:var(--signal-yellow);flex:none}
+.tele{font:500 12px/1.2 var(--f-tech);letter-spacing:.09em;text-transform:uppercase;color:var(--t3)}
+h1{font:600 34px/1.05 var(--f-display);font-stretch:125%;margin:6px 0 10px}
+.intro{margin:0;color:var(--t2);max-width:74ch}
+.sec-title{display:flex;align-items:center;gap:12px;margin:14px 0 0}
+.sec-title::before{content:"";width:var(--rail);height:24px;background:var(--signal-yellow)}
+.sec-title h2{font:600 22px/1.2 var(--f-ui);margin:0}
+
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:14px}
+.card{background:#24221f;border-top:1px solid var(--edge);border-radius:var(--r);display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+.prev{position:relative;height:170px;display:grid;grid-template-columns:1fr 64px;align-items:center;background:url(game.webp) -820px -330px/1920px 1080px no-repeat}
+.prev::before{content:"";position:absolute;inset:0;background:rgba(28,26,24,.35)}
+.big{position:relative;justify-self:center;width:128px;height:128px;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:4px 4px}
+.big svg{width:128px;height:128px;display:block;image-rendering:pixelated}
+.hs{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--signal-cyan);border-radius:50%}
+.hs::after{content:"";position:absolute;left:50%;top:50%;width:2px;height:2px;margin:-1px;background:var(--signal-cyan)}
+.true{position:relative;display:grid;place-items:center;height:100%;border-left:1px solid rgba(255,255,255,.12);background:rgba(28,26,24,.55)}
+.true svg{width:32px;height:32px}
+.true .tele{position:absolute;bottom:8px;font-size:10px}
+.meta{padding:12px 14px 14px;display:grid;gap:6px}
+.meta h3{margin:0;font:700 16px/1.25 var(--f-ui)}
+.meta p{margin:0;color:var(--t2);font-size:13.5px}
+.specs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.spec{font:500 11px/1 var(--f-tech);letter-spacing:.06em;padding:5px 7px;border-radius:var(--cap);background:var(--row);color:var(--t2)}
+.copy{justify-self:start;margin-top:6px;font:700 13px/1 var(--f-ui);padding:7px 12px;border:0;border-radius:var(--cap);background:var(--control);color:var(--on-control);cursor:pointer;transition:background-color 150ms var(--ease-tonal)}
+.copy:hover{background:#989898;transition-duration:83ms}
+button:focus-visible{outline:2px solid var(--t1);outline-offset:2px}
+
+.markers{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.mk{background:#24221f;border-top:1px solid var(--edge);border-radius:var(--r);padding:14px;display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center}
+.mk .box{position:relative;width:96px;height:96px;background:url(game.webp) -700px -640px/1920px 1080px no-repeat}
+.mk h3{margin:0 0 4px;font:700 15px/1.3 var(--f-ui)}
+.mk p{margin:0;color:var(--t2);font-size:13.5px}
+.marker{position:absolute;width:48px;height:48px;margin:-24px 0 0 -24px;pointer-events:none}
+.marker svg{width:100%;height:100%;overflow:visible}
+.marker .c{transform-origin:24px 24px;animation:mkIn 167ms var(--ease-move) both}
+.marker{animation:mkOut 200ms var(--ease-tonal) 367ms both}
+@keyframes mkIn{from{transform:scale(1.9)}to{transform:scale(1)}}
+@keyframes mkOut{to{opacity:0}}
+.mk .box .marker{left:48px;top:48px;animation:none}
+.mk .box .marker .c{animation:mkLoop 1.4s var(--ease-move) infinite}
+@keyframes mkLoop{0%{transform:scale(1.9);opacity:0}8%{opacity:1}12%{transform:scale(1)}40%{opacity:1}55%,100%{transform:scale(1);opacity:0}}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;padding:12px 14px;background:var(--row);border-top:1px solid var(--edge);border-radius:var(--r)}
+.grp{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--track);border-radius:var(--cap);box-shadow:0 0 0 2px color-mix(in srgb,var(--row) 55%,#000)}
+.seg button{font:600 14px/1 var(--f-ui);color:var(--t1);background:transparent;border:0;border-radius:var(--cap);padding:9px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.seg button:hover{background:color-mix(in srgb,var(--track) 78%,#fff)}
+.seg button[aria-pressed="true"]{background:var(--control);color:var(--on-control);box-shadow:0 0 2px 2.5px rgb(0 0 0 / 35%)}
+.kc{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--r);background:#393939;color:var(--control);font:800 12px/1 var(--f-ui)}
+.seg button[aria-pressed="true"] .kc{background:#393939}
+.tg{display:inline-flex;align-items:center;gap:8px;font:600 14px/1 var(--f-ui);color:var(--t1);background:transparent;border:1px solid var(--edge);border-radius:var(--cap);padding:8px 14px 8px 8px;cursor:pointer}
+.tg .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--t3)}
+.tg[aria-pressed="true"]{border-color:var(--signal-yellow)}
+.tg[aria-pressed="true"] .dot{background:var(--signal-yellow);border-color:var(--signal-yellow)}
+.status{margin-left:auto;font:500 12px/1.3 var(--f-tech);letter-spacing:.06em;color:var(--t2)}
+.status b{color:var(--signal-yellow);font-weight:500}
+
+.play{position:relative;overflow:auto;border-radius:var(--r);box-shadow:0 0 0 1px var(--edge);max-height:620px}
+.field{position:relative;width:1920px;height:600px;background:url(game.webp) 0 -40px/1920px 1080px no-repeat;user-select:none}
+.mask{position:absolute;backdrop-filter:blur(12px) brightness(.8);-webkit-backdrop-filter:blur(12px) brightness(.8);border:1px dashed rgba(255,255,255,.18)}
+.hit{position:absolute}
+.show-hits .hit{outline:2px dashed var(--t1);outline-offset:-2px}
+.show-hits .hit::after{content:attr(data-label);position:absolute;left:0;top:-20px;font:500 11px/1 var(--f-tech);letter-spacing:.06em;color:var(--t1);background:rgba(0,0,0,.7);padding:3px 5px;white-space:nowrap}
+.hint{font-size:13px;color:var(--t3);margin:-10px 0 0}
+
+.rules{width:100%;border-collapse:collapse;font-size:14px;min-width:680px}
+.rules th{text-align:left;font:500 11px/1 var(--f-tech);letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 12px;font-weight:500;border-bottom:1px solid var(--edge)}
+.rules td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07);color:var(--t2);vertical-align:middle}
+.rules td:first-child{color:var(--t1);font-weight:600}
+.rules td svg{width:32px;height:32px;vertical-align:middle}
+.tbl-wrap{overflow-x:auto}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:560px){h1{font-size:26px}}
+</style>
+
+<div class="wrap">
+  <header class="title">
+    <span class="rail"></span>
+    <div>
+      <div class="tele">// Mod cursor set · 32 × 32 at 1080p · 64 × 64 at 4K</div>
+      <h1>ATHLETE CURSOR SET</h1>
+      <p class="intro">Six cursors built from three ideas. The light arrow is for moving and clicking. Over an enemy the arrow becomes a sword, and orange always means an attack will happen. The yellow badge means champion-only targeting is on and minions and monsters are ignored. Every cursor has a 1.5 px warm-black outline so it holds up on both the pale stone paths and the dark jungle.</p>
+    </div>
+  </header>
+
+  <div class="sec-title"><h2>The set</h2></div>
+  <section class="sheet" id="sheet"></section>
+
+  <div class="sec-title"><h2>When each one shows</h2></div>
+  <div class="tbl-wrap">
+    <table class="rules">
+      <thead><tr><th>Hovering</th><th>Normal</th><th>A held (attack-move)</th><th>Champion only</th><th>A + champion only</th></tr></thead>
+      <tbody id="rules"></tbody>
+    </table>
+  </div>
+
+  <div class="sec-title"><h2>Click markers</h2></div>
+  <section class="markers" id="markers"></section>
+
+  <div class="sec-title"><h2>Try it at 1:1</h2></div>
+  <div class="toolbar">
+    <div class="grp">
+      <span class="tele" id="lb-mode">Mode</span>
+      <div class="seg" role="group" aria-labelledby="lb-mode">
+        <button data-mode="normal" aria-pressed="true">Normal</button>
+        <button data-mode="attack" aria-pressed="false"><span class="kc">A</span>Attack-move</button>
+      </div>
+      <button class="tg" id="t-champ" aria-pressed="false"><span class="dot"></span>Champion only <span class="kc">`</span></button>
+      <button class="tg" id="t-hits" aria-pressed="false"><span class="dot"></span>Show targets</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+  <div class="play" id="play"><div class="field" id="field" tabindex="0" aria-label="Battlefield playground"></div></div>
+  <p class="hint">Click the field first, then hold A for attack-move and hold ` for champion only, or use the buttons. Left-click and right-click place markers. Shown at true 1080p scale; scroll to see the whole crop.</p>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const C={light:'#eeecec',ink:'#1c1a18',warn:'#ff642e',yellow:'#fdee00',lime:'#b3d543'};
+
+/* ---------- Cursor geometry (32 × 32) ---------- */
+const ARROW='M3 2L3 25L8.6 19.6L12.6 28.6L16.8 26.8L12.8 17.9L20.6 17.9Z';
+function arrow(fill,rail){
+  return `<path d="${ARROW}" transform="translate(1 1.5)" fill="${C.ink}" opacity=".45"/>`+
+    `<path d="${ARROW}" fill="${fill}" stroke="${C.ink}" stroke-width="1.5" stroke-linejoin="miter"/>`+
+    `<path d="M4.6 6.2V18.6L6 17.3V7.6Z" fill="${rail}"/>`;
+}
+function brackets(o,i,col){ /* o = outer edge offset, i = arm length */
+  const a=o,b=32-o,s=i;
+  const d=`M${a} ${a+s}V${a}H${a+s}M${b-s} ${a}H${b}V${a+s}M${b} ${b-s}V${b}H${b-s}M${a+s} ${b}H${a}V${b-s}`;
+  return `<path d="${d}" fill="none" stroke="${C.ink}" stroke-width="4.5" stroke-linecap="square"/><path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="square"/>`;
+}
+function sword(){ /* blade tip = hotspot (2,2); scaled so the champion badge fits the same corner */
+  const g=`<path d="M2 2L7.8 4.2L19.8 16.2L16.2 19.8L4.2 7.8Z" fill="${C.warn}"/>`+
+    `<path d="M4.6 4.6L17.4 17.4" stroke="${C.light}" stroke-width="1.3"/>`+
+    `<path d="M19.4 21.6L21.6 19.4L26.6 24.4L24.4 26.6Z" fill="${C.ink}"/>`+
+    `<path d="M22.1 13.7L24.3 15.9L15.9 24.3L13.7 22.1Z" fill="${C.light}"/>`+
+    `<path d="M27.5 25L30 27.5L27.5 30L25 27.5Z" fill="${C.warn}"/>`;
+  const outline=`<g fill="none" stroke="${C.ink}" stroke-width="1.5" stroke-linejoin="miter"><path d="M2 2L7.8 4.2L19.8 16.2L16.2 19.8L4.2 7.8Z"/><path d="M19.4 21.6L21.6 19.4L26.6 24.4L24.4 26.6Z"/><path d="M22.1 13.7L24.3 15.9L15.9 24.3L13.7 22.1Z"/><path d="M27.5 25L30 27.5L27.5 30L25 27.5Z"/></g>`;
+  const t='translate(2 2) scale(.84) translate(-2 -2)';
+  return `<g transform="translate(1 1.5)" opacity=".45"><g transform="${t}"><path d="M2 2L7.8 4.2L19.8 16.2L16.2 19.8L4.2 7.8ZM22.1 13.7L24.3 15.9L15.9 24.3L13.7 22.1ZM19.4 21.6L21.6 19.4L26.6 24.4L24.4 26.6ZM27.5 25L30 27.5L27.5 30L25 27.5Z" fill="${C.ink}"/></g></g><g transform="${t}">${outline}${g}</g>`;
+}
+function reticle(locked){
+  if(!locked) return brackets(5,6,C.warn)+`<rect x="14.5" y="14.5" width="3" height="3" fill="${C.warn}" stroke="${C.ink}" stroke-width="1.2"/>`;
+  return brackets(9,4.5,C.warn)+`<path d="M16 11.5L20.5 16L16 20.5L11.5 16Z" fill="${C.warn}" stroke="${C.ink}" stroke-width="1.4"/>`;
+}
+function badge(){
+  return `<rect x="20.5" y="20.5" width="10" height="10" fill="${C.yellow}" stroke="${C.ink}" stroke-width="1.5"/>`+
+    `<circle cx="25.5" cy="24" r="1.7" fill="${C.ink}"/><path d="M22.5 29.3C22.8 27 23.9 26.2 25.5 26.2S28.2 27 28.5 29.3Z" fill="${C.ink}"/>`;
+}
+const CUR={
+  normal:{name:'Normal',hot:[3,2],when:'Default. Moving, clicking the HUD, hovering ground or allies.',svg:()=>arrow(C.light,C.yellow)},
+  hostile:{name:'Normal · over enemy',hot:[2,2],when:'Hovering anything a left-click would attack. The arrow becomes an orange sword: new silhouette, new colour, same tip position, so the click point never moves.',svg:()=>sword()},
+  amove:{name:'Attack-move',hot:[16,16],when:'A is held. Click ground and you walk there, attacking the nearest enemy on the way.',svg:()=>reticle(false)},
+  alock:{name:'Attack-move · on target',hot:[16,16],when:'A is held over a valid target. The brackets close in and the centre fills, so you know the click will hit that unit.',svg:()=>reticle(true)},
+  champ:{name:'Champion only',hot:[3,2],when:'Champion-only is on. The badge stays in the corner the whole time, so you always know minions are being ignored.',svg:()=>arrow(C.light,C.yellow)+badge()},
+  champHostile:{name:'Champion only · over champion',hot:[2,2],when:'Champion-only is on and you are over an enemy champion: the sword, with the badge in the same corner. Minions and monsters keep the plain badged arrow.',svg:()=>sword()+badge()}
+};
+const svg=(k,w)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${w}" viewBox="0 0 32 32">${CUR[k].svg()}</svg>`;
+const combo=(k,w)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${w}" viewBox="0 0 32 32">${k}</svg>`;
+const ACHAMP=()=>reticle(false)+badge(), ACHAMPLOCK=()=>reticle(true)+badge();
+
+/* Sheet */
+$('#sheet').innerHTML=Object.entries(CUR).map(([k,c])=>`<article class="card">
+  <div class="prev"><div class="big">${svg(k,128)}<span class="hs" style="left:${c.hot[0]*4}px;top:${c.hot[1]*4}px"></span></div><div class="true">${svg(k,32)}<span class="tele">1:1</span></div></div>
+  <div class="meta"><h3>${c.name}</h3><p>${c.when}</p>
+  <div class="specs"><span class="spec">32 × 32</span><span class="spec">HOTSPOT ${c.hot[0]}, ${c.hot[1]}</span><span class="spec">4K 64 × 64</span></div>
+  <button class="copy" data-k="${k}">Copy SVG</button></div></article>`).join('');
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+  const t=svg(b.dataset.k,32);
+  const done=()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy SVG',1200);};
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(done,()=>{b.textContent='Copy blocked';});
+}));
+
+/* Rules table */
+const cell=s=>`<td>${s}</td>`;
+$('#rules').innerHTML=[
+  ['Ground or ally',svg('normal',32),svg('amove',32),svg('champ',32),combo(ACHAMP(),32)],
+  ['Enemy champion',svg('hostile',32),svg('alock',32),svg('champHostile',32),combo(ACHAMPLOCK(),32)],
+  ['Enemy minion or monster',svg('hostile',32),svg('alock',32),svg('champ',32)+' <span class="tele">ignored</span>',combo(ACHAMP(),32)+' <span class="tele">ignored</span>']
+].map(r=>`<tr>${r.map(cell).join('')}</tr>`).join('');
+
+/* Click markers */
+function markerSVG(col,diamond){
+  return `<svg viewBox="0 0 48 48"><g class="c">
+    <path d="M8 18V8H18M30 8H40V18M40 30V40H30M18 40H8V30" fill="none" stroke="${C.ink}" stroke-width="5"/>
+    <path d="M8 18V8H18M30 8H40V18M40 30V40H30M18 40H8V30" fill="none" stroke="${col}" stroke-width="2.5"/>
+    ${diamond?`<path d="M24 18L30 24L24 30L18 24Z" fill="${col}" stroke="${C.ink}" stroke-width="1.5"/>`:`<rect x="22" y="22" width="4" height="4" fill="${col}" stroke="${C.ink}" stroke-width="1"/>`}</g></svg>`;
+}
+$('#markers').innerHTML=[
+  ['Move · right-click',C.lime,false,'Lime, the positive signal colour. Corners snap in over 167 ms and fade after.'],
+  ['Attack-move · A + left-click',C.warn,true,'Same shape in orange with a filled diamond, so a misclick between the two is obvious.']
+].map(m=>`<div class="mk"><div class="box"><div class="marker">${markerSVG(m[1],m[2])}</div></div><div><h3>${m[0]}</h3><p>${m[3]}</p></div></div>`).join('');
+
+/* ---------- Playground ---------- */
+const url=s=>`url("data:image/svg+xml,${encodeURIComponent(s)}")`;
+const CSS={};
+Object.keys(CUR).forEach(k=>{CSS[k]=`${url(svg(k,32))} ${CUR[k].hot[0]} ${CUR[k].hot[1]}, auto`;});
+CSS.achamp=`${url(combo(ACHAMP(),32))} 16 16, crosshair`;
+CSS.achampLock=`${url(combo(ACHAMPLOCK(),32))} 16 16, crosshair`;
+CSS.amove=CSS.amove.replace(', auto',', crosshair'); CSS.alock=CSS.alock.replace(', auto',', crosshair');
+
+const OY=40; /* field shows screenshot y 40..640 */
+const MASKS=[[14,58,296,46],[8,380,306,316],[1610,380,302,320],[1712,124,204,56]];
+const HITS=[
+  ['champ','Cody Sun',912,318,72,92],['champ','Yutapon',1122,278,70,104],['champ','Toasty',1272,322,62,92],
+  ['minion','Minion',552,60,36,52],['minion','Minion',612,44,34,50],['monster','Elder Treant',730,290,200,240],['monster','Shroom',1372,215,86,90],
+  ['ally','MaHa',800,560,60,60],['ally','xiaohan',850,575,60,60]
+];
+const field=$('#field');
+field.innerHTML=MASKS.map(m=>`<div class="mask" style="left:${m[0]}px;top:${m[1]-OY}px;width:${m[2]}px;height:${m[3]}px"></div>`).join('')+
+  HITS.map(h=>`<div class="hit" data-kind="${h[0]}" data-label="${h[1]} · ${h[0]}" style="left:${h[2]}px;top:${h[3]-OY}px;width:${h[4]}px;height:${h[5]}px"></div>`).join('');
+
+const P={attack:false,champ:false,kind:null};
+function pick(){
+  const k=P.kind, enemy=k==='champ'||k==='minion'||k==='monster', valid=P.champ?k==='champ':enemy;
+  if(P.attack&&P.champ) return valid?'achampLock':'achamp';
+  if(P.attack) return valid?'alock':'amove';
+  if(P.champ) return valid?'champHostile':'champ';
+  return enemy?'hostile':'normal';
+}
+const NAMES={normal:'Normal',hostile:'Normal · over enemy',amove:'Attack-move',alock:'Attack-move · on target',champ:'Champion only',champHostile:'Champion only · over champion',achamp:'Attack-move + champion only',achampLock:'Attack-move + champion only · on target'};
+function apply(){
+  const c=pick(); field.style.cursor=CSS[c];
+  $('#status').innerHTML=`CURSOR <b>${NAMES[c]}</b>${P.kind?` · over ${P.kind}`:''}`;
+  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.mode==='attack')===P.attack)));
+  $('#t-champ').setAttribute('aria-pressed',String(P.champ));
+}
+field.addEventListener('mousemove',e=>{const h=e.target.closest('.hit');const k=h?h.dataset.kind:null;if(k!==P.kind){P.kind=k;apply();}});
+field.addEventListener('mouseleave',()=>{P.kind=null;apply();});
+function drop(e,col,diamond){
+  const r=field.getBoundingClientRect(),m=document.createElement('div');
+  m.className='marker';m.innerHTML=markerSVG(col,diamond);m.style.left=(e.clientX-r.left)+'px';m.style.top=(e.clientY-r.top)+'px';
+  field.appendChild(m);setTimeout(()=>m.remove(),700);
+}
+field.addEventListener('mousedown',e=>{
+  field.focus({preventScroll:true});
+  if(e.button===2){drop(e,C.lime,false);}
+  else if(e.button===0&&P.attack){drop(e,C.warn,true);}
+});
+field.addEventListener('contextmenu',e=>e.preventDefault());
+field.addEventListener('keydown',e=>{
+  if(e.key==='a'||e.key==='A'){if(!P.attack){P.attack=true;apply();}e.preventDefault();}
+  if(e.key==='`'){if(!P.champ){P.champ=true;apply();}e.preventDefault();}
+});
+field.addEventListener('keyup',e=>{
+  if(e.key==='a'||e.key==='A'){P.attack=false;apply();}
+  if(e.key==='`'){P.champ=false;apply();}
+});
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{P.attack=b.dataset.mode==='attack';apply();}));
+$('#t-champ').addEventListener('click',()=>{P.champ=!P.champ;apply();});
+$('#t-hits').addEventListener('click',e=>{const on=$('#play').classList.toggle('show-hits');e.currentTarget.setAttribute('aria-pressed',String(on));});
+apply();
+const play=$('#play'); play.scrollLeft=Math.max(0,(1100-play.clientWidth/2));
+})();
+</script>
+
+</body></html>

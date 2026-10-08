@@ -1,5 +1,5 @@
 //! Ten player status cards from the bound live worker, never replay candidates.
-use crate::{camera::Rect, own_selection::MatchKey, Logger};
+use crate::{own_selection::MatchKey, Logger};
 use mod_api_stable::StableClient;
 use std::{
     collections::HashMap,
@@ -8,9 +8,6 @@ use std::{
 };
 
 const PATH: &str = "ingame.lt_team_status";
-const WIDTH: usize = 1080;
-const GROUP: usize = 224;
-const STEP: usize = 46;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Player {
@@ -20,6 +17,13 @@ pub struct Player {
     pub champion: String,
     pub alive: Option<bool>,
     pub respawn: usize,
+    pub level: usize,
+    pub gold: usize,
+    pub kda: (usize, usize, usize),
+    pub cs: usize,
+    pub items: Vec<String>,
+    pub build: Option<Vec<String>>,
+    pub fresh: bool,
 }
 #[derive(Default)]
 struct State {
@@ -65,6 +69,9 @@ impl TeamStatus {
                 if p.champion.is_empty() {
                     p.champion.clone_from(&old.champion);
                 }
+                if p.build.is_none() {
+                    p.build.clone_from(&old.build);
+                }
                 if old.alive != p.alive {
                     log.write(&format!("TEAM STATUS key={key:?} player={} side={} lane={} alive={:?} respawn_ticks={}", p.id, p.side, p.lane, p.alive, p.respawn));
                 }
@@ -92,6 +99,7 @@ impl TeamStatus {
                     p.alive = None;
                 }
                 p.respawn = 0;
+                p.fresh = false;
             }
         }
         players
@@ -111,163 +119,330 @@ fn caption(p: &Player) -> String {
         None => "?".into(),
     }
 }
-fn template() -> String {
-    let mut source = format!("lt_team_status:empty {{ width: {WIDTH}px; height: 40px; anchor_x: 0.5; pivot_x: 0.5; y: 64px; ignore_event: true;\n");
-    for side in 0..2 {
-        let x = if side == 0 { 0 } else { WIDTH - GROUP };
-        source.push_str(&format!(
-            "#side{side}:empty {{ x: {x}px; width: {GROUP}px; height: 40px; ignore_event: true;\n"
-        ));
-        for lane in 0..5 {
-            source.push_str(&format!("#lane{lane}:color {{ x: {}px; width: 40px; height: 40px; z: 1001; color: #555555ff; ignore_event: true; rounding: Uniform {{ rounding: 5; }} #background:color {{ x: 2px; y: 2px; width: 36px; height: 36px; z: 1002; color: #141414ff; ignore_event: true; }} #portrait:image {{ x: 3px; y: 3px; width: 34px; height: 34px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #shade:color {{ x: 2px; y: 2px; width: 36px; height: 36px; z: 1004; color: #141414cc; ignore_event: true; visible: false; }} #timer:label {{ @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; color: #e8e8e8ff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n",lane * STEP));
-        }
-        source.push_str("}\n");
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Geometry {
+    columns: usize,
+    rows: usize,
+    row_height: usize,
+    side_width: usize,
+    width: usize,
+    height: usize,
+}
+fn geometry(count: usize) -> Geometry {
+    let columns = count.min(crate::inventory::TAB_COLUMNS);
+    let rows = count.div_ceil(crate::inventory::TAB_COLUMNS).max(1);
+    let row_height = (rows * 36 + 16).max(68);
+    let side_width = 439 + columns * 36;
+    Geometry {
+        columns,
+        rows,
+        row_height,
+        side_width,
+        width: 40 + 26 + side_width * 2,
+        height: 32 + 34 + row_height * 5,
     }
-    source.push('}');
-    source
+}
+fn label(s: &mut String, id: &str, x: usize, w: usize, size: usize, color: &str, right: bool) {
+    s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1204; font: \"asset/lt_direct_control_probe/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {}; ignore_event: true; }}\n", if right { "Right" } else { "Left" }));
+}
+fn item_tile(i: usize) -> String {
+    format!("item{i}:color {{ width: 32px; height: 32px; z: 1203; color: #4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1204; color: #242220ff; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1206; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
+}
+fn template() -> String {
+    let mut s = String::from("lt_team_status:color { anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; y: -80px; z: 1200; color: #1e1e1df5; rounding: Uniform { rounding: 2; } ignore_event: true;\n#top:color { height: 1px; width: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n#bottom:color { anchor_y: 1; pivot_y: 1; height: 1px; width: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n");
+    s.push_str("#left:color { width: 1px; height: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n#right:color { anchor_x: 1; pivot_x: 1; width: 1px; height: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n");
+    for side in 0..2 {
+        s.push_str(&format!("#side{side}:empty {{ y: 16px; ignore_event: true;\n#headers:empty {{ width: 100%; height: 34px; ignore_event: true;\n"));
+        for (id, x, w) in [
+            ("level", 64, 34),
+            ("kda", 104, 122),
+            ("cs", 234, 54),
+            ("items", 294, 220),
+            ("gold", 555, 88),
+        ] {
+            label(&mut s, id, x, w, 13, "989694ff", id == "gold");
+            // Header text is set once after spawning, using the host text API.
+        }
+        s.push_str("}\n");
+        for lane in 0..5 {
+            s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1201;\n#selected:color {{ width: 2px; height: 100%; z: 1202; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1202; color: #4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1203; color: #4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1204; color: #242220ff; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1206; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1207; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
+            for (id, x, w, size, color) in [
+                ("level", 64, 34, 17, "cbc9c7ff"),
+                ("kda", 104, 122, 22, "eeececff"),
+                ("cs", 234, 54, 21, "eeececff"),
+                ("gold", 555, 88, 21, "fdee00ff"),
+            ] {
+                label(&mut s, id, x, w, size, color, id == "gold");
+            }
+            for i in 0..6 {
+                s.push('#');
+                s.push_str(&item_tile(i));
+                s.push('\n');
+            }
+            s.push_str("}\n");
+        }
+        s.push_str("}\n");
+    }
+    s.push('}');
+    s
 }
 #[derive(Default)]
 pub struct TeamUi {
     cache: HashMap<String, String>,
-    portraits: HashMap<String, String>,
-    attempted: HashMap<String, (String, Instant)>,
     spawn_at: Option<Instant>,
+    allocated: usize,
+    portraits: HashMap<String, (String, Instant, bool)>,
+    layout: Option<Geometry>,
+    failed: bool,
 }
 impl TeamUi {
-    fn set(&mut self, ctx: &mut StableClient<'_>, path: &str, value: String, text: bool) {
-        let key = format!("{path}:{text}");
-        if self.cache.get(&key) == Some(&value) {
-            return;
+    fn props(&mut self, ctx: &mut StableClient<'_>, path: &str, value: String, log: &Logger) {
+        if !crate::hud_motion::properties(ctx, &mut self.cache, path, &value) && !self.failed {
+            log.write(&format!("TAB property rejected path={path}"));
+            self.failed = true;
         }
-        let success = if text {
-            ctx.ui_set_text(path, &value)
-        } else {
-            ctx.ui_set_properties(path, &value)
-        };
-        if success {
+    }
+    fn text(&mut self, ctx: &mut StableClient<'_>, path: &str, value: String) {
+        let key = format!("text:{path}");
+        if self.cache.get(&key) != Some(&value) && ctx.ui_set_text(path, &value) {
             self.cache.insert(key, value);
         }
     }
+    #[allow(clippy::too_many_arguments)]
     pub fn apply(
         &mut self,
         ctx: &mut StableClient<'_>,
         active: bool,
         players: &[Player],
         selected: Option<usize>,
+        artwork: &crate::player_hud::HudUi,
         log: &Logger,
-    ) -> Vec<Rect> {
+    ) {
         if !active {
             if ctx.ui_exists(PATH) {
-                ctx.ui_set_visible(PATH, false);
+                self.props(ctx, PATH, "visible: false;".into(), log);
             }
             self.spawn_at = None;
-            return Vec::new();
+            return;
         }
         if !ctx.ui_exists(PATH) {
             if self
                 .spawn_at
-                .is_some_and(|t| t.elapsed() < Duration::from_secs(1))
+                .is_some_and(|at| at.elapsed() < Duration::from_secs(1))
             {
-                return Vec::new();
+                return;
             }
             self.spawn_at = Some(Instant::now());
-            self.cache.clear();
-            self.portraits.clear();
-            self.attempted.clear();
-            let spawned = ctx.ui_spawn_source("ingame", &template());
+            let ok = ctx.ui_spawn_source("ingame", &template());
             log.write(&format!(
-                "TEAM STATUS UI spawn={spawned} exists={}",
+                "TAB styled panel spawn={ok} exists={}",
                 ctx.ui_exists(PATH)
             ));
-            if !spawned || !ctx.ui_exists(PATH) {
-                return Vec::new();
+            if !ok || !ctx.ui_exists(PATH) {
+                return;
             }
+            self.cache.clear();
+            self.portraits.clear();
+            self.layout = None;
+            self.allocated = 6;
+            self.failed = false;
         }
-        ctx.ui_set_visible(PATH, true);
+        // The game buyer iterates this target vector; catalogue length does not
+        // represent capacity. All rows share a column width, even for mixed plans.
+        let count = players
+            .iter()
+            .map(|p| crate::inventory::slots(p.build.as_ref().map(Vec::len), p.items.len(), None))
+            .max()
+            .unwrap_or(0);
+        for i in self.allocated..count {
+            let mut ok = true;
+            for side in 0..2 {
+                for lane in 0..5 {
+                    ok &= ctx
+                        .ui_spawn_source(&format!("{PATH}.side{side}.lane{lane}"), &item_tile(i));
+                }
+            }
+            if !ok {
+                log.write(&format!("TAB additional item node rejected index={i}"));
+                break;
+            }
+            self.allocated = i + 1;
+        }
+        let g = geometry(count);
+        if self.layout != Some(g) {
+            log.write(&format!("TAB layout slots={count} geometry={g:?}"));
+            self.layout = Some(g);
+        }
+        self.props(
+            ctx,
+            PATH,
+            format!(
+                "visible: true; width: {}px; height: {}px;",
+                g.width, g.height
+            ),
+            log,
+        );
         for side in 0..2 {
+            let side_path = format!("{PATH}.side{side}");
+            self.props(
+                ctx,
+                &side_path,
+                format!(
+                    "x: {}px; width: {}px; height: {}px;",
+                    20 + side * (g.side_width + 26),
+                    g.side_width,
+                    g.height - 32
+                ),
+                log,
+            );
+            let gold_x = g.side_width - 100;
+            for (id, text) in [
+                ("level", "LV"),
+                ("kda", "K / D / A"),
+                ("cs", "CS"),
+                ("items", "ITEMS"),
+                ("gold", "GOLD"),
+            ] {
+                self.text(ctx, &format!("{side_path}.headers.{id}"), text.into());
+            }
+            self.props(
+                ctx,
+                &format!("{side_path}.headers.gold"),
+                format!("x: {gold_x}px;"),
+                log,
+            );
+            self.props(
+                ctx,
+                &format!("{side_path}.headers.items"),
+                format!("visible: {};", count > 0),
+                log,
+            );
             for lane in 0..5 {
-                let path = format!("{PATH}.side{side}.lane{lane}");
+                let path = format!("{side_path}.lane{lane}");
                 let Some(p) = slot(players, side, lane) else {
-                    self.set(ctx, &path, "visible: false;".into(), false);
+                    self.props(ctx, &path, "visible: false;".into(), log);
                     continue;
                 };
-                let color = if selected == Some(p.id) {
-                    "ffd700ff"
-                } else {
-                    "555555ff"
-                };
-                self.set(
+                self.props(
                     ctx,
                     &path,
-                    format!("visible: true; color: #{color};"),
-                    false,
-                );
-                let portrait = format!("{path}.portrait");
-                if !p.champion.is_empty()
-                    && self.portraits.get(&portrait) != Some(&p.champion)
-                    && self.attempted.get(&portrait).is_none_or(|(name, at)| {
-                        name != &p.champion || at.elapsed() >= Duration::from_secs(1)
-                    })
-                {
-                    self.attempted
-                        .insert(portrait.clone(), (p.champion.clone(), Instant::now()));
-                    let applied = ctx.ui_set_champion_icon(&portrait, &p.champion, 34., 34., 2.);
-                    log.write(&format!(
-                        "TEAM STATUS portrait player={} champion={} applied={applied}",
-                        p.id, p.champion
-                    ));
-                    if applied {
-                        self.portraits.insert(portrait.clone(), p.champion.clone());
-                    }
-                }
-                self.set(
-                    ctx,
-                    &portrait,
                     format!(
-                        "visible: {};",
-                        !p.champion.is_empty()
-                            && self.portraits.get(&portrait) == Some(&p.champion)
+                        "visible: true; y: {}px; width: {}px; height: {}px;",
+                        34 + lane * g.row_height,
+                        g.side_width,
+                        g.row_height
                     ),
-                    false,
+                    log,
                 );
-                self.set(
+                let mine = selected == Some(p.id);
+                self.props(
                     ctx,
-                    &format!("{path}.shade"),
-                    format!("visible: {};", p.alive != Some(true)),
-                    false,
+                    &format!("{path}.selected"),
+                    format!("visible: {mine};"),
+                    log,
                 );
-                self.set(ctx, &format!("{path}.timer"), caption(p), true);
+                self.props(
+                    ctx,
+                    &path,
+                    format!("color: #{};", if mine { "fdee0009" } else { "00000000" }),
+                    log,
+                );
+                let icon_path = format!("{path}.portrait.icon");
+                let retry = self.portraits.get(&icon_path).is_none_or(|(name, at, ok)| {
+                    name != &p.champion || (!ok && at.elapsed() >= Duration::from_secs(1))
+                });
+                if retry && !p.champion.is_empty() {
+                    let ok = ctx.ui_set_champion_icon(&icon_path, &p.champion, 44., 48., 2.);
+                    self.portraits
+                        .insert(icon_path.clone(), (p.champion.clone(), Instant::now(), ok));
+                }
+                let visible = self
+                    .portraits
+                    .get(&icon_path)
+                    .is_some_and(|(name, _, ok)| *ok && name == &p.champion);
+                self.props(ctx, &icon_path, format!("visible: {visible};"), log);
+                self.props(
+                    ctx,
+                    &format!("{path}.portrait"),
+                    format!(
+                        "color: #{};",
+                        if side == 0 { "536979ff" } else { "79535dff" }
+                    ),
+                    log,
+                );
+                self.props(
+                    ctx,
+                    &format!("{path}.portrait.shade"),
+                    format!("visible: {};", p.alive != Some(true)),
+                    log,
+                );
+                self.text(ctx, &format!("{path}.portrait.timer"), caption(p));
+                let number = |n: usize| if p.fresh { n.to_string() } else { "—".into() };
+                self.text(ctx, &format!("{path}.level"), number(p.level));
+                self.text(ctx, &format!("{path}.cs"), number(p.cs));
+                self.text(ctx, &format!("{path}.gold"), number(p.gold));
+                let (k, d, a) = p.kda;
+                self.text(
+                    ctx,
+                    &format!("{path}.kda"),
+                    if p.fresh {
+                        kda_caption(k, d, a)
+                    } else {
+                        "—/—/—".into()
+                    },
+                );
+                self.props(ctx, &format!("{path}.gold"), format!("x: {gold_x}px;"), log);
+                let capacity =
+                    crate::inventory::slots(p.build.as_ref().map(Vec::len), p.items.len(), None);
+                for i in 0..self.allocated {
+                    let item_path = format!("{path}.item{i}");
+                    let visible = i < capacity;
+                    self.props(
+                        ctx,
+                        &item_path,
+                        format!(
+                            "visible: {visible}; x: {}px; y: {}px;",
+                            294 + i % crate::inventory::TAB_COLUMNS * 36,
+                            18 + i / crate::inventory::TAB_COLUMNS * 36
+                        ),
+                        log,
+                    );
+                    if !visible {
+                        continue;
+                    }
+                    let icon = p.items.get(i).and_then(|key| artwork.item_icon(key));
+                    let props = icon.as_ref().map_or_else(
+                        || "visible: false;".into(),
+                        |icon| format!("visible: true; {}", icon.properties()),
+                    );
+                    self.props(ctx, &format!("{item_path}.icon"), props, log);
+                    self.props(
+                        ctx,
+                        &format!("{item_path}.unknown"),
+                        format!("visible: {};", p.items.get(i).is_some() && icon.is_none()),
+                        log,
+                    );
+                }
             }
         }
-        (0..2)
-            .filter_map(|side| {
-                ctx.ui_node_rect(&format!("{PATH}.side{side}"))
-                    .filter(|(_, _, w, h)| *w > 0. && *h > 0.)
-                    .or_else(|| {
-                        ctx.ui_node_rect("ingame").map(|(x, y, w, _)| {
-                            (
-                                x + (w - WIDTH as f32) / 2.
-                                    + if side == 0 {
-                                        0.
-                                    } else {
-                                        (WIDTH - GROUP) as f32
-                                    },
-                                y + 64.,
-                                GROUP as f32,
-                                40.,
-                            )
-                        })
-                    })
-            })
-            .map(|(x, y, w, h)| Rect { x, y, w, h })
-            .filter(|r| r.valid())
-            .collect()
+        // No input-blocking rectangles: battlefield commands pass through Tab.
     }
+}
+
+fn kda_caption(kills: usize, deaths: usize, assists: usize) -> String {
+    format!("<#eeececff>{kills}<#989694ff>/<#ff855bff>{deaths}<#989694ff>/<#eeececff>{assists}<>")
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn kda_uses_valid_native_rgba_runs_and_resets_colour() {
+        let text = kda_caption(12, 3, 24);
+        assert_eq!(crate::tooltips::rich(&text), text);
+        assert_eq!(crate::tooltips::plain(&text), "12/3/24");
+        assert!(text.ends_with("<>"));
+    }
     fn player(side: usize, lane: usize, alive: bool, respawn: usize) -> Player {
         Player {
             id: side * 5 + lane,
@@ -276,7 +451,55 @@ mod tests {
             champion: "harpy".into(),
             alive: Some(alive),
             respawn,
+            level: 1,
+            gold: 0,
+            kda: (0, 0, 0),
+            cs: 0,
+            items: Vec::new(),
+            build: None,
+            fresh: true,
         }
+    }
+    #[test]
+    fn adaptive_item_columns_stay_aligned_without_reducing_icon_size() {
+        for (count, width) in [(4, 1232), (5, 1304), (6, 1376)] {
+            let g = geometry(count);
+            assert_eq!(g.width, width);
+            assert_eq!(g.height, 406);
+            assert_eq!(g.row_height, 68);
+            assert!(294 + (count - 1) * 36 + 32 <= g.side_width - 100);
+        }
+        let g = geometry(12);
+        assert_eq!(g.columns, 10);
+        assert_eq!(g.row_height, 88);
+        assert!(g.width < 1920);
+        let source = template();
+        assert!(!source.contains("Your team"));
+        assert!(!source.contains("Opposing team"));
+        assert!(source.contains("size: 22"));
+    }
+    #[test]
+    fn missing_build_read_retains_only_same_match_capacity() {
+        let team = TeamStatus::default();
+        let key = (1, 33, 1);
+        let log = crate::timing_test::tests::logger("team-capacity");
+        assert!(team.needs_sample(key, 1));
+        let mut first = player(0, 0, true, 0);
+        first.build = Some(vec!["target".into(); 5]);
+        team.observe(key, vec![first], &log);
+        team.observe(key, vec![player(0, 0, true, 0)], &log);
+        assert_eq!(
+            team.snapshot(Some(key), false)[0]
+                .build
+                .as_ref()
+                .unwrap()
+                .len(),
+            5
+        );
+        let next = (2, 34, 2);
+        assert!(team.needs_sample(next, 1));
+        team.observe(next, vec![player(0, 0, true, 0)], &log);
+        assert!(team.snapshot(Some(next), false)[0].build.is_none());
     }
     #[test]
     fn dead_identity_survives_absent_entity_and_native_timer_freezes_on_pause() {

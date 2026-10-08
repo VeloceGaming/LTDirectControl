@@ -51,7 +51,30 @@ mod windows {
             let msg = &mut *(message as *mut Message);
             if msg.message == 0x20a && msg.window == GetForegroundWindow() {
                 let keys = crate::platform_input::poll();
+                let over_shop = keys.focused
+                    && keys.cursor.is_some_and(|p| {
+                        crate::shop_ui::AREA
+                            .lock()
+                            .is_ok_and(|a| a.is_some_and(|r| r.contains(p)))
+                    });
+                if over_shop && !crate::settings::MODAL.load(Ordering::Relaxed) {
+                    let delta = ((msg.wparam >> 16) as u16 as i16) as i32;
+                    crate::shop_ui::SCROLL.fetch_add(delta / 120, Ordering::Relaxed);
+                    msg.message = 0;
+                    msg.wparam = 0;
+                    msg.lparam = 0;
+                    return CallNextHookEx(0, code, removed, message);
+                }
+                if keys.focused && crate::settings::MODAL.load(Ordering::Relaxed) {
+                    let delta = ((msg.wparam >> 16) as u16 as i16) as i32;
+                    crate::settings_ui::SCROLL.fetch_add(delta / 120, Ordering::Relaxed);
+                    msg.message = 0;
+                    msg.wparam = 0;
+                    msg.lparam = 0;
+                    return CallNextHookEx(0, code, removed, message);
+                }
                 let battlefield = keys.focused
+                    && !crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed)
                     && CAMERA.get().is_some_and(|camera| {
                         keys.cursor.is_some_and(|p| {
                             !camera.blocked(p)
@@ -60,9 +83,11 @@ mod windows {
                     });
                 if battlefield {
                     let delta = ((msg.wparam >> 16) as u16 as i16) as i32;
-                    let _ = DELTA.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |old| {
-                        Some(old.saturating_add(delta).clamp(-1200, 1200))
-                    });
+                    if keys.camera_options.is_none_or(|o| o.2) {
+                        let _ = DELTA.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |old| {
+                            Some(old.saturating_add(delta).clamp(-1200, 1200))
+                        });
+                    }
                     // Prevent a second native wheel handler from zooming twice.
                     msg.message = 0;
                     msg.wparam = 0;

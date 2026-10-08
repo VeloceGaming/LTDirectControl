@@ -1,4 +1,4 @@
-//! Normal-pose body dimensions. No animation pointers or textures retained.
+//! Bounded body-pose envelopes. No animation pointers or textures retained.
 use crate::{hud_icons, Logger};
 use serde_json::Value;
 use std::{
@@ -22,8 +22,8 @@ impl Default for Body {
 }
 impl Body {
     fn pixels(w: f32, h: f32) -> Option<Self> {
-        // Half-sheet size is our normal-pose map envelope calibration.
-        // Stable, padded normal-pose envelopes deliberately exclude swing VFX.
+        // Retain the tested map scale. Frames cover body animations, excluding
+        // separate effect/end tags; this is an envelope, not live alpha picking.
         (w.is_finite() && h.is_finite() && (4. ..=256.).contains(&w) && (4. ..=256.).contains(&h))
             .then_some(Self {
                 width: w * 0.5,
@@ -32,9 +32,80 @@ impl Body {
     }
 }
 static PROFILES: OnceLock<HashMap<String, Body>> = OnceLock::new();
+static BASE: OnceLock<Value> = OnceLock::new();
 pub fn body(name: Option<&str>) -> Body {
     name.and_then(|name| PROFILES.get()?.get(name).copied())
         .unwrap_or_default()
+}
+pub fn entity_body(
+    name: Option<&str>,
+    champion: bool,
+    minion: bool,
+    tower: bool,
+    radius: u64,
+) -> Option<Body> {
+    if champion {
+        return Some(body(name));
+    }
+    if minion {
+        // Largest normal base minion pose (including Morgard minions), without
+        // using its combat collision radius to inflate the mouse target.
+        return Some(Body {
+            width: 12.5,
+            height: 13.5,
+        });
+    }
+    let name = name.map(|n| n.rsplit('/').next().unwrap_or(n).trim_end_matches("#anim"));
+    // Native entity names are generic; the renderer maps them to side-specific
+    // art. Both sides have matching body dimensions. Keep this mapping here.
+    let name = name.map(|n| match n {
+        "tower" => "blue_tower",
+        "nexus" => "blue_nexus",
+        other => other,
+    });
+    let structure = tower
+        || matches!(
+            name,
+            Some("blue_tower" | "red_tower" | "blue_nexus" | "red_nexus")
+        );
+    if let Some(profile) = name.and_then(|name| {
+        PROFILES
+            .get()
+            .and_then(|p| p.get(&format!("ingame/{name}")).copied())
+            .or_else(|| {
+                // Baked base metadata also works before runtime initialization.
+                let p = BASE.get_or_init(|| {
+                    serde_json::from_str(include_str!("picking_assets.json"))
+                        .expect("base sprite dimensions")
+                });
+                let p = p.get(format!("ingame/{name}"))?;
+                Body::pixels(p.get(0)?.as_f64()? as f32, p.get(1)?.as_f64()? as f32)
+            })
+    }) {
+        // Structures need their full visible body, rather than the half-scale
+        // champion/monster baseline. The final bounds add only modest padding.
+        return Some(if structure {
+            Body {
+                width: profile.width * 2.,
+                height: profile.height * 2.,
+            }
+        } else {
+            profile
+        });
+    }
+    if structure {
+        return Some(Body {
+            width: 48.,
+            height: 80.,
+        });
+    }
+    // Unknown/modded monsters have no declared champion art. Use a bounded
+    // envelope until their art can be identified, keeping champion priority.
+    let width = (radius as f32 / 500.).clamp(24., 96.);
+    Some(Body {
+        width,
+        height: width * 1.25,
+    })
 }
 pub fn initialize(log: &Logger) {
     let Some(game) = std::env::current_exe()
@@ -48,13 +119,50 @@ pub fn initialize(log: &Logger) {
 }
 fn normal(name: &str) -> bool {
     let name = name.to_ascii_lowercase();
+    [
+        "idle",
+        "run",
+        "walk",
+        "hit",
+        "attack",
+        "skill",
+        "skill2",
+        "ult",
+        "skill_pre",
+        "skill2_pre",
+        "ult_pre",
+    ]
+    .into_iter()
+    .any(|s| name == s || name.ends_with(&format!("_{s}")))
+}
+fn stable(name: &str) -> bool {
+    let name = name.to_ascii_lowercase();
     ["idle", "run", "walk"]
         .into_iter()
         .any(|s| name == s || name.ends_with(&format!("_{s}")))
 }
+fn envelope(poses: &[(f32, f32)], standing: &[(f32, f32)]) -> Option<Body> {
+    if poses.is_empty() {
+        return None;
+    }
+    let dimension = |axis: usize| {
+        let value = |p: &(f32, f32)| if axis == 0 { p.0 } else { p.1 };
+        let largest = poses.iter().map(value).fold(0f32, f32::max);
+        let baseline = if standing.is_empty() {
+            // Missing idle/walk tags: use the median pose, not a lone effect outlier.
+            let mut values = poses.iter().map(value).collect::<Vec<_>>();
+            values.sort_by(f32::total_cmp);
+            values[(values.len() - 1) / 2]
+        } else {
+            standing.iter().map(value).fold(0f32, f32::max)
+        };
+        largest.min(baseline * 1.15)
+    };
+    Body::pixels(dimension(0), dimension(1))
+}
 fn fanim(value: &Value) -> Option<Body> {
-    let mut w = 0f32;
-    let mut h = 0f32;
+    let mut poses = Vec::new();
+    let mut standing = Vec::new();
     for (name, animation) in value.get("anims")?.as_object()? {
         if !normal(name) {
             continue;
@@ -63,11 +171,13 @@ fn fanim(value: &Value) -> Option<Body> {
             let d = frame.get("data")?;
             let (fw, fh) = (d.get("w")?.as_f64()? as f32, d.get("h")?.as_f64()? as f32);
             Body::pixels(fw, fh)?;
-            w = w.max(fw);
-            h = h.max(fh);
+            poses.push((fw, fh));
+            if stable(name) {
+                standing.push((fw, fh));
+            }
         }
     }
-    Body::pixels(w, h)
+    envelope(&poses, &standing)
 }
 fn word(b: &[u8], at: usize) -> Option<u16> {
     Some(u16::from_le_bytes(b.get(at..at + 2)?.try_into().ok()?))
@@ -161,7 +271,7 @@ fn aseprite(b: &[u8]) -> Option<Body> {
                             return None;
                         }
                         if normal(name) {
-                            tags.push((from, to));
+                            tags.push((from, to, stable(name)));
                         }
                         p += 19 + length;
                     }
@@ -173,8 +283,9 @@ fn aseprite(b: &[u8]) -> Option<Body> {
         frames.push(cels);
         offset = end;
     }
-    let (mut w, mut h) = (0f32, 0f32);
-    for (from, to) in tags {
+    let mut poses = Vec::new();
+    let mut standing = Vec::new();
+    for (from, to, stable) in tags {
         for frame in &frames[from..=to] {
             let left = frame.values().map(|(x, _, _, _)| *x as i32).min()?;
             let top = frame.values().map(|(_, y, _, _)| *y as i32).min()?;
@@ -186,11 +297,15 @@ fn aseprite(b: &[u8]) -> Option<Body> {
                 .values()
                 .map(|(_, y, _, h)| *y as i32 + *h as i32)
                 .max()?;
-            w = w.max((right - left) as f32);
-            h = h.max((bottom - top) as f32);
+            let size = ((right - left) as f32, (bottom - top) as f32);
+            Body::pixels(size.0, size.1)?;
+            poses.push(size);
+            if stable {
+                standing.push(size);
+            }
         }
     }
-    Body::pixels(w, h)
+    envelope(&poses, &standing)
 }
 fn owned(root: &Path, id: &str, source: &str) -> Option<PathBuf> {
     let relative = source.strip_prefix(&format!("asset/{id}/"))?;
@@ -228,7 +343,7 @@ fn load(game: &Path, log: &Logger) -> HashMap<String, Body> {
             ))
         })
         .collect();
-    log.write(&format!("SPRITE PICKING base_profiles={} normal poses; padded body envelopes; no live animation handles",profiles.len()));
+    log.write(&format!("SPRITE PICKING base_profiles={} idle/walk baseline + capped 15% champion pose growth; monsters unchanged; no live animation handles",profiles.len()));
     for (id, root) in hud_icons::enabled_roots(game) {
         let mut files = Vec::new();
         hud_icons::declarations(&root, 0, &mut files);
@@ -266,6 +381,60 @@ fn load(game: &Path, log: &Logger) -> HashMap<String, Body> {
 mod tests {
     use super::*;
     #[test]
+    fn unidentified_structures_never_fall_back_to_small_combat_collision() {
+        let fallback = entity_body(None, false, false, true, 1000).unwrap();
+        assert_eq!(
+            fallback,
+            Body {
+                width: 48.,
+                height: 80.
+            }
+        );
+        // Nexus may not have the tower flag; known structure art still uses
+        // structure sizing, including full logical resource names.
+        assert_eq!(
+            entity_body(
+                Some("asset/base/aseprite_resources/ingame/blue_nexus#anim"),
+                false,
+                false,
+                false,
+                1000
+            )
+            .unwrap(),
+            entity_body(Some("nexus"), false, false, false, 1000).unwrap()
+        );
+        assert_eq!(
+            entity_body(Some("tower"), false, false, true, 1000),
+            Some(Body {
+                width: 31.,
+                height: 63.
+            })
+        );
+        assert_ne!(
+            entity_body(Some("nexus"), false, false, false, 1000),
+            Some(fallback)
+        );
+    }
+    #[test]
+    fn bundled_monsters_stay_unchanged_and_champions_cap_combat_poses() {
+        let profiles: Value = serde_json::from_str(include_str!("picking_assets.json")).unwrap();
+        assert_eq!(profiles["ingame/serpen"], serde_json::json!([59., 79.]));
+        assert_eq!(profiles["ingame/rhino"], serde_json::json!([63., 51.]));
+        assert_eq!(profiles["ingame/stump"], serde_json::json!([37., 41.]));
+        assert_eq!(profiles["ingame/epic"], serde_json::json!([109., 133.]));
+        assert_eq!(profiles["lancer"], serde_json::json!([63.25, 54.05]));
+        assert_eq!(profiles["ogre"], serde_json::json!([58.65, 79.35]));
+    }
+    #[test]
+    fn extreme_attack_poses_do_not_inflate_a_permanent_champion_box() {
+        let body = envelope(&[(29., 51.), (163., 163.)], &[(29., 51.)]).unwrap();
+        assert!((body.width - 16.675).abs() < 0.001);
+        assert!((body.height - 29.325).abs() < 0.001);
+        let fallback = envelope(&[(40., 60.), (42., 62.), (200., 200.)], &[]).unwrap();
+        assert!((fallback.width - 24.15).abs() < 0.001);
+        assert!((fallback.height - 35.65).abs() < 0.001);
+    }
+    #[test]
     fn aseprite_tags_visible_layers_links_and_bad_chunks_are_handled_without_pixels() {
         fn chunk(kind: u16, data: Vec<u8>) -> Vec<u8> {
             let mut b = ((data.len() + 6) as u32).to_le_bytes().to_vec();
@@ -291,7 +460,7 @@ mod tests {
         }
         let mut tags = vec![0; 10];
         tags[..2].copy_from_slice(&2u16.to_le_bytes());
-        for (from, to, name) in [(0u16, 1u16, "idle"), (2, 2, "ult")] {
+        for (from, to, name) in [(0u16, 1u16, "idle"), (2, 2, "ult_effect")] {
             let mut tag = vec![0; 17];
             tag[..2].copy_from_slice(&from.to_le_bytes());
             tag[2..4].copy_from_slice(&to.to_le_bytes());
@@ -346,11 +515,11 @@ mod tests {
     }
     #[test]
     fn normal_frames_ignore_large_effects_and_reject_bad_dimensions_and_paths() {
-        let value = serde_json::json!({"anims":{"idle":{"frames":[{"data":{"w":40,"h":60}}]},"run":{"frames":[{"data":{"w":50,"h":55}}]},"ult":{"frames":[{"data":{"w":200,"h":200}}]}}});
+        let value = serde_json::json!({"anims":{"idle":{"frames":[{"data":{"w":40,"h":60}}]},"run":{"frames":[{"data":{"w":50,"h":55}}]},"attack":{"frames":[{"data":{"w":64,"h":55}}]},"ult_effect":{"frames":[{"data":{"w":200,"h":200}}]}}});
         assert_eq!(
             fanim(&value),
             Some(Body {
-                width: 25.,
+                width: 28.75,
                 height: 30.
             })
         );

@@ -1,0 +1,477 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Athlete HUD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: Endfield "dark console" review page. Toolbar, the true-scale 1080p frame (vanilla top stripe and battlefield,
+   athlete HUD in the bottom stripe), a 1:1 band of the bottom HUD with tooltips, notes, information budget.
+   Tokens follow endfield_ui_lab/tokens.css 2.0. */
+:root{
+  color-scheme:dark;
+  --signal-yellow:#fdee00; --signal-lime:#b3d543; --signal-cyan:#53b8e4; --signal-warning:#ff642e; --signal-enemy:#711c32;
+  --base:#1c1a18; --row:#3a3837; --edge:#4b4a49; --track:#5b5b5b; --control:#eeecec;
+  --t1:#ffffff; --t2:#cbc9c7; --t3:#989694; --on-control:#393939;
+  --tip-bg:rgb(30 30 29 / 85%);
+  --r:2px; --cap:999px; --rail:6px;
+  --f-display:"Archivo","Manrope",system-ui,sans-serif;
+  --f-ui:"Manrope",system-ui,"Segoe UI",sans-serif;
+  --f-tech:"Iosevka","IBM Plex Mono",ui-monospace,monospace;
+  --d-hover:100ms; --d-card:100ms; --d-panel:133ms; --d-rail:200ms;
+  --ease-tonal:cubic-bezier(.4,.1,.5,1); --ease-move:cubic-bezier(.15,.8,.3,1);
+}
+*{box-sizing:border-box}
+body{background:var(--base);color:var(--t1);font:15px/1.55 var(--f-ui)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:30px 80px;display:grid;gap:22px}
+.wrap>*{min-width:0}
+.title{display:flex;gap:14px;align-items:stretch}
+.title .rail{width:var(--rail);background:var(--signal-yellow);flex:none}
+.tele{font:500 12px/1.2 var(--f-tech);letter-spacing:.09em;text-transform:uppercase;color:var(--t3)}
+h1{font:600 34px/1.05 var(--f-display);font-stretch:125%;margin:6px 0 10px}
+.intro{margin:0;color:var(--t2);max-width:74ch}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;padding:12px 14px;background:var(--row);border-top:1px solid var(--edge);border-radius:var(--r)}
+.grp{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--track);border-radius:var(--cap);box-shadow:0 0 0 2px color-mix(in srgb,var(--row) 55%,#000)}
+.seg button{font:600 14px/1 var(--f-ui);color:var(--t1);background:transparent;border:0;border-radius:var(--cap);padding:9px 15px;cursor:pointer;transition:background-color var(--d-hover) var(--ease-tonal)}
+.seg button:hover{background:color-mix(in srgb,var(--track) 78%,#fff)}
+.seg button[aria-pressed="true"]{background:var(--control);color:var(--on-control);box-shadow:0 0 2px 2.5px rgb(0 0 0 / 35%)}
+.tg{display:inline-flex;align-items:center;gap:8px;font:600 14px/1 var(--f-ui);color:var(--t1);background:transparent;border:1px solid var(--edge);border-radius:var(--cap);padding:8px 14px 8px 8px;cursor:pointer}
+.tg:hover{background:rgba(255,255,255,.06)}
+.tg .dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--t3)}
+.tg[aria-pressed="true"]{border-color:var(--signal-yellow)}
+.tg[aria-pressed="true"] .dot{background:var(--signal-yellow);border-color:var(--signal-yellow)}
+button:focus-visible{outline:2px solid var(--t1);outline-offset:2px}
+
+.frame{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:var(--r);background:#000;box-shadow:0 0 0 1px var(--edge)}
+.stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;font-family:var(--f-ui);color:var(--t1)}
+.cap-note{margin:-10px 0 0;font-size:13px;color:var(--t3)}
+.band-h{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 16px}
+.band-h h3{margin:0;font:700 15px/1.3 var(--f-ui)}
+.band{position:relative;overflow-x:auto;border-radius:var(--r);box-shadow:0 0 0 1px var(--edge);background:#000}
+.band .clip{position:relative;width:1920px;overflow:hidden}
+.band .stage{position:absolute;transform:none}
+
+/* ---------- Vanilla layers ---------- */
+.world{position:absolute;inset:0;background:url(game.webp) 0 0/1920px 1080px no-repeat}
+.stage.dead .world{filter:grayscale(.92) brightness(.5)}
+.vtop{position:absolute;background:url(game.webp) no-repeat;background-size:1920px 1080px;z-index:20}
+.mask{position:absolute;backdrop-filter:blur(12px) brightness(.8);-webkit-backdrop-filter:blur(12px) brightness(.8);display:grid;place-items:center;border:1px dashed rgba(255,255,255,.18)}
+.mask span{font:500 12px/1 var(--f-tech);letter-spacing:.1em;color:rgba(255,255,255,.55);text-transform:uppercase}
+.vanilla{position:absolute;inset:0;background:url(game.webp) 0 0/1920px 1080px no-repeat;z-index:90}
+.vanilla-tag{position:absolute;left:50%;top:420px;transform:translateX(-50%);z-index:91;padding:10px 18px;background:var(--control);color:var(--on-control);font:700 20px/1 var(--f-ui);border-radius:var(--cap)}
+.zone{position:absolute;left:0;right:0;z-index:55;pointer-events:none;border:2px dashed var(--signal-cyan)}
+.zone span{position:absolute;left:12px;top:8px;font:500 14px/1 var(--f-tech);letter-spacing:.08em;color:var(--signal-cyan);background:rgba(0,0,0,.7);padding:4px 6px}
+
+/* ---------- HUD atoms ---------- */
+.kc{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--r);background:var(--control);color:var(--on-control);font:800 13px/1 var(--f-ui)}
+.pt,.it{background-image:url(game.webp);background-repeat:no-repeat;border-radius:var(--r);flex:none;background-color:#2a2826}
+.bar{position:relative;height:6px;background:rgba(0,0,0,.6);overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--signal-lime)}
+.num{font-variant-numeric:tabular-nums}
+.ic{display:inline-grid;place-items:center;color:var(--t3);flex:none}
+.appear-c{animation:panelInC var(--d-panel) var(--ease-tonal) both}
+@keyframes panelInC{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Bottom stripe */
+.stripe{position:absolute;left:0;right:0;top:1030px;height:50px;background:var(--base);border-top:1px solid var(--edge);display:flex;align-items:center;padding:0 16px;gap:14px;z-index:20}
+.stripe::after{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:linear-gradient(90deg,var(--t1) 0 16px,transparent 16px calc(100% - 16px),var(--t1) calc(100% - 16px))}
+.vdiv{width:1px;height:28px;background:var(--edge);flex:none}
+.ubtns{display:flex;gap:0}
+.ub{width:32px;height:36px;display:grid;place-items:center;color:var(--t2);border-radius:var(--r)}
+.allies{display:flex;gap:6px}
+.ally{position:relative;width:40px;display:grid;gap:3px}
+.ally .pt{width:40px;height:36px}
+.ally .bar{height:4px}
+.ally .ult{position:absolute;right:-3px;top:-3px;width:11px;height:11px;transform:rotate(45deg);background:#141311;border:1px solid var(--edge)}
+.ally .ult.ready{background:var(--signal-yellow);border-color:#1c1a18}
+.ally.dead .pt{filter:grayscale(1) brightness(.45)}
+.ally .rs{position:absolute;left:0;right:0;top:0;height:36px;display:grid;place-items:center;font:800 17px/1 var(--f-ui);text-shadow:0 1px 2px #000}
+.stat{display:flex;align-items:center;gap:7px}
+.stat b{font:700 19px/1 var(--f-ui)}
+.stat b .d{color:var(--signal-warning)}
+.stat b .sl{color:var(--t3);font-weight:500;margin:0 3px}
+.tabk{display:flex;align-items:center;gap:5px;color:var(--t3)}
+
+/* Skill row, the only part above the stripe */
+.skills{position:absolute;left:50%;top:962px;transform:translateX(-50%);display:flex;gap:8px;z-index:21}
+.sk{position:relative;width:60px;height:60px;border-radius:var(--r);overflow:hidden;background:#141311;border:1px solid var(--edge);box-shadow:0 3px 8px -1px rgb(0 0 0 / 59%);cursor:default;transition:border-color var(--d-card) var(--ease-tonal)}
+.sk:hover{border-color:var(--t1)}
+.sk svg{position:absolute;inset:0;width:100%;height:100%}
+.sk .kc{position:absolute;left:3px;top:3px;min-width:18px;height:18px;font-size:11px;padding:0 4px}
+.sk .drain{position:absolute;left:0;right:0;top:0;background:rgba(10,9,8,.8);border-bottom:2px solid var(--t1)}
+.sk .cdn{position:absolute;inset:0;display:grid;place-items:center;font:800 24px/1 var(--f-ui);text-shadow:0 2px 0 rgba(0,0,0,.8)}
+.sk.ready{border:2px solid var(--signal-yellow)}
+.sk.off svg{filter:grayscale(1) brightness(.35)}
+.sk.tip-on{border-color:var(--t1)}
+.vitals{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:50px}
+.lv{display:grid;justify-items:center;gap:4px;width:40px}
+.lv b{font:700 22px/1 var(--f-display);font-stretch:125%}
+.lv .xp{width:40px;height:3px;background:rgba(255,255,255,.18)}
+.lv .xp i{display:block;height:100%;width:58%;background:var(--t1)}
+.hp{position:relative;width:360px;height:24px;background:rgba(0,0,0,.6);overflow:hidden}
+.hp .tr,.hp .fl{position:absolute;top:0;bottom:0;left:0}
+.hp .tr{background:#efe6cf}
+.hp .fl{background:var(--signal-lime);transition:width var(--d-rail) var(--ease-move)}
+.hp .ticks{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(100%/19.04 - 1px),rgba(0,0,0,.45) calc(100%/19.04 - 1px) calc(100%/19.04))}
+.hp .hv{position:absolute;right:8px;top:50%;transform:translateY(-50%);font:800 15px/1 var(--f-ui);text-shadow:0 1px 2px #000,0 0 4px #000}
+.hp .hv i{font-style:normal;font-weight:600;color:var(--t2)}
+.stage.low .hp .fl{background:var(--signal-warning)}
+.hp.rsp{display:flex;align-items:center;justify-content:center;gap:10px;background:#2a2826}
+.hp.rsp b{font:700 19px/1 var(--f-display);font-stretch:125%}
+.right{position:absolute;left:1190px;top:0;height:50px;display:flex;align-items:center;gap:12px}
+.slot{width:38px;height:38px;border-radius:var(--r);border:1px solid var(--edge);background:#141311;display:grid;place-items:center;transition:border-color var(--d-card) var(--ease-tonal)}
+.slot:hover,.slot.tip-on{border-color:var(--t1)}
+.slot .it{width:32px;height:32px}
+.auto{display:flex;align-items:center;gap:8px}
+.auto .nx{position:relative;width:38px;height:38px;border-radius:var(--r);border:1px dashed var(--t3);display:grid;place-items:center}
+.auto .nx .it{width:30px;height:30px;opacity:.55}
+.auto .nx .fillbar{position:absolute;left:-1px;right:-1px;bottom:-5px;height:3px;background:rgba(255,255,255,.15)}
+.auto .nx .fillbar i{display:block;height:100%;background:var(--signal-yellow)}
+.auto .nx.tip-on,.auto .nx:hover{border-color:var(--t1)}
+.gold{display:flex;align-items:center;gap:6px}
+.gold b{font:800 19px/1 var(--f-ui);color:var(--signal-yellow)}
+.recall{display:flex;align-items:center;gap:5px;color:var(--t2)}
+
+/* Minimap (vanilla, raised to clear the stripe) */
+.mm{position:absolute;left:1586px;top:704px;width:320px;height:320px;background:url(game.webp) -1582px -742px/1920px 1080px no-repeat;z-index:19;box-shadow:0 0 0 1px var(--edge)}
+
+/* Recall channel: icon + bar + seconds */
+.channel{position:absolute;left:50%;top:910px;transform:translateX(-50%);width:260px;display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--tip-bg);border:1px solid rgba(255,255,255,.16);border-radius:var(--r);z-index:22;color:var(--signal-cyan)}
+.channel .bar{flex:1}
+.channel .bar i{background:var(--signal-cyan)}
+.channel span{font:700 14px/1 var(--f-ui);color:var(--t1);min-width:32px;text-align:right}
+
+/* ---------- Tooltip + item card (Endfield S03 anatomy) ---------- */
+.tip{position:absolute;z-index:40;width:440px;background:var(--tip-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:var(--r);padding:12px 16px 14px;box-shadow:0 3px 8px -1px rgb(0 0 0 / 59%);animation:tipIn var(--d-card) var(--ease-tonal) both}
+@keyframes tipIn{from{opacity:0}to{opacity:1}}
+.tip .code{display:flex;align-items:center;gap:6px;font:500 10px/1 var(--f-tech);letter-spacing:.12em;color:var(--t3)}
+.tip .code::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid var(--signal-yellow)}
+.tip .th{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-top:8px}
+.tip .th .icon{width:44px;height:44px;border-radius:var(--r);overflow:hidden;position:relative;border:1px solid var(--edge)}
+.tip .th .icon svg{width:100%;height:100%;display:block}
+.tip .th .icon .it{width:100%;height:100%}
+.tip .tn{font:700 20px/1.1 var(--f-ui)}
+.tip .ty{display:flex;align-items:center;gap:6px;justify-self:end;align-self:start;font:500 12px/1 var(--f-tech);letter-spacing:.1em;color:var(--t2)}
+.tip .chips{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
+.chip{display:flex;align-items:center;gap:5px;font:700 14px/1 var(--f-ui);color:var(--t1)}
+.chip .ic{color:var(--t3)}
+.pips{display:flex;gap:3px;align-items:center}
+.pips i{width:10px;height:4px;background:rgba(255,255,255,.2)}
+.pips i.on{background:var(--signal-yellow)}
+.tip hr{border:0;height:1px;background:rgba(255,255,255,.16);margin:12px 0 10px}
+.tip p{margin:0;font:500 14px/1.5 var(--f-ui);color:var(--t2)}
+.tip .kw{color:var(--signal-cyan)}
+.tip .vl{color:var(--t1);font-weight:800}
+.tip .sc{color:var(--t3);font-weight:600}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+.stats .chip{font-size:15px}
+.tip .foot{display:flex;align-items:center;gap:10px;margin-top:12px;font:700 14px/1 var(--f-ui)}
+.tip .foot .bar{flex:1;height:4px}
+.tip .foot .bar i{background:var(--signal-yellow)}
+.tip .foot .g{color:var(--signal-yellow)}
+.tip .tag{padding:3px 8px;border-radius:var(--cap);background:var(--control);color:var(--on-control);font:800 11px/1.2 var(--f-ui)}
+.tip .tag.y{background:var(--signal-yellow);color:#1c1a18}
+
+/* Tab board */
+.board{position:absolute;left:50%;top:150px;transform:translateX(-50%);width:1180px;padding:16px 18px 14px;z-index:30;background:rgb(30 30 29 / 92%);border:1px solid rgba(255,255,255,.16);border-radius:var(--r)}
+.board .cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.board table{width:100%;border-collapse:collapse;font:600 16px/1 var(--f-ui);font-variant-numeric:tabular-nums}
+.board th{text-align:left;padding:6px 8px;color:var(--t3)}
+.board td{padding:5px 8px;border-top:1px solid rgba(255,255,255,.08);vertical-align:middle}
+.board td.n{display:flex;align-items:center;gap:10px}
+.board td .pt{width:34px;height:34px}
+.board .its{display:flex;gap:3px}
+.board .its .it{width:28px;height:28px}
+.board .dead{color:var(--t3)}
+.board tr.mine td{background:rgba(253,238,0,.08)}
+.board tr.mine td:first-child{box-shadow:inset 4px 0 0 var(--signal-yellow)}
+
+.callout{position:absolute;z-index:80;width:40px;height:40px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--signal-yellow);color:#1c1a18;font:800 21px/40px var(--f-ui);text-align:center;box-shadow:0 0 0 4px #1c1a18;pointer-events:none}
+body.no-notes .callout{display:none}
+
+.sec-title{display:flex;align-items:center;gap:12px;margin:18px 0 0}
+.sec-title::before{content:"";width:var(--rail);height:24px;background:var(--signal-yellow)}
+.sec-title h2{font:600 22px/1.2 var(--f-ui);margin:0}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:0 32px}
+.note{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--edge)}
+.note .n{width:28px;height:28px;border-radius:50%;background:var(--signal-yellow);color:#1c1a18;font:800 14px/28px var(--f-ui);text-align:center}
+.note h3{font:700 15px/1.35 var(--f-ui);margin:2px 0 4px}
+.note p{margin:0;color:var(--t2);font-size:14px}
+.tbl-wrap{overflow-x:auto}
+.budget{width:100%;min-width:760px;border-collapse:collapse;font-size:14px}
+.budget th{text-align:left;font:500 11px/1 var(--f-tech);letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:10px 12px;font-weight:500;border-bottom:1px solid var(--edge)}
+.budget td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:top;color:var(--t2)}
+.budget td:first-child{color:var(--t1);font-weight:600}
+.y{color:var(--signal-lime);font-weight:700}.x{color:var(--t3)}
+.pill{display:inline-block;padding:3px 9px;border-radius:var(--cap);font:700 12px/1.2 var(--f-ui);white-space:nowrap}
+.pill.rm{background:var(--track);color:var(--t1)}
+.pill.kp{background:var(--control);color:var(--on-control)}
+.pill.nw{background:var(--signal-yellow);color:#1c1a18}
+.assume{padding:14px 16px;background:var(--row);border-radius:var(--r);border-top:1px solid var(--edge);color:var(--t2);font-size:14px}
+.assume ul{margin:8px 0 0;padding-left:18px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:560px){h1{font-size:26px}}
+</style>
+
+<div class="wrap">
+  <header class="title">
+    <span class="rail"></span>
+    <div>
+      <div class="tele">// Mod HUD proposal · v4 · vanilla top stripe, icon-first bottom HUD</div>
+      <h1>ATHLETE HUD</h1>
+      <p class="intro">The top stripe stays vanilla: both teams, games won in the series, kills, towers, gold and the clock. The athlete HUD lives in the bottom stripe plus one skill row above it, and it is read through icons, bars and numbers rather than words. Hover a skill or item, on the frame or in the 1:1 band, to see its tooltip.</p>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="grp">
+      <span class="tele" id="lb-ph">Moment</span>
+      <div class="seg" role="group" aria-labelledby="lb-ph">
+        <button data-ph="fight" aria-pressed="true">Fighting</button>
+        <button data-ph="low" aria-pressed="false">Low HP</button>
+        <button data-ph="recall" aria-pressed="false">Recalling</button>
+        <button data-ph="dead" aria-pressed="false">Dead</button>
+      </div>
+    </div>
+    <div class="grp">
+      <span class="tele" id="lb-tip">Pinned tooltip</span>
+      <div class="seg" role="group" aria-labelledby="lb-tip">
+        <button data-pin="none" aria-pressed="false">None</button>
+        <button data-pin="W" aria-pressed="true">Skill</button>
+        <button data-pin="i0" aria-pressed="false">Item</button>
+        <button data-pin="next" aria-pressed="false">Next buy</button>
+      </div>
+    </div>
+    <div class="grp">
+      <button class="tg" id="t-tab" aria-pressed="false"><span class="dot"></span>Holding Tab</button>
+      <button class="tg" id="t-notes" aria-pressed="true"><span class="dot"></span>Notes</button>
+      <button class="tg" id="t-zone" aria-pressed="false"><span class="dot"></span>Battlefield bounds</button>
+      <button class="tg" id="t-van" aria-pressed="false"><span class="dot"></span>Show vanilla</button>
+    </div>
+  </div>
+
+  <div class="frame" id="frame"><div class="stage" id="stage" role="img" aria-label="1080p frame with the vanilla top stripe and the athlete HUD at the bottom"></div></div>
+  <p class="cap-note">Your vanilla screenshot at real 1920 × 1080 scale. Blurred patches mark spectator panels the mod removes from the battlefield; in game, the map shows through.</p>
+
+  <div class="band-h"><h3>Bottom HUD and tooltips at 1:1</h3><span class="tele">1920 × 380 crop · scroll sideways · hover to try</span></div>
+  <div class="band" id="band"><div class="clip" style="height:380px"><div class="stage" id="stageBand" style="top:-700px"></div></div></div>
+
+  <div class="sec-title"><h2>What each part does</h2></div>
+  <section class="notes" id="notes"></section>
+
+  <div class="sec-title"><h2>Information budget</h2></div>
+  <div class="tbl-wrap">
+    <table class="budget">
+      <thead><tr><th>Information</th><th>Your mock</th><th>League (player)</th><th>Here</th></tr></thead>
+      <tbody>
+        <tr><td>Teams, series score, kills, towers, gold, clock</td><td class="y">Vanilla bar</td><td class="y">Partly</td><td><span class="pill kp">Kept</span> Vanilla top stripe, unchanged</td></tr>
+        <tr><td>Your HP, level, Q/W/R cooldowns</td><td class="y">Yes</td><td class="y">Yes</td><td><span class="pill kp">Kept</span> Skill row and bottom centre</td></tr>
+        <tr><td>Your KDA and CS</td><td class="y">Yes</td><td class="y">Yes</td><td><span class="pill kp">Kept</span> Bottom left, icon-labelled</td></tr>
+        <tr><td>Gold, items, next auto-buy and progress to it</td><td class="y">Yes</td><td class="y">Yes</td><td><span class="pill kp">Kept</span> Bottom right. No shop key, since buying is automatic</td></tr>
+        <tr><td>Pause, screenshot, menu</td><td class="y">Yes</td><td class="y">Menu</td><td><span class="pill kp">Kept</span> Bottom left corner</td></tr>
+        <tr><td>Minimap and its timers</td><td class="y">Yes</td><td class="y">Yes</td><td><span class="pill kp">Kept</span> Raised 38 px to clear the stripe</td></tr>
+        <tr><td>Skill and item details</td><td class="x">No</td><td class="y">On hover</td><td><span class="pill nw">Added</span> Tooltip and item card, on hover only</td></tr>
+        <tr><td>Ally HP, ultimate ready, respawn timer</td><td class="x">No</td><td class="y">Yes</td><td><span class="pill nw">Added</span> Four portraits, bottom left</td></tr>
+        <tr><td>Recall channel, your respawn countdown</td><td class="x">No</td><td class="y">Yes</td><td><span class="pill nw">Added</span> Only shown in those moments</td></tr>
+        <tr><td>Everyone's level, items, KDA, CS</td><td class="x">No</td><td class="y">Tab only</td><td><span class="pill kp">Tab only</span></td></tr>
+        <tr><td>Ping, shop, enemy whereabouts, AI intentions</td><td class="x">No</td><td class="x">No / not in pro</td><td><span class="pill rm">Removed</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="assume">
+    <strong style="color:var(--t1)">Placeholders to replace with game data</strong>
+    <ul>
+      <li>Skill and item names, numbers and descriptions in the tooltips are invented to show the layout.</li>
+      <li>Skill icons are stand-ins. Item icons are cropped from your screenshot.</li>
+      <li>Champions have Q, W and R and no mana; three item slots; B is recall.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const S={ph:'fight',pin:'W',hover:null,tab:false,notes:true,van:false,zone:false};
+const T={w:4.1,recall:6.2,respawn:18,ign:16};
+let scale=1;
+function crop(cx,cy,box,size){const k=size/box;return `background-size:${1920*k}px ${1080*k}px;background-position:${-(cx-box/2)*k}px ${-(cy-box/2)*k}px`;}
+const pt=(p,w,h)=>`<div class="pt" style="width:${w}px;height:${h||w}px;${crop(p[0],p[1],40,w)}"></div>`;
+const it=(p,s)=>`<div class="it" style="width:${s}px;height:${s}px;${crop(p[0],p[1],30,s)}"></div>`;
+
+const I={ /* 18px line icons, currentColor */
+ pause:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+ cam:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.5 8h3.5l2-3h6l2 3h3.5v11h-17z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+ more:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+ swords:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M4 4l10 10M20 4L10 14M6 18l-2 2M18 18l2 2M7 15l2 2M17 15l-2 2"/></svg>',
+ minion:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 4h4l-2 5 2 8H5l2-8-2-5h4z"/></svg>',
+ list:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="18" height="3"/><rect x="3" y="11" width="18" height="3"/><rect x="3" y="17" width="18" height="3"/></svg>',
+ coin:'<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#fdee00"/><rect x="9" y="9" width="6" height="6" fill="#1c1a18" transform="rotate(45 12 12)"/></svg>',
+ recall:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></svg>',
+ skull:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a8 8 0 0 0-8 8c0 3 1.5 4.5 3 5.5V20h10v-3.5c1.5-1 3-2.5 3-5.5a8 8 0 0 0-8-8zm-3 7.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm6 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>',
+ clock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>',
+ range:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+ atk:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3l2 2-11 11-3 1 1-3z"/><path d="M5 16l3 3-3 2-2-2z"/></svg>',
+ crit:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5-6.5-4.5-6.5 4.5L8 14 2 9.5h7.5z"/></svg>',
+ spd:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5l8 7-8 7zM12 5l8 7-8 7z"/></svg>',
+ heart:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21l-8-8a5 5 0 0 1 8-6 5 5 0 0 1 8 6z"/></svg>'
+};
+const SK={
+ Q:{svg:'<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1d2a36"/><path d="M8 54C16 26 38 10 58 10C42 18 30 32 24 56Z" fill="#53b8e4"/><path d="M15 52C22 32 38 18 53 14C40 23 31 34 27 52Z" fill="#e6f5fc"/></svg>',name:'Tide Cutter',type:'Skillshot',cd:'5',rng:'600',rank:4,
+   body:'Slashes in a line, dealing <span class="vl">180</span> <span class="sc">(+70% ATK)</span> damage and <span class="kw">slowing</span> by <span class="vl">30%</span> for <span class="vl">1.5s</span>.'},
+ W:{svg:'<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#2b2826"/><path d="M14 50L32 14L50 50Z" fill="none" stroke="#eeecec" stroke-width="5"/><rect x="29" y="30" width="6" height="10" fill="#fdee00"/><rect x="29" y="43" width="6" height="5" fill="#fdee00"/></svg>',name:'Tripwire',type:'Trap',cd:'7',rng:'450',rank:3,
+   body:'Plants a trap. The first enemy to step on it is <span class="kw">rooted</span> for <span class="vl">1.2s</span> and takes <span class="vl">140</span> <span class="sc">(+60% ATK)</span> damage.'},
+ R:{svg:'<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#2e1820"/><circle cx="32" cy="32" r="18" fill="none" stroke="#ff7a8e" stroke-width="4"/><path d="M32 6V20M32 44V58M6 32H20M44 32H58" stroke="#eeecec" stroke-width="4"/><circle cx="32" cy="32" r="5" fill="#fdee00"/></svg>',name:'Deadeye',type:'Ultimate',cd:'90',rng:'2000',rank:2,
+   body:'Locks onto a champion, then fires one shot for <span class="vl">450</span> <span class="sc">(+150% ATK)</span> damage. Deals <span class="vl">50%</span> more to targets below <span class="kw">35% HP</span>.'}
+};
+const ITEMS=[
+ {p:[643,866],name:'Ember Saber',cost:'2,800',stats:[['atk','+55'],['crit','+20%']],kw:'Kindle',pass:'Critical hits <span class="kw">burn</span> for <span class="vl">60</span> damage over <span class="vl">3s</span>.'},
+ {p:[677,866],name:'Gale Bow',cost:'2,600',stats:[['spd','+35%'],['crit','+20%']],kw:'Tailwind',pass:'Every <span class="vl">3rd</span> attack grants <span class="vl">+20%</span> move speed for <span class="vl">2s</span>.'},
+ {p:[712,866],name:'Wyrm Fang',cost:'1,300',stats:[['atk','+25'],['heart','+8% lifesteal']],kw:'',pass:''}
+];
+const NEXT={p:[1212,866],name:'Rift Blade',cost:1100,stats:[['atk','+35'],['heart','+250 HP']],pass:'Damaging a champion with a skill grants a <span class="kw">shield</span> of <span class="vl">120</span> for <span class="vl">2s</span>.'};
+const ALLY=[{n:'xiaohan',lv:8,hp:.88,ult:true,p:[40,477]},{n:'IgNar',lv:9,dead:true,p:[40,542]},{n:'NiKo',lv:9,hp:.62,ult:false,p:[40,607]},{n:'MaHa',lv:7,hp:.4,ult:true,p:[40,672]}];
+const MASKS=[[14,58,296,46],[8,380,306,316],[8,714,306,58],[1610,380,302,320],[1712,124,204,56],[612,842,698,188]];
+const GOLD=860;
+
+function skill(k){
+  const tip=`data-tip="${k}"`;
+  if(S.ph==='dead') return `<div class="sk off" ${tip}>${SK[k].svg}<span class="kc">${k}</span></div>`;
+  if(k==='W'){const on=T.w>0;return `<div class="sk" ${tip} data-live="w">${SK.W.svg}<div class="drain" style="height:${Math.max(0,T.w)/7*100}%;${on?'':'display:none'}"></div><div class="cdn num" style="${on?'':'display:none'}">${Math.max(0,T.w).toFixed(1)}</div><span class="kc">W</span></div>`;}
+  if(k==='R') return `<div class="sk ready" ${tip}>${SK.R.svg}<span class="kc">R</span></div>`;
+  return `<div class="sk" ${tip}>${SK.Q.svg}<span class="kc">Q</span></div>`;
+}
+function hudHTML(){
+  const dead=S.ph==='dead', low=S.ph==='low';
+  const max=1904, hp=low?312:1284, trail=low?540:1360;
+  const allies=ALLY.map(a=>a.dead
+    ?`<div class="ally dead" title="${a.n} · Lv ${a.lv}">${pt(a.p,40,36)}<div class="rs num" data-live="ign">${Math.ceil(T.ign)}</div><div class="bar"></div><div class="ult"></div></div>`
+    :`<div class="ally" title="${a.n} · Lv ${a.lv}">${pt(a.p,40,36)}<div class="bar"><i style="width:${a.hp*100}%"></i></div><div class="ult${a.ult?' ready':''}"></div></div>`).join('');
+  const vit=dead
+    ?`<div class="hp rsp"><span class="ic" style="color:var(--t2)">${I.skull}</span><b class="num" data-live="rsp">${Math.ceil(T.respawn)}</b></div>`
+    :`<div class="hp"><div class="tr" style="width:${trail/max*100}%"></div><div class="fl" style="width:${hp/max*100}%"></div><div class="ticks"></div><span class="hv num">${hp.toLocaleString('en-US')} <i>/ ${max.toLocaleString('en-US')}</i></span></div>`;
+  return `<div class="skills" data-n="4">${skill('Q')}${skill('W')}${skill('R')}</div>
+  <div class="stripe">
+    <div class="ubtns" data-n="1"><div class="ub" title="Pause">${I.pause}</div><div class="ub" title="Screenshot">${I.cam}</div><div class="ub" title="Menu">${I.more}</div></div>
+    <span class="vdiv"></span>
+    <div class="allies" data-n="2">${allies}</div>
+    <span class="vdiv"></span>
+    <div class="stat" data-n="3" title="Kills / Deaths / Assists"><span class="ic">${I.swords}</span><b class="num">3<span class="sl">/</span><span class="d">${dead?2:1}</span><span class="sl">/</span>3</b></div>
+    <div class="stat" title="Creep score"><span class="ic">${I.minion}</span><b class="num">90</b></div>
+    <div class="tabk" title="Hold for scoreboard"><span class="kc">Tab</span>${I.list}</div>
+    <div class="vitals" data-n="5"><div class="lv" title="Level 12 · 58% to 13"><b>12</b><div class="xp"><i></i></div></div>${vit}</div>
+    <div class="right" data-n="6">
+      ${ITEMS.map((x,i)=>`<div class="slot" data-tip="i${i}">${it(x.p,32)}</div>`).join('')}
+      <span class="vdiv"></span>
+      <div class="auto"><div class="nx" data-tip="next" title="Next auto-buy">${it(NEXT.p,30)}<div class="fillbar"><i style="width:${GOLD/NEXT.cost*100}%"></i></div></div>
+      <div class="gold"><span class="ic">${I.coin}</span><b class="num">${GOLD}</b></div></div>
+      <span class="vdiv"></span>
+      <div class="recall" title="Recall"><span class="kc">B</span><span class="ic" style="color:var(--t2)">${I.recall}</span></div>
+    </div>
+  </div>
+  <div class="mm" data-n="7"></div>`;
+}
+function tipHTML(key){
+  if(!key||S.van) return '';
+  if(SK[key]){
+    const s=SK[key], pips=[1,2,3,4,5].map(i=>`<i class="${i<=s.rank?'on':''}"></i>`).join('');
+    return `<div class="tip" style="left:${960-220}px;bottom:${1080-962+12}px">
+      <div class="code">SKILL · ${key} · RANK ${s.rank}</div>
+      <div class="th"><div class="icon">${s.svg}</div><div><div class="tn">${s.name}</div>
+        <div class="chips"><span class="chip"><span class="ic">${I.clock}</span>${s.cd}s</span><span class="chip"><span class="ic">${I.range}</span>${s.rng}</span><span class="pips">${pips}</span></div></div>
+        <div class="ty"><span class="kc">${key}</span>${s.type.toUpperCase()}</div></div>
+      <hr><p>${s.body}</p></div>`;
+  }
+  const isNext=key==='next', x=isNext?NEXT:ITEMS[+key.slice(1)];
+  const left=isNext?1190+3*50+26-180:1190+(+key.slice(1))*50-20;
+  const stats=x.stats.map(([ic,v])=>`<span class="chip"><span class="ic">${I[ic]}</span>${v}</span>`).join('');
+  const foot=isNext
+    ?`<div class="foot"><span class="tag y">AUTO-BUY NEXT</span><div class="bar"><i style="width:${GOLD/NEXT.cost*100}%"></i></div><span class="ic">${I.coin}</span><span class="g num">${GOLD} / ${NEXT.cost.toLocaleString('en-US')}</span></div>`
+    :`<div class="foot"><span class="tag">OWNED</span><span style="margin-left:auto" class="ic">${I.coin}</span><span class="g num">${x.cost}</span></div>`;
+  return `<div class="tip" style="width:380px;left:${left}px;bottom:${50+12}px">
+    <div class="code">ITEM${isNext?' · QUEUED':' · SLOT '+(+key.slice(1)+1)}</div>
+    <div class="th"><div class="icon">${it(x.p,44)}</div><div><div class="tn">${x.name}</div></div><div></div></div>
+    <hr><div class="stats">${stats}</div>
+    ${x.pass?`<hr><p>${x.kw?`<span class="kw">${x.kw}.</span> `:''}${x.pass}</p>`:''}
+    ${foot}</div>`;
+}
+function boardHTML(){
+  const dead=S.ph==='dead';
+  const L=[['Jykim',12,dead?'3/2/3':'3/1/3',90,[40,412],866,dead?Math.ceil(T.respawn):0],['xiaohan',8,'0/1/3',49,[40,477],902,0],['IgNar',9,'1/5/1',48,[40,542],938,Math.ceil(T.ign)],['NiKo',9,'1/4/1',55,[40,607],974,0],['MaHa',7,'3/3/4',11,[40,672],1010,0]];
+  const R=[['SilverCastle',10,'1/3/3',77,[1641,412],866,0],['Cody Sun',9,dead?'7/0/6':'6/0/6',30,[1641,478],902,0],['Daniela',10,'1/2/7',69,[1641,545],938,40],['Yutapon',8,'3/2/3',58,[1641,607],974,0],['Toasty',7,'3/1/6',13,[1641,672],1010,0]];
+  const tbl=(rows,ix,mine)=>`<table><thead><tr><th></th><th>LV</th><th><span class="ic">${I.swords}</span></th><th><span class="ic">${I.minion}</span></th><th></th></tr></thead><tbody>`+
+    rows.map((r,i)=>`<tr${mine&&i===0?' class="mine"':''}><td class="n${r[6]?' dead':''}">${pt(r[4],34)}${r[0]}${r[6]?` <span class="ic">${I.skull}</span>${r[6]}`:''}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><div class="its">${ix.map(x=>it([x,r[5]],28)).join('')}</div></td></tr>`).join('')+`</tbody></table>`;
+  return `<div class="board appear-c"><div class="cols">${tbl(L,[643,677,712],true)}${tbl(R,[1212,1247,1282],false)}</div></div>`;
+}
+function stageHTML(){
+  let h=`<div class="world"></div>`+MASKS.map(m=>`<div class="mask" style="left:${m[0]}px;top:${m[1]}px;width:${m[2]}px;height:${m[3]}px">${m[3]>60?'<span>Spectator panel removed</span>':''}</div>`).join('');
+  h+=`<div class="vtop" style="left:0;top:0;width:1920px;height:50px;background-position:0 0"></div><div class="vtop" style="left:928px;top:50px;width:64px;height:24px;background-position:-928px -50px"></div>`;
+  h+=hudHTML();
+  if(S.ph==='recall') h+=`<div class="channel appear-c"><span class="ic" style="color:var(--signal-cyan)">${I.recall}</span><div class="bar"><i data-live="rcb" style="width:${Math.max(0,T.recall)/8*100}%"></i></div><span class="num" data-live="rc">${Math.max(0,T.recall).toFixed(1)}</span></div>`;
+  if(S.tab) h+=boardHTML();
+  h+=`<div class="tips"></div>`;
+  if(S.zone) h+=`<div class="zone" style="top:50px;height:980px"><span>BATTLEFIELD · 1920 × 980 · UNCHANGED</span></div>`;
+  if(S.van) h+=`<div class="vanilla"></div><div class="vanilla-tag">Vanilla spectator view</div>`;
+  return h;
+}
+const STAGES=['#stage','#stageBand'];
+function renderTips(){
+  const key=S.hover||(S.pin==='none'?null:S.pin);
+  STAGES.forEach(id=>{const st=$(id);st.querySelector('.tips').innerHTML=tipHTML(key);
+    st.querySelectorAll('[data-tip]').forEach(e=>e.classList.toggle('tip-on',e.dataset.tip===key));});
+}
+function render(){
+  const h=stageHTML();
+  STAGES.forEach(id=>{const el=$(id);el.innerHTML=h;el.classList.toggle('dead',S.ph==='dead');el.classList.toggle('low',S.ph==='low');});
+  document.querySelectorAll('[data-ph]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ph===S.ph)));
+  document.querySelectorAll('[data-pin]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pin===S.pin)));
+  [['#t-tab','tab'],['#t-notes','notes'],['#t-van','van'],['#t-zone','zone']].forEach(([id,k])=>$(id).setAttribute('aria-pressed',String(S[k])));
+  renderTips(); placeCallouts();
+}
+STAGES.forEach(id=>{
+  const st=$(id);
+  st.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');const k=t?t.dataset.tip:null;if(k!==S.hover){S.hover=k;renderTips();}});
+  st.addEventListener('mouseleave',()=>{if(S.hover){S.hover=null;renderTips();}});
+});
+function live(){
+  document.querySelectorAll('[data-live="w"]').forEach(w=>{const on=T.w>0;const d=w.querySelector('.drain'),c=w.querySelector('.cdn');d.style.display=c.style.display=on?'':'none';d.style.height=(Math.max(0,T.w)/7*100)+'%';c.textContent=Math.max(0,T.w).toFixed(1);});
+  const set=(k,v)=>document.querySelectorAll(`[data-live="${k}"]`).forEach(e=>e.textContent=v);
+  set('ign',Math.ceil(T.ign)); set('rsp',Math.ceil(T.respawn)); set('rc',Math.max(0,T.recall).toFixed(1));
+  document.querySelectorAll('[data-live="rcb"]').forEach(e=>e.style.width=(Math.max(0,T.recall)/8*100)+'%');
+}
+if(!reduce) setInterval(()=>{T.w-=.1;if(T.w<-1.5)T.w=7;T.recall-=.1;if(T.recall<-.6)T.recall=8;T.respawn-=.1;if(T.respawn<=0)T.respawn=18;T.ign-=.1;if(T.ign<=0)T.ign=16;live();},100);
+
+const NOTES=[
+ ['Pause, screenshot, menu','Your three buttons from the first mock, as icons only, in the corner where they never compete with combat information.'],
+ ['Allies','Four portraits with an HP line underneath and a diamond in the corner that turns yellow when their ultimate is ready. A dead ally greys out and shows a respawn number over the face. Hover shows name and level.'],
+ ['KDA, CS, scoreboard','Icons replace the words: crossed swords for K/D/A with deaths in orange, a minion for CS. The Tab key cap with a list icon is the only hint that a scoreboard exists.'],
+ ['Skill row','The only part that reaches into the battlefield, 196 × 68 px. Cooldown drains from the top with a number on it; a ready ultimate gets the yellow frame. Hover opens the skill tooltip above the row.'],
+ ['Level and HP','A level number with an XP line under it, and the HP bar with a tick every 100 HP. The bar turns orange when low. When you die, the same slot shows a skull and the respawn countdown.'],
+ ['Items, auto-buy, gold, recall','Your three items, then the item the game will buy next: a dimmed icon in a dashed frame with a yellow bar that fills as your gold approaches its cost. No shop key, since buying is automatic. B is recall, shown with a home icon.'],
+ ['Minimap','Vanilla, raised 38 px so the bottom stripe doesn\'t cover it.']
+];
+$('#notes').innerHTML=NOTES.map((n,i)=>`<div class="note"><span class="n">${i+1}</span><div><h3>${n[0]}</h3><p>${n[1]}</p></div></div>`).join('')+
+ `<div class="note"><span class="n" style="background:var(--t1)">T</span><div><h3>Skill tooltip and item card</h3><p>Built on the Endfield tooltip anatomy from your lab: translucent warm panel, code line with a yellow ring marker, title with a type label on the right, a divider, then the description. Stats are icon + number so they scan without reading. Cyan marks effects, bold white marks numbers, grey marks scaling. They fade in over 100 ms and vanish in one frame. The next-buy card adds a progress bar toward its cost.</p></div></div>`;
+
+function placeCallouts(){
+  document.querySelectorAll('.callout').forEach(n=>n.remove());
+  if(S.van) return;
+  const root=$('#stage'),rr=root.getBoundingClientRect();
+  root.querySelectorAll('[data-n]').forEach(el=>{const r=el.getBoundingClientRect();const d=document.createElement('div');d.className='callout';d.textContent=el.dataset.n;
+    d.style.left=((r.left-rr.left)/scale)+'px';d.style.top=((r.top-rr.top)/scale)+'px';root.appendChild(d);});
+}
+function fit(){scale=$('#frame').clientWidth/1920;$('#stage').style.transform=`scale(${scale})`;placeCallouts();}
+document.querySelectorAll('[data-ph]').forEach(b=>b.addEventListener('click',()=>{S.ph=b.dataset.ph;render();}));
+document.querySelectorAll('[data-pin]').forEach(b=>b.addEventListener('click',()=>{S.pin=b.dataset.pin;render();}));
+[['#t-tab','tab'],['#t-van','van'],['#t-zone','zone']].forEach(([id,k])=>$(id).addEventListener('click',()=>{S[k]=!S[k];render();}));
+$('#t-notes').addEventListener('click',()=>{S.notes=!S.notes;document.body.classList.toggle('no-notes',!S.notes);$('#t-notes').setAttribute('aria-pressed',String(S.notes));});
+render();fit();
+const b=$('#band'); b.scrollLeft=(1920-b.clientWidth)/2;
+new ResizeObserver(fit).observe($('#frame'));
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(placeCallouts);
+})();
+</script>
+
+</body></html>

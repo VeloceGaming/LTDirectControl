@@ -1,8 +1,24 @@
 //! Public Windows keyboard, cursor and focus queries. No input injection.
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Raw(pub [bool; 256]);
+impl Default for Raw {
+    fn default() -> Self {
+        Self([false; 256])
+    }
+}
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Keys {
     pub focused: bool,
+    pub raw: Raw,
+    pub attack_click: bool,
+    pub previews: [bool; 3],
+    pub self_casts: [bool; 3],
+    pub cast_modes: [u8; 3],
+    pub mapped: bool,
+    pub champion_hold: Option<bool>,
+    pub camera_options: Option<(bool, bool, bool, f32)>,
+    pub camera_lock_default: bool,
     pub dx: i8,
     pub dy: i8,
     pub selection: Option<usize>,
@@ -18,9 +34,11 @@ pub struct Keys {
     pub camera_toggle: bool,
     pub space: bool,
     pub shift: bool,
+    pub alt: bool,
     pub abilities: [bool; 3],
     pub recall: bool,
-    /// Physical toggle buttons: backtick and Mouse 4 (Windows XBUTTON1).
+    pub shop: bool,
+    /// Current primary/secondary champion-only binding states.
     pub champion_toggle: [bool; 2],
     /// Session-scoped mode resolved by the client before command acquisition.
     pub champion_only: bool,
@@ -43,6 +61,13 @@ impl ChampionOnlyToggle {
         identity: Option<(crate::native_timing::MatchKey, usize)>,
     ) -> bool {
         let binding = identity.filter(|_| active);
+        if keys.champion_hold == Some(true) {
+            self.enabled = active && keys.focused && keys.champion_toggle.into_iter().any(|b| b);
+            self.binding = binding;
+            self.focused = keys.focused;
+            self.previous = keys.champion_toggle;
+            return self.enabled;
+        }
         let same_binding = binding.is_some() && binding == self.binding;
         if !same_binding {
             self.enabled = false;
@@ -145,31 +170,106 @@ pub fn poll() -> Keys {
             None
         }
     };
-    Keys {
-        focused,
-        dx: i8::from(down(0x4c)) - i8::from(down(0x4a)), // L - J
-        dy: i8::from(down(0x4b)) - i8::from(down(0x49)), // K - I
-        selection: down(0x11)
-            .then(|| (0..5).find(|slot| down(0x31 + *slot as i32) || down(0x61 + *slot as i32)))
-            .flatten(),
-        start: down(0x11) && down(0x24),
-        release: down(0x11) && down(0x23),
-        right: down(0x02),
-        left: down(0x01),
-        team_info: down(0x09),
-        middle: down(0x04),
-        stop: down(0x53),
-        attack_move: down(0x41),
-        escape: down(0x1b),
-        camera_toggle: down(0x59),
-        space: down(0x20),
-        shift: down(0x10),
-        abilities: [down(0x51), down(0x57), down(0x52)],
-        recall: down(0x42),
-        champion_toggle: [down(0xc0), down(0x05)], // VK_OEM_3 / VK_XBUTTON1
-        champion_only: false,
-        cursor,
+    let mut raw = Raw::default();
+    if crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed) {
+        raw.0 = std::array::from_fn(|i| down(i as i32));
+    } else {
+        let v = crate::settings::current();
+        let mut needed = [false; 256];
+        for d in crate::settings::BINDINGS {
+            for c in v.binding(d.key).into_iter().flatten() {
+                needed[c.code as usize] = true;
+            }
+        }
+        for i in [1, 0x10, 0x11, 0x12, 0x1b] {
+            needed[i] = true;
+        }
+        for (i, query) in needed.into_iter().enumerate() {
+            if query {
+                raw.0[i] = down(i as i32);
+            }
+        }
     }
+
+    mapped(raw, focused, cursor)
+}
+
+pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
+    let v = crate::settings::current();
+    let pressed = |key| v.pressed(key, &raw.0);
+    let previews = [
+        pressed("preview_q"),
+        pressed("preview_w"),
+        pressed("preview_r"),
+    ];
+    let self_casts = [pressed("self_q"), pressed("self_w"), pressed("self_r")];
+    let mut keys = Keys {
+        focused,
+        raw,
+        cursor,
+        mapped: true,
+        dx: i8::from(pressed("pan_right")) - i8::from(pressed("pan_left")),
+        dy: i8::from(pressed("pan_down")) - i8::from(pressed("pan_up")),
+        selection: [
+            "select_top",
+            "select_jungle",
+            "select_mid",
+            "select_bottom",
+            "select_support",
+        ]
+        .iter()
+        .position(|k| pressed(k)),
+        start: pressed("start"),
+        release: pressed("release"),
+        right: pressed("move"),
+        left: raw.0[1],
+        team_info: pressed("tab"),
+        middle: pressed("drag_camera"),
+        stop: pressed("stop"),
+        attack_move: pressed("attack_aim"),
+        attack_click: pressed("attack_click"),
+        // While the shop is open, Esc closes it and must not cancel a recall.
+        escape: raw.0[0x1b] && !crate::shop_ui::OPEN.load(std::sync::atomic::Ordering::Relaxed),
+        camera_toggle: pressed("camera_toggle"),
+        space: pressed("follow"),
+        shift: raw.0[0x10],
+        alt: raw.0[0x12],
+        abilities: std::array::from_fn(|i| {
+            pressed(["q", "w", "r"][i]) || previews[i] || self_casts[i]
+        }),
+        previews,
+        self_casts,
+        cast_modes: std::array::from_fn(|i| v.number(["cast_q", "cast_w", "cast_r"][i]) as u8),
+        recall: pressed("recall"),
+        shop: pressed("shop"),
+        champion_toggle: std::array::from_fn(|i| {
+            v.binding("champion_only")[i].is_some_and(|c| {
+                raw.0[c.code as usize] && crate::settings::modifiers(&raw.0) & c.mods == c.mods
+            })
+        }),
+        champion_hold: Some(v.number("champion_mode") == 0.),
+        camera_options: Some((
+            v.number("edge_pan") == 1.,
+            v.number("drag") == 1.,
+            v.number("zoom") == 1.,
+            v.number("pan_speed") as f32,
+        )),
+        camera_lock_default: v.number("camera_lock") == 1.,
+        ..Keys::default()
+    };
+    if crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed) {
+        keys = Keys {
+            focused,
+            raw,
+            cursor,
+            left: raw.0[1],
+            escape: raw.0[0x1b],
+            mapped: true,
+            champion_hold: Some(v.number("champion_mode") == 0.),
+            ..Keys::default()
+        };
+    }
+    keys
 }
 
 #[cfg(not(windows))]
@@ -187,6 +287,33 @@ mod tests {
             champion_toggle: buttons,
             ..Keys::default()
         }
+    }
+    #[test]
+    fn hold_mode_releases_without_a_second_press_and_drops_on_focus_loss() {
+        let mut mode = ChampionOnlyToggle::default();
+        let hold = Keys {
+            champion_hold: Some(true),
+            ..keys([true, false])
+        };
+        assert!(mode.update(hold, true, IDENTITY));
+        assert!(!mode.update(
+            Keys {
+                champion_hold: Some(true),
+                ..keys([false, false])
+            },
+            true,
+            IDENTITY
+        ));
+        assert!(mode.update(hold, true, IDENTITY));
+        assert!(!mode.update(
+            Keys {
+                focused: false,
+                ..hold
+            },
+            true,
+            IDENTITY
+        ));
+        assert!(!mode.update(hold, false, IDENTITY));
     }
     #[test]
     fn either_button_toggles_once_and_simultaneous_presses_do_not_double_toggle() {
