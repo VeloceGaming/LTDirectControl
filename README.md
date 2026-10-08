@@ -105,7 +105,7 @@ Everything lives in `probe/src`. The crate is still named
 | Area | Modules |
 |---|---|
 | Entry points | `lib.rs`: `Client`, the SDK client extension (UI and input each frame), and `Simulation`, the per-player AI callback (simulation side) |
-| Game hooks (0.6.3 only) | `native_adapter.rs` (all native hooks and patches), `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `native_preview.rs` |
+| Game hooks (0.6.3 only) | `native_adapter/`: `mod.rs` (the safe API the rest of the mod calls), `windows/mod.rs` (patch installation), `windows/layout.rs` (every 0.6.3 address and byte pattern), one file per hook family (`movement`, `combat`, `outline`, `view`, `input`, `shop`); `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `native_preview.rs` |
 | Orders and input | `platform_input.rs` (keyboard/mouse), `movement.rs` (orders and movement), `combat.rs` (targets), `abilities.rs` (casting), `camera.rs`, `wheel.rs`, `map_path.rs` |
 | Picking | `sprite_picking.rs` (body sizes), `own_selection.rs` |
 | HUD and windows | `player_hud.rs`, `team_status.rs`, `team_info.rs`, `session_ui.rs`, `settings_ui.rs`, `shop_ui.rs`, `minimap.rs`, `screen_effect.rs`, `skill_preview.rs`, `cursor.rs`, `tooltips.rs`, `hud_*.rs`, `ui_graphics.rs` |

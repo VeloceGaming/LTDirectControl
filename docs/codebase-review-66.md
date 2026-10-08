@@ -22,6 +22,12 @@ text searches and are approximate.
   `Movement`), `timing_test` → `test_support`, `ClientProbe`/`AiProbe` →
   `Client`/`Simulation`, new crate and movement module docs. The mod ID and
   the `probe.log` file names stay until the public release.
+- Stage 4 done (0.66.2): `native_adapter.rs` split into `native_adapter/mod.rs`
+  (public API) and `windows/` (`mod.rs` patch install, `layout.rs` with every
+  0.6.3 address and byte pattern, `movement`, `combat`, `outline`, `view`,
+  `input`, `shop`, `tests`). Verified as pure moves. Entity field offsets are
+  still inline; `native_profile.rs` was not merged into `layout.rs` (it holds
+  build identity and layout guards checked at startup).
 
 ## Summary
 

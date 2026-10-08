@@ -84,11 +84,12 @@ class ProfileTest(unittest.TestCase):
 
     def test_reviewed_profile_cannot_verify_stale_rust_addresses(self):
         profile=json.loads((verifier.ROOT/'tools/native_profiles/0.6.3.json').read_text())
-        for name in ['native_adapter','native_profile','native_items','native_preview','minimap']:
+        for name in ['native_profile','native_items','native_preview','minimap']:
             target=self.root/f'probe/src/{name}.rs';target.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(verifier.ROOT/f'probe/src/{name}.rs',target)
+        shutil.copytree(verifier.ROOT/'probe/src/native_adapter',self.root/'probe/src/native_adapter')
         verifier.verify_sources(profile,self.root)
-        path=self.root/'probe/src/native_adapter.rs'
+        path=self.root/'probe/src/native_adapter/windows/layout.rs'
         path.write_text(path.read_text().replace('WORKER_SITE: usize = 0xbfc77a','WORKER_SITE: usize = 0xbe470a'))
         with self.assertRaises(AssertionError):
             verifier.verify_sources(profile,self.root)

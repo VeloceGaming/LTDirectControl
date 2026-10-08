@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.66.2 — 2026-10-08
+
+- native_adapter.rs (about 4,100 lines) split into native_adapter/mod.rs (the API the rest of the mod calls) and native_adapter/windows/: mod.rs (patch installation and shared helpers), layout.rs (every 0.6.3 address, call site and byte pattern), movement, combat, outline, view, input, shop and tests. Pure moves: every item verified unchanged apart from formatting and crate-internal visibility.
+
 ## 0.66.1 — 2026-10-08
 
 - Internal renames, no behaviour change: movement_test.rs → movement.rs (MovementTest → Movement), timing_test.rs → test_support.rs, ClientProbe → Client, AiProbe → Simulation; crate documentation describes the two entry points. Mod ID and probe.log names unchanged.

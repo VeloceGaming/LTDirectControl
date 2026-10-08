@@ -15,6 +15,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EXE = GAME_EXE
 
 
+def adapter_source(root=ROOT):
+    """All native adapter sources (probe/src/native_adapter/**), joined."""
+    folder = root / 'probe/src/native_adapter'
+    return '\n'.join(p.read_text(encoding='utf-8') for p in sorted(folder.rglob('*.rs')))
+
+
 def declaration(source, name):
     match = re.search(rf'const {name}\s*:[^=]+?=\s*(.*?);', source, re.S)
     if not match:
@@ -32,7 +38,7 @@ def byte_pairs(value):
 
 
 def verify_sources(profile, root=ROOT):
-    adapter = (root/'probe/src/native_adapter.rs').read_text()
+    adapter = adapter_source(root)
     identity = (root/'probe/src/native_profile.rs').read_text()
     items = (root/'probe/src/native_items.rs').read_text()
     preview = (root/'probe/src/native_preview.rs').read_text()

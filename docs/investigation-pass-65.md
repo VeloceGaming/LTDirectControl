@@ -85,7 +85,7 @@ small stutters; vanilla is CPU-heavy. UI writes are already deduplicated.
 
 Proven waste (0.64.2 log):
 
-- Movement steering hook ([native_adapter.rs:1872](../probe/src/native_adapter.rs:1872)):
+- Movement steering hook ([native_adapter/windows/movement.rs](../probe/src/native_adapter/windows/movement.rs)):
   163,947,864 entries, 9,115 owned. Every entry takes the abilities mutex in
   `selected_key` before rejecting.
 - Shop hooks ([shop.rs](../probe/src/shop.rs) `answer`): ~2.4 million mutex

@@ -65,7 +65,7 @@ Do not reuse offsets on a different binary by merely removing a version check.
 
 Start reading [investigation.md](history/investigation.md), then the current code in
 [`probe/src/lib.rs`](../probe/src/lib.rs) and
-[`probe/src/native_adapter.rs`](../probe/src/native_adapter.rs).
+[`probe/src/native_adapter/`](../probe/src/native_adapter/mod.rs) (addresses in `windows/layout.rs`).
 
 ## 2. Turn strings and metadata into candidate functions
 
