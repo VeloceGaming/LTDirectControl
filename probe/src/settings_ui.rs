@@ -1833,7 +1833,8 @@ mod tests {
         assert!(max_scroll(1) > 0.);
         assert!(max_scroll(0) > 0.);
         assert_eq!(max_scroll(2), 0.);
-        assert_eq!(max_scroll(3), 29.);
+        // 0.66: the Log detail choice row adds 90 px to Interface.
+        assert_eq!(max_scroll(3), 119.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);
         assert_eq!(camera[1].0.height(), 56.);

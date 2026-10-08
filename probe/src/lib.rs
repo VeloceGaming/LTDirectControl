@@ -10,6 +10,7 @@ mod hud_motion;
 mod hud_style;
 mod input_trace;
 mod inventory;
+mod logging;
 mod map_path;
 mod minimap;
 mod movement_test;
@@ -84,6 +85,9 @@ impl Logger {
     }
 
     fn write_sample(&self, text: &str, background: bool) {
+        if !logging::enabled(text) {
+            return;
+        }
         let since = std::time::Instant::now();
         let Ok(mut state) = self.0.lock() else { return };
         perf::waited(perf::Wait::Logger, since);
@@ -764,6 +768,7 @@ impl StableExtension for ClientProbe {
             &self.logger,
         );
         let _t = perf::time(perf::Section::Post);
+        logging::set(self.cursor.settings.number("log_level"));
         self.post_update_inner(ctx, dt_micros);
     }
     fn post_render(&self, ctx: &mut StableClient<'_>) {
@@ -1384,6 +1389,7 @@ fn init(host: &StableHost) -> StableMod {
     let camera = Arc::new(camera::CameraControl::default());
     let cast_on_release = runtime_storage::cast_on_release(directory.as_deref());
     let cursor = cursor::Cursor::new(directory.as_deref());
+    logging::set(cursor.settings.number("log_level"));
     logger.write(&format!("CONTROLS cast_on_release={cast_on_release}; default quickcast; Shift normal cast; Alt self cast"));
     let abilities = Arc::new(abilities::Abilities::new(cast_on_release));
     let hud = Arc::new(player_hud::PlayerHud::default());

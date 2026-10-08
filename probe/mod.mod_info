@@ -2,7 +2,7 @@
   "mod_id": "lt_direct_control_probe",
   "name": "LT Direct Control",
   "author": "LTDirectControl",
-  "version": "0.65.2",
+  "version": "0.66.0",
   "mod_type": "native",
   "contains_code": true,
   "description": "Direct control for Teamfight Manager 2 0.6.3. F11 starts/resumes control; F12 returns control to AI. Buffered casting, Alt self-cast, targeted approach-to-range and champion-only attack-move. Expanded minimap and Endfield-inspired HUD with supplied typography, rich tooltips, capsule cursor slider, own/opponent/all vision selector, sprite hover/attack outlines with click feedback, outline-only champion selection and optional battlefield-only low-health warning. Automatic purchase tracker, adaptive inventory slots and styled Tab with live stats/items/team availability and battlefield grayscale during death. Supports modded skill and item art. Portable user logs and original live match results.",

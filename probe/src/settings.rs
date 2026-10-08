@@ -188,6 +188,15 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.,
     },
     OptionDef {
+        key: "log_level",
+        page: 3,
+        section: "Debug",
+        label: "Log detail",
+        hint: "Verbose adds per-click and per-second traces for investigations.",
+        control: Control::Choice(&["Quiet", "Normal", "Verbose"]),
+        default: 1.,
+    },
+    OptionDef {
         key: "selection_debug",
         page: 3,
         section: "Debug",
