@@ -13,11 +13,17 @@ Reported by the user; to do after the codebase clean-up (stages 5–6 of
    it while running should pause, so one key toggles.
 3. **Shop design: queued items buy small components.** With several items
    queued, each affordable next step is bought at once, so slots fill with
-   cheap components instead of saving gold for a bigger upgrade. Needs a
-   decision on the rule (for example: finish the first order before starting
-   another, or only buy when a whole step of the first order is affordable).
+   cheap components instead of saving gold for a bigger upgrade. User
+   decision (2026-10-09): offer "first order first" as an option. That is
+   the vanilla buying behaviour (finish one item before starting the next):
+   only the first unfinished order buys; later orders wait.
 4. **Esc on the shop also opens the game's Esc menu.** Closing the shop
    with Esc should not reach the game; today the user closes it with P
    instead. `ui_state::SHOP_OPEN` already stops Esc from cancelling a
    recall; the native Esc key also needs suppressing while the shop is open
    (see how spectator keys are blocked in `native_adapter/windows/input.rs`).
+5. **Skill previews are wrong for many skills.** The aim/range previews
+   (`probe/src/skill_preview.rs`, `native_preview.rs`, `preview_assets.json`)
+   do not match the real skill for a large number of champions, and fixing
+   them one by one by hand is not realistic. Needs a dedicated focus session:
+   find a general way to derive each preview from the game's own skill data.
