@@ -16,3 +16,8 @@ Reported by the user; to do after the codebase clean-up (stages 5–6 of
    cheap components instead of saving gold for a bigger upgrade. Needs a
    decision on the rule (for example: finish the first order before starting
    another, or only buy when a whole step of the first order is affordable).
+4. **Esc on the shop also opens the game's Esc menu.** Closing the shop
+   with Esc should not reach the game; today the user closes it with P
+   instead. `ui_state::SHOP_OPEN` already stops Esc from cancelling a
+   recall; the native Esc key also needs suppressing while the shop is open
+   (see how spectator keys are blocked in `native_adapter/windows/input.rs`).

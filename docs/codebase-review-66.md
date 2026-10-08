@@ -37,6 +37,9 @@ text searches and are approximate.
   start-up and shared with the cursor and client instead of being created
   inside the cursor. Left as they are: the purchase forecast and HUD use
   each other, and click markers are drawn in `cursor.rs`.
+- Stage 6 done (2026-10-09): [modding.md](modding.md), the modder guide.
+  The clean-up plan is complete; remaining user bugs are in
+  [backlog.md](backlog.md).
 
 ## Summary
 

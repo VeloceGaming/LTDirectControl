@@ -134,6 +134,8 @@ cheaply, before taking any lock, and must never wait on the client.
 
 ## Further reading
 
+- [docs/modding.md](docs/modding.md): **start here to modify the mod**: threads,
+  the frame flow, and where to add keys, settings, HUD elements or shop rules.
 - [CHANGELOG.md](CHANGELOG.md): every build.
 - [docs/reverse-engineering-guide.md](docs/reverse-engineering-guide.md) and
   [docs/patch-migration.md](docs/patch-migration.md): how the game hooks were
