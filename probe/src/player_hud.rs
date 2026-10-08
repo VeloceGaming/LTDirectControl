@@ -838,9 +838,10 @@ impl HudUi {
             }
         }
         let manual = shop.as_ref().zip(snapshot).map(|(v, s)| {
-            let (target, steps) = crate::shop::first_open(&v.cat, &v.live, &v.orders)?;
-            let next = v.cat[steps[0].item()].key.clone();
-            let price = v.cat[steps[0].item()].price;
+            let vanilla = crate::settings::option("shop_vanilla_order") == 1.;
+            let (target, step) = crate::shop::upcoming(&v.cat, &v.live, &v.orders, vanilla)?;
+            let next = v.cat[step.item()].key.clone();
+            let price = v.cat[step.item()].price;
             Some((v.cat[target].key.clone(), next, price, s.gold))
         });
         self.purchase_blank = matches!(manual, Some(None));

@@ -235,19 +235,45 @@ pub fn next_step(
     orders: &[Order],
     vanilla: bool,
 ) -> Option<(usize, Step)> {
-    let mut open = assign(cat, &live.owned, orders, slots_full(live))
+    let open = open_steps(cat, live, orders);
+    let affordable = |(_, step): &&(usize, Step)| live.gold >= cat[step.item()].price;
+    if vanilla {
+        open.first().filter(affordable).copied()
+    } else {
+        open.iter().find(affordable).copied()
+    }
+}
+/// Each order still to buy (by queue position) with its next step.
+fn open_steps(cat: &[Item], live: &Live, orders: &[Order]) -> Vec<(usize, Step)> {
+    assign(cat, &live.owned, orders, slots_full(live))
         .into_iter()
         .enumerate()
         .filter_map(|(n, a)| match a {
             Assigned::Open(Some(steps)) => Some((n, *steps.first()?)),
             _ => None,
-        });
-    let affordable = |(_, step): &(usize, Step)| live.gold >= cat[step.item()].price;
-    if vanilla {
-        open.next().filter(affordable)
+        })
+        .collect()
+}
+/// The strip's "next purchase": the order item and step the buyer will buy
+/// next. Without Vanilla order that is the first affordable step, or, while
+/// none is affordable, the cheapest one (the first that gold will reach).
+/// With Vanilla order it is always the first open order.
+pub fn upcoming(
+    cat: &[Item],
+    live: &Live,
+    orders: &[Order],
+    vanilla: bool,
+) -> Option<(usize, Step)> {
+    let open = open_steps(cat, live, orders);
+    let price = |step: &Step| cat[step.item()].price;
+    let pick = if vanilla {
+        open.first()
     } else {
-        open.find(affordable)
-    }
+        open.iter()
+            .find(|(_, step)| live.gold >= price(step))
+            .or_else(|| open.iter().min_by_key(|(_, step)| price(step)))
+    };
+    pick.map(|(n, step)| (orders[*n].item, *step))
 }
 
 /// Gold each order still needs (0 when satisfied, None when blocked).
@@ -260,16 +286,6 @@ pub fn order_costs(cat: &[Item], live: &Live, orders: &[Order]) -> Vec<Option<us
             Assigned::Open(None) => None,
         })
         .collect()
-}
-/// The first order still to buy and its route (the strip's next purchase).
-pub fn first_open(cat: &[Item], live: &Live, orders: &[Order]) -> Option<(usize, Vec<Step>)> {
-    assign(cat, &live.owned, orders, slots_full(live))
-        .into_iter()
-        .enumerate()
-        .find_map(|(n, a)| match a {
-            Assigned::Open(Some(steps)) if !steps.is_empty() => Some((orders[n].item, steps)),
-            _ => None,
-        })
 }
 
 /// What one more Buy of `target` would mean.
@@ -1028,6 +1044,28 @@ mod tests {
         // The projection follows the same rule.
         assert!(project(&cat, &me, &orders, true).1.is_empty());
         assert_eq!(project(&cat, &me, &orders, false).1, vec![7]);
+        // The strip shows what will really be bought next.
+        assert_eq!(
+            upcoming(&cat, &me, &orders, true),
+            Some((6, Step::Upgrade { slot: 0, item: 3 }))
+        );
+        assert_eq!(
+            upcoming(&cat, &me, &orders, false),
+            Some((7, Step::New { item: 7 }))
+        );
+        // Nothing affordable: the cheapest next step is the one gold reaches first.
+        let broke = Live {
+            gold: 100,
+            ..me.clone()
+        };
+        assert_eq!(
+            upcoming(&cat, &broke, &orders, false),
+            Some((7, Step::New { item: 7 }))
+        );
+        assert_eq!(
+            upcoming(&cat, &broke, &orders, true),
+            Some((6, Step::Upgrade { slot: 0, item: 3 }))
+        );
     }
 
     #[test]

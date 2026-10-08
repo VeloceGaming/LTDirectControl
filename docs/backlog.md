@@ -17,7 +17,7 @@ Reported by the user; to do after the codebase clean-up (stages 5–6 of
    decision (2026-10-09): offer "first order first" as an option. That is
    the vanilla buying behaviour (finish one item before starting the next):
    only the first unfinished order buys; later orders wait.
-4. **Esc on the shop also opens the game's Esc menu.** While the shop or
+4. **Won't do (user, 2026-10-09: too much work for a small thing).** **Esc on the shop also opens the game's Esc menu.** While the shop or
    the mod's Settings window is open, Esc should only close that window.
    Otherwise Esc must keep opening the game's menu (quit, game settings).
    Finding (0.67): the spectator-key hook already suppresses Esc during

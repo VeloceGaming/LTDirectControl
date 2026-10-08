@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.67.1 — 2026-10-09
+
+- The HUD strip's next purchase now shows what the buyer will really buy next. With Vanilla order off: the first affordable next part in queue order, or, while none is affordable, the cheapest one (the first gold will reach). With Vanilla order on: the first unfinished item, as before (shop::upcoming replaces first_open).
+
 ## 0.67.0 — 2026-10-09
 
 - F11 now also pauses: pressed while control is running it queues the same Pause action as the Pause button (pending orders cleared as for a click); it still starts and resumes. Button tooltip "Pause · F11"; key binding label "Start, pause or resume control".
