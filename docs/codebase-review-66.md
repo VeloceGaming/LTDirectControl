@@ -16,6 +16,8 @@ text searches and are approximate.
   paths in `tools/paths.py`, `tools/stage_package.py`, verifier renamed
   `tools/verify_build.py`, unused root crate removed. Line references to the
   old verifier below describe the state before this stage.
+- Stage 2 done (0.66.0): Log detail setting (Quiet / Normal / Verbose),
+  classified by line tag in `probe/src/logging.rs`.
 
 ## Summary
 

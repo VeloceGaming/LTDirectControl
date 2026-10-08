@@ -67,7 +67,9 @@ All bindings can be changed in the mod's Settings window (gear button).
    press F11 or click Start.
 
 Settings are saved in `%LOCALAPPDATA%\LTDirectControl\controls.json`; the log
-is `probe.log` in the same folder.
+is `probe.log` in the same folder. Settings › Interface › Debug › Log detail
+chooses how much it records (Normal by default; Verbose for investigations).
+Log levels are assigned by line tag in `probe/src/logging.rs`.
 
 ## Build from source
 
