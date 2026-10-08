@@ -1,0 +1,119 @@
+{
+  "source": "design/cursor/index.html",
+  "source_sha256": "331516d2e89bb759d984aab6f3021514e1e7ce2d5e4c5b7a6c7684b0daf24b3a",
+  "format": "64x64 premultiplied BGRA, top-down; embedded in DLL",
+  "files": {
+    "normal": {
+      "hotspot_32": [
+        3,
+        2
+      ],
+      "sha256": "4b90a694888f16118534a13d9c1777cceebf6af1f020be046c17ea46f944cf66",
+      "bytes": 16384
+    },
+    "hostile": {
+      "hotspot_32": [
+        2,
+        2
+      ],
+      "sha256": "8a620abeed341687cf4c8347c0c07bf4eebc63bf52a9a7a2ed7e6d4a799b2cf7",
+      "bytes": 16384
+    },
+    "amove": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "49a26f7c81136bda476c5670d84cff553854590e9b1f98aee0dd07a031fe0a67",
+      "bytes": 16384
+    },
+    "alock": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "169013fb2544de31d77f97231728f2f10bfba55fe170f7fceb942e590b860bd9",
+      "bytes": 16384
+    },
+    "champ": {
+      "hotspot_32": [
+        3,
+        2
+      ],
+      "sha256": "fee7ad6a9fb910e3d99d264b858792de2fcf3624be345093dd57965b86ad4e76",
+      "bytes": 16384
+    },
+    "champHostile": {
+      "hotspot_32": [
+        2,
+        2
+      ],
+      "sha256": "782b2f4e7467f3bf2575390d56869b9a4983208b924f5a24bdc717c1271a17ac",
+      "bytes": 16384
+    },
+    "achamp": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "a3f146ae917a132013701de822d0ed697edf5f08c500574fb2a7ee5111871d09",
+      "bytes": 16384
+    },
+    "achampLock": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "abbde3a3a5e980a33d966cf1708d99c855b37e58798dab0a8230b93e1f675079",
+      "bytes": 16384
+    },
+    "skill": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "b799b0da71f2796316848346035421cebe98581d96a89e892aefc7e85c1d6976",
+      "bytes": 16384
+    },
+    "skillChamp": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "4a13648d72a20a7f804df572cd181155627b0e546d5f7a6df4e3c1548934009b",
+      "bytes": 16384
+    },
+    "skillValid": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "853dab26b448d971eb177c90b7ae8f223cf1e25470cc64bab038790ae7fe02b7",
+      "bytes": 16384
+    },
+    "skillValidChamp": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "549d9af31578c23198b5c5e48f72ff064d857750c8ee3669632cc78ab98685b1",
+      "bytes": 16384
+    },
+    "skillInvalid": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "57577f1b3c6943d840b961f409a4fdb8d3c398128e41cc3348d613c07e6adff2",
+      "bytes": 16384
+    },
+    "skillInvalidChamp": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "6b8feabe5a181d70a281a8a5e274dcb55e8fdf062ad5d4710b669ac7cd6b6d0b",
+      "bytes": 16384
+    }
+  }
+}

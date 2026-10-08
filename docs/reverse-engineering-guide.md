@@ -63,7 +63,7 @@ Runtime address = actual loaded module base + RVA. File offsets are different,
 and ASLR means the preferred image base is not a universal runtime address.
 Do not reuse offsets on a different binary by merely removing a version check.
 
-Start reading [investigation.md](investigation.md), then the current code in
+Start reading [investigation.md](history/investigation.md), then the current code in
 [`probe/src/lib.rs`](../probe/src/lib.rs) and
 [`probe/src/native_adapter.rs`](../probe/src/native_adapter.rs).
 
@@ -199,8 +199,8 @@ Not every normal-loader dependency was conclusively identified; historical
 notes contain corrections rather than a claim that every early lock hypothesis
 was proven.
 
-See [startup-research.md](startup-research.md) for the experiments and
-[native-adapter.md](native-adapter.md) for the integration. Version 0.32 uses
+See [startup-research.md](history/startup-research.md) for the experiments and
+[native-adapter.md](history/native-adapter.md) for the integration. Version 0.32 uses
 a one-frame running lead and viewer notifications, but its responsiveness and
 starvation behavior still require the user's current test.
 
@@ -219,9 +219,9 @@ excluded tier-4 items; those were legitimate final items in the captured builds.
 
 This is why finding a pointer is only half the work. Prove graph direction and
 algorithmic meaning with constructors, getters, consumers and observed builds.
-See [selection-items-pass-31.md](selection-items-pass-31.md) and
-[control-pass-32.md](control-pass-32.md). The earlier
-[items-pass-30.md](items-pass-30.md) explicitly marks its superseded assumption.
+See [selection-items-pass-31.md](history/selection-items-pass-31.md) and
+[control-pass-32.md](history/control-pass-32.md). The earlier
+[items-pass-30.md](history/items-pass-30.md) explicitly marks its superseded assumption.
 
 ### Skills and selection: physics is not presentation
 
@@ -238,8 +238,8 @@ padding; highlights needed to derive from the same visual envelope. Atlas
 coordinates are texture coordinates, not automatically world-space pivots.
 Actual combat collision and ability range stayed separate from click geometry.
 
-See [control-pass-29.md](control-pass-29.md),
-[targeting.md](targeting.md), and [control-pass-32.md](control-pass-32.md).
+See [control-pass-29.md](history/control-pass-29.md),
+[targeting.md](history/targeting.md), and [control-pass-32.md](history/control-pass-32.md).
 
 ## 7. Keep native integration narrow and recoverable
 

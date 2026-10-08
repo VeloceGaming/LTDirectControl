@@ -1,10 +1,11 @@
 """Read-only opcode/context audit for the proposed 0.6.3 unit render redirects."""
+from paths import GAME_EXE
 import json
 from pathlib import Path
 
 from trace_pe import PeResearch
 
-EXE = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe")
+EXE = GAME_EXE
 SITES = [
     0x1F077EB, 0x215AE74, 0x215C5C5, 0x231FAA6, 0x2347DEF,
     0x2348C33, 0x234A2C9, 0x234B334, 0x2350312, 0x2370FE0,

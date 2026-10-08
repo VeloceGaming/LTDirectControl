@@ -1,0 +1,20 @@
+{
+  "fonts": {
+    "manrope_medium": {
+      "source": "Manrope[wght].ttf",
+      "weight": 500,
+      "source_sha256": "d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40"
+    },
+    "manrope_numeric": {
+      "source": "Manrope[wght].ttf",
+      "weight": 650,
+      "source_sha256": "d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40"
+    },
+    "noto_tc_medium": {
+      "source": "NotoSansTC[wght].ttf",
+      "weight": 500,
+      "source_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f"
+    }
+  },
+  "glyph_metrics": 20950
+}

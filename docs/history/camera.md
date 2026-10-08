@@ -56,7 +56,7 @@ Picking therefore uses camera center plus the UI offset from viewport center
 multiplied by camera extent / 2048, then converts to native position units.
 Zoom, narrow/wide layouts and minimap exclusion use the current renderer's
 geometry. Actual window/DPI behavior and native minimap interaction still need
-the [thirteenth test](../TESTING-13.md).
+the [thirteenth test](../../local/testing/TESTING-13.md).
 
 
 Test 12 exposed a follow-payload error: native Follow stores lane at config+1c

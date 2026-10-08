@@ -1,4 +1,5 @@
 """Read-only disassembly for build-specific integration research; never patches."""
+from paths import GAME_EXE
 import argparse
 import bisect
 import json
@@ -14,7 +15,7 @@ import pefile
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exe', type=Path, default=Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe'))
+    parser.add_argument('--exe', type=Path, default=GAME_EXE)
     parser.add_argument('--rva', type=lambda value: int(value, 0), action='append', default=[])
     parser.add_argument('--anchor', default='game-view/src/view/game.rs')
     parser.add_argument('--output', type=Path, default=ROOT / 'research' / 'view-game.asm')

@@ -1,10 +1,11 @@
 """Extract champion poses and stable monster bodies, excluding expanded attacks."""
+from paths import GAME_DIR
 import json
 import struct
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-game = Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2')
+game = GAME_DIR
 profiles = {}
 with (game/'bundle.game_data').open('rb') as f:
     integer = lambda: struct.unpack('<I', f.read(4))[0]

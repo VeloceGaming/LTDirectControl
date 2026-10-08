@@ -1,10 +1,11 @@
 """Read installed UI/icon metadata; no texture extraction or game changes."""
+from paths import GAME_DIR
 import json
 import struct
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-bundle = Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\bundle.game_data')
+bundle = GAME_DIR / 'bundle.game_data'
 records = []
 with bundle.open('rb') as f:
     def integer():

@@ -7,6 +7,16 @@ already matches vanilla, so this review is about clarity, structure and how
 easy the project is to pick up, not speed. Counts marked "about" come from
 text searches and are approximate.
 
+## Progress
+
+- Stage 0 done (2026-10-08): git works again; 0.65.2 committed and tagged.
+- Stage 1 done (2026-10-08): Unlicense and third-party notices, new README,
+  CHANGELOG.md, pass notes in `docs/history/`, test sheets kept local
+  (`local/`, not published), verification records in `tools/records/`, tool
+  paths in `tools/paths.py`, `tools/stage_package.py`, verifier renamed
+  `tools/verify_build.py`, unused root crate removed. Line references to the
+  old verifier below describe the state before this stage.
+
 ## Summary
 
 The mod works and is carefully guarded, but it still looks like the research

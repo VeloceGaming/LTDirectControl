@@ -4,6 +4,7 @@ Only local snapshots/reports are written. This tool never runs a game executable
 patches a DLL, edits runtime addresses, or changes the executable guard.
 """
 from __future__ import annotations
+from paths import GAME_DIR
 
 import argparse
 import bisect
@@ -16,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_GAME = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2")
+DEFAULT_GAME = GAME_DIR
 DEFAULT_RECEIPT = ROOT / "dist/build-0.41.0.json"
 SNAPSHOTS = ROOT / "research/game-builds"
 sys.path.insert(0, str(ROOT / ".tools/python"))

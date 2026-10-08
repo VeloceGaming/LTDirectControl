@@ -1,10 +1,11 @@
 """Read-only contexts for unit-renderer command setters in game 0.6.3."""
+from paths import GAME_EXE
 import json
 from pathlib import Path
 
 from trace_pe import PeResearch
 
-EXE = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe")
+EXE = GAME_EXE
 pe = PeResearch(EXE)
 functions = [0x230EC30, 0x1C91F0, 0x21725A0, 0x2171AE0, 0x1C9050, 0x388DAD0, 0x2E4EC0]
 targets = {0x1C91F0, 0x21725A0, 0x2171AE0, 0x1C9050, 0x388DAD0}

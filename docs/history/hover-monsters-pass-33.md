@@ -45,7 +45,7 @@ Bundled metadata checks cover the serpent, rhino, stump, epic and unchanged
 champion examples. Native hooks, pacing and input command rules are unchanged.
 
 Unit tests cannot establish actual in-game flicker or visible fit. User testing
-is pending; see [TESTING-33.md](../TESTING-33.md). FPS profiling, repetitive Tab
+is pending; see [TESTING-33.md](../../local/testing/TESTING-33.md). FPS profiling, repetitive Tab
 logging, cursor work and patch migration remain deferred separately.
 
 156 probe and 18 core tests passed, along with Clippy and formatting checks.

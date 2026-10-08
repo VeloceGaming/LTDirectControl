@@ -284,5 +284,5 @@ requires enclosing unwind ranges; leaf functions need separate inspection.
 
 Related project notes: [initial RE approach](reverse-engineering-guide.md),
 [migration workflow](patch-migration.md),
-[specific 0.42 changes](patch-migration-pass-42.md), and
-[gameplay checklist](../TESTING-42.md).
+[specific 0.42 changes](history/patch-migration-pass-42.md), and
+[gameplay checklist](../local/testing/TESTING-42.md).

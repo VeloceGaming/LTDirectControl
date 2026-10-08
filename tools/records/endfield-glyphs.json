@@ -1,0 +1,38 @@
+{
+  "files": {
+    "ui/ef_camera.png": "cba307f1f3e6ace48f9a048cd96be57e49b8a61f130972d7c7e7208ccdf2155d",
+    "ui/ef_more.png": "97728181e4292d1bd9d225df0f6257833144d27075ca05ba28f468a346ab6764",
+    "ui/ef_pause.png": "889d9feb1c6b0925de0f64c12708d13d5d17cbf010fa86bb21b2d4183ccbca3b",
+    "ui/ef_play.png": "deccbaedb323167ee4b233fa7cabefdec6952c3b619bbcb63c001a84fe3a3ba1",
+    "ui/ef_cpu.png": "2ca764e3e7b398519f4450b45518aa78e531cccac0800cebfbd115fead3cc019",
+    "ui/ef_reset.png": "110aa35170ea7752de0a3c0e5b38693d761f2ec1539e6e2ee033da497c108e25",
+    "ui/ef_eye.png": "6b18c2d6ce7df78b5750a774b7d8952fc7a72ddb77e8547bd9905d6d3973a61e",
+    "ui/ef_skull.png": "fd435240905b00619050164e753b8f6b394ab74660af3c0e5369de2216fa51c0",
+    "ui/ef_swords.png": "f2f6c1072a069eab702eb842506b347ac04337002c4bca2b3e01abd9bf052161",
+    "ui/ef_coin.png": "d2cc3697447cb6f588ee61891667b2679ba8bcb828df09d192a2227fc3a092f3",
+    "ui/ef_list.png": "39d9d11a9e6a1a48b19c2f37e6b17001398e0565ee602a9fb21cf5e6dfbf55f3",
+    "ui/ef_clock.png": "c8f74b0d78e6748f5b74b32bb51f5398e21311d6758ec5a111c44e8dd79a9aac",
+    "ui/ef_range.png": "247c6bf42e39b6dee16bef69081f740fbf0d51f55b1cc0b80bb7ff5edf4455c6",
+    "ui/ef_recall.png": "921fa022d15075f5479a65dc667ab302d4edee2be3be48895e69edaf182ecdfa",
+    "ui/ef_check.png": "80953545970ecbbd49dcbac16cb6bf5d9070bc2f06aba827adb52fd546d31107",
+    "ui/ef_unavailable.png": "0808a7d7967f39b9ba83b4fd591fc564fdb2e78189204d2d2e39ae3a5b6db720"
+  },
+  "sources": {
+    "camera": "887876740cb42dda0c645abe3c4d58ca175d7cf78880c9d68e76b7f731df5ae9",
+    "ellipsis": "c4c38ee7f934aa8262a1f42ac209a6b8957d96a3928a07a726f610f9c69f89ae",
+    "pause": "1533a8c6311197659e51010e3f0b5f77f876194205e90ca882e845ee3721ef87",
+    "play": "997eaec34811ddf5b9b87ac26f41f1a3316784322fa5cf233462b88b84a915df",
+    "cpu": "35d04a96d85b8bbcb69f3f32ff86aca4f9c083ff12438acacbb1c395519eec2a",
+    "rotate-ccw": "6f870afcd529f370d30a19dbf375089d85476e5b25b8ffcfe8b3f6f1aa71d08f",
+    "eye": "6902b0bc0e6d511c47f75905828be0d27b8764f55c3fda88d2098b4a3675f74a",
+    "skull": "93a872d44c429fef59c32cbe2b468e6e2fff8de8e4824472341b963a145d0bd2",
+    "swords": "6d5eeade2f7d487632a728d85a11151933f86aef829a94dae5e344ba2fba106c",
+    "coins": "6e19eb87d1a1d03b46034d477ee30c189b6b546562d22b284e8c143aa296ee6f",
+    "list": "66b984e9b2eb2a7bc11bc8870372fba1891a4a96207556c6f9ab7a184ba80157",
+    "clock": "a17cdfc415425e6e95268df82c137f89b4c93c54df1595cdbbaa7d6ccf71921b",
+    "scan-line": "a91107b853ebe84c421b0b252f37b01907482cdd4feec54748abdc854f7baa93",
+    "house": "8a15dc7ce0317e30d7eecc5b42846cba53f5a775291e0a0df2aa934f64174e0b",
+    "check": "ebbd505dd0d572905f56834802f84fc28dec31693ab15a203970a9d2ba6c8a23",
+    "circle-alert": "b9c00f7c2ad09771dd57a86e78ee5f4ba2930b3294e6f199c498eb6b33877bd1"
+  }
+}

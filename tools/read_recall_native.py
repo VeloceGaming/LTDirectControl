@@ -1,9 +1,10 @@
 """Read-only recall and movement behavior in the fingerprinted executable."""
+from paths import GAME_EXE
 import sys
 sys.dont_write_bytecode = True
 from trace_pe import PeResearch
 from pathlib import Path
-r = PeResearch(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe')
+r = PeResearch(GAME_EXE)
 lines = []
 for addr in [0x15b2c70,0x15c4210,0x15b53e0]:
     lines.append(f'FUNCTION {addr:x}')

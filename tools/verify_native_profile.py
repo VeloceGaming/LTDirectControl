@@ -2,6 +2,7 @@
 
 This verifies explicit locations; it never searches, updates, builds or installs.
 """
+from paths import GAME_EXE
 import argparse
 import hashlib
 import json
@@ -11,7 +12,7 @@ from pathlib import Path
 from patch_migration import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXE = Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe')
+DEFAULT_EXE = GAME_EXE
 
 
 def declaration(source, name):

@@ -51,7 +51,7 @@ addresses remain manual-review cases rather than code signature candidates.
 Projection tests cover wide, both smaller layouts and custom placement, plus
 map edge exclusion and equivalence with native camera conversion. The operand
 plan checks allocation alignment, size, reach and byte lengths. The existing
-control suite remains applicable; see [native checklist](../TESTING-43.md).
+control suite remains applicable; see [native checklist](../../local/testing/TESTING-43.md).
 Automated checks and HTML screenshots do not verify native in-game rendering.
 User testing remains pending.
 

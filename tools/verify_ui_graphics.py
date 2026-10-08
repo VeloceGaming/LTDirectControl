@@ -32,5 +32,5 @@ for folder in ['ui','font']:
 assert len(fingerprints)==82,len(fingerprints)
 record={'version':version,'files':fingerprints,'palette':'white Endfield SVG masks tinted by native UI; previous cursor/glyph art retained',
         'rendering':'source paths, palette and typography assets verified; native rendering pending user test'}
-(root/f'research/ui-graphics-{version}.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+(root/'tools/records/ui-graphics.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
 print(f'Verified {len(files)} original packaged glyphs: dimensions, palette, fingerprints.')

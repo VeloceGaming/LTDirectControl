@@ -18,5 +18,5 @@ for(const [name,sourceName] of Object.entries(names)){
  files['ui/ef_'+name+'.png']=crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex');
  sources[sourceName]=crypto.createHash('sha256').update(raw).digest('hex');
 }
-fs.writeFileSync(path.join(root,'research/settings-glyphs-0.53.0.json'),JSON.stringify({files,sources,palette:'white-only masks verified at generation'},null,2)+'\n');
+fs.writeFileSync(path.join(root,'tools/records/settings-glyphs.json'),JSON.stringify({files,sources,palette:'white-only masks verified at generation'},null,2)+'\n');
 console.log('Generated '+Object.keys(files).length+' Lucide settings/strip glyphs (white-only verified).');})().catch(e=>{console.error(e);process.exit(1)});

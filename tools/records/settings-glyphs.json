@@ -1,0 +1,21 @@
+{
+  "files": {
+    "ui/ef_keyboard.png": "f43845d9312fe5258d056067daf5f2fff7e356169b221ef95b3854192092eaac",
+    "ui/ef_panels.png": "d7e2653e450b8274c4428673543c43f11c32cfbdb5d942c91279101c88efad4e",
+    "ui/ef_settings.png": "d002a984db86208c89a54e14ac72c6dcc2384a90da5f7c67c79567875963eb17",
+    "ui/ef_x.png": "072ec6a4d5c7a9950b728eb3a61a641437a810e58141c5fb634e38c1002d061e",
+    "ui/ef_chevron_down.png": "2c13fdfeafa4f6f7e1022b3718a26f3f7fa84cc67c1000d8ace929407341ae13",
+    "ui/ef_chevron_up.png": "d13a00eadfe9ac47ec08ff60d56211549ddf89c19cf3ec12f3c0d93733fa72a9",
+    "ui/ef_chevron_right.png": "05e8cc11c6e1f530d58541409f9e914f912ad0caf20b8829904ad4b51e3a565b"
+  },
+  "sources": {
+    "keyboard": "ff80c44b820fea9fc85cec07e171a999fef22d3c684359bfbcd55cfd8eacd793",
+    "panels": "065aca40f9792c97c68da40ebfb19dc1efd34d13052d051ecae2c258b6d26276",
+    "settings": "2f2fc973e5f104e94e44f845de8e2af4cf61f0d0298055b956f7057227700f3d",
+    "x": "cac7f746fa2596dd081dfce44e061dcddb79bdb98a488f08cd8d5874fcb52332",
+    "chevron-down": "78557cfd28eeba5cbb2ae9ecd1cbd673199d864466b89759f5c6e1b9c57596af",
+    "chevron-up": "0e05fa9b11efbac49ffae825fa068918361ecdad22b6cbcb403ee242719f0fc0",
+    "chevron-right": "0502b201dcef6e134d30caa2d9ee142d4d4ea687f870ebe2e23b690e5745a4fd"
+  },
+  "palette": "white-only masks verified at generation"
+}

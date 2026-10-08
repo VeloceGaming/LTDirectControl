@@ -3,6 +3,7 @@
 Find source-path panic metadata and candidate enclosing functions. These are
 research leads, not callable addresses or verified hook locations.
 """
+from paths import GAME_EXE
 import argparse
 import bisect
 import hashlib
@@ -92,7 +93,7 @@ def inspect(path, all_paths=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exe', type=Path, default=Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe'))
+    parser.add_argument('--exe', type=Path, default=GAME_EXE)
     parser.add_argument('--output', type=Path, default=ROOT / 'research' / 'game-0.6.2-map.json')
     parser.add_argument('--all-paths', action='store_true', help='Include paths outside the original gameplay-name filter.')
     args = parser.parse_args()

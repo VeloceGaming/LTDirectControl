@@ -59,7 +59,7 @@ Additional constructor/consumer captures: `research/preview-combine.asm`,
 `research/preview-whip-r-construction.asm`, `research/preview-whip-r-effect.asm`.
 The build record verifies effect-family prologues and representative table headers
 in addition to the executable hash and existing anchors. Native rendering and
-gameplay remain pending the [user checklist](../TESTING-38.md).
+gameplay remain pending the [user checklist](../../local/testing/TESTING-38.md).
 
 ## Build verification
 

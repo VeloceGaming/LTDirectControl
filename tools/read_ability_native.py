@@ -1,9 +1,10 @@
 """Read-only current executable skill validation / cached Effect layout."""
+from paths import GAME_EXE
 import sys
 sys.dont_write_bytecode = True
 from trace_pe import PeResearch
 from pathlib import Path
-r = PeResearch(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe')
+r = PeResearch(GAME_EXE)
 lines = []
 for addr in [0x15b2700, 0x15c1640, 0x162f0d0, 0x15b2d20, 0x15c4980, 0x15c3560]:
     lines.append(f'FUNCTION {addr:x}')

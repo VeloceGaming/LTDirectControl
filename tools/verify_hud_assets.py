@@ -1,10 +1,11 @@
 """Check enabled installed asset declarations without loading or copying textures."""
+from paths import GAME_DIR
 import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 version = json.loads((root/'probe/mod.mod_info').read_text(encoding='utf-8'))['version']
-game = Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2')
+game = GAME_DIR
 read = lambda path: json.loads(path.read_text(encoding='utf-8-sig'))
 config = read(game/'config/game/mods.json')
 roots = {}

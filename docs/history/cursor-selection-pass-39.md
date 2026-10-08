@@ -75,4 +75,4 @@ target agreement tests cover feet, overlaps, allies and champion-only filtering.
 
 Native game cursor ownership, slider interaction and marker rendering still
 require the user's play test. Rendering and gameplay cannot be declared verified
-by those automated checks. See [TESTING-39](../TESTING-39.md).
+by those automated checks. See [TESTING-39](../../local/testing/TESTING-39.md).

@@ -1,6 +1,7 @@
+from paths import GAME_DIR
 from pathlib import Path
 import struct
-game=Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2')
+game=GAME_DIR
 with (game/'bundle.game_data').open('rb') as f:
     def integer():return struct.unpack('<I',f.read(4))[0]
     for _ in range(integer()):

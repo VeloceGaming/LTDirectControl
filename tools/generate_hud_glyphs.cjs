@@ -18,6 +18,6 @@ const files={};
   await sharp(Buffer.from(svg)).resize(32,32).png().toFile(file);
   files['ui/hud_'+name+'.png']=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
  }
- fs.writeFileSync(path.join(root,'research/hud-glyphs-'+version+'.json'),JSON.stringify({source,source_sha256:crypto.createHash('sha256').update(html).digest('hex'),files},null,2)+'\n');
+ fs.writeFileSync(path.join(root,'tools/records/hud-glyphs.json'),JSON.stringify({source,source_sha256:crypto.createHash('sha256').update(html).digest('hex'),files},null,2)+'\n');
  console.log('Rendered '+names.length+' supplied SVG HUD glyphs.');
 })().catch(e=>{console.error(e);process.exitCode=1});

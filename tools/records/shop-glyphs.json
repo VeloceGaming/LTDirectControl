@@ -1,0 +1,13 @@
+{
+  "files": {
+    "ui/ef_star.png": "788ef18abe5f5c1344b0b02feb97cfeb1dcbbc824ae3a92a34b258e7f15aae19",
+    "ui/ef_grid.png": "d3d14acc4632261977580b2cec771deaee3cdf8fa55eca6eed37c3c0a9bb497a",
+    "ui/ef_bag.png": "d6ffcf361544c4f9efc203b020d47b176d92c028fcaca28a2d6cd88a0d914886"
+  },
+  "sources": {
+    "star": "ef2013e4988b66bbf59d1dcfeddb89c18e1f9c23dc0806e34173c52fb27d825e",
+    "layout-grid": "9d33f29213bdc447dc76d0fb49b51fa02351a08e79ff9ba6a05109256bfb3e1b",
+    "shopping-bag": "8f0e93d13c7fcda6f1e5228829902aee3cefd84e4d984a466f69bc90b72783e1"
+  },
+  "palette": "white-only masks verified at generation"
+}

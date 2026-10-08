@@ -17,5 +17,5 @@ for(const [name,sourceName] of Object.entries(names)){
  files['ui/ef_'+name+'.png']=crypto.createHash('sha256').update(fs.readFileSync(output)).digest('hex');
  sources[sourceName]=crypto.createHash('sha256').update(raw).digest('hex');
 }
-fs.writeFileSync(path.join(root,'research/shop-glyphs-0.61.0.json'),JSON.stringify({files,sources,palette:'white-only masks verified at generation'},null,2)+'\n');
+fs.writeFileSync(path.join(root,'tools/records/shop-glyphs.json'),JSON.stringify({files,sources,palette:'white-only masks verified at generation'},null,2)+'\n');
 console.log('Generated '+Object.keys(files).length+' Lucide shop glyphs (white-only verified).');})().catch(e=>{console.error(e);process.exit(1)});

@@ -56,4 +56,4 @@ purchase progress uses the left-side space freed by omitting ally portraits.
 The existing top stripe and minimap remain untouched. Tooltips retain real
 colored descriptions; XP/manual ranks, screenshot capture and unverified recall
 channel durations from the mock are not invented. See
-[implementation notes](hud-selection-pass-41.md) and [native test](../TESTING-41.md).
+[implementation notes](hud-selection-pass-41.md) and [native test](../../local/testing/TESTING-41.md).

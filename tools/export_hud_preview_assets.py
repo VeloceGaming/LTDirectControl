@@ -1,9 +1,10 @@
 """Read original installed artwork for a local-only code-native HUD preview."""
+from paths import GAME_DIR
 from pathlib import Path
 from PIL import Image
 import io, json, struct, base64
 out = Path(r'C:\Users\j9010\.codex\visualizations\2026\09\30\01a0f24c-b767-73b0-b835-26937b07649e')
-game = Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2')
+game = GAME_DIR
 names=['lancer','exorcist','nightmare','circus_blade','archangel','boomerang_hunter','gunner','berserker','ogre','illusionist']
 entries={}
 with (game/'bundle.game_data').open('rb') as f:

@@ -3,6 +3,7 @@
 Candidates are decoded from unwind-table function starts to filter byte-pattern
 false positives. These references do not establish safe hooks or calling ABIs.
 """
+from paths import GAME_EXE
 import argparse
 import bisect
 import json
@@ -130,7 +131,7 @@ class PeResearch:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exe', type=Path, default=Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe'))
+    parser.add_argument('--exe', type=Path, default=GAME_EXE)
     parser.add_argument('--disp', type=lambda x: int(x, 0))
     parser.add_argument('--call', type=lambda x: int(x, 0))
     parser.add_argument('--rip', type=lambda x: int(x, 0))

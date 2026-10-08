@@ -4,8 +4,6 @@
 /dist/
 /probe.log
 /probe.previous.log
-/pacing-test.enabled
-/movement-test.enabled
 /reference-workshop.html
 **/__pycache__/
 *.pyc
@@ -18,3 +16,4 @@
 .env
 .env.*
 /.claude/settings.local.json
+/local/

@@ -3,6 +3,7 @@
 This does not prove that the visual effect works in a match. It verifies that
 the Rust constants still name the reviewed instructions in the exact game PE.
 """
+from paths import GAME_EXE
 import hashlib
 import re
 import struct
@@ -11,7 +12,7 @@ from pathlib import Path
 from trace_pe import PeResearch
 
 ROOT = Path(__file__).resolve().parents[1]
-EXE = Path(r"C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2\TeamfightManager2.exe")
+EXE = GAME_EXE
 adapter = (ROOT / "probe/src/native_adapter.rs").read_text(encoding="utf-8")
 profile = (ROOT / "probe/src/native_profile.rs").read_text(encoding="utf-8")
 sha = re.search(r'const EXPECTED_SHA: &str = "([0-9a-f]+)"', profile)

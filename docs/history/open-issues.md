@@ -9,7 +9,7 @@ compact option-button hiding/event workaround is removed; native full-screen
 layout manages those controls. Baseline spectator-panel suppression for the
 custom HUD remains. Outlines and minimap operands are unchanged. Automated
 checks pass; full-screen placement, release and later-match behavior await the
-user's test. See [checklist](../TESTING-58.2.md) and
+user's test. See [checklist](../../local/testing/TESTING-58.2.md) and
 [notes](native-fullscreen-layout-58.2.md).
 
 Latest pass: **0.58.0 installed**. The user found 0.57 hover/target outlines too
@@ -19,29 +19,29 @@ explicit attack clicks pulse for 120 ms with click > hover > attack priority.
 Hover is unchanged. The native full-width flag is leased during ownership and
 restored on AI release; fresh viewers capture their own preference. Automated
 checks pass; native feedback/layout testing is pending. See
-[checklist](../TESTING-58.md) and [notes](selection-pulse-layout-58.md).
+[checklist](../../local/testing/TESTING-58.md) and [notes](selection-pulse-layout-58.md).
 
 Latest pass: **0.57.0 installed**. The user confirmed 0.56.1 and approved persistent
 attack-target outlines. The new thin red target outline coexists with one stronger
 hover outline, merging when they refer to the same unit. Cursor stays hover-only;
-ground markers remain debug-only. Native test pending; see [checklist](../TESTING-57.md).
+ground markers remain debug-only. Native test pending; see [checklist](../../local/testing/TESTING-57.md).
 
 Latest correction: **0.56.1 installed**. The user reported selected-target markers
 still showing with Debug off in 0.56.0. Both hover and attack-target ground
 markers are now gated together, without changing orders, outlines or skill/range
-previews. Native verification pending; see [checklist](../TESTING-56.1.md).
+previews. Native verification pending; see [checklist](../../local/testing/TESTING-56.1.md).
 
 Latest pass: **0.56.0 installed**. The user confirmed proper sprite outlines on
 all unit types in 0.55.3. Interface now has an outline toggle (On by default)
 and Debug selection markers (Off by default); vision hover feedback targets
-the pointed segment. Native UI testing is pending; see [checklist](../TESTING-56.md).
+the pointed segment. Native UI testing is pending; see [checklist](../../local/testing/TESTING-56.md).
 
-Latest outline pass: **0.55.3 installed**, native gameplay test pending. The user's 0.55.2 test still showed towers only. Static inspection found ordinary unit ground circles are NinePatch commands, which the Sprite/DrawLine filter still rejected. Extra passes now move only sprites and release other known commands through verified native cleanup. Single hover priority, blue ally/red hostile colours, F10 crisp/wide and ground indicators remain. See [outline notes](outline-investigation.md) and [test checklist](../TESTING-55.3.md). Earlier deferred-outline notes below are history.
+Latest outline pass: **0.55.3 installed**, native gameplay test pending. The user's 0.55.2 test still showed towers only. Static inspection found ordinary unit ground circles are NinePatch commands, which the Sprite/DrawLine filter still rejected. Extra passes now move only sprites and release other known commands through verified native cleanup. Single hover priority, blue ally/red hostile colours, F10 crisp/wide and ground indicators remain. See [outline notes](outline-investigation.md) and [test checklist](../../local/testing/TESTING-55.3.md). Earlier deferred-outline notes below are history.
 
 2026-10-07 HUD completion: user confirmed the 0.43 minimap works and approved
 0.44 warm HUD, motion, strip-seam closure and optional battlefield-only low-health
 effect. This pass is implemented; native appearance/play awaits the user. See
-[HUD details](hud-motion-pass-44.md) and [checklist](../TESTING-44.md). Low-health
+[HUD details](hud-motion-pass-44.md) and [checklist](../../local/testing/TESTING-44.md). Low-health
 is now default-off with a persistent skull-button toggle in the more menu.
 Tower fit and true outlines remain separate; earlier pending-HUD entries are
 history. Native font families differ from browser fonts; verify weight and fit.
@@ -72,7 +72,7 @@ code-shaped leaf routines without unwind entries). SDK code is identical;
 private native layouts still need verification. The user may return to 0.6.3.
 All 55 existing checks differ at their
 old addresses. No native addresses or runtime guards have changed; 0.41 remains
-unsupported on the new executable. See [patch migration](patch-migration.md).
+unsupported on the new executable. See [patch migration](../patch-migration.md).
 The HTML HUD is approved with outline-only champion selection and particular
 attention to native text size/weight; implementation and tower correction follow
 compatibility work. Later references to deferred migration tooling are history.
@@ -81,7 +81,7 @@ Current approved build: 0.41 implements the supplied HUD with a larger skill
 area, visible cursor-slider track/handle, minion vertical extension and larger
 structure bounds. The user reported those problems after 0.40; a blanket 0.40
 pass was not reported. Native fit and interaction remain pending; see
-[HUD notes](hud-selection-pass-41.md) and [checklist](../TESTING-41.md).
+[HUD notes](hud-selection-pass-41.md) and [checklist](../../local/testing/TESTING-41.md).
 True outlines remain deferred until current entity frame/transform access is
 verified. This HUD pass does not add a renderer hook.
 
@@ -89,7 +89,7 @@ Latest user test: 0.39 champion selection is almost perfect, but heads are often
 missed. Click marks last too long and skill hover does not show range. Approved
 0.40 adds upward-only head coverage, newest-only 250 ms feedback, and visual-only
 HUD hover range/self-area previews. Native testing is pending; see
-[hover notes](hover-feedback-pass-40.md) and [checklist](../TESTING-40.md).
+[hover notes](hover-feedback-pass-40.md) and [checklist](../../local/testing/TESTING-40.md).
 True sprite outlines remain planned: the bounded renderer review did not verify
 an entity-to-current-frame/transform association. Existing ground highlights
 remain until that prerequisite is met. No new native outline hook is installed.
@@ -101,7 +101,7 @@ Earlier test: 0.37 directional projectiles no longer seem to auto-aim.
 Whip Master W/R and Archangel R previews were reported incorrect. Approved 0.38
 adds shared effect-family readers and independent casting/area placement; native
 Whip Master W/R passed; others remain pending. See [geometry notes](preview-geometry-pass-38.md) and
-[test checklist](../TESTING-38.md). Unknown families retain a limited guide.
+[test checklist](../../local/testing/TESTING-38.md). Unknown families retain a limited guide.
 
 Whip Master W's base compiled damage geometry is a forward-offset circle despite
 its cone-like animation; do not replace it with a visual cone without evidence
@@ -114,7 +114,7 @@ manual shopping remain separate work.
 0.36.0 corrects live-worker ownership in every native observer, authorizes steering
 from the current position borrow, and observes the native automatic-attack path.
 It adds concrete cast-drop/cancellation/rejection reasons. See
-[control notes](control-pass-36.md) and [test checklist](../TESTING-36.md).
+[control notes](control-pass-36.md) and [test checklist](../../local/testing/TESTING-36.md).
 The user verified movement/casting improvement and no phantom Q. Pre-hit attack swing cancellation is deferred: this pass
 does not remove pending attack effects or reset attack cooldowns.
 
@@ -129,7 +129,7 @@ tooling remain open.
 0.35.0 implements the approved command priority, native clear-segment steering,
 guarded basic-attack backswing release, cast-count display corrections and rolling
 late-match logs. See [control notes](control-pass-35.md) and
-[test checklist](../TESTING-35.md). User testing found the failures above. These changes must
+[test checklist](../../local/testing/TESTING-35.md). User testing found the failures above. These changes must
 not be presented as confirmation of the exact Archangel 06:48 or Jiangshi Q cause.
 The user verified 0.34 artwork and self-hover fixes. Aim-assist/projectile behavior,
 FPS instability and game-patch compatibility tooling remain separate open work.
@@ -142,7 +142,7 @@ The earlier version-specific sections below are investigation history.
 0.34.0 preserves static artwork through transient live-reading expiry and
 suppresses ordinary self-hover by entity ID. Native testing is pending; see
 [notes and read-only route findings](artwork-self-pass-34.md) and
-[game check](../TESTING-34.md). The artwork-clearing path is confirmed in code;
+[game check](../../local/testing/TESTING-34.md). The artwork-clearing path is confirmed in code;
 it is not yet proven to explain the reported flicker. Movement remains continuous,
 with grid-derived intermediate goals; unwanted-turn and FPS causes remain open.
 
@@ -157,7 +157,7 @@ Two item-mod presets exactly matched the final builds captured in the 0.30 log.
 The registered-item reader reversed next-tier links by misidentifying their
 meaning. 0.31 corrects that direction and adds inventory/build-change diagnostics
 without broadly rewriting the predictor. Gameplay verification is pending.
-See [TESTING-31](../TESTING-31.md) and [notes](selection-items-pass-31.md).
+See [TESTING-31](../../local/testing/TESTING-31.md) and [notes](selection-items-pass-31.md).
 
 Updated 2026-10-06. The user approved implementation of the three priorities
 below. The user has explicitly deferred the Ninja movement and frame
@@ -186,7 +186,7 @@ drop investigation until the other issues are handled.
 
 Implemented in 0.30.0 and installed after 160 passing automated tests.
 The user verified the tooltip and route corrections; purchase tracking still
-failed. See [TESTING-30](../TESTING-30.md) and
+failed. See [TESTING-30](../../local/testing/TESTING-30.md) and
 [implementation notes](items-pass-30.md).
 
 ## Deferred: unwanted movement and intermittent frame drops
@@ -256,7 +256,7 @@ One-frame running lead, viewer wake-up signalling, early gameplay capture,
 tier-4 purchase forecasting, declared tooltip parameters and sprite-sized
 selection/highlights are implemented. The user confirmed much better
 responsiveness, great selection, and working item/gold reminders. See
-[notes](control-pass-32.md) and [game check](../TESTING-32.md).
+[notes](control-pass-32.md) and [game check](../../local/testing/TESTING-32.md).
 Bomber aim assist remains unproven/unfixed;
 bounded command/queued-aim traces were added. Unsupported tooltip formulas and
 native runtime patches absent from declarations remain unresolved. The deferred
@@ -389,7 +389,7 @@ and needs a later experiment build.
 
 The shop is done (0.64.2). Remaining investigations — cursor flicker, selection
 shape and hover priority, League-style emotes, performance — are recorded in
-[investigation-pass-65.md](investigation-pass-65.md), including the agreed
+[investigation-pass-65.md](../investigation-pass-65.md), including the agreed
 hover-priority order (no blanket champion-first rule). 0.65 is the diagnostic
 build: cursor ownership trace, performance measurement, pre-lock rejection in
 the steering and shop hooks.

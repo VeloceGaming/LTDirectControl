@@ -63,7 +63,7 @@ New regression checks retain Jiangshi art through expiry without extending live
 readings, reject other identities/reset state, and exclude self while preserving
 overlapping ally feedback. Existing ability/self-cast, hover lifecycle and route
 checks remain applicable. Native gameplay/rendering verification is pending the
-user's [0.34 check](../TESTING-34.md).
+user's [0.34 check](../../local/testing/TESTING-34.md).
 
 Completed: 158 probe and 18 core tests passed; formatting, Clippy and release
 build passed. All 39 native anchors, ABI/null-host behavior and 44 archive

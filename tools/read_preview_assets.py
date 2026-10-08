@@ -1,4 +1,5 @@
 """Read explicit base effect declarations from the installed bundle; no pixels."""
+from paths import GAME_DIR
 import argparse
 import json
 import struct
@@ -6,7 +7,7 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
-parser.add_argument('--game', type=Path, default=Path(r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2'))
+parser.add_argument('--game', type=Path, default=GAME_DIR)
 args = parser.parse_args()
 shapes = {}
 with (args.game / 'bundle.game_data').open('rb') as bundle:

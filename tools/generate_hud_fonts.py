@@ -1,4 +1,5 @@
 """Package static instances of the approved lab fonts; preserve native fallbacks."""
+from paths import FONT_SOURCES, GAME_DIR
 import hashlib
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ sys.path.insert(0, str(ROOT / 'research/fonttools-runtime'))
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 
-LAB = Path('C:/LTTool/endfield_ui_lab/ui/src/fonts')
+LAB = FONT_SOURCES
 OUT = ROOT / 'probe/font'
 OUT.mkdir(exist_ok=True)
 records = {}
@@ -30,7 +31,7 @@ for name, source, weight in [('manrope_medium', 'Manrope[wght].ttf', 500),
             widths.setdefault(str(code), round(font['hmtx'][glyph][0] * 1000 / font['head'].unitsPerEm))
     font.close()
 
-game = Path('C:/Program Files (x86)/Steam/steamapps/common/Teamfight Manager2')
+game = GAME_DIR
 with (game / 'bundle.game_data').open('rb') as f:
     integer = lambda: struct.unpack('<I', f.read(4))[0]
     base = None
@@ -51,5 +52,5 @@ for role in ['medium', 'numeric']:
 for license in ['Manrope-OFL.txt', 'NotoSansTC-OFL.txt']:
     shutil.copyfile(LAB / license, OUT / license)
 (ROOT / 'probe/src/hud_font_metrics.json').write_text(json.dumps(widths, separators=(',', ':')), encoding='utf-8')
-(ROOT / 'research/hud-fonts-0.45.0.json').write_text(json.dumps({'fonts': records, 'glyph_metrics': len(widths)}, indent=2) + '\n', encoding='utf-8')
+(ROOT / 'tools/records/hud-fonts.json').write_text(json.dumps({'fonts': records, 'glyph_metrics': len(widths)}, indent=2) + '\n', encoding='utf-8')
 print('Static HUD font weights and native language fallback sets packaged.')

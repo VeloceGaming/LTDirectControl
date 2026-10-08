@@ -13,8 +13,8 @@ For the reusable investigation method and an AI handoff prompt, see
 The installed game is back on the preserved 0.6.3 executable. The authorized
 0.42 migration relocates 55 checks and updates changed entity/player/settings
 fields. It adds 13 loaded-layout guards and an explicit profile/source verifier.
-See [migration details](patch-migration-pass-42.md) and
-[native test checklist](../TESTING-42.md). Native gameplay is pending user test;
+See [migration details](history/patch-migration-pass-42.md) and
+[native test checklist](../local/testing/TESTING-42.md). Native gameplay is pending user test;
 the snapshot/comparison history below describes how this review started.
 
 The user authorized preserving 0.6.3 and starting the tooling, and asked to be

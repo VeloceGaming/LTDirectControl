@@ -32,6 +32,6 @@ const manifest={source:'design/cursor/index.html',source_sha256:crypto.createHas
  await sharp(Buffer.from(preview)).png().toFile(path.join(root,'probe/ui/cursor_preview.png'));
  const tiles=await Promise.all(Object.keys(defs).map(async(key,i)=>({input:await sharp(path.join(out,key+'.png')).resize(48,48).toBuffer(),left:(i%7)*80+16,top:Math.floor(i/7)*80+16})));
  await sharp({create:{width:560,height:160,channels:4,background:'#383838'}}).composite(tiles).png().toFile(path.join(root,'research/cursor-sheet-0.39.0.png'));
- fs.writeFileSync(path.join(root,'research/cursor-assets-0.39.0.json'),JSON.stringify(manifest,null,2)+'\n');
+ fs.writeFileSync(path.join(root,'tools/records/cursor-assets.json'),JSON.stringify(manifest,null,2)+'\n');
  console.log(`Rendered ${Object.keys(defs).length} SVG cursor states and settings preview.`);
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,14 @@
+{
+  "source": "design/hud/index.html",
+  "source_sha256": "c49fffd7d61b4a54feb2b2971536f4b64dfa6d7eb00b13d690bfde04551565cd",
+  "files": {
+    "ui/hud_pause.png": "61b2cf9d50924eb3c6ba9a09e0ec790aac01b01949677d6ba59ee326311a41ad",
+    "ui/hud_more.png": "c000387b396d4d34e9f14718795650a72c21de4cb816fab2b721b35f6f08af78",
+    "ui/hud_swords.png": "93ecbd4b75cdaa3d1b2db22b2fc95e65aaf7d8dad8f8990e424cda060f10ec56",
+    "ui/hud_minion.png": "9910c6005841196c5ec0ea5d6d45dc9e7028fc7d13596e7fed3cc1e090913294",
+    "ui/hud_list.png": "1900e78b81e370d5cba542adbca6a4fd796e000c57d3089ef2b3e40ea95f5280",
+    "ui/hud_coin.png": "81abc4d0a094ac14048a7eb2185e867df266f48d2a8bf83fd6d787927a8eeeb3",
+    "ui/hud_recall.png": "4b507d9bef96f2ec88ff98a55c8e6fe619964d897c60b4337e6e67ea54d4fb24",
+    "ui/hud_skull.png": "66c92fc77b74b5bddf2f7bd122516abdbef5520053c6067fef67d0949b209eda"
+  }
+}

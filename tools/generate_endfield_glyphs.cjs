@@ -10,4 +10,4 @@ const names={camera:'camera',more:'ellipsis',pause:'pause',play:'play',cpu:'cpu'
  const file=path.join(root,'probe/ui/ef_'+name+'.png');await sharp(Buffer.from(svg)).resize(32,32).png().toFile(file);
  files['ui/ef_'+name+'.png']=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');sources[sourceName]=crypto.createHash('sha256').update(raw).digest('hex');
 }fs.copyFileSync(path.join(source,'LICENSE'),path.join(root,'probe/ui/Endfield-icons-LICENSE.txt'));
-fs.writeFileSync(path.join(root,'research/endfield-glyphs-0.45.0.json'),JSON.stringify({files,sources},null,2)+'\n');console.log('Packaged 16 approved-source menu/HUD glyphs.');})().catch(e=>{console.error(e);process.exitCode=1});
+fs.writeFileSync(path.join(root,'tools/records/endfield-glyphs.json'),JSON.stringify({files,sources},null,2)+'\n');console.log('Packaged 16 approved-source menu/HUD glyphs.');})().catch(e=>{console.error(e);process.exitCode=1});
