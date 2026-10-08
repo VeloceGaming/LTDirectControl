@@ -3,6 +3,11 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.66.3 — 2026-10-09
+
+- lib.rs split into lib.rs (logger and start-up wiring), client.rs and simulation.rs; Client::post_update and Simulation::think now call one named step per feature (install, athlete choice, re-arm, windows, UI blocking, pointer, diagnostics; session binding, roster, Tab, purchase trace, shop, HUD, controlled athlete, samples), moved verbatim.
+- Layering: settings::MODAL and shop_ui::OPEN moved to ui_state.rs (SETTINGS_OPEN, SHOP_OPEN); settings are created at start-up and shared with the cursor and client, and saved by the client each frame instead of by the cursor. No behaviour change.
+
 ## 0.66.2 — 2026-10-08
 
 - native_adapter.rs (about 4,100 lines) split into native_adapter/mod.rs (the API the rest of the mod calls) and native_adapter/windows/: mod.rs (patch installation and shared helpers), layout.rs (every 0.6.3 address, call site and byte pattern), movement, combat, outline, view, input, shop and tests. Pure moves: every item verified unchanged apart from formatting and crate-internal visibility.

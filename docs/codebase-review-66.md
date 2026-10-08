@@ -28,6 +28,15 @@ text searches and are approximate.
   `input`, `shop`, `tests`). Verified as pure moves. Entity field offsets are
   still inline; `native_profile.rs` was not merged into `layout.rs` (it holds
   build identity and layout guards checked at startup).
+- Stage 5 done (0.66.3): `lib.rs` keeps only the logger and start-up
+  wiring; `client.rs` and `simulation.rs` hold the two entry points, whose
+  callbacks now call one named step per feature (moved verbatim, verified
+  block by block). Window flags moved to `ui_state.rs` (`settings::MODAL` →
+  `ui_state::SETTINGS_OPEN`, `shop_ui::OPEN` → `ui_state::SHOP_OPEN`), so
+  input code no longer depends on the windows. Settings are created at
+  start-up and shared with the cursor and client instead of being created
+  inside the cursor. Left as they are: the purchase forecast and HUD use
+  each other, and click markers are drawn in `cursor.rs`.
 
 ## Summary
 

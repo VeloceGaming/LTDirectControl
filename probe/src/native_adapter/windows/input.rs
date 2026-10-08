@@ -32,7 +32,7 @@ pub(crate) unsafe extern "system" fn input_hook(
             return false;
         }
         let key = std::ptr::read((event + 8) as *const u8);
-        if crate::settings::MODAL.load(Ordering::Relaxed)
+        if crate::ui_state::SETTINGS_OPEN.load(Ordering::Relaxed)
             || spectator_key_is_owned(tag, key)
             || keys.start
             || keys.release

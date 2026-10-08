@@ -1,6 +1,6 @@
 [package]
 name = "lt_direct_control_probe"
-version = "0.66.2"
+version = "0.66.3"
 edition = "2021"
 publish = false
 

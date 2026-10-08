@@ -236,7 +236,7 @@ impl SessionUi {
         players: &[PlayerIdentity],
         selected: Option<usize>,
         camera: &Arc<crate::camera::CameraControl>,
-        _settings: &crate::cursor::Settings,
+        _settings: &crate::settings::Settings,
         cursor: Option<(f32, f32)>,
         pressed: bool,
         log: &Logger,

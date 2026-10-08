@@ -1,7 +1,6 @@
 //! Native pointer artwork; no input injection or smoothed pointer position.
 use crate::Logger;
 use std::{
-    path::Path,
     sync::{atomic::Ordering, Arc, Mutex},
     time::Duration,
 };
@@ -126,15 +125,14 @@ fn pixels(style: Style, size: u32) -> Vec<u8> {
     }
     output
 }
-pub use crate::settings::Settings;
+use crate::settings::Settings;
 pub struct Cursor {
-    pub settings: Arc<Settings>,
+    settings: Arc<Settings>,
     backend: Mutex<windows::Backend>,
 }
 impl Cursor {
-    pub fn new(root: Option<&Path>) -> Self {
-        let settings = Arc::new(Settings::new(root));
-        let _ = crate::settings::GLOBAL.set(settings.clone());
+    /// The cursor reads its size from the shared settings.
+    pub fn new(settings: Arc<Settings>) -> Self {
         Self {
             settings,
             backend: Mutex::default(),
@@ -147,14 +145,12 @@ impl Cursor {
         point: Option<(f32, f32)>,
         log: &Logger,
     ) {
-        self.settings.flush(false, log);
         if let Ok(mut backend) = self.backend.lock() {
             backend.trace(style, point, log);
             backend.update(style.ok(), self.settings.size(), log);
         }
     }
-    pub fn shutdown(&self, log: &Logger) {
-        self.settings.flush(true, log);
+    pub fn shutdown(&self) {
         if let Ok(mut b) = self.backend.lock() {
             b.shutdown();
         }

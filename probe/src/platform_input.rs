@@ -171,7 +171,7 @@ pub fn poll() -> Keys {
         }
     };
     let mut raw = Raw::default();
-    if crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed) {
+    if crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed) {
         raw.0 = std::array::from_fn(|i| down(i as i32));
     } else {
         let v = crate::settings::current();
@@ -229,7 +229,8 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         attack_move: pressed("attack_aim"),
         attack_click: pressed("attack_click"),
         // While the shop is open, Esc closes it and must not cancel a recall.
-        escape: raw.0[0x1b] && !crate::shop_ui::OPEN.load(std::sync::atomic::Ordering::Relaxed),
+        escape: raw.0[0x1b]
+            && !crate::ui_state::SHOP_OPEN.load(std::sync::atomic::Ordering::Relaxed),
         camera_toggle: pressed("camera_toggle"),
         space: pressed("follow"),
         shift: raw.0[0x10],
@@ -257,7 +258,7 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         camera_lock_default: v.number("camera_lock") == 1.,
         ..Keys::default()
     };
-    if crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed) {
+    if crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed) {
         keys = Keys {
             focused,
             raw,

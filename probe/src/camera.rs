@@ -241,7 +241,7 @@ impl CameraControl {
         dt: f32,
         log: &Logger,
     ) -> Option<Request> {
-        if crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed) {
+        if crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed) {
             return None;
         }
         let champion = champion.into();

@@ -689,7 +689,7 @@ impl SettingsUi {
         self.scroll = 0.;
         self.slots = [None; ROWS];
         self.previous = bits(&keys.raw.0);
-        settings::MODAL.store(true, Ordering::Relaxed);
+        crate::ui_state::SETTINGS_OPEN.store(true, Ordering::Relaxed);
     }
     fn close(
         &mut self,
@@ -721,7 +721,7 @@ impl SettingsUi {
         self.capture = None;
         self.pending = None;
         self.drop = None;
-        settings::MODAL.store(false, Ordering::Relaxed);
+        crate::ui_state::SETTINGS_OPEN.store(false, Ordering::Relaxed);
     }
     fn props(&mut self, ctx: &mut StableClient<'_>, node: &str, text: String) {
         hud_motion::properties(

@@ -57,7 +57,7 @@ mod windows {
                             .lock()
                             .is_ok_and(|a| a.is_some_and(|r| r.contains(p)))
                     });
-                if over_shop && !crate::settings::MODAL.load(Ordering::Relaxed) {
+                if over_shop && !crate::ui_state::SETTINGS_OPEN.load(Ordering::Relaxed) {
                     let delta = ((msg.wparam >> 16) as u16 as i16) as i32;
                     crate::shop_ui::SCROLL.fetch_add(delta / 120, Ordering::Relaxed);
                     msg.message = 0;
@@ -65,7 +65,7 @@ mod windows {
                     msg.lparam = 0;
                     return CallNextHookEx(0, code, removed, message);
                 }
-                if keys.focused && crate::settings::MODAL.load(Ordering::Relaxed) {
+                if keys.focused && crate::ui_state::SETTINGS_OPEN.load(Ordering::Relaxed) {
                     let delta = ((msg.wparam >> 16) as u16 as i16) as i32;
                     crate::settings_ui::SCROLL.fetch_add(delta / 120, Ordering::Relaxed);
                     msg.message = 0;
@@ -74,7 +74,7 @@ mod windows {
                     return CallNextHookEx(0, code, removed, message);
                 }
                 let battlefield = keys.focused
-                    && !crate::settings::MODAL.load(std::sync::atomic::Ordering::Relaxed)
+                    && !crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed)
                     && CAMERA.get().is_some_and(|camera| {
                         keys.cursor.is_some_and(|p| {
                             !camera.blocked(p)

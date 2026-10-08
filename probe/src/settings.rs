@@ -7,7 +7,6 @@ use std::{
     time::{Duration, Instant},
 };
 pub static GLOBAL: OnceLock<Arc<Settings>> = OnceLock::new();
-pub static MODAL: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 #[derive(Clone, Copy)]
 pub enum Control {
     Choice(&'static [&'static str]),

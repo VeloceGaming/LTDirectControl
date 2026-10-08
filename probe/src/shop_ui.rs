@@ -7,7 +7,7 @@ use mod_api_stable::{StableClient, UiEventKindV1};
 use std::{
     collections::HashMap,
     sync::{
-        atomic::{AtomicBool, AtomicI32, Ordering},
+        atomic::{AtomicI32, Ordering},
         Arc, Mutex,
     },
     time::{Duration, Instant},
@@ -71,8 +71,6 @@ const PATH: &str = "ingame.lt_shop";
 pub static SCROLL: AtomicI32 = AtomicI32::new(0);
 /// Open shop window rectangle, for wheel routing; None when closed.
 pub static AREA: Mutex<Option<Rect>> = Mutex::new(None);
-/// While open, Esc belongs to the shop (it must not also cancel a recall).
-pub static OPEN: AtomicBool = AtomicBool::new(false);
 const WINDOW: (f32, f32, f32, f32) = (180., 78., 1360., 872.);
 // Item grid viewport (window coordinates).
 const VIEW_TOP: f32 = 84.;
@@ -1052,7 +1050,7 @@ impl ShopUi {
             self.names.clear();
             self.bodies.clear();
         }
-        let modal = crate::settings::MODAL.load(Ordering::Relaxed);
+        let modal = crate::ui_state::SETTINGS_OPEN.load(Ordering::Relaxed);
         if !active {
             self.open = false;
         } else if shop_edge && !modal {
@@ -1077,7 +1075,7 @@ impl ShopUi {
                 self.last_in_base = v.in_base;
             }
         }
-        OPEN.store(shown, Ordering::Relaxed);
+        crate::ui_state::SHOP_OPEN.store(shown, Ordering::Relaxed);
         if let Ok(mut area) = AREA.lock() {
             *area = shown.then_some(Rect {
                 x: WINDOW.0,
