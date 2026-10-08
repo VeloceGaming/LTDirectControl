@@ -623,7 +623,7 @@ impl NativeTiming {
         true
     }
     pub fn allows_input(&self, key: MatchKey) -> bool {
-        // Direction freshness is enforced by MovementTest with a hold command,
+        // Direction freshness is enforced by Movement with a hold command,
         // not by relinquishing input ownership. The publication/client guard
         // still explicitly releases after a two-second heartbeat loss.
         self.state.lock().is_ok_and(|s| {
@@ -715,7 +715,7 @@ impl NativeTiming {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::timing_test::tests::logger;
+    use crate::test_support::logger;
     fn active() -> NativeTiming {
         let t = NativeTiming::new(true);
         let mut s = t.state.lock().unwrap();

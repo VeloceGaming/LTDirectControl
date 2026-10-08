@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.66.1 — 2026-10-08
+
+- Internal renames, no behaviour change: movement_test.rs → movement.rs (MovementTest → Movement), timing_test.rs → test_support.rs, ClientProbe → Client, AiProbe → Simulation; crate documentation describes the two entry points. Mod ID and probe.log names unchanged.
+
 ## 0.66.0 — 2026-10-08
 
 - Log detail setting (Settings › Interface › Debug): Quiet, Normal (default) or Verbose. Lines are classified by tag in one place (probe/src/logging.rs); install, fingerprint and release results, fail-closed shop decisions and anything reporting a failure or panic are always written; per-click, per-move and per-second traces (MANUAL CLICK, MOVEMENT, CONTROL DIAGNOSTIC, NATIVE TRAFFIC, OUTLINE, PERF, CURSOR TRACE, attack and ability traces) only at Verbose. A full match log drops from about 5.4 MB to about 0.12 MB at Normal.

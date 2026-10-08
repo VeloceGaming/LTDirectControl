@@ -1,21 +1,26 @@
-//! Shared test logger. Previous SDK-callback pacing has been removed.
-pub(crate) mod tests {
+//! Shared test helpers (test builds only): a file logger under `target/`.
+use crate::{LogState, Logger};
+use std::fs::File;
+use std::sync::Mutex;
+
+pub(crate) fn logger(name: &str) -> Logger {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join(format!("test-{name}.log"));
+    Logger(Mutex::new(LogState {
+        directory: path.parent().map(std::path::Path::to_owned),
+        file: Some(File::create(path).expect("test log")),
+        lines: 0,
+        background_lines: 0,
+        bytes: 0,
+        rotating: false,
+    }))
+}
+
+#[cfg(test)]
+mod tests {
     use crate::{LogState, Logger};
-    use std::fs::File;
     use std::sync::Mutex;
-    pub(crate) fn logger(name: &str) -> Logger {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join(format!("timing-{name}.log"));
-        Logger(Mutex::new(LogState {
-            directory: path.parent().map(std::path::Path::to_owned),
-            file: Some(File::create(path).expect("test log")),
-            lines: 0,
-            background_lines: 0,
-            bytes: 0,
-            rotating: false,
-        }))
-    }
 
     #[test]
     fn unavailable_file_diagnostics_do_not_abort_control_callers() {

@@ -1885,7 +1885,7 @@ mod tests {
     #[test]
     fn session_reset_rejects_old_same_key_hud_and_restarts_tick_sampling() {
         let hud = PlayerHud::default();
-        let log = crate::timing_test::tests::logger("hud-session-reset");
+        let log = crate::test_support::logger("hud-session-reset");
         let s = sample();
         assert!(hud.needs_sample(s.key, s.player, 6));
         hud.observe_tick(s.clone(), 6, &log);

@@ -1728,7 +1728,7 @@ mod tests {
             assert_eq!(hud.wait[0], Some(wait));
         }
     }
-    use crate::timing_test::tests::logger;
+    use crate::test_support::logger;
     fn setup(casting: u32, target: u32) -> (Abilities, crate::camera::CameraControl, Logger) {
         let a = Abilities::default();
         let c = crate::camera::CameraControl::default();
@@ -1868,7 +1868,7 @@ mod tests {
         targeted.update(keys(true, false), true, &camera, &log);
         assert!(take(&targeted, &[], |_| false, &log).is_none());
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target/timing-cast-diagnostics-36.log");
+            .join("target/test-cast-diagnostics-36.log");
         let lines = std::fs::read_to_string(path).unwrap();
         for reason in [
             "reason=later-right-click",
@@ -1892,7 +1892,7 @@ mod tests {
         let input = take(&a, &[], |_| true, &log).unwrap();
         assert_eq!(input.kind, KINDS[0].code());
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target/timing-wait-diagnostics-36.log");
+            .join("target/test-wait-diagnostics-36.log");
         let lines = std::fs::read_to_string(path).unwrap();
         assert_eq!(lines.matches("ABILITY WAIT").count(), 2);
         assert!(lines.contains("native_action=Some(3)"));

@@ -533,7 +533,7 @@ mod tests {
         let Ok(game) = std::env::var("LT_PICKING_VERIFY_GAME") else {
             return;
         };
-        let log = crate::timing_test::tests::logger("installed-picking");
+        let log = crate::test_support::logger("installed-picking");
         let p = load(Path::new(&game), &log);
         assert!(p["ogre"].height > p["lancer"].height);
         assert_ne!(p["harpy"], Body::default());

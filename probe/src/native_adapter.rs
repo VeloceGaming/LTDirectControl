@@ -12,7 +12,7 @@ use std::sync::{Arc, OnceLock};
 struct Shared {
     timing: Arc<NativeTiming>,
     logger: Arc<Logger>,
-    movement: Arc<crate::movement_test::MovementTest>,
+    movement: Arc<crate::movement::Movement>,
     camera: Arc<crate::camera::CameraControl>,
     abilities: Arc<crate::abilities::Abilities>,
 }
@@ -74,10 +74,10 @@ impl OutlineTargets {
             .filter(|(clicked, _)| *clicked == id)
             .filter(|_| self.attack.is_some_and(|u| u.id == id && !u.friendly))
             .and_then(|(_, at)| now.checked_duration_since(at))
-            .filter(|age| *age < crate::movement_test::ATTACK_CLICK_DURATION)
+            .filter(|age| *age < crate::movement::ATTACK_CLICK_DURATION)
         {
             let remaining =
-                1. - age.as_secs_f32() / crate::movement_test::ATTACK_CLICK_DURATION.as_secs_f32();
+                1. - age.as_secs_f32() / crate::movement::ATTACK_CLICK_DURATION.as_secs_f32();
             return Some((
                 unit,
                 OutlineRole::Click,
@@ -190,7 +190,7 @@ pub fn buyer_anchor_report() -> Vec<String> {
 pub fn configure(
     timing: Arc<NativeTiming>,
     logger: Arc<Logger>,
-    movement: Arc<crate::movement_test::MovementTest>,
+    movement: Arc<crate::movement::Movement>,
     camera: Arc<crate::camera::CameraControl>,
     abilities: Arc<crate::abilities::Abilities>,
 ) -> Result<(), &'static str> {
@@ -3120,7 +3120,7 @@ mod windows {
                     .unwrap();
                 assert_eq!(middle.1, OutlineRole::Click);
                 let end = targets
-                    .for_unit(unit.id, at + crate::movement_test::ATTACK_CLICK_DURATION)
+                    .for_unit(unit.id, at + crate::movement::ATTACK_CLICK_DURATION)
                     .unwrap();
                 assert_eq!(
                     end.1,
@@ -3429,8 +3429,8 @@ mod windows {
             let key = (1, 33, 1);
             let shared = Shared {
                 timing: Arc::new(NativeTiming::running_test_worker(key)),
-                logger: Arc::new(crate::timing_test::tests::logger(name)),
-                movement: Arc::new(crate::movement_test::MovementTest::new(true)),
+                logger: Arc::new(crate::test_support::logger(name)),
+                movement: Arc::new(crate::movement::Movement::new(true)),
                 camera: Arc::new(crate::camera::CameraControl::default()),
                 abilities: Arc::new(crate::abilities::Abilities::default()),
             };
@@ -4102,10 +4102,10 @@ mod windows {
         }
         #[test]
         fn stack_capture_is_available_and_logs_module_relative_frames() {
-            let log = crate::timing_test::tests::logger("native-stack");
+            let log = crate::test_support::logger("native-stack");
             capture_trace("test stack", &log);
             let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("target/timing-native-stack.log");
+                .join("target/test-native-stack.log");
             let text = std::fs::read_to_string(path).unwrap();
             assert!(text.contains("NATIVE STACK"));
             assert!(text.contains(".exe+0x"));

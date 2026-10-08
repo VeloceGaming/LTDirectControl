@@ -1,4 +1,15 @@
-//! Diagnostic prototype: native publication-boundary coordination on 0.6.3.
+//! LT Direct Control: League-style direct control for Teamfight Manager 2.
+//!
+//! Two entry points are registered with the game's mod SDK:
+//! - [`Client`]: the client extension. Each frame it reads input, drives the
+//!   session (Start/Pause/Return to AI), the HUD, Tab, settings, shop and
+//!   cursor, and draws battlefield feedback. Runs on the client thread.
+//! - [`Simulation`]: the per-player AI callback. On the viewed match's
+//!   simulation worker it binds the session, samples HUD/roster data, answers
+//!   the shop and returns the controlled athlete's input.
+//!
+//! Native game hooks (0.6.3 only) live in `native_adapter`; the session and
+//! frame pacing between the two threads in `native_timing`.
 
 mod abilities;
 mod attack_trace;
@@ -13,7 +24,7 @@ mod inventory;
 mod logging;
 mod map_path;
 mod minimap;
-mod movement_test;
+mod movement;
 mod native_adapter;
 mod native_items;
 mod native_preview;
@@ -39,7 +50,7 @@ mod sprite_picking;
 mod team_info;
 mod team_status;
 #[cfg(test)]
-mod timing_test;
+mod test_support;
 mod tooltips;
 mod ui_graphics;
 mod wheel;
@@ -149,11 +160,11 @@ struct ClientObservations {
     screen_effect: screen_effect::Effect,
 }
 
-struct ClientProbe {
+struct Client {
     logger: Arc<Logger>,
     observations: Mutex<ClientObservations>,
     timing: Arc<native_timing::NativeTiming>,
-    movement: Arc<movement_test::MovementTest>,
+    movement: Arc<movement::Movement>,
     camera: Arc<camera::CameraControl>,
     cursor: cursor::Cursor,
     abilities: Arc<abilities::Abilities>,
@@ -165,7 +176,7 @@ struct ClientProbe {
     session_gate: Arc<RwLock<()>>,
 }
 
-impl Drop for ClientProbe {
+impl Drop for Client {
     fn drop(&mut self) {
         settings::MODAL.store(false, Ordering::Relaxed);
         self.cursor.shutdown(&self.logger);
@@ -175,7 +186,7 @@ impl Drop for ClientProbe {
     }
 }
 
-impl ClientProbe {
+impl Client {
     fn resolve_targeting(&self, keys: &mut platform_input::Keys, controls: bool) {
         if let Ok(mut o) = self.observations.lock() {
             let before = o.targeting.enabled;
@@ -205,7 +216,7 @@ impl ClientProbe {
     }
 }
 
-impl ClientProbe {
+impl Client {
     fn pre_update_inner(&self, ctx: &mut StableClient<'_>) {
         if ctx.client_scene_kind() != Some(mod_api_stable::ClientSceneKindV1::InGame)
             || settings::MODAL.load(Ordering::Relaxed)
@@ -755,7 +766,7 @@ impl ClientProbe {
     }
 }
 
-impl StableExtension for ClientProbe {
+impl StableExtension for Client {
     fn pre_update(&self, ctx: &mut StableClient<'_>, _dt_micros: u64) {
         let _t = perf::time(perf::Section::Pre);
         self.pre_update_inner(ctx);
@@ -777,11 +788,11 @@ impl StableExtension for ClientProbe {
     }
 }
 
-struct AiProbe {
+struct Simulation {
     logger: Arc<Logger>,
     last_sample: Option<(usize, u32, u64, u64, u64)>,
     timing: Arc<native_timing::NativeTiming>,
-    movement: Arc<movement_test::MovementTest>,
+    movement: Arc<movement::Movement>,
     abilities: Arc<abilities::Abilities>,
     hud: Arc<player_hud::PlayerHud>,
     team: Arc<team_status::TeamStatus>,
@@ -790,7 +801,7 @@ struct AiProbe {
     session_gate: Arc<RwLock<()>>,
 }
 
-impl StablePlayerAi for AiProbe {
+impl StablePlayerAi for Simulation {
     fn clone_box(&self) -> Box<dyn StablePlayerAi> {
         Box::new(Self {
             logger: self.logger.clone(),
@@ -1385,7 +1396,7 @@ fn init(host: &StableHost) -> StableMod {
         "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=1 movement_enabled=true"
     );
     let timing = Arc::new(native_timing::NativeTiming::new(true));
-    let movement = Arc::new(movement_test::MovementTest::new(true));
+    let movement = Arc::new(movement::Movement::new(true));
     let camera = Arc::new(camera::CameraControl::default());
     let cast_on_release = runtime_storage::cast_on_release(directory.as_deref());
     let cursor = cursor::Cursor::new(directory.as_deref());
@@ -1420,7 +1431,7 @@ fn init(host: &StableHost) -> StableMod {
             },
         ),
     );
-    declaration.set_extension(ClientProbe {
+    declaration.set_extension(Client {
         logger: logger.clone(),
         observations: Mutex::default(),
         timing: timing.clone(),
@@ -1437,7 +1448,7 @@ fn init(host: &StableHost) -> StableMod {
     });
     declaration.add_item_build_hook(purchase_tracker::BuildObserver(hud.clone()));
     declaration.set_map_customizer(map_path::MapObserver(movement.clone(), logger.clone()));
-    declaration.add_player_input_ai(AiProbe {
+    declaration.add_player_input_ai(Simulation {
         session_gate,
         logger,
         last_sample: None,

@@ -1,9 +1,9 @@
 //! Read-only map geometry and bounded routes for manual movement.
-use crate::{movement_test::MovementTest, Logger};
+use crate::{movement::Movement, Logger};
 use mod_api_stable::{GameModeKindV1, StableJsonDoc, StableMapCustomizer};
 use std::{cmp::Reverse, collections::BinaryHeap, sync::Arc};
 
-pub struct MapObserver(pub Arc<MovementTest>, pub Arc<Logger>);
+pub struct MapObserver(pub Arc<Movement>, pub Arc<Logger>);
 impl StableMapCustomizer for MapObserver {
     fn customize(&self, mode: Option<GameModeKindV1>, doc: &mut StableJsonDoc<'_>) {
         let grid = doc.get_json("walls").and_then(|s| Grid::from_json(&s));

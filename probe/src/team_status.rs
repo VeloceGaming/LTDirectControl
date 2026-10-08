@@ -482,7 +482,7 @@ mod tests {
     fn missing_build_read_retains_only_same_match_capacity() {
         let team = TeamStatus::default();
         let key = (1, 33, 1);
-        let log = crate::timing_test::tests::logger("team-capacity");
+        let log = crate::test_support::logger("team-capacity");
         assert!(team.needs_sample(key, 1));
         let mut first = player(0, 0, true, 0);
         first.build = Some(vec!["target".into(); 5]);
@@ -505,7 +505,7 @@ mod tests {
     fn dead_identity_survives_absent_entity_and_native_timer_freezes_on_pause() {
         let team = TeamStatus::default();
         let key = (1, 33, 1);
-        let log = crate::timing_test::tests::logger("team-death");
+        let log = crate::test_support::logger("team-death");
         assert!(team.needs_sample(key, 1));
         team.observe(key, vec![player(1, 2, true, 0)], &log);
         let mut dead = player(1, 2, false, 121);
@@ -523,7 +523,7 @@ mod tests {
     fn sides_lanes_and_new_session_do_not_reuse_old_identity_or_sampling() {
         let team = TeamStatus::default();
         let key = (1, 33, 1);
-        let log = crate::timing_test::tests::logger("team-session");
+        let log = crate::test_support::logger("team-session");
         assert!(team.needs_sample(key, 1));
         assert!(!team.needs_sample(key, 1));
         let players = vec![player(1, 0, false, 60), player(0, 0, true, 0)];

@@ -1,4 +1,5 @@
-//! Persistent mouse destinations and own-team selection for the bounded test.
+//! Persistent player orders (move, attack, attack-move, stop), movement
+//! steering toward them, click feedback and own-team athlete selection.
 use super::{
     combat::{Order, Unit},
     own_selection::{contract_team, MatchKey, OwnSelection, PlayerIdentity},
@@ -60,11 +61,11 @@ struct State {
     champion_only: bool,
     clicks: std::collections::VecDeque<ClickFeedback>,
 }
-pub struct MovementTest {
+pub struct Movement {
     enabled: bool,
     state: Mutex<State>,
 }
-impl MovementTest {
+impl Movement {
     pub fn new(enabled: bool) -> Self {
         Self {
             enabled,
@@ -982,8 +983,8 @@ impl MovementTest {
 }
 #[cfg(test)]
 mod tests {
-    use super::super::timing_test::tests::logger;
     use super::*;
+    use crate::test_support::logger;
     #[test]
     fn attack_move_click_keeps_ground_order_and_held_click_does_not_repeat() {
         let m = movement();
@@ -1735,8 +1736,8 @@ mod tests {
             ..Keys::default()
         }
     }
-    fn movement() -> MovementTest {
-        let movement = MovementTest::new(true);
+    fn movement() -> Movement {
+        let movement = Movement::new(true);
         movement.state.lock().unwrap().selection.athletes.insert(60);
         movement
     }
@@ -2063,7 +2064,7 @@ mod tests {
             0
         );
     }
-    fn start(movement: &MovementTest, log: &Logger, lane: usize) {
+    fn start(movement: &Movement, log: &Logger, lane: usize) {
         movement.begin_match((1, 33, 1), log);
         movement.register_player(
             (1, 33, 1),

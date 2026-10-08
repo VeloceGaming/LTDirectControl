@@ -18,6 +18,10 @@ text searches and are approximate.
   old verifier below describe the state before this stage.
 - Stage 2 done (0.66.0): Log detail setting (Quiet / Normal / Verbose),
   classified by line tag in `probe/src/logging.rs`.
+- Stage 3 done (0.66.1): `movement_test` → `movement` (`MovementTest` →
+  `Movement`), `timing_test` → `test_support`, `ClientProbe`/`AiProbe` →
+  `Client`/`Simulation`, new crate and movement module docs. The mod ID and
+  the `probe.log` file names stay until the public release.
 
 ## Summary
 

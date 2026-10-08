@@ -198,7 +198,7 @@ fn marker_motion(elapsed: Duration) -> Option<(f32, f32)> {
 pub fn draw_clicks(
     ctx: &mut mod_api_stable::StableClient<'_>,
     camera: &crate::camera::CameraControl,
-    clicks: &[crate::movement_test::ClickFeedback],
+    clicks: &[crate::movement::ClickFeedback],
 ) {
     let Some(frame) = camera.frame() else {
         return;

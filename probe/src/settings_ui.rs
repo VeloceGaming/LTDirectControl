@@ -1885,7 +1885,7 @@ mod tests {
         let keys = Keys::default();
         let timing = NativeTiming::new(false);
         let store = settings::Settings::new(None);
-        let log = crate::timing_test::tests::logger("settings-ui-events");
+        let log = crate::test_support::logger("settings-ui-events");
         ui.handle(Event::Seg(0, 1), keys, &timing, &store, &log);
         assert_eq!(ui.draft.number("champion_mode"), 1.);
         let attack_cancel = OPTIONS

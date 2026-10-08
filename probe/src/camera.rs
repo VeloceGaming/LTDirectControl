@@ -432,7 +432,7 @@ mod tests {
     #[test]
     fn next_session_clears_lock_and_drag_without_replaying_held_camera_keys() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("camera-session-reset");
+        let log = crate::test_support::logger("camera-session-reset");
         let f = frame();
         let held = Keys {
             focused: true,
@@ -528,7 +528,7 @@ mod tests {
     #[test]
     fn paused_drag_unlocks_and_survives_crossing_hud() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("camera-drag");
+        let log = crate::test_support::logger("camera-drag");
         let k = Keys {
             focused: true,
             cursor: Some((960., 537.)),
@@ -614,7 +614,7 @@ mod tests {
     #[test]
     fn death_keeps_drag_and_edge_pan_without_following_an_absent_champion() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("camera-dead-drag");
+        let log = crate::test_support::logger("camera-dead-drag");
         let f = frame();
         let keys = Keys {
             focused: true,
@@ -718,7 +718,7 @@ mod tests {
     #[test]
     fn death_retains_lock_intent_for_respawn_but_does_not_capture_hud_drags() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("camera-dead-lock");
+        let log = crate::test_support::logger("camera-dead-lock");
         let f = frame();
         let keys = Keys {
             focused: true,
@@ -786,7 +786,7 @@ mod tests {
     #[test]
     fn held_space_survives_native_mode_changes_and_releases_in_place() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("space-follow");
+        let log = crate::test_support::logger("space-follow");
         let k = Keys {
             focused: true,
             ..Keys::default()
@@ -816,7 +816,7 @@ mod tests {
     #[test]
     fn edge_scroll_uses_window_edges_even_over_hud_and_minimap() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("outer-edges");
+        let log = crate::test_support::logger("outer-edges");
         let k = Keys {
             focused: true,
             ..Keys::default()
@@ -909,7 +909,7 @@ mod tests {
     #[test]
     fn drag_started_on_hud_never_captures_and_release_ends_capture() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("drag-capture");
+        let log = crate::test_support::logger("drag-capture");
         let k = Keys {
             focused: true,
             cursor: Some((960., 537.)),
@@ -1014,7 +1014,7 @@ mod tests {
     #[test]
     fn temporary_follow_releases_in_place_and_explicit_minimap_unlocks() {
         let camera = CameraControl::default();
-        let log = crate::timing_test::tests::logger("camera");
+        let log = crate::test_support::logger("camera");
         let k = Keys {
             focused: true,
             ..Keys::default()
