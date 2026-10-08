@@ -3,6 +3,11 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.67.0 — 2026-10-09
+
+- F11 now also pauses: pressed while control is running it queues the same Pause action as the Pause button (pending orders cleared as for a click); it still starts and resumes. Button tooltip "Pause · F11"; key binding label "Start, pause or resume control".
+- Shop: "Vanilla order" checkbox in the shop header, on by default (saved like a setting, shop_vanilla_order). With it on only the first unfinished order buys and later orders wait, like the game's own buyer, instead of buying parts of several items; the in-base preview follows the same rule.
+
 ## 0.66.3 — 2026-10-09
 
 - lib.rs split into lib.rs (logger and start-up wiring), client.rs and simulation.rs; Client::post_update and Simulation::think now call one named step per feature (install, athlete choice, re-arm, windows, UI blocking, pointer, diagnostics; session binding, roster, Tab, purchase trace, shop, HUD, controlled athlete, samples), moved verbatim.

@@ -224,19 +224,30 @@ fn slots_full(live: &Live) -> bool {
     cap > 0 && live.owned.len() >= cap
 }
 
-/// The next step the buyer hands out: the first open order whose next step
-/// is affordable, at the game's price.
-pub fn next_step(cat: &[Item], live: &Live, orders: &[Order]) -> Option<(usize, Step)> {
-    assign(cat, &live.owned, orders, slots_full(live))
+/// The next step the buyer hands out, at the game's price. Normally the first
+/// open order whose next step is affordable. With `vanilla` (the game's own
+/// rule, "Vanilla order" in the shop) only the first open order buys: later
+/// orders wait until it is finished, so slots are not filled with parts of
+/// several items.
+pub fn next_step(
+    cat: &[Item],
+    live: &Live,
+    orders: &[Order],
+    vanilla: bool,
+) -> Option<(usize, Step)> {
+    let mut open = assign(cat, &live.owned, orders, slots_full(live))
         .into_iter()
         .enumerate()
-        .find_map(|(n, a)| match a {
-            Assigned::Open(Some(steps)) => {
-                let first = *steps.first()?;
-                (live.gold >= cat[first.item()].price).then_some((n, first))
-            }
+        .filter_map(|(n, a)| match a {
+            Assigned::Open(Some(steps)) => Some((n, *steps.first()?)),
             _ => None,
-        })
+        });
+    let affordable = |(_, step): &(usize, Step)| live.gold >= cat[step.item()].price;
+    if vanilla {
+        open.next().filter(affordable)
+    } else {
+        open.find(affordable)
+    }
 }
 
 /// Gold each order still needs (0 when satisfied, None when blocked).
@@ -288,11 +299,11 @@ pub fn offer(cat: &[Item], live: &Live, orders: &[Order], target: usize) -> Offe
 /// The steps the buyer will hand out next while the champion stays in base,
 /// run ahead of time exactly as `publish` chooses them (`next_step`), one step
 /// at a time. Returns the projected inventory/gold and the items bought.
-pub fn project(cat: &[Item], live: &Live, orders: &[Order]) -> (Live, Vec<usize>) {
+pub fn project(cat: &[Item], live: &Live, orders: &[Order], vanilla: bool) -> (Live, Vec<usize>) {
     let mut out = live.clone();
     let mut bought = Vec::new();
     for _ in 0..64 {
-        let Some((_, step)) = next_step(cat, &out, orders) else {
+        let Some((_, step)) = next_step(cat, &out, orders, vanilla) else {
             break;
         };
         out.gold -= cat[step.item()].price;
@@ -392,6 +403,8 @@ struct State {
     mode_log: Option<String>,
     /// Pre-start: native player objects of this match that buy nothing.
     hold: Vec<usize>,
+    /// "Vanilla order": finish the first order before buying for the next.
+    vanilla_order: bool,
 }
 
 /// Fields 2-3 mirror `State::player` and "holding anyone", so the buyer
@@ -444,6 +457,7 @@ impl Shop {
                 announced: false,
                 mode_log: None,
                 hold: Vec::new(),
+                vanilla_order: false,
             }),
             Mutex::new(None),
             AtomicUsize::new(0),
@@ -496,6 +510,12 @@ impl Shop {
         true
     }
 
+    /// The "Vanilla order" setting, read each tick by the simulation.
+    pub fn set_vanilla_order(&self, on: bool) {
+        if let Ok(mut s) = self.0.lock() {
+            s.vanilla_order = on;
+        }
+    }
     /// Shop window: one more order (first come, first served; unaffordable
     /// orders never block a later affordable one).
     pub fn buy(&self, order: Order) {
@@ -646,7 +666,7 @@ impl Shop {
         let mut done = assigned.iter().map(|a| matches!(a, Assigned::Done(_)));
         s.queue.retain(|_| !done.next().unwrap_or(false));
         // The first order whose next step is affordable now.
-        let step = next_step(&cat, &live, &s.queue).map(|(_, step)| step);
+        let step = next_step(&cat, &live, &s.queue, s.vanilla_order).map(|(_, step)| step);
         s.step = step;
         let line = format!(
             "SHOP STATE queue={:?} next={:?} owned={:?}",
@@ -896,7 +916,7 @@ mod tests {
             capacity: 0,
         };
         let orders: Vec<Order> = queue.iter().map(|t| order(*t)).collect();
-        let (projected, bought) = project(&cat, &start, &orders);
+        let (projected, bought) = project(&cat, &start, &orders, false);
         // Dirk first (400) from the longsword; then flare needs a new chain
         // (equal-cost routes: the iron sword one is planned first):
         // ironsword 250 -> longsword 500; axe 500 is unaffordable at 350 left.
@@ -986,6 +1006,31 @@ mod tests {
     }
 
     #[test]
+    fn vanilla_order_waits_for_the_first_order_instead_of_buying_parts_of_later_ones() {
+        let cat = riot();
+        let me = live(&[1], 450).unwrap(); // longsword; flare's next step (axe) costs 500
+        let orders = [order(6), order(7)]; // flare, then boots (250)
+                                           // Default rule: the affordable boots are bought now.
+        assert_eq!(
+            next_step(&cat, &me, &orders, false),
+            Some((1, Step::New { item: 7 }))
+        );
+        // Vanilla order: wait for the axe; nothing for the boots yet.
+        assert_eq!(next_step(&cat, &me, &orders, true), None);
+        let richer = Live {
+            gold: 500,
+            ..me.clone()
+        };
+        assert_eq!(
+            next_step(&cat, &richer, &orders, true),
+            Some((0, Step::Upgrade { slot: 0, item: 3 }))
+        );
+        // The projection follows the same rule.
+        assert!(project(&cat, &me, &orders, true).1.is_empty());
+        assert_eq!(project(&cat, &me, &orders, false).1, vec![7]);
+    }
+
+    #[test]
     fn a_later_affordable_item_is_not_blocked_and_keeps_off_earlier_parts() {
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
@@ -1018,7 +1063,7 @@ mod tests {
         );
         let orders = vec![new_order(&me, 0)];
         assert_eq!(orders[0].excluded, vec![0]);
-        let (after, bought) = project(&cat, &me, &orders);
+        let (after, bought) = project(&cat, &me, &orders, false);
         assert_eq!((after.owned.clone(), bought), (vec![0, 0], vec![0]));
         // The queue is satisfied by the new copy, not the old one.
         assert!(matches!(
@@ -1027,7 +1072,7 @@ mod tests {
         ));
         // Two pending orders of the same part: two new copies.
         let two = vec![new_order(&me, 0), new_order(&me, 0)];
-        assert_eq!(project(&cat, &me, &two).0.owned, vec![0, 0, 0]);
+        assert_eq!(project(&cat, &me, &two, false).0.owned, vec![0, 0, 0]);
         // No purchase is blocked: a finished item can be bought again too.
         let with_flare = Live {
             owned: vec![6],

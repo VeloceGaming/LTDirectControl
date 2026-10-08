@@ -555,7 +555,7 @@ impl SessionUi {
                         if phase == Phase::Paused {
                             "Resume · F11"
                         } else {
-                            "Pause"
+                            "Pause · F11"
                         }
                     },
                 ),

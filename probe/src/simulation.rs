@@ -527,6 +527,7 @@ impl Simulation {
                     None => shop::Mode::Native("controlled champion object unknown"),
                 }
             };
+            shop::SHOP.set_vanilla_order(settings::option("shop_vanilla_order") == 1.);
             shop::SHOP.publish(mode, cat, live, |line| self.logger.write(line));
         }
     }

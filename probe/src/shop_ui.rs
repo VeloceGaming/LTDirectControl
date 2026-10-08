@@ -43,24 +43,35 @@ fn offer(view: &shop::View, item: usize) -> shop::Offer {
 }
 
 type Projection = Option<(
-    (Arc<Vec<shop::Item>>, shop::Live, Vec<shop::Order>),
+    (Arc<Vec<shop::Item>>, shop::Live, Vec<shop::Order>, bool),
     (shop::Live, Vec<usize>),
 )>;
 thread_local! {
     static PROJECTION: std::cell::RefCell<Projection> = const { std::cell::RefCell::new(None) };
 }
 /// `shop::project` for the real inventory and queue, recomputed on change.
+/// Reads "Vanilla order" directly, so toggling it while paused shows at once.
 fn projected(view: &shop::View) -> (shop::Live, Vec<usize>) {
+    let vanilla = crate::settings::option("shop_vanilla_order") == 1.;
     PROJECTION.with(|cache| {
         let mut cache = cache.borrow_mut();
-        if let Some(((cat, live, orders), result)) = cache.as_ref() {
-            if Arc::ptr_eq(cat, &view.cat) && *live == view.live && *orders == view.orders {
+        if let Some(((cat, live, orders, was), result)) = cache.as_ref() {
+            if Arc::ptr_eq(cat, &view.cat)
+                && *live == view.live
+                && *orders == view.orders
+                && *was == vanilla
+            {
                 return result.clone();
             }
         }
-        let result = shop::project(&view.cat, &view.live, &view.orders);
+        let result = shop::project(&view.cat, &view.live, &view.orders, vanilla);
         *cache = Some((
-            (view.cat.clone(), view.live.clone(), view.orders.clone()),
+            (
+                view.cat.clone(),
+                view.live.clone(),
+                view.orders.clone(),
+                vanilla,
+            ),
             result.clone(),
         ));
         result
@@ -183,6 +194,7 @@ enum Event {
     Chip(usize),
     Buy,
     Pause,
+    Vanilla,
     QueueBuild,
 }
 
@@ -396,6 +408,28 @@ fn template() -> String {
         1524,
     ));
     s.push_str(&button("pause", (566, 18, 230, 32), "", 12, 1523, &pause));
+    // Vanilla order: the game's own rule, finish one item before the next.
+    let mut vanilla = rect("box", (8, 6, 20, 20), "eeececff", 1524);
+    vanilla.push_str(&rect("rail", (11, 9, 14, 14), "fdee00ff", 1525));
+    vanilla.push_str(&glyph("check", "ef_check", (10, 8, 16), "ffffffff", 1526));
+    vanilla.push_str(&label(
+        "label",
+        (38, 0, 200, 32),
+        15,
+        "Vanilla order",
+        true,
+        "cbc9c7ff",
+        "Left",
+        1524,
+    ));
+    s.push_str(&button(
+        "vanilla",
+        (806, 18, 230, 32),
+        "",
+        12,
+        1523,
+        &vanilla,
+    ));
     s.push_str(&glyph(
         "gold_icon",
         "ef_coin",
@@ -933,6 +967,7 @@ impl ShopUi {
             ("tab_all".into(), Event::Tab(false)),
             ("buy".into(), Event::Buy),
             ("pause".into(), Event::Pause),
+            ("vanilla".into(), Event::Vanilla),
             ("queue_build".into(), Event::QueueBuild),
         ];
         items.extend((0..FILTERS).map(|i| (format!("filter{i}"), Event::Filter(i))));
@@ -1154,6 +1189,10 @@ impl ShopUi {
                     }
                     self.scroll = 0.;
                 }
+                Event::Vanilla => {
+                    let on = crate::settings::option("shop_vanilla_order") == 1.;
+                    crate::settings::set_option("shop_vanilla_order", if on { 0. } else { 1. });
+                }
                 Event::Pause => {
                     let on = crate::settings::option("shop_pause") == 1.;
                     crate::settings::set_option("shop_pause", if on { 0. } else { 1. });
@@ -1325,6 +1364,14 @@ impl ShopUi {
         );
         self.visible(ctx, "pause.rail", on);
         self.visible(ctx, "pause.check", on);
+        let on = crate::settings::option("shop_vanilla_order") == 1.;
+        self.props(
+            ctx,
+            "vanilla.box",
+            format!("color: #{};", if on { "3a3837ff" } else { "eeececff" }),
+        );
+        self.visible(ctx, "vanilla.rail", on);
+        self.visible(ctx, "vanilla.check", on);
     }
 
     fn render_rail(&mut self, ctx: &mut StableClient<'_>, view: &shop::View) {

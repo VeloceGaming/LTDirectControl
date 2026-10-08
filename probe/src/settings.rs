@@ -105,6 +105,16 @@ pub static OPTIONS: &[OptionDef] = &[
         control: Control::Toggle,
         default: 0.,
     },
+    // Shown as a checkbox inside the shop window only (page 9 is never laid out).
+    OptionDef {
+        key: "shop_vanilla_order",
+        page: 9,
+        section: "Shopping",
+        label: "Vanilla order",
+        hint: "",
+        control: Control::Toggle,
+        default: 1.,
+    },
     OptionDef {
         key: "camera_lock",
         page: 2,
@@ -289,7 +299,7 @@ pub static BINDINGS: &[BindingDef] = &[
     bind!(
         "start",
         "Control & camera",
-        "Start / resume control",
+        "Start, pause or resume control",
         0x7a,
         0
     ),

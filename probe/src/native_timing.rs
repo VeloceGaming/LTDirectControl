@@ -189,6 +189,13 @@ impl NativeTiming {
             s.phase = Phase::Running;
             s.running.get_or_insert_with(Instant::now);
             log.write("NATIVE START/RESUME backup F11; playback=1x maximum frame lead=1");
+        } else if keys.start && !s.previous_start && s.phase == Phase::Running {
+            // F11 also pauses: queue the same action as the Pause button, so
+            // pending orders are cleared exactly as for a click.
+            if let (Some(key), None) = (s.key, s.pending_action) {
+                s.pending_action = Some((key, Phase::Running, SessionAction::Pause));
+                log.write("SESSION pause requested by F11");
+            }
         }
         s.previous_start = keys.start;
     }
@@ -725,6 +732,27 @@ mod tests {
         s.client = Some(crate::platform_input::thread_id());
         drop(s);
         t
+    }
+    #[test]
+    fn f11_pauses_while_running_and_resumes_when_paused() {
+        let t = active();
+        let log = logger("f11-toggle");
+        t.state.lock().unwrap().phase = Phase::Running;
+        let f11 = Keys {
+            start: true,
+            ..Keys::default()
+        };
+        // Pressing F11 while running queues the Pause button's action.
+        t.heartbeat(true, true, f11, &log);
+        assert_eq!(t.take_action(), Some(SessionAction::Pause));
+        t.apply_action(SessionAction::Pause, &log);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Paused);
+        // Holding F11 does nothing more; a new press resumes.
+        t.heartbeat(true, true, f11, &log);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Paused);
+        t.heartbeat(true, true, Keys::default(), &log);
+        t.heartbeat(true, true, f11, &log);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Running);
     }
     #[test]
     fn the_simulation_worker_sees_the_phase_the_client_only_api_hides() {
