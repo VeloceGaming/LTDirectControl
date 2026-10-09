@@ -42,3 +42,7 @@
 /tools/prepare_hud_review.py
 /tools/prepare_endfield_preview.py
 /tools/compare_hud_review.py
+
+# The game's mod SDK (owned by its developer): tools/prepare_sdk.py copies
+# it from the game folder.
+/sdk/

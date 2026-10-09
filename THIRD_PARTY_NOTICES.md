@@ -10,7 +10,7 @@ licenses. Their conditions apply to those files only.
 | Noto Sans TC font | `probe/font/noto_tc_medium.ttf` (packaged); design previews | SIL Open Font License 1.1, Reserved Font Name "Source" ([text](probe/font/NotoSansTC-OFL.txt)) | As above; a modified font may not be called "Source" |
 | Archivo, Iosevka fonts | `design/hud/settings-source/src/fonts` (design previews only) | SIL Open Font License 1.1 | As above |
 | Lucide icons | the white UI glyphs in `probe/ui` and `design/hud/endfield-assets/icons` | ISC ([text](probe/ui/Endfield-icons-LICENSE.txt)) | Keep the copyright and permission notice |
-| Teamfight Manager 2 mod SDK | `sdk/mod-api-stable` | No license file; belongs to the game's developer | Not covered by this project's license. Use the SDK that comes with the game |
+| Teamfight Manager 2 mod SDK | not in this repository; `tools/prepare_sdk.py` copies it from the game into `sdk/` (ignored by git) | No license file; belongs to the game's developer | Not covered by this project's license and not redistributed. Use the SDK that comes with the game |
 
 The packaged font files are static instances generated from the original
 fonts (`tools/generate_hud_fonts.py`); the OFL permits this.
@@ -22,4 +22,4 @@ paths in `probe/src/*.json`), read from the installed game.
 Not for public release (design references only, owned by others):
 `design/*/game.webp` (a game screenshot used behind mockups),
 `design/hud/shop-assets/item-icons.png` and `riot-text.json` (item icons and
-text from the game and the Riot item mod), and `sdk/mod-api-stable`.
+text from the game and the Riot item mod), and the game's mod SDK.
