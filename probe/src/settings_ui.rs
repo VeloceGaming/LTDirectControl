@@ -995,9 +995,14 @@ impl SettingsUi {
                 self.drop = None;
             }
             Event::Field(slot) => {
-                if let Some(Entry::Opt(i)) = self.slots[slot] {
+                let entry = self.slots[slot];
+                if let Some(Entry::Opt(i)) = entry {
                     self.drop = if self.drop == Some(i) { None } else { Some(i) };
                 }
+                log.write(&format!(
+                    "SETTINGS select field click slot={slot} entry={entry:?} open={:?}",
+                    self.drop.map(|i| OPTIONS[i].key)
+                ));
             }
             Event::Popup(choice) => {
                 if let Some(i) = self.drop.take() {
@@ -1169,7 +1174,7 @@ impl SettingsUi {
         let cursor = keys.cursor.filter(|_| keys.focused);
         self.render_frame(ctx, cursor);
         self.render_content(ctx, cursor, keys);
-        self.render_popup(ctx, cursor);
+        self.render_popup(ctx, cursor, log);
         self.render_conflict(ctx, cursor);
         full
     }
@@ -1693,7 +1698,7 @@ impl SettingsUi {
                                 f32::from(value as usize == j),
                                 0.1,
                             );
-                            self.text(ctx, &format!("{row}.track.opt{j}"), text);
+                            self.text(ctx, &format!("{row}.track.opt{j}"), tr(text));
                             self.props(
                                 ctx,
                                 &format!("{row}.track.opt{j}"),
@@ -1879,7 +1884,12 @@ impl SettingsUi {
             format!("back_color: #{:06x}ff;", self.hex.2),
         );
     }
-    fn render_popup(&mut self, ctx: &mut StableClient<'_>, cursor: Option<(f32, f32)>) {
+    fn render_popup(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        cursor: Option<(f32, f32)>,
+        log: &Logger,
+    ) {
         // Locate the open select's field in the current frame; scrolled-away menus close.
         let at = self.drop.and_then(|index| {
             let slot = self
@@ -1893,6 +1903,15 @@ impl SettingsUi {
             (y >= VIEW_TOP as i32 && y + 50 <= VIEW_BOTTOM as i32).then_some((index, y))
         });
         if self.drop.is_some() && at.is_none() {
+            log.write(&format!(
+                "SETTINGS select menu closed: field not found or out of view; open={:?} slots_has={} row_rect={:?}",
+                self.drop.map(|i| OPTIONS[i].key),
+                self.drop
+                    .is_some_and(|i| self.slots.contains(&Some(Entry::Opt(i)))),
+                self.drop
+                    .and_then(|i| self.slots.iter().position(|s| *s == Some(Entry::Opt(i))))
+                    .and_then(|slot| ctx.ui_node_rect(&format!("{PATH}.window.row{slot}")))
+            ));
             self.drop = None;
         }
         let fade = self.motion.tonal(
@@ -1908,6 +1927,11 @@ impl SettingsUi {
         let Some((index, y)) = at else {
             for k in 0..POPUP_MAX {
                 self.props(ctx, &format!("popup.opt{k}"), "ignore_event: true;".into());
+            }
+            // A closed menu's panel would keep catching clicks over the
+            // lower half of the field it opened from: move it away.
+            if fade <= 0.02 {
+                self.props(ctx, "popup", "y: -2000px;".into());
             }
             return;
         };
@@ -2095,6 +2119,26 @@ fn bit(bits: [u64; 4], i: usize) -> bool {
 }
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn every_window_template_stays_whole_in_every_language() {
+        for (i, (code, _)) in crate::lang::LANGS.iter().enumerate() {
+            crate::lang::set_for_test(Some(i));
+            for (name, source) in [
+                ("settings", super::template()),
+                ("shop", crate::shop_ui::template_for_test()),
+                ("session", crate::session_ui::template_for_test()),
+                ("hud", crate::player_hud::template_for_test()),
+                ("emotes", crate::emotes::template_for_test()),
+                ("team", crate::team_status::template_for_test()),
+            ] {
+                if let Err(e) = crate::lang::check_template(&source) {
+                    panic!("{code} {name}: {e}");
+                }
+            }
+        }
+        crate::lang::set_for_test(None);
+    }
+
     use super::*;
     #[test]
     fn resume_only_our_pause_in_the_same_session() {

@@ -246,6 +246,10 @@ impl State {
 fn label(id: &str, y: i32, text: &str) -> String {
     format!("#{id}:label {{ x: 0px; y: {y}px; width: 304px; height: 25px; size: 16; font: \"asset/lt_direct_control/font/medium\"; align_x: Center; align_y: Center; color: #eeececff; text: {}; ignore_event: true; z: 2307; }}\n", serde_json::to_string(text).unwrap())
 }
+#[cfg(test)]
+pub(crate) fn template_for_test() -> String {
+    template()
+}
 fn template() -> String {
     let mut s = String::from("lt_emotes:empty { x: 0px; y: 0px; width: 1920px; height: 1080px; visible: false; ignore_event: true; z: 2300;\n#capture:color { x: 0px; y: 0px; width: 1920px; height: 1080px; color: #00000000; visible: false; ignore_event: false; z: 2300; }\n#wheel:empty { width: 304px; height: 350px; visible: false; ignore_event: true; z: 2301;\n#vertical:color { x: 151px; y: 80px; width: 2px; height: 144px; color: #eeecec44; ignore_event: true; z: 2302; }\n#horizontal:color { x: 80px; y: 151px; width: 144px; height: 2px; color: #eeecec44; ignore_event: true; z: 2302; }\n");
     for (i, (x, y)) in OFFSETS.into_iter().enumerate() {

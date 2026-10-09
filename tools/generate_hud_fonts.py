@@ -31,6 +31,8 @@ for name, source, weight in [('manrope_medium', 'Manrope[wght].ttf', 500),
             widths.setdefault(str(code), round(font['hmtx'][glyph][0] * 1000 / font['head'].unitsPerEm))
     font.close()
 
+from font_fallbacks import complete
+
 game = GAME_DIR
 with (game / 'bundle.game_data').open('rb') as f:
     integer = lambda: struct.unpack('<I', f.read(4))[0]
@@ -47,7 +49,7 @@ for role in ['medium', 'numeric']:
     mapping = {}
     for locale, fallback in base.items():
         latin = 'asset/lt_direct_control/font/manrope_' + role
-        mapping[locale] = [latin] + (['asset/lt_direct_control/font/noto_tc_medium'] if locale == 'zh-hant' else []) + fallback[1:]
+        mapping[locale] = complete([latin] + (['asset/lt_direct_control/font/noto_tc_medium'] if locale == 'zh-hant' else []) + fallback[1:])
     (OUT / (role + '.font_set')).write_text(json.dumps(mapping, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 for license in ['Manrope-OFL.txt', 'NotoSansTC-OFL.txt']:
     shutil.copyfile(LAB / license, OUT / license)

@@ -109,13 +109,64 @@ static CURRENT: AtomicUsize = AtomicUsize::new(0);
 /// The game's language as last detected (LANGS index), usize::MAX if not yet.
 static DETECTED: AtomicUsize = AtomicUsize::new(usize::MAX);
 
+#[cfg(not(test))]
+fn current() -> usize {
+    CURRENT.load(Ordering::Relaxed)
+}
+#[cfg(test)]
+std::thread_local! {
+    static TEST_LANGUAGE: std::cell::Cell<Option<usize>> = const { std::cell::Cell::new(None) };
+}
+/// Tests: this thread's language, without touching other tests.
+#[cfg(test)]
+pub(crate) fn set_for_test(index: Option<usize>) {
+    TEST_LANGUAGE.with(|l| l.set(index));
+}
+#[cfg(test)]
+fn current() -> usize {
+    TEST_LANGUAGE
+        .with(|l| l.get())
+        .unwrap_or_else(|| CURRENT.load(Ordering::Relaxed))
+}
+/// Tests: a window template's braces balance outside its quoted strings
+/// and every string closes, so translated text cannot cut the window short.
+#[cfg(test)]
+pub(crate) fn check_template(source: &str) -> Result<(), String> {
+    let (mut depth, mut quoted, mut escape) = (0i64, false, false);
+    for (at, c) in source.char_indices() {
+        if quoted {
+            match (escape, c) {
+                (true, _) => escape = false,
+                (false, '\\') => escape = true,
+                (false, '"') => quoted = false,
+                _ => {}
+            }
+            continue;
+        }
+        match c {
+            '"' => quoted = true,
+            '{' => depth += 1,
+            '}' => {
+                depth -= 1;
+                if depth < 0 {
+                    return Err(format!("extra }} at byte {at}"));
+                }
+            }
+            _ => {}
+        }
+    }
+    if quoted || depth != 0 {
+        return Err(format!("unbalanced: depth {depth}, open string {quoted}"));
+    }
+    Ok(())
+}
 fn table(index: usize) -> &'static HashMap<String, String> {
     static TABLES: [OnceLock<HashMap<String, String>>; 17] = [const { OnceLock::new() }; 17];
     TABLES[index].get_or_init(|| serde_json::from_str(FILES[index]).unwrap_or_default())
 }
 /// `english` in the current language.
 pub fn tr(english: &'static str) -> &'static str {
-    match CURRENT.load(Ordering::Relaxed) {
+    match current() {
         0 => english,
         i => table(i).get(english).map_or(english, String::as_str),
     }
@@ -131,7 +182,7 @@ pub fn trf(english: &'static str, values: &[(&str, &dyn std::fmt::Display)]) -> 
 }
 /// Current language code, e.g. "zh-hant".
 pub fn code() -> &'static str {
-    LANGS[CURRENT.load(Ordering::Relaxed)].0
+    LANGS[current()].0
 }
 /// A number that changes with the language (windows rebuild on change).
 pub fn generation() -> usize {

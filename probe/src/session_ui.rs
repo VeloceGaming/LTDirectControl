@@ -53,6 +53,10 @@ fn button(s: &mut String, name: &str, glyph: &str, x: usize, y: usize) {
     s.push_str(&ui_graphics::image("glyph", glyph, 11, 9, 26, 1105));
     s.push_str("}\n");
 }
+#[cfg(test)]
+pub(crate) fn template_for_test() -> String {
+    template()
+}
 fn template() -> String {
     let bg = crate::ui_theme::hex(0xff);
     let mut s=String::from("lt_session_controls:empty { width: 456px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62px; z: 1100; ignore_event: true;\n");

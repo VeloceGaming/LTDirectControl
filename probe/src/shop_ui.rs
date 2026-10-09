@@ -372,6 +372,10 @@ fn recipe_choice_button(name: &str, bounds: (i32, i32, i32, i32), text: &str) ->
     button(name, bounds, text, 16, 1523, &c)
 }
 
+#[cfg(test)]
+pub(crate) fn template_for_test() -> String {
+    template()
+}
 fn template() -> String {
     let mut s = format!("lt_shop:color {{ x: {}px; y: {}px; width: {}px; height: {}px; z: 1500; color: #~4b4a49ff; ignore_event: false; visible: false; rounding: Uniform {{ rounding: 2; }}\n", WINDOW.0, WINDOW.1, WINDOW.2, WINDOW.3);
     s.push_str(&rect(

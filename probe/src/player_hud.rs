@@ -351,6 +351,10 @@ fn inventory_tile(i: usize) -> String {
     let inset = crate::ui_theme::shade(5, 0xff);
     format!("item{i}:color {{ x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #background:color {{ x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #unknown:label {{ @\"asset/base/style/main#label\"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: \"?\"; visible: false; ignore_event: true; }} }}\n")
 }
+#[cfg(test)]
+pub(crate) fn template_for_test() -> String {
+    template()
+}
 fn template() -> String {
     let mut s = format!("lt_player_hud:empty {{ width: {WIDTH}px; height: {HEIGHT}px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true;\n");
     // Battlefield ends at y1024. Controls remain in the last 50 px.

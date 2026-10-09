@@ -150,6 +150,10 @@ fn item_tile(i: usize) -> String {
     let inset = crate::ui_theme::shade(8, 0xff);
     format!("item{i}:color {{ width: 32px; height: 32px; z: 1203; color: #~4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control/font/numeric\"; width: 100%; height: 100%; z: 1206; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
 }
+#[cfg(test)]
+pub(crate) fn template_for_test() -> String {
+    template()
+}
 fn template() -> String {
     let inset = crate::ui_theme::shade(8, 0xff);
     let mut s = String::from("lt_team_status:color { anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; y: -80px; z: 1200; color: #~1e1e1df5; rounding: Uniform { rounding: 2; } ignore_event: true;\n#top:color { height: 1px; width: 100%; z: 1201; color: #~4b4a49ff; ignore_event: true; }\n#bottom:color { anchor_y: 1; pivot_y: 1; height: 1px; width: 100%; z: 1201; color: #~4b4a49ff; ignore_event: true; }\n");

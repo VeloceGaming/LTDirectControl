@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.83.1 — 2026-10-10
+
+- Boxes instead of characters (Simplified Chinese, Thai and others in the language list): the game picks a font set entry by ITS language, and each entry only covered that language's script. Every entry of the mod's two font sets now falls back to all the game's script fonts (Latin/Cyrillic/Vietnamese, SC, TC, JP, KR, Thai), keeping its own fonts first. New tools/font_fallbacks.py (also used by generate_hud_fonts.py) rewrites them and their digests.
+- The three two-choice switches (Hold/Toggle, Ignore/Honor, Near champion/Near cursor) are translated.
+- A select menu could not be reopened from the same field: once closed, its invisible panel stayed over the lower half of the field it opened from and caught the click. The closed menu now moves off-screen. `SETTINGS select ...` lines log field clicks and menu closes in case it persists.
+- Test: every window template (settings, shop, session bar, HUD, emote wheel, Tab panel) stays structurally whole in all 17 languages.
+
 ## 0.83.0 — 2026-10-10
 
 - All of the mod's own text follows the mod language (342 texts in each of the 16 translated languages): the whole Settings window (every option, choice, keybind, the acquisition and emote panels), the shop (filters, headings, buttons, status, messages, recipe paths), the HUD (respawn, cooldown, purchase tooltips), ability feedback, the session bar tooltips, the Tab panel headers and the emote wheel hint. Stat names follow League's localised terms; Traditional Chinese matches the Riot item mod (物理防禦, 技能疾速).
