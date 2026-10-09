@@ -112,7 +112,10 @@ Add an `OptionDef` to `OPTIONS` in `settings.rs`:
 
 Read it anywhere with `crate::settings::option("key")`, or with
 `self.settings.number("key")` inside `Client`. The settings window draws
-the row and saves the value; no other code is needed.
+the row and saves the value; no other code is needed. Its label, hint,
+section and choices are drawn through the translation table, so add their
+wording to every `probe/lang/*.json` (see "Text and languages"; the tests
+list what is missing).
 
 Advanced uses General / Acquisition / Debug subpages. Per-champion acquisition
 settings are the fixed 475-unit Acquisition body in
@@ -135,13 +138,52 @@ input and IME handling; high-layer labels mirror committed text because the
 native editor's own text/selection/caret draw at fixed z=100. The focus underline
 is visible; native selection/caret and uncommitted IME text are not mirrored.
 
+### Text and languages
+
+Every text the mod shows goes through `crate::lang`:
+
+- `tr("Cancel")` returns the current language's wording, or the English
+  when a translation is missing. The English text itself is the key.
+- `trf("Need {gold} · {count} steps", &[("gold", &g), ("count", &n)])`
+  fills named values. Never glue words around a number with `format!`:
+  word order and plurals differ per language. Write separate texts for one
+  and several (`"1 step"` / `"{count} steps"`); each language may phrase
+  both its own way (Russian and Polish use "шагов: {count}" style).
+- Translations live in `probe/lang/<code>.json` (English text → wording),
+  one file per game language; English needs no file. They are built into
+  the DLL.
+- `lang::tests` fail when any `tr`/`trf` text (or a settings label, hint,
+  choice, page name, stat filter or emote slot) is missing from a language,
+  is empty, or has different `{values}`, and when a file holds a stale key.
+  `cargo test --release lang::tests::list_missing -- --ignored` writes the
+  missing texts to `target/lang-missing.json`.
+- Settings > Interface > Mod language: Auto (default) follows the game,
+  identified from its own word for "Close" (`lang::GAME_CLOSE`) through the
+  SDK text lookup and rechecked every second; or a fixed language. The
+  stored value is an index into `lang::CHOICES`: never reorder `LANGS`.
+- A language change rebuilds every window (`ui_theme::refresh` keys on
+  background colour and language), so template text is simply rebuilt.
+- Kept in English on purpose: log lines (their leading tag sets the log
+  level), key names, emote names, setting keys, node names and asset paths.
+- Game words (items, champions, skills) already come from the game in its
+  language; do not translate them.
+
+Fonts: the game picks a font set entry by ITS language, while the mod's
+text can be in another. `tools/font_fallbacks.py` makes every entry of
+`probe/font/*.font_set` fall back to all the game's script fonts; the HUD
+font generator applies the same rule.
+
 ### Add a HUD element or a window
 
 The native UI is built from template strings (see `player_hud::template`
 and `shop_ui::template`), spawned with `ctx.ui_spawn_source`, and updated
 through small cached helpers (`props`, `text`, `visible`) that skip writes
 when nothing changed. Clicks are registered with
-`ctx.ui_register_path_events`.
+`ctx.ui_register_path_events`; check `crate::ui_click::once(path)` in the
+callback. The game keeps a path's callbacks when your window is removed and
+rebuilt within a match (background colour or language change), and your
+rebuild registers again, so without it every click fires twice and toggles
+undo themselves. Put shown text through `tr`/`trf`.
 
 To add one:
 
@@ -273,6 +315,9 @@ Manual shopping reports itself unavailable.
 
 ## Updating for a new game version
 
+0. Run `python tools/prepare_sdk.py` to copy the new game's SDK into `sdk/`
+   (it re-adds the mod's two local SDK additions and stops if the SDK
+   changed where they go).
 1. Start from the three places that hold version knowledge:
    - `native_adapter/windows/layout.rs` (hook sites and byte patterns);
    - `native_profile.rs` (executable identity and layout guards);
@@ -290,7 +335,9 @@ Manual shopping reports itself unavailable.
 ## Testing
 
 - `cargo test --release` in `probe/` covers the pure logic: orders,
-  targeting, casting rules, shop planning, layouts, log levels.
+  targeting, casting rules, shop planning, layouts, log levels, and that
+  every text is translated and every window template stays whole in all
+  17 languages.
 - Rendering and real gameplay can only be checked in game. Play a match,
   then read `%LOCALAPPDATA%\LTDirectControl\probe.log`.
 - `tools/verify_build.py` checks a staged build against the installed game

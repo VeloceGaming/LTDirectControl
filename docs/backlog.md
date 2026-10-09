@@ -1,6 +1,6 @@
 # Backlog
 
-What is left to do, as of 0.80.0 (2026-10-10). Finished and declined items
+What is left to do, as of 1.0.0 (2026-10-10, first public release). Finished and declined items
 are listed at the end for reference.
 
 ## Open
@@ -32,21 +32,33 @@ are listed at the end for reference.
    imports are deferred. Detailed performance capture/reporting is available;
    lower-spec hardware and extended compatibility runs remain outstanding.
    See [emotes-and-performance.md](emotes-and-performance.md).
-5. **Whole build plan from the start (0.78.0-0.78.1).** 0.78.0 log: the decision grows the plan 4 -> 6, nothing bought; 0.78.1 opens the shop one tick later so Recommended shows it. Manual shopping
-   skipped the game's buy-new decision, where the AI / Riot complete the plan
-   (slots 5-6). 0.78.0 runs that decision once, discarding its answer, and
-   opens the shop when done. Confirm `SHOP DRY RUN ... 4 -> 6` and no
-   unexpected purchase.
-6. **Stats panel values from items.** Haste, lifesteal and penetration are
+5. **Stats panel values from items.** Haste, lifesteal and penetration are
    summed from buffs; check them against the game's own panel with items
    that grant them (`STATS own raw` lines, every 10 s).
-7. **UI refactor (later, when the user is motivated).** Option 1 of the
+6. **UI refactor (later, when the user is motivated).** Option 1 of the
    customisation discussion: let modders restyle the HUD without editing
    Rust templates. The background colour (0.76-0.77.2) is the built-in
    limited customisation meanwhile.
-8. **Public release.** Rename the mod ID and finish the Steam description.
+7. **Translations.** All 17 game languages ship (1.0.0); the wording is
+   untested by native speakers except Traditional Chinese, and Hawaiian is
+   best-effort. Fix reports go into `probe/lang/<code>.json`.
 
 ## Done
+
+- Public release 1.0.0: mod ID `lt_direct_control`, name "LT Takeover:
+  Open-Source Direct Control", author Layton; the game's SDK no longer in
+  the repository (`tools/prepare_sdk.py`); Steam Workshop description by the
+  user. The Home+End no-cooldown test option stays in as a small easter egg
+  (single player only).
+- Languages (0.82.0-0.83.2): every mod text in all 17 game languages, Auto
+  detection from the game, all-script font fallbacks, duplicate click
+  callbacks after window rebuilds dropped (`ui_click`).
+- Whole build plan from the start (0.78.0-0.78.1): the game's buy-new
+  decision runs once (answer discarded) so Riot fills slots 5-6; the shop
+  opens by itself afterwards.
+- AI control (0.78.2): the game's layout toggle works; speed or View Match
+  Result hands the match to the game; left matches skip the mod's per-tick
+  work.
 
 - Stats panels (0.77.0-0.77.3, accepted): own stats left of the Q slot
   (C toggles), League-style left-click selection with a target frame

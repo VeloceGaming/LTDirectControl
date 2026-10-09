@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.0 — 2026-10-10
+
+- First public release, as "LT Takeover: Open-Source Direct Control" (mod ID `lt_direct_control`) by Layton, on the Steam Workshop and GitHub. Same code as 0.83.2.
+- Documentation for release: the README covers Workshop and manual install, every control (stats panel, unit selection, camera), the languages, the `tools/prepare_sdk.py` build step and an updated project map; the modding guide adds "Text and languages" (`tr`/`trf`, the language files and their tests, font fallbacks), the `ui_click::once` rule for click callbacks and the SDK step for game updates; the third-party notices list the bundled emote images and the shop stamp as outside the public-domain dedication and no longer mention design files that are not in the repository; the backlog moves the release work to Done.
+- The Home+End no-cooldown test option stays in as a small easter egg; the mod is single player only.
+
 ## 0.83.2 — 2026-10-10
 
 - The language menu still would not reopen after a change. The 0.83.1 log showed why: every click on a rebuilt window arrived twice (open, then close, in the same millisecond). The game keeps a path's click callbacks when our window is removed and rebuilt within a match, and the rebuild registers again. New ui_click.rs lets each node's click through once per 50 ms; all 8 registration sites (settings, shop, session bar) use it. This also covers the shop checkboxes, camera lock and Tab toggles after a background-colour or language rebuild, which would have flipped twice.

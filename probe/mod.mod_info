@@ -2,7 +2,7 @@
   "mod_id": "lt_direct_control",
   "name": "LT Takeover: Open-Source Direct Control",
   "author": "Layton",
-  "version": "0.83.2",
+  "version": "1.0.0",
   "mod_type": "native",
   "contains_code": true,
   "description": "Yep.",
