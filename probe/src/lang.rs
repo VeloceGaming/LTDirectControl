@@ -211,18 +211,22 @@ mod tests {
                     continue;
                 }
                 let text = std::fs::read_to_string(&path).unwrap();
-                for marker in ["tr(\"", "trf(\""] {
+                for marker in ["tr(", "trf("] {
                     let mut rest = text.as_str();
                     while let Some(at) = rest.find(marker) {
                         let start = at + marker.len();
-                        // Whole calls only (not e.g. `from_str("`).
+                        // Whole calls only (not e.g. `from_str(`), whose
+                        // first argument is a literal (possibly on the next line).
                         let before = rest[..at].chars().next_back();
-                        if before.is_some_and(|c| c.is_alphanumeric() || c == '_') {
+                        let after = rest[start..].trim_start();
+                        if before.is_some_and(|c| c.is_alphanumeric() || c == '_')
+                            || !after.starts_with('"')
+                        {
                             rest = &rest[start..];
                             continue;
                         }
                         // Rust string literal up to the closing quote.
-                        let body = &rest[start..];
+                        let body = &after[1..];
                         let mut end = 0;
                         let bytes = body.as_bytes();
                         while end < bytes.len() && bytes[end] != b'"' {
@@ -242,15 +246,52 @@ mod tests {
         for (title, hint, _) in crate::settings_ui::PAGES {
             out.extend([title.to_owned(), hint.to_owned()]);
         }
-        for def in crate::settings::OPTIONS
-            .iter()
-            .filter(|d| d.key == "mod_language")
-        {
-            out.extend([def.section, def.label, def.hint, CHOICES[0]].map(str::to_owned));
+        out.extend(crate::settings_ui::ADVANCED.map(str::to_owned));
+        out.extend(crate::emote_library::SLOT_NAMES.map(str::to_owned));
+        out.extend(["Off", "On"].map(str::to_owned));
+        out.extend(
+            [
+                crate::settings_ui::HINT_IDLE,
+                crate::settings_ui::HINT_LISTEN,
+            ]
+            .map(str::to_owned),
+        );
+        for def in crate::settings::OPTIONS {
+            out.extend([def.section, def.label, def.hint].map(str::to_owned));
+            if let crate::settings::Control::Choice(choices) = def.control {
+                // Language names stay in their own language.
+                let own = def.key == "mod_language";
+                out.extend(
+                    choices
+                        .iter()
+                        .take(if own { 1 } else { choices.len() })
+                        .map(|c| c.to_string()),
+                );
+            }
         }
+        for def in crate::settings::BINDINGS {
+            out.extend([def.group, def.label].map(str::to_owned));
+        }
+        out.retain(|t| !t.is_empty());
         out.sort();
         out.dedup();
         out
+    }
+    /// Developer aid: `cargo test --release --offline lang::tests::list_missing
+    /// -- --ignored` writes the texts not yet in zh-hant.json (every file
+    /// gets the same set) to target/lang-missing.json.
+    #[test]
+    #[ignore]
+    fn list_missing() {
+        let t: HashMap<String, String> = serde_json::from_str(FILES[4]).unwrap();
+        let missing: Vec<String> = source_texts()
+            .into_iter()
+            .filter(|text| !t.contains_key(text))
+            .collect();
+        let path =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("target/lang-missing.json");
+        std::fs::write(&path, serde_json::to_string_pretty(&missing).unwrap()).unwrap();
+        eprintln!("{} missing texts -> {}", missing.len(), path.display());
     }
     fn placeholders(text: &str) -> Vec<String> {
         let mut out: Vec<String> = text

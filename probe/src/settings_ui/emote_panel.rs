@@ -75,7 +75,7 @@ pub(super) fn events() -> Vec<(String, Event)> {
 pub(super) fn template() -> String {
     let bg = crate::ui_theme::hex(0xff);
     let mut s = format!("#emote_panel:color {{ x: {CONTENT_X}px; y: 225px; width: {CONTENT_W}px; height: {HEIGHT}px; color: #{bg}; ignore_event: true; visible: false; z: 2003;");
-    for (i, title) in ["Library", "Display"].iter().enumerate() {
+    for (i, title) in [tr("Library"), tr("Display")].iter().enumerate() {
         s.push_str(&raised_button(
             &format!("tab{i}"),
             (i as i32 * 190, 0, 180, 40),
@@ -98,7 +98,7 @@ pub(super) fn template() -> String {
             "name",
             (16, 6, if toggle { 290 } else { 516 }, 24),
             18,
-            def.label,
+            tr(def.label),
             true,
             "eeececff",
             "Left",
@@ -107,13 +107,13 @@ pub(super) fn template() -> String {
         if def.key != "emote_zoom" {
             // Longer explanations use the page footer; control hints remain readable.
             let hint = match def.key {
-                "emotes" => "Hold T · release to show",
-                "emote_sound" => "Shared confirmation sound",
-                "emote_height" => "Above champion's ground position",
-                "emote_scale" => "100% = 88 px before zoom and pop",
-                "emote_zoom" => "Scale image and height with camera zoom",
-                "emote_cooldown" => "A new emote replaces the previous image",
-                _ => def.hint,
+                "emotes" => tr("Hold T · release to show"),
+                "emote_sound" => tr("Shared confirmation sound"),
+                "emote_height" => tr("Above champion's ground position"),
+                "emote_scale" => tr("100% = 88 px before zoom and pop"),
+                "emote_zoom" => tr("Scale image and height with camera zoom"),
+                "emote_cooldown" => tr("A new emote replaces the previous image"),
+                _ => tr(def.hint),
             };
             s.push_str(&label(
                 "hint",
@@ -154,7 +154,7 @@ pub(super) fn template() -> String {
                     Control::Choice(v) => v,
                     _ => &["Off", "On"],
                 };
-                for (j, copy) in options.iter().enumerate() {
+                for (j, copy) in options.iter().map(|o| tr(o)).enumerate() {
                     s.push_str(&raised_button(
                         &format!("choice{j}"),
                         (x + j as i32 * (w + 8), cy, w, 34),
@@ -176,7 +176,7 @@ pub(super) fn template() -> String {
         "preview_title",
         (PREVIEW_X, 0, 310, 28),
         20,
-        "Live preview",
+        tr("Live preview"),
         true,
         "eeececff",
         "Left",
@@ -186,7 +186,7 @@ pub(super) fn template() -> String {
         "replay",
         (PREVIEW_X + 354, 0, 98, 30),
         2,
-        "Replay",
+        tr("Replay"),
         15,
         2006,
         "",
@@ -211,7 +211,7 @@ pub(super) fn template() -> String {
         "zoom_label",
         (PREVIEW_X, 340, 452, 22),
         14,
-        "Preview camera zoom",
+        tr("Preview camera zoom"),
         true,
         "cbc9c7ff",
         "Left",
@@ -232,7 +232,7 @@ pub(super) fn template() -> String {
         "note",
         (PREVIEW_X, 410, 452, 18),
         12,
-        "Silent preview · fixed scale; pans at extreme heights",
+        tr("Silent preview · fixed scale; pans at extreme heights"),
         false,
         "989694ff",
         "Left",
@@ -242,7 +242,7 @@ pub(super) fn template() -> String {
         "note_apply",
         (PREVIEW_X, 430, 452, 18),
         12,
-        "Apply saves changes; Cancel keeps your current settings.",
+        tr("Apply saves changes; Cancel keeps your current settings."),
         false,
         "989694ff",
         "Left",
@@ -341,14 +341,17 @@ impl Panel {
                 ui.text(
                     ctx,
                     &format!("{row}.hint"),
-                    &format!(
-                        "Hold {} · release to show",
-                        ui.draft
-                            .binding("emote")
-                            .into_iter()
-                            .flatten()
-                            .next()
-                            .map_or_else(|| "unbound".into(), |b| b.label())
+                    &trf(
+                        "Hold {key} · release to show",
+                        &[(
+                            "key",
+                            &ui.draft
+                                .binding("emote")
+                                .into_iter()
+                                .flatten()
+                                .next()
+                                .map_or_else(|| tr("unbound").to_owned(), |b| b.label()),
+                        )],
                     ),
                 );
             }
@@ -492,16 +495,23 @@ impl Panel {
         ui.text(
             ctx,
             "emote_panel.display.metrics",
-            &format!(
-                "Image {:.0} px · height {:.0} px{}",
-                settled.w,
-                -settled.y - settled.h,
-                if pan > 0. {
-                    " · champion below preview"
-                } else {
-                    ""
-                }
-            ),
+            &if pan > 0. {
+                trf(
+                    "Image {size} px · height {height} px · champion below preview",
+                    &[
+                        ("size", &format!("{:.0}", settled.w)),
+                        ("height", &format!("{:.0}", -settled.y - settled.h)),
+                    ],
+                )
+            } else {
+                trf(
+                    "Image {size} px · height {height} px",
+                    &[
+                        ("size", &format!("{:.0}", settled.w)),
+                        ("height", &format!("{:.0}", -settled.y - settled.h)),
+                    ],
+                )
+            },
         );
     }
 }

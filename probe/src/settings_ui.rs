@@ -4,7 +4,7 @@
 use crate::{
     camera::Rect,
     hud_motion,
-    lang::tr,
+    lang::{tr, trf},
     native_timing::{MatchKey, NativeTiming, Phase},
     platform_input::Keys,
     settings::{self, Chord, Control, Values, BINDINGS, OPTIONS},
@@ -63,7 +63,7 @@ pub(crate) const PAGES: [(&str, &str, &str); 6] = [
 // Scrolling content viewport (window coordinates).
 const VIEW_TOP: f32 = 225.;
 const VIEW_BOTTOM: f32 = 760.;
-const ADVANCED: [&str; 3] = ["General", "Acquisition", "Debug"];
+pub(crate) const ADVANCED: [&str; 3] = ["General", "Acquisition", "Debug"];
 // Internal schema pages: General 4, Debug 5, Acquisition 6.
 fn active_page(page: usize, advanced: usize) -> usize {
     if page == NAV_ADVANCED {
@@ -88,8 +88,9 @@ const ROWS: usize = 9;
 const SECTIONS: usize = 5;
 const HEADS: usize = 3;
 const NOTCH: f32 = 90.;
-const HINT_IDLE: &str = "Click a binding to change it. Esc cancels capture; Backspace clears it.";
-const HINT_LISTEN: &str =
+pub(crate) const HINT_IDLE: &str =
+    "Click a binding to change it. Esc cancels capture; Backspace clears it.";
+pub(crate) const HINT_LISTEN: &str =
     "Listening for a key or mouse combination. Esc cancels; Backspace clears.";
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -511,9 +512,9 @@ fn template() -> String {
     for i in 0..HEADS {
         s.push_str(&format!(
             "#head{i}:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 29px; color: #00000000; ignore_event: true; visible: false; z: 2003;\n{}{}{}}}\n",
-            label("action", (24, 0, 300, 19), 14, "Action", false, "989694ff", "Left", 2004),
-            label("primary", (662, 0, 172, 19), 14, "Primary", false, "989694ff", "Left", 2004),
-            label("secondary", (846, 0, 172, 19), 14, "Secondary", false, "989694ff", "Left", 2004)
+            label("action", (24, 0, 300, 19), 14, tr("Action"), false, "989694ff", "Left", 2004),
+            label("primary", (662, 0, 172, 19), 14, tr("Primary"), false, "989694ff", "Left", 2004),
+            label("secondary", (846, 0, 172, 19), 14, tr("Secondary"), false, "989694ff", "Left", 2004)
         ));
     }
     for i in 0..ROWS {
@@ -523,7 +524,7 @@ fn template() -> String {
     s.push_str(&emote_panel::template());
     s.push_str(&format!("#cursor_ex:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 64px; color: #00000000; ignore_event: true; visible: false; z: 2003;\n{}{}}}\n",
         "#img:image { x: 24px; y: 16px; width: 32px; height: 32px; source: \"asset/lt_direct_control/ui/cursor_preview\"; ignore_event: true; z: 2004; }\n",
-        label("text",(72,21,300,22),14,"Cursor size preview",false,"989694ff","Left",2004)));
+        label("text",(72,21,300,22),14,tr("Cursor size preview"),false,"989694ff","Left",2004)));
     s.push_str(&"#mask_top:color { x: 239px; y: 113px; width: 1120px; height: 112px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n#mask_bottom:color { x: 1px; y: 760px; width: 1358px; height: 89px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n".replace("#1c1a18ff", &format!("#{}", crate::ui_theme::hex(0xff))));
     // The enclosing input layer must clear the clipping masks as well as
     // the buttons' draw layers. Declare this subtree after the blockers and
@@ -534,7 +535,7 @@ fn template() -> String {
             &format!("sub{i}"),
             (i as i32 * 190, 0, 180, 40),
             2,
-            title,
+            tr(title),
             17,
             2014,
             "",
@@ -681,7 +682,7 @@ fn template() -> String {
         "conflict_title",
         (422, 263, 516, 36),
         25,
-        "Binding already used",
+        tr("Binding already used"),
         true,
         "ffffffff",
         "Left",
@@ -710,7 +711,7 @@ fn template() -> String {
         "replace",
         (742, 405, 196, 48),
         2,
-        "Replace binding",
+        tr("Replace binding"),
         17,
         2052,
         "",
@@ -1354,11 +1355,11 @@ impl SettingsUi {
             ctx,
             "status",
             if self.acquisition.invalid {
-                "Enter valid acquisition values in Advanced before applying."
+                tr("Enter valid acquisition values in Advanced before applying.")
             } else if !essential {
-                "Bind movement, start and return-to-AI before applying."
+                tr("Bind movement, start and return-to-AI before applying.")
             } else if self.capture.is_some() {
-                "Listening… Esc cancels; Backspace clears."
+                tr("Listening… Esc cancels; Backspace clears.")
             } else if dirty {
                 tr("Unsaved changes")
             } else {
@@ -1412,9 +1413,9 @@ impl SettingsUi {
                         ctx,
                         "hintbox.text",
                         if self.capture.is_some() {
-                            HINT_LISTEN
+                            tr(HINT_LISTEN)
                         } else {
-                            HINT_IDLE
+                            tr(HINT_IDLE)
                         },
                     );
                 }
@@ -1566,9 +1567,9 @@ impl SettingsUi {
                     let capturing = self.capture == Some((index, j));
                     let chord = self.draft.binding(def.key)[j];
                     let text = if capturing {
-                        "Press input…".to_string()
+                        tr("Press input…").to_string()
                     } else {
-                        chord.map_or_else(|| "Unbound".into(), Chord::label)
+                        chord.map_or_else(|| tr("Unbound").into(), Chord::label)
                     };
                     self.props(ctx, &node, format!("text: {{ text: {}; }}", json(&text)));
                     let (colors, border, ink) = if capturing {
@@ -2062,13 +2063,16 @@ impl SettingsUi {
                 .draft
                 .conflicts(chord, BINDINGS[index].key, slot)
                 .into_iter()
-                .map(|(key, _)| BINDINGS.iter().find(|d| d.key == key).unwrap().label)
+                .map(|(key, _)| tr(BINDINGS.iter().find(|d| d.key == key).unwrap().label))
                 .collect::<Vec<_>>()
                 .join(", ");
-            let copy = format!(
-                "{} is assigned to \u{201c}{names}\u{201d}. Replace it with \u{201c}{}\u{201d}?",
-                chord.label(),
-                BINDINGS[index].label
+            let copy = trf(
+                "{key} is assigned to “{names}”. Replace it with “{action}”?",
+                &[
+                    ("key", &chord.label()),
+                    ("names", &names),
+                    ("action", &tr(BINDINGS[index].label)),
+                ],
             );
             let (copy, _) = crate::hud_style::wrap(&copy, 18., 516.);
             self.text(ctx, "conflict_text", &copy);

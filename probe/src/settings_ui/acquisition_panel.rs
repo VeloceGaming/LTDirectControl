@@ -103,7 +103,7 @@ pub(super) fn template() -> String {
             "search_label",
             (0, 0, 540, 26),
             17,
-            "Find champion",
+            tr("Find champion"),
             true,
             "eeececff",
         ),
@@ -111,7 +111,7 @@ pub(super) fn template() -> String {
             "search_hint",
             (0, 82, 540, 22),
             13,
-            "Search localized name, English name or internal ID",
+            tr("Search localized name, English name or internal ID"),
             false,
             "989694ff",
         ),
@@ -119,7 +119,7 @@ pub(super) fn template() -> String {
             "shared_heading",
             (604, 0, 330, 24),
             16,
-            "Automatic defaults · all champions",
+            tr("Automatic defaults · all champions"),
             true,
             "eeececff",
         ),
@@ -127,7 +127,7 @@ pub(super) fn template() -> String {
             "minimum_label",
             (604, 28, 194, 20),
             14,
-            "Minimum · game units",
+            tr("Minimum · game units"),
             false,
             "989694ff",
         ),
@@ -135,7 +135,7 @@ pub(super) fn template() -> String {
             "buffer_label",
             (824, 28, 194, 20),
             14,
-            "AA buffer · game units",
+            tr("AA buffer · game units"),
             false,
             "989694ff",
         ),
@@ -146,7 +146,7 @@ pub(super) fn template() -> String {
             "radius_label",
             (604, 239, 414, 24),
             17,
-            "Acquisition radius · game units",
+            tr("Acquisition radius · game units"),
             true,
             "eeececff",
         ),
@@ -160,7 +160,7 @@ pub(super) fn template() -> String {
     s.push_str(&edit(
         "search",
         (0, 32, GRID_W, 44),
-        "Type a champion name…",
+        tr("Type a champion name…"),
     ));
     s.push_str(&rect("divider", (574, 0, 1, 470), "~4b4a49ff", 2004));
     s.push_str("#grid_hit:color { x: 0px; y: 112px; width: 540px; height: 314px; color: #00000000; ignore_event: true; z: 2003; }");
@@ -181,17 +181,17 @@ pub(super) fn template() -> String {
     for (name, at, round, copy, size) in [
         ("up", (440, 438, 44, 30), 2, "‹", 23),
         ("down", (496, 438, 44, 30), 2, "›", 23),
-        ("automatic", (604, 184, 202, 40), 20, "Automatic", 18),
-        ("custom", (816, 184, 202, 40), 20, "Custom", 18),
-        ("reset", (914, 144, 104, 28), 2, "Reset", 15),
-        ("shared_reset", (950, 0, 68, 25), 2, "Reset", 14),
+        ("automatic", (604, 184, 202, 40), 20, tr("Automatic"), 18),
+        ("custom", (816, 184, 202, 40), 20, tr("Custom"), 18),
+        ("reset", (914, 144, 104, 28), 2, tr("Reset"), 15),
+        ("shared_reset", (950, 0, 68, 25), 2, tr("Reset"), 14),
     ] {
         s.push_str(&raised_button(name, at, round, copy, size, 2005, ""));
     }
-    s.push_str(&edit("minimum", (604, 54, 194, 40), "Minimum"));
-    s.push_str(&edit("buffer", (824, 54, 194, 40), "Buffer"));
+    s.push_str(&edit("minimum", (604, 54, 194, 40), tr("Minimum")));
+    s.push_str(&edit("buffer", (824, 54, 194, 40), tr("Buffer")));
     s.push_str(&rect("shared_line", (604, 104, 414, 1), "~4b4a49ff", 2004));
-    s.push_str(&edit("number", (604, 270, 414, 42), "Enter radius"));
+    s.push_str(&edit("number", (604, 270, 414, 42), tr("Enter radius")));
     s.push_str(&label(
         "automatic_value",
         (618, 270, 382, 42),
@@ -436,19 +436,21 @@ impl Panel {
                     &c.label
                 }
             } else {
-                "No matching champions"
+                tr("No matching champions")
             },
         );
         ui.text(ctx, "acquisition.id", &c.name);
         ui.text(
             ctx,
             "acquisition.count",
-            &format!(
-                "{} champions · rows {}–{} / {}",
-                rows.len(),
-                if rows.is_empty() { 0 } else { self.offset + 1 },
-                (self.offset + ROWS).min(rows.len().div_ceil(COLS)),
-                rows.len().div_ceil(COLS)
+            &trf(
+                "Champions: {count} · rows {first}–{last} / {total}",
+                &[
+                    ("count", &rows.len()),
+                    ("first", &if rows.is_empty() { 0 } else { self.offset + 1 }),
+                    ("last", &(self.offset + ROWS).min(rows.len().div_ceil(COLS))),
+                    ("total", &rows.len().div_ceil(COLS)),
+                ],
             ),
         );
         self.slots.resize(CELLS, String::new());
@@ -582,22 +584,28 @@ impl Panel {
             (
                 "minimum",
                 self.shared_text[0].as_str(),
-                "Minimum",
+                tr("Minimum"),
                 166.,
                 true,
             ),
-            ("buffer", self.shared_text[1].as_str(), "Buffer", 166., true),
+            (
+                "buffer",
+                self.shared_text[1].as_str(),
+                tr("Buffer"),
+                166.,
+                true,
+            ),
             (
                 "search",
                 self.query.as_str(),
-                "Type a champion name…",
+                tr("Type a champion name…"),
                 (GRID_W - 28) as f32,
                 true,
             ),
             (
                 "number",
                 self.last_number.as_str(),
-                "Enter radius",
+                tr("Enter radius"),
                 386.,
                 custom.is_some(),
             ),
@@ -637,40 +645,58 @@ impl Panel {
             .current
             .or(c.base)
             .map(|n| format!("{:.1}", n as f64 / 1000.))
-            .unwrap_or_else(|| "Unavailable".into());
+            .unwrap_or_else(|| tr("Unavailable").into());
         let maximum = c
             .maximum
             .map(|n| format!("{:.1}", n as f64 / 1000.))
-            .unwrap_or_else(|| "Unavailable".into());
+            .unwrap_or_else(|| tr("Unavailable").into());
         ui.text(
             ctx,
             "acquisition.range",
-            &format!(
-                "{} AA: {reach}",
-                if c.current.is_some() { "Live" } else { "Base" }
-            ),
+            &if c.current.is_some() {
+                trf("Live AA: {value}", &[("value", &reach)])
+            } else {
+                trf("Base AA: {value}", &[("value", &reach)])
+            },
         );
-        ui.text(ctx, "acquisition.maximum", &format!("Max AA: {maximum}"));
+        ui.text(
+            ctx,
+            "acquisition.maximum",
+            &trf("Max AA: {value}", &[("value", &maximum)]),
+        );
         ui.text(
             ctx,
             "acquisition.effective",
-            &format!("Effective radius: {:.1}", effective as f64 / 1000.),
+            &trf(
+                "Effective radius: {value}",
+                &[("value", &format!("{:.1}", effective as f64 / 1000.))],
+            ),
         );
         let note = if self.invalid {
-            "Enter a number from 0 to 10,000 before applying.".into()
+            tr("Enter a number from 0 to 10,000 before applying.").into()
         } else if custom.is_some() {
-            "Never below current AA reach. Your chosen value is preserved.".into()
+            tr("Never below current AA reach. Your chosen value is preserved.").into()
         } else if c.maximum.is_none() {
-            format!(
-                "Maximum unknown: current AA reach + {:.1}, minimum {:.1}.",
-                acquisition::buffer(&ui.draft),
-                acquisition::baseline(&ui.draft, &self.name)
+            trf(
+                "Maximum unknown: current AA reach + {buffer}, minimum {minimum}.",
+                &[
+                    ("buffer", &format!("{:.1}", acquisition::buffer(&ui.draft))),
+                    (
+                        "minimum",
+                        &format!("{:.1}", acquisition::baseline(&ui.draft, &self.name)),
+                    ),
+                ],
             )
         } else {
-            format!(
-                "Automatic uses maximum AA reach + {:.1}, minimum {:.1}.",
-                acquisition::buffer(&ui.draft),
-                acquisition::baseline(&ui.draft, &self.name)
+            trf(
+                "Automatic uses maximum AA reach + {buffer}, minimum {minimum}.",
+                &[
+                    ("buffer", &format!("{:.1}", acquisition::buffer(&ui.draft))),
+                    (
+                        "minimum",
+                        &format!("{:.1}", acquisition::baseline(&ui.draft, &self.name)),
+                    ),
+                ],
             )
         };
         let (note, _) = crate::hud_style::wrap(&note, 13., 414.);

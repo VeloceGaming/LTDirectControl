@@ -56,21 +56,25 @@ pub(super) fn events() -> Vec<(String, Event)> {
 pub(super) fn template() -> String {
     let mut s = String::from("#library:empty { x: 0px; y: 64px; width: 1042px; height: 456px; visible: false; ignore_event: true; z: 2004;");
     for (name, at, copy) in [
-        ("open", (0, 0, 150, 32), "Open folder"),
-        ("refresh", (162, 0, 136, 32), "Refresh"),
-        ("previous", (364, 380, 44, 30), "‹"),
-        ("next", (416, 380, 44, 30), "›"),
-        ("assign", (590, 338, 452, 40), "Assign to Centre"),
-        ("issue", (0, 420, 90, 28), "Issues"),
+        ("open", (0, 0, 150, 32), tr("Open folder").to_owned()),
+        ("refresh", (162, 0, 136, 32), tr("Refresh").to_owned()),
+        ("previous", (364, 380, 44, 30), "‹".to_owned()),
+        ("next", (416, 380, 44, 30), "›".to_owned()),
+        (
+            "assign",
+            (590, 338, 452, 40),
+            trf("Assign to {slot}", &[("slot", &tr(SLOT_NAMES[0]))]),
+        ),
+        ("issue", (0, 420, 90, 28), tr("Issues").to_owned()),
     ] {
-        s.push_str(&raised_button(name, at, 2, copy, 15, 2006, ""));
+        s.push_str(&raised_button(name, at, 2, &copy, 15, 2006, ""));
     }
     for (name, at, size, copy, color) in [
         (
             "guide",
             (0, 40, 548, 22),
             13,
-            "Static PNG · up to 256 × 256 · 1 MiB · 64 imports",
+            tr("Static PNG · up to 256 × 256 · 1 MiB · 64 imports"),
             "a3a19fff",
         ),
         ("count", (0, 382, 350, 26), 14, "", "cbc9c7ff"),
@@ -79,7 +83,7 @@ pub(super) fn template() -> String {
             "wheel_title",
             (590, 0, 452, 26),
             19,
-            "Choose a wheel slot",
+            tr("Choose a wheel slot"),
             "eeececff",
         ),
         ("selected", (590, 300, 452, 30), 19, "", "eeececff"),
@@ -88,7 +92,7 @@ pub(super) fn template() -> String {
             "workflow",
             (590, 418, 452, 34),
             12,
-            "Refresh imports, assign, Apply, then restart the game.",
+            tr("Refresh imports, assign, Apply, then restart the game."),
             "a3a19fff",
         ),
     ] {
@@ -111,7 +115,7 @@ pub(super) fn template() -> String {
                 "pending",
                 (2, 20, 60, 25),
                 11,
-                "Restart",
+                tr("Restart"),
                 false,
                 "e9b16cff",
                 "Center",
@@ -139,7 +143,7 @@ pub(super) fn template() -> String {
                 "title",
                 (0, 48, 68, 20),
                 11,
-                SLOT_NAMES[i],
+                tr(SLOT_NAMES[i]),
                 false,
                 "eeececff",
                 "Center",
@@ -190,16 +194,16 @@ impl Panel {
             }
             Action::Refresh => {
                 self.message = if emote_library::refresh() {
-                    "Importing…"
+                    tr("Importing…")
                 } else {
-                    "Refresh is unavailable or already running"
+                    tr("Refresh is unavailable or already running")
                 }
                 .into();
             }
             Action::OpenFolder => {
                 self.message = emote_library::open_folder()
                     .err()
-                    .unwrap_or_else(|| "Add PNG files here, then press Refresh".into());
+                    .unwrap_or_else(|| tr("Add PNG files here, then press Refresh").into());
             }
             Action::Issue => self.issue = self.issue.wrapping_add(1),
             _ => {}
@@ -322,21 +326,26 @@ impl Panel {
             "emote_panel.library.assign",
             format!(
                 "text: {{ text: {}; size: 15; color: #eeececff; }}",
-                json(&format!(
-                    "{} {}",
-                    if current { "Assigned to" } else { "Assign to" },
-                    SLOT_NAMES[self.slot]
-                ))
+                json(&if current {
+                    trf(
+                        "Assigned to {slot}",
+                        &[("slot", &tr(SLOT_NAMES[self.slot]))],
+                    )
+                } else {
+                    trf("Assign to {slot}", &[("slot", &tr(SLOT_NAMES[self.slot]))])
+                })
             ),
         );
         ui.text(
             ctx,
             "emote_panel.library.count",
-            &format!(
-                "{} emotes · page {} / {}",
-                library.entries.len(),
-                self.page + 1,
-                library.entries.len().div_ceil(PAGE_SIZE)
+            &trf(
+                "Emotes: {count} · page {page} / {pages}",
+                &[
+                    ("count", &library.entries.len()),
+                    ("page", &(self.page + 1)),
+                    ("pages", &library.entries.len().div_ceil(PAGE_SIZE)),
+                ],
             ),
         );
         let busy = emote_library::busy();
@@ -359,17 +368,17 @@ impl Panel {
             );
         }
         let status = if busy {
-            "Importing…"
+            tr("Importing…")
         } else if !self.message.is_empty() {
             &self.message
         } else if library.missing(&ui.draft, self.slot) {
-            "Slot image is missing; built-in fallback is active"
+            tr("Slot image is missing; built-in fallback is active")
         } else if !selected.ready {
-            "Restart the game to load this image"
+            tr("Restart the game to load this image")
         } else if current {
-            "Assignment is in your draft; Apply saves it"
+            tr("Assignment is in your draft; Apply saves it")
         } else {
-            "Select a slot, then assign this emote"
+            tr("Select a slot, then assign this emote")
         };
         ui.text(ctx, "emote_panel.library.status", &clip(status, 448., 13.));
         let issue = library
