@@ -17,3 +17,13 @@
 .env.*
 /.claude/settings.local.json
 /local/
+
+# Screenshots and development-process files stay local (only documentation,
+# licenses, disclaimers and the codebase are tracked).
+/design-qa.md
+/Nerdge_Stamp.jpg
+/design/**/design-qa.md
+/design/**/qa/
+/design/**/qa-*/
+/design/**/game.webp
+/design/hud/stat-icons/
