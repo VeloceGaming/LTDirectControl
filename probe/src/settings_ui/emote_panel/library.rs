@@ -300,7 +300,7 @@ impl Panel {
                     json(if entry.ready && !library.missing(&ui.draft, i) {
                         &entry.art.source
                     } else {
-                        "asset/lt_direct_control_probe/ui/ef_clock"
+                        "asset/lt_direct_control/ui/ef_clock"
                     })
                 ),
             );

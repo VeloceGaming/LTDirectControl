@@ -1,4 +1,4 @@
-//! LT Direct Control: League-style direct control for Teamfight Manager 2.
+//! LT Takeover (open-source direct control): League-style direct control for Teamfight Manager 2.
 //!
 //! Two entry points are registered with the game's mod SDK:
 //! - [`Client`]: the client extension. Each frame it reads input, drives the
@@ -86,7 +86,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const MOD_ID: &str = "lt_direct_control_probe";
+const MOD_ID: &str = "lt_direct_control";
 const LINE_LIMIT: usize = 12_000;
 const LOG_BYTES_LIMIT: usize = 4 * 1024 * 1024;
 
@@ -172,9 +172,12 @@ fn init(host: &StableHost) -> StableMod {
     let (file, directory) = match runtime_storage::open_log() {
         Ok((file, directory)) => (Some(file), Some(directory)),
         Err(reason) => {
-            host.log(LogLevel::Warn, &format!(
-                "LT Direct Control cannot open a diagnostic log: {reason}; control remains available"
-            ));
+            host.log(
+                LogLevel::Warn,
+                &format!(
+                    "LT Takeover cannot open a diagnostic log: {reason}; control remains available"
+                ),
+            );
             (None, None)
         }
     };
@@ -232,10 +235,10 @@ fn init(host: &StableHost) -> StableMod {
     host.log(
         LogLevel::Info,
         &directory.map_or_else(
-            || "LT Direct Control enabled; file diagnostics unavailable".to_owned(),
+            || "LT Takeover enabled; file diagnostics unavailable".to_owned(),
             |root| {
                 format!(
-                    "LT Direct Control enabled; recording to {}",
+                    "LT Takeover enabled; recording to {}",
                     root.join("probe.log").display()
                 )
             },

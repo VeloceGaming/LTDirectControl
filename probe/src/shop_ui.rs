@@ -337,7 +337,7 @@ fn label(
     format!("#{name}:label {{ @\"asset/base/style/main#{style}\"; x: {x}px; y: {y}px; width: {w}px; height: {h}px; size: {size}; text: {}; color: #{color}; align_x: {align}; align_y: Center; ignore_event: true; z: {z}; }}\n", json(text))
 }
 fn glyph(name: &str, glyph: &str, (x, y, s): (i32, i32, i32), color: &str, z: i32) -> String {
-    format!("#{name}:image {{ x: {x}px; y: {y}px; width: {s}px; height: {s}px; source: \"asset/lt_direct_control_probe/ui/{glyph}\"; color: #{color}; ignore_event: true; z: {z}; }}\n")
+    format!("#{name}:image {{ x: {x}px; y: {y}px; width: {s}px; height: {s}px; source: \"asset/lt_direct_control/ui/{glyph}\"; color: #{color}; ignore_event: true; z: {z}; }}\n")
 }
 /// Item art; its source/rect_tag is set per frame from the HUD's item icon.
 fn art(name: &str, (x, y, s): (i32, i32, i32), z: i32) -> String {
@@ -523,7 +523,7 @@ fn template() -> String {
     ));
     s.push_str(&rect("top_rule", (1, 68, 1358, 1), "~4b4a49ff", 1522));
     // Full-colour user artwork; the asset wrapper supplies the 7.5° CCW tilt.
-    s.push_str("#title:image { x: 32px; y: 2px; width: 64px; height: 64px; source: \"asset/lt_direct_control_probe/ui/nerdge_stamp\"; color: #ffffffff; ignore_event: true; z: 1523; }");
+    s.push_str("#title:image { x: 32px; y: 2px; width: 64px; height: 64px; source: \"asset/lt_direct_control/ui/nerdge_stamp\"; color: #ffffffff; ignore_event: true; z: 1523; }");
     s.push_str(&rect("pill", (128, 18, 420, 32), "~3a3837ff", 1523));
     s.push_str(&glyph(
         "pill_icon",
@@ -1850,7 +1850,7 @@ impl ShopUi {
         self.props(
             ctx,
             "pill_icon",
-            format!("color: #{color}; source: \"asset/lt_direct_control_probe/ui/{icon}\";"),
+            format!("color: #{color}; source: \"asset/lt_direct_control/ui/{icon}\";"),
         );
         // Gold left after the projected purchases.
         let gold = if steps > 0 {

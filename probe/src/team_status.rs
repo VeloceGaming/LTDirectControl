@@ -143,12 +143,12 @@ fn geometry(count: usize) -> Geometry {
     }
 }
 fn label(s: &mut String, id: &str, x: usize, w: usize, size: usize, color: &str, right: bool) {
-    s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1204; font: \"asset/lt_direct_control_probe/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {}; ignore_event: true; }}\n", if right { "Right" } else { "Left" }));
+    s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1204; font: \"asset/lt_direct_control/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {}; ignore_event: true; }}\n", if right { "Right" } else { "Left" }));
 }
 fn item_tile(i: usize) -> String {
     // Insets: background + 8.
     let inset = crate::ui_theme::shade(8, 0xff);
-    format!("item{i}:color {{ width: 32px; height: 32px; z: 1203; color: #~4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1206; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
+    format!("item{i}:color {{ width: 32px; height: 32px; z: 1203; color: #~4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control/font/numeric\"; width: 100%; height: 100%; z: 1206; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
 }
 fn template() -> String {
     let inset = crate::ui_theme::shade(8, 0xff);
@@ -168,7 +168,7 @@ fn template() -> String {
         }
         s.push_str("}\n");
         for lane in 0..5 {
-            s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1201;\n#selected:color {{ width: 2px; height: 100%; z: 1202; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1202; color: #~4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1203; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1206; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1207; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
+            s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1201;\n#selected:color {{ width: 2px; height: 100%; z: 1202; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1202; color: #~4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1203; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1206; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control/font/numeric\"; width: 100%; height: 100%; z: 1207; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
             for (id, x, w, size, color) in [
                 ("level", 64, 34, 17, "cbc9c7ff"),
                 ("kda", 104, 122, 22, "eeececff"),

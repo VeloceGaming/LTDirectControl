@@ -208,7 +208,7 @@ impl SessionUi {
         self.props(ctx,node,format!("x: {x}px; y: {:.2}px; width: {w}px; height: {h}px; visible: {visible}; ignore_event: {}; btn: {{ color: #{border}; back_color: #{background}; stroke: {stroke}; }}",y+offset,!visible));
         if !glyph.is_empty() {
             let size = gsize;
-            self.props(ctx,&format!("{node}.glyph"),format!("source: \"asset/lt_direct_control_probe/ui/{glyph}\"; x: {:.2}px; y: {:.2}px; width: {size:.2}px; height: {size:.2}px;",(w-size)/2.,(h-size)/2.));
+            self.props(ctx,&format!("{node}.glyph"),format!("source: \"asset/lt_direct_control/ui/{glyph}\"; x: {:.2}px; y: {:.2}px; width: {size:.2}px; height: {size:.2}px;",(w-size)/2.,(h-size)/2.));
         } else {
             self.props(
                 ctx,

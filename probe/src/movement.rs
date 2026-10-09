@@ -695,7 +695,7 @@ impl Movement {
                 ctx.draw_text(
                     "UI",
                     &text,
-                    "asset/lt_direct_control_probe/font/medium",
+                    "asset/lt_direct_control/font/medium",
                     (x + 10., y, width - 20., 28.),
                     992,
                     16.,

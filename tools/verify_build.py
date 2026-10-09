@@ -21,7 +21,7 @@ sys.dont_write_bytecode = True
 
 root = Path(__file__).resolve().parents[1]
 records = root / 'tools/records'
-package = root / 'dist/lt_direct_control_probe'
+package = root / 'dist/lt_direct_control'
 icons = root / 'design/hud/endfield-assets/icons'
 digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
 load = lambda name: json.loads((records / name).read_text(encoding='utf-8'))
@@ -55,7 +55,7 @@ for op in profile['minimap']['operands']:
 info = json.loads((package / 'mod.mod_info').read_text())
 version = info['version']
 assert version == args.version, f'staged mod.mod_info is {version}, not {args.version}'
-assert expected.encode() in (package / 'lt_direct_control_probe.dll').read_bytes(), 'DLL lacks current executable guard'
+assert expected.encode() in (package / 'lt_direct_control.dll').read_bytes(), 'DLL lacks current executable guard'
 
 # Cursor artwork embedded in the DLL.
 cursor_art = load('cursor-assets.json')
@@ -111,7 +111,7 @@ if TTFont:
         '; lab sources verified' if FONT_SOURCES.is_dir() else '; lab sources not present')
 
 # DLL entry points without a game host.
-dll = ctypes.CDLL(str(package / 'lt_direct_control_probe.dll'))
+dll = ctypes.CDLL(str(package / 'lt_direct_control.dll'))
 dll.tfm2_mod_required_abi_level.restype = ctypes.c_uint32
 assert dll.tfm2_mod_required_abi_level() == 6
 dll.tfm2_mod_entry_stable.argtypes = [ctypes.c_void_p]
@@ -124,7 +124,7 @@ record = {
     'built_at': datetime.now(timezone(timedelta(hours=8))).isoformat(),
     'changes': changes,
     'previous_game_result': args.previous_result,
-    'dll_sha256': digest(package / 'lt_direct_control_probe.dll'),
+    'dll_sha256': digest(package / 'lt_direct_control.dll'),
     'metadata_sha256': digest(package / 'mod.mod_info'),
     'dll_load': 'ABI 6; null host rejected',
     'executable_sha256': expected,

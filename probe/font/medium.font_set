@@ -1,86 +1,86 @@
 {
   "en": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "haw": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "ko": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "ja": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSansJP/NotoSansJP-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "zh-hans": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSansSC/NotoSansSC-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "zh-hant": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
-    "asset/lt_direct_control_probe/font/noto_tc_medium",
+    "asset/lt_direct_control/font/manrope_medium",
+    "asset/lt_direct_control/font/noto_tc_medium",
     "asset/base/font/NotoSansTC/NotoSansTC-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "de": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "vi": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "pt-BR": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "tr": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "nl": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "ru": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "es-ES": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "fr": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "it": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "pl": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSans/NotoSans-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ],
   "th": [
-    "asset/lt_direct_control_probe/font/manrope_medium",
+    "asset/lt_direct_control/font/manrope_medium",
     "asset/base/font/NotoSansThai/NotoSansThai-Regular",
     "asset/base/font/NotoSansKR/NotoSansKR-Regular"
   ]

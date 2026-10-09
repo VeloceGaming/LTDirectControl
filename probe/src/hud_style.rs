@@ -5,11 +5,11 @@ pub fn fonts(source: String) -> String {
     source
         .replace(
             "@\"asset/base/style/main#bold_label\";",
-            "font: \"asset/lt_direct_control_probe/font/numeric\";",
+            "font: \"asset/lt_direct_control/font/numeric\";",
         )
         .replace(
             "@\"asset/base/style/main#label\";",
-            "font: \"asset/lt_direct_control_probe/font/medium\";",
+            "font: \"asset/lt_direct_control/font/medium\";",
         )
 }
 fn advance(c: char, size: f32) -> f32 {

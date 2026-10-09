@@ -72,10 +72,10 @@ function document(view) {
     const names=['gg','nice','hype','oops','focus'];
     for(let i=0;i<24;i++) {
       const cell=get(library,'cell'+i); set(cell,'visible',i<5?'true':'false');
-      set(get(cell,'face'),'source',JSON.stringify('asset/lt_direct_control_probe/ui/emote_'+names[i%5]));
+      set(get(cell,'face'),'source',JSON.stringify('asset/lt_direct_control/ui/emote_'+names[i%5]));
       set(get(cell,'pending'),'visible','false');
     }
-    for(let i=0;i<5;i++) set(get(get(library,'slot'+i),'face'),'source',JSON.stringify('asset/lt_direct_control_probe/ui/emote_'+names[i]));
+    for(let i=0;i<5;i++) set(get(get(library,'slot'+i),'face'),'source',JSON.stringify('asset/lt_direct_control/ui/emote_'+names[i]));
     text(get(library,'selected'),'GG'); text(get(library,'count'),'5 emotes · page 1 / 1');
     text(get(library,'status'),'Assignment is in your draft; Apply saves it');
   }

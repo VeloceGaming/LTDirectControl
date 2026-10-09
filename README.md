@@ -1,4 +1,4 @@
-# LT Direct Control
+# LT Takeover: Open-Source Direct Control
 
 League of Legends–style direct control for **Teamfight Manager 2**: take over
 one of your athletes during a match and play them yourself, with right-click
@@ -75,8 +75,10 @@ original files stay untouched. Custom sounds and animation are deferred.
 
 ## Install
 
-1. Download a release zip and extract the `lt_direct_control_probe` folder
-   into `Teamfight Manager2\mods\`.
+1. Download a release zip and extract the `lt_direct_control` folder
+   into `Teamfight Manager2\mods\`. If an older build (before 1.0) is
+   installed, delete its `lt_direct_control_probe` folder first: the game
+   would otherwise load both.
 2. Start the game from the title screen (the mod installs its game hooks
    there), then load your save.
 3. In a match: pick your athlete with Ctrl + 1–5 while the match waits, then
@@ -118,8 +120,9 @@ powershell tools/install_verified_build.ps1 -Version <version> -PreviousVersion 
 
 ## Project map
 
-Everything lives in `probe/src`. The crate is still named
-`lt_direct_control_probe` for compatibility with existing installs.
+Everything lives in `probe/src`. The mod ID, crate and DLL are
+`lt_direct_control` (before 1.0: `lt_direct_control_probe`; settings and logs
+stay in `%LOCALAPPDATA%\LTDirectControl`).
 
 | Area | Modules |
 |---|---|

@@ -470,9 +470,9 @@ fn template() -> String {
         #meta:label { @"asset/base/style/main#label"; x: 100px; y: 61px; width: 150px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
         #range:label { @"asset/base/style/main#label"; x: 208px; y: 61px; width: 100px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
         #key:label { @"asset/base/style/main#label"; x: 487px; y: 8px; width: 26px; height: 26px; z: 1112; size: 21; color: #d6d6d66b; ignore_event: true; }
-        #meta_clock:image { x: 76px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control_probe/ui/ef_clock"; color: #d6d6d675; z: 1112; ignore_event: true; }
-        #meta_range:image { x: 180px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control_probe/ui/ef_range"; color: #d6d6d675; z: 1112; ignore_event: true; }
-        #status:image { x: 16px; y: 16px; width: 24px; height: 24px; source: "asset/lt_direct_control_probe/ui/ef_unavailable"; z: 1112; visible: false; ignore_event: true; }
+        #meta_clock:image { x: 76px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d675; z: 1112; ignore_event: true; }
+        #meta_range:image { x: 180px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/ef_range"; color: #d6d6d675; z: 1112; ignore_event: true; }
+        #status:image { x: 16px; y: 16px; width: 24px; height: 24px; source: "asset/lt_direct_control/ui/ef_unavailable"; z: 1112; visible: false; ignore_event: true; }
         #rule:color { x: 16px; y: 98px; width: 501px; height: 1px; z: 1111; color: #ffffff3b; ignore_event: true; }
         #text:label { @"asset/base/style/main#label"; x: 16px; y: 106px; width: 501px; height: 100px; z: 1111; size: 20; line_height: 28; align_y: Top; color: #d6d6d6ff; ignore_event: true; }
         #scroll_track:color { width: 3px; z: 1112; color: #ffffff30; visible: false; ignore_event: true; }
@@ -1146,7 +1146,20 @@ impl HudUi {
         ] {
             self.props(ctx, node, format!("visible: {};", !compact), log);
         }
-        self.props(ctx,"tooltip.status",format!("visible: {}; source: \"asset/lt_direct_control_probe/ui/{}\"; color: #ffffff{ink:02x};",compact,if i==6&&self.purchase_ready{"ef_check"}else{"ef_unavailable"}),log);
+        self.props(
+            ctx,
+            "tooltip.status",
+            format!(
+                "visible: {}; source: \"asset/lt_direct_control/ui/{}\"; color: #ffffff{ink:02x};",
+                compact,
+                if i == 6 && self.purchase_ready {
+                    "ef_check"
+                } else {
+                    "ef_unavailable"
+                }
+            ),
+            log,
+        );
         if compact {
             self.props(ctx, "tooltip.art", "visible: false;".into(), log);
             let title = if i == crate::inventory::PURCHASE && !self.purchase_ready {
@@ -1330,7 +1343,7 @@ impl HudUi {
             log,
         );
         self.text(ctx, "tooltip.meta", meta.clone(), log);
-        self.props(ctx,"tooltip.meta_clock",format!("visible: {show_meta}; x: {left}px; y: {}px; source: \"asset/lt_direct_control_probe/ui/{meta_glyph}\"; color: #d6d6d6{:02x};",61.+extra,(117.*fade)as u8),log);
+        self.props(ctx,"tooltip.meta_clock",format!("visible: {show_meta}; x: {left}px; y: {}px; source: \"asset/lt_direct_control/ui/{meta_glyph}\"; color: #d6d6d6{:02x};",61.+extra,(117.*fade)as u8),log);
         let range_x = left + 24. + crate::hud_style::width(&meta, 20.) + 20.;
         self.props(
             ctx,

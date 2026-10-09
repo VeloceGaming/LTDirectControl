@@ -3,7 +3,7 @@ import hashlib,json
 from pathlib import Path
 from PIL import Image
 root=Path(__file__).resolve().parents[1]
-package=root/'dist/lt_direct_control_probe'
+package=root/'dist/lt_direct_control'
 version=json.loads((package/'mod.mod_info').read_text(encoding='utf-8'))['version']
 files=sorted((package/'ui').glob('*.png'))
 assert len(files)==74,len(files)

@@ -221,7 +221,7 @@ fn label(
     format!("#{name}:label {{ @\"asset/base/style/main#{style}\"; x: {x}px; y: {y}px; width: {w}px; height: {h}px; size: {size}; text: {}; color: #{color}; align_x: {align}; align_y: Center; ignore_event: true; z: {z}; }}\n",json(text))
 }
 fn image(name: &str, glyph: &str, (x, y, s): (i32, i32, i32), color: &str, z: i32) -> String {
-    format!("#{name}:image {{ x: {x}px; y: {y}px; width: {s}px; height: {s}px; source: \"asset/lt_direct_control_probe/ui/{glyph}\"; color: #{color}; ignore_event: true; z: {z}; }}\n")
+    format!("#{name}:image {{ x: {x}px; y: {y}px; width: {s}px; height: {s}px; source: \"asset/lt_direct_control/ui/{glyph}\"; color: #{color}; ignore_event: true; z: {z}; }}\n")
 }
 fn rect(name: &str, (x, y, w, h): (i32, i32, i32, i32), color: &str, z: i32) -> String {
     format!("#{name}:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; color: #{color}; ignore_event: true; z: {z}; }}\n")
@@ -270,7 +270,7 @@ fn row_template(i: usize) -> String {
     c.push_str(&rect("edge", (0, 0, CONTENT_W, 1), "~4b4a49ff", 2004));
     c.push_str(&rect("shade", (0, 83, CONTENT_W, 1), "~292726ff", 2004));
     // A compact checkbox row is itself the hit target, as in the updated preview.
-    c.push_str("#check_box:color { x: 24px; y: 13px; width: 30px; height: 30px; color: #201e1dff; rounding: Uniform { rounding: 2; } ignore_event: true; visible: false; z: 2006; #fill:color { x: 2px; y: 2px; width: 26px; height: 26px; color: #eeececff; ignore_event: true; z: 2007; } #rail:color { x: 4px; y: 6px; width: 3px; height: 18px; color: #fdee00ff; ignore_event: true; visible: false; z: 2008; } #mark:image { x: 6px; y: 6px; width: 18px; height: 18px; source: \"asset/lt_direct_control_probe/ui/ef_check\"; color: #ffffffff; ignore_event: true; visible: false; z: 2008; } }\n");
+    c.push_str("#check_box:color { x: 24px; y: 13px; width: 30px; height: 30px; color: #201e1dff; rounding: Uniform { rounding: 2; } ignore_event: true; visible: false; z: 2006; #fill:color { x: 2px; y: 2px; width: 26px; height: 26px; color: #eeececff; ignore_event: true; z: 2007; } #rail:color { x: 4px; y: 6px; width: 3px; height: 18px; color: #fdee00ff; ignore_event: true; visible: false; z: 2008; } #mark:image { x: 6px; y: 6px; width: 18px; height: 18px; source: \"asset/lt_direct_control/ui/ef_check\"; color: #ffffffff; ignore_event: true; visible: false; z: 2008; } }\n");
     c.push_str(&label(
         "check_label",
         (72, 3, 282, 50),
@@ -417,7 +417,7 @@ fn template() -> String {
         "eyebrow",
         (37, 27, 450, 18),
         13,
-        "DIRECT CONTROL / PREFERENCES",
+        "LT TAKEOVER / PREFERENCES",
         false,
         "989694ff",
         "Left",
@@ -519,7 +519,7 @@ fn template() -> String {
     s.push_str(&acquisition_panel::template());
     s.push_str(&emote_panel::template());
     s.push_str(&format!("#cursor_ex:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 64px; color: #00000000; ignore_event: true; visible: false; z: 2003;\n{}{}}}\n",
-        "#img:image { x: 24px; y: 16px; width: 32px; height: 32px; source: \"asset/lt_direct_control_probe/ui/cursor_preview\"; ignore_event: true; z: 2004; }\n",
+        "#img:image { x: 24px; y: 16px; width: 32px; height: 32px; source: \"asset/lt_direct_control/ui/cursor_preview\"; ignore_event: true; z: 2004; }\n",
         label("text",(72,21,300,22),14,"Cursor size preview",false,"989694ff","Left",2004)));
     s.push_str(&"#mask_top:color { x: 239px; y: 113px; width: 1120px; height: 112px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n#mask_bottom:color { x: 1px; y: 760px; width: 1358px; height: 89px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n".replace("#1c1a18ff", &format!("#{}", crate::ui_theme::hex(0xff))));
     // The enclosing input layer must clear the clipping masks as well as

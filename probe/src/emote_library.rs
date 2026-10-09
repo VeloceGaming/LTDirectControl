@@ -37,7 +37,7 @@ impl Bundled {
             art: Art {
                 id: self.id.into(),
                 label: self.label.into(),
-                source: format!("asset/lt_direct_control_probe/ui/{}", self.glyph),
+                source: format!("asset/lt_direct_control/ui/{}", self.glyph),
             },
             ready: true,
             builtin: true,
@@ -72,7 +72,7 @@ impl Default for Snapshot {
                     art: Art {
                         id: format!("builtin:{}", e.glyph),
                         label: e.name.into(),
-                        source: format!("asset/lt_direct_control_probe/ui/{}", e.glyph),
+                        source: format!("asset/lt_direct_control/ui/{}", e.glyph),
                     },
                     ready: true,
                     builtin: true,
@@ -419,7 +419,7 @@ impl Library {
                     .unwrap_or_default()
                     .to_string_lossy()
                     .into_owned(),
-                source: format!("asset/lt_direct_control_probe/ui/imported/emote_{digest}"),
+                source: format!("asset/lt_direct_control/ui/imported/emote_{digest}"),
             },
             ready: existing && self.loaded.contains(&filename),
             builtin: false,

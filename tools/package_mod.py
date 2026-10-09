@@ -9,15 +9,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--version', required=True)
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
-package = root / 'dist/lt_direct_control_probe'
+package = root / 'dist/lt_direct_control'
 record_path = root / f'dist/build-{args.version}.json'
 record = json.loads(record_path.read_text(encoding='utf-8'))
 assert json.loads((package / 'mod.mod_info').read_text())['version'] == args.version
 files = sorted(p for p in package.rglob('*') if p.is_file())
-for name, key in [('lt_direct_control_probe.dll', 'dll_sha256'), ('mod.mod_info', 'metadata_sha256')]:
+for name, key in [('lt_direct_control.dll', 'dll_sha256'), ('mod.mod_info', 'metadata_sha256')]:
     assert hashlib.sha256((package / name).read_bytes()).hexdigest() == record[key]
 graphics = json.loads((root / 'tools/records/ui-graphics.json').read_text())
-assert {p.relative_to(package).as_posix() for p in files} == set(graphics['files']) | {'mod.mod_info','lt_direct_control_probe.dll'}
+assert {p.relative_to(package).as_posix() for p in files} == set(graphics['files']) | {'mod.mod_info','lt_direct_control.dll'}
 for name, digest in graphics['files'].items():
     assert hashlib.sha256((package / name).read_bytes()).hexdigest() == digest
 archive = root / f'dist/LTDirectControl-{args.version}.zip'

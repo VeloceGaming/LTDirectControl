@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.81.0 — 2026-10-10
+
+- Renamed for the public release: mod ID, crate and DLL `lt_direct_control` (was `lt_direct_control_probe`), in-game name "LT Takeover: Open-Source Direct Control", author Layton. Every packaged art path follows (`asset/lt_direct_control/...`, including the two font sets, re-fingerprinted). Settings, keybinds, logs and emotes stay in `%LOCALAPPDATA%\LTDirectControl`.
+- The installer checks a pre-1.0 install in `mods\lt_direct_control_probe` against its build record and removes that folder after a successful install, so the game never loads both (its `ui\imported` emote cache is rebuilt from the user's emote folder).
+- The game's mod SDK is no longer in the repository: `tools/prepare_sdk.py` copies it from the game and adds the mod's two local additions.
+
 ## 0.80.1 — 2026-10-10
 
 - Add four user-provided bundled Library emotes: Bomber Nice, Clown Son, Ghost Wajaja and Monk No Kills, using the corrected `Bomber_Nice.png` and `Clown_Son.png`. They are separate normalized 256 × 256 PNG assets, with visible art fitted to 224 pixels, and are available without copying files to AppData or restarting to import them. The original five wheel defaults stay the same.

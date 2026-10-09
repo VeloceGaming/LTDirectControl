@@ -9,27 +9,38 @@ if ($taskGameProcesses.Count -ne 0) {
     foreach ($taskGameProcess in $taskGameProcesses) {
         $taskModules = @($taskGameProcess.Modules)
         if ($taskModules.Count -eq 0) { throw 'Cannot verify that the running game has unloaded the mod.' }
-        if (@($taskModules | Where-Object { $_.ModuleName -ieq 'lt_direct_control_probe.dll' }).Count -ne 0) {
+        if (@($taskModules | Where-Object { $_.ModuleName -ieq 'lt_direct_control.dll' -or $_.ModuleName -ieq 'lt_direct_control_probe.dll' }).Count -ne 0) {
             throw 'The mod DLL is loaded; close the game before installing.'
         }
     }
     Write-Output 'Running game checked: the mod DLL is not loaded. Restart the game after installation.'
 }
 $taskRoot = Split-Path -Parent $PSScriptRoot
-$packageRoot = Join-Path $taskRoot 'dist\lt_direct_control_probe'
+$packageRoot = Join-Path $taskRoot 'dist\lt_direct_control'
 $gameRoot = if ($GameRoot) { $GameRoot } elseif ($env:TFM2_GAME_DIR) { $env:TFM2_GAME_DIR } else { 'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2' }
-$installRoot = Join-Path $gameRoot 'mods\lt_direct_control_probe'
+$installRoot = Join-Path $gameRoot 'mods\lt_direct_control'
+# Builds before 1.0 used the mod ID lt_direct_control_probe. Its folder is
+# checked like any previous install, then removed after a successful
+# install so the game never loads both. (Its ui\imported folder is only a
+# cache rebuilt from the user's emote folder.)
+$legacyRoot = Join-Path $gameRoot 'mods\lt_direct_control_probe'
+$legacy = (Test-Path -LiteralPath (Join-Path $legacyRoot 'lt_direct_control_probe.dll')) -and -not (Test-Path -LiteralPath (Join-Path $installRoot 'lt_direct_control.dll'))
+$oldRoot = if ($legacy) { $legacyRoot } else { $installRoot }
+$oldDll = if ($legacy) { 'lt_direct_control_probe.dll' } else { 'lt_direct_control.dll' }
 $newRecord = Get-Content -LiteralPath (Join-Path $taskRoot "dist\build-$Version.json") -Raw | ConvertFrom-Json
 $oldRecord = if ($PreviousVersion) { Get-Content -LiteralPath (Join-Path $taskRoot "dist\build-$PreviousVersion.json") -Raw | ConvertFrom-Json } else { $null }
-if (-not $oldRecord -and (Test-Path -LiteralPath (Join-Path $installRoot 'lt_direct_control_probe.dll'))) { throw 'A build is already installed: pass -PreviousVersion so its files are checked before replacing them.' }
+if (-not $oldRecord -and (Test-Path -LiteralPath (Join-Path $oldRoot $oldDll))) { throw 'A build is already installed: pass -PreviousVersion so its files are checked before replacing them.' }
 if ($newRecord.version -ne $Version) { throw 'Version mismatch.' }
 function Assert-Hash([string]$Path, [string]$Expected) {
     if ((Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw "Fingerprint mismatch: $Path" }
 }
 Assert-Hash (Join-Path $gameRoot 'TeamfightManager2.exe') $newRecord.executable_sha256
-foreach ($entry in @(@('lt_direct_control_probe.dll','dll_sha256'),@('mod.mod_info','metadata_sha256'))) {
+foreach ($entry in @(@('lt_direct_control.dll','dll_sha256'),@('mod.mod_info','metadata_sha256'))) {
     Assert-Hash (Join-Path $packageRoot $entry[0]) $newRecord.($entry[1])
-    if ($oldRecord) { Assert-Hash (Join-Path $installRoot $entry[0]) $oldRecord.($entry[1]) }
+    if ($oldRecord) {
+        $installed = if ($entry[0] -eq 'lt_direct_control.dll') { $oldDll } else { $entry[0] }
+        Assert-Hash (Join-Path $oldRoot $installed) $oldRecord.($entry[1])
+    }
 }
 $graphics = Get-Content -LiteralPath (Join-Path $taskRoot 'tools\records\ui-graphics.json') -Raw | ConvertFrom-Json
 foreach ($entry in $graphics.files.PSObject.Properties) {
@@ -43,10 +54,14 @@ foreach ($entry in $graphics.files.PSObject.Properties) {
     New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $installRoot $entry.Name)) -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $packageRoot $entry.Name) -Destination (Join-Path $installRoot $entry.Name) -Force
 }
-Copy-Item -LiteralPath (Join-Path $packageRoot 'lt_direct_control_probe.dll') -Destination (Join-Path $installRoot 'lt_direct_control_probe.dll') -Force
+Copy-Item -LiteralPath (Join-Path $packageRoot 'lt_direct_control.dll') -Destination (Join-Path $installRoot 'lt_direct_control.dll') -Force
 Copy-Item -LiteralPath (Join-Path $packageRoot 'mod.mod_info') -Destination (Join-Path $installRoot 'mod.mod_info') -Force
-Assert-Hash (Join-Path $installRoot 'lt_direct_control_probe.dll') $newRecord.dll_sha256
+Assert-Hash (Join-Path $installRoot 'lt_direct_control.dll') $newRecord.dll_sha256
 Assert-Hash (Join-Path $installRoot 'mod.mod_info') $newRecord.metadata_sha256
 foreach ($entry in $graphics.files.PSObject.Properties) { Assert-Hash (Join-Path $installRoot $entry.Name) $entry.Value }
+if ($legacy) {
+    Remove-Item -LiteralPath $legacyRoot -Recurse -Force
+    Write-Output "Removed the pre-1.0 install folder $legacyRoot (mod ID lt_direct_control_probe)."
+}
 $assetCount = @($graphics.files.PSObject.Properties).Count
 Write-Output "Installed verified $Version DLL, metadata, and $assetCount UI assets; all fingerprints match."

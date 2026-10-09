@@ -16,7 +16,7 @@ use std::{
 
 pub const OWN: &str = "ingame.lt_stats_own";
 pub const TARGET: &str = "ingame.lt_stats_target";
-const NUMERIC: &str = "asset/lt_direct_control_probe/font/numeric";
+const NUMERIC: &str = "asset/lt_direct_control/font/numeric";
 
 /// One grid of stat cells (icon + value) inside `parent`.
 fn cells(s: &mut String, (x0, y0): (i32, i32), (dx, dy): (i32, i32)) {
@@ -54,7 +54,7 @@ fn target_template() -> String {
     // portrait beside the stats grid (centred on its four rows).
     let mut s = String::from("lt_stats_target:empty { x: 8px; y: 56px; width: 292px; height: 129px; z: 1000; ignore_event: true; visible: false;\n");
     frame(&mut s, (0, 0, 292, 129));
-    s.push_str("#face:color { x: 10px; y: 46px; width: 64px; height: 64px; color: #~4b4a49ff; rounding: Uniform { rounding: 2; } ignore_event: true; z: 1003;\n#well:color { x: 1px; y: 1px; width: 62px; height: 62px; color: #~0e0d0cff; ignore_event: true; z: 1004; }\n#portrait:image { x: 1px; y: 1px; width: 62px; height: 62px; sample_linear: false; visible: false; ignore_event: true; z: 1005; }\n#unit:image { x: 11px; y: 11px; width: 40px; height: 40px; source: \"asset/lt_direct_control_probe/ui/hud_minion\"; color: #cbc9c7ff; visible: false; ignore_event: true; z: 1005; }\n#badge:color { x: 0px; y: 46px; width: 26px; height: 18px; color: #1c1a18ee; ignore_event: true; z: 1006; }\n");
+    s.push_str("#face:color { x: 10px; y: 46px; width: 64px; height: 64px; color: #~4b4a49ff; rounding: Uniform { rounding: 2; } ignore_event: true; z: 1003;\n#well:color { x: 1px; y: 1px; width: 62px; height: 62px; color: #~0e0d0cff; ignore_event: true; z: 1004; }\n#portrait:image { x: 1px; y: 1px; width: 62px; height: 62px; sample_linear: false; visible: false; ignore_event: true; z: 1005; }\n#unit:image { x: 11px; y: 11px; width: 40px; height: 40px; source: \"asset/lt_direct_control/ui/hud_minion\"; color: #cbc9c7ff; visible: false; ignore_event: true; z: 1005; }\n#badge:color { x: 0px; y: 46px; width: 26px; height: 18px; color: #1c1a18ee; ignore_event: true; z: 1006; }\n");
     s.push_str(&format!("#level:label {{ font: \"{NUMERIC}\"; x: 0px; y: 46px; width: 26px; height: 18px; size: 14; align_x: Center; align_y: Center; color: #eeececff; text: \"\"; ignore_event: true; z: 1007; }}\n}}\n"));
     s.push_str("#hp_back:color { x: 10px; y: 10px; width: 272px; height: 20px; color: #~0e0d0cff; ignore_event: true; z: 1003; }\n#hp_fill:color { x: 11px; y: 11px; width: 270px; height: 18px; color: #6aff55ff; ignore_event: true; z: 1004; }\n");
     s.push_str(&format!("#hp_text:label {{ font: \"{NUMERIC}\"; x: 10px; y: 10px; width: 272px; height: 20px; size: 13; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; text: \"\"; ignore_event: true; z: 1005; }}\n"));
@@ -180,7 +180,7 @@ impl StatsUi {
         let glyph = match unit.kind {
             Kind::Tower => "asset/base/ui/icons/tower",
             Kind::Monster => "asset/base/ui/icons/jungle",
-            Kind::Minion | Kind::Champion => "asset/lt_direct_control_probe/ui/hud_minion",
+            Kind::Minion | Kind::Champion => "asset/lt_direct_control/ui/hud_minion",
         };
         self.props(
             ctx,

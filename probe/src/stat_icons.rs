@@ -3,7 +3,7 @@
 //! Inline text images need a sheet and a frame name, so both are sheets.
 
 pub const GAME_STAT_SHEET: &str = "asset/base/ui/banpick/champion_stat_icon";
-pub const MOD_STAT_SHEET: &str = "asset/lt_direct_control_probe/ui/stat_icons";
+pub const MOD_STAT_SHEET: &str = "asset/lt_direct_control/ui/stat_icons";
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum StatIcon {
@@ -62,7 +62,7 @@ mod tests {
         );
         assert_eq!(
             CRIT.inline(),
-            "<i#asset/lt_direct_control_probe/ui/stat_icons:crit_0>"
+            "<i#asset/lt_direct_control/ui/stat_icons:crit_0>"
         );
     }
 }
