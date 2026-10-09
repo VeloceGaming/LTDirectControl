@@ -296,29 +296,35 @@ impl SessionUi {
             self.registered = true;
             for (node, primary) in [("primary", true), ("release", false)] {
                 let owner = timing.clone();
-                ctx.ui_register_path_events(&format!("{PATH}.{node}"), move |ctx| {
+                let click_path = format!("{PATH}.{node}");
+                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                     if ctx
                         .ui_current_event()
                         .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                        && crate::ui_click::once(&click_path)
                     {
                         owner.request_action(primary);
                     }
                 });
             }
             let owner = camera.clone();
-            ctx.ui_register_path_events(&format!("{PATH}.camera"), move |ctx| {
+            let click_path = format!("{PATH}.camera");
+            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                 if ctx
                     .ui_current_event()
                     .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                    && crate::ui_click::once(&click_path)
                 {
                     owner.request_toggle();
                 }
             });
             let events = self.events.clone();
-            ctx.ui_register_path_events(&format!("{PATH}.settings"), move |ctx| {
+            let click_path = format!("{PATH}.settings");
+            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                 if ctx
                     .ui_current_event()
                     .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                    && crate::ui_click::once(&click_path)
                 {
                     if let Ok(mut e) = events.lock() {
                         e.settings_open = true;
@@ -326,10 +332,12 @@ impl SessionUi {
                 }
             });
             let events = self.events.clone();
-            ctx.ui_register_path_events(&format!("{PATH}.tab"), move |ctx| {
+            let click_path = format!("{PATH}.tab");
+            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                 if ctx
                     .ui_current_event()
                     .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                    && crate::ui_click::once(&click_path)
                 {
                     if let Ok(mut e) = events.lock() {
                         e.team = !e.team;
@@ -342,10 +350,12 @@ impl SessionUi {
                 ("vision_all", crate::camera::Vision::All),
             ] {
                 let events = self.events.clone();
-                ctx.ui_register_path_events(&format!("{PATH}.{node}"), move |ctx| {
+                let click_path = format!("{PATH}.{node}");
+                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                     if ctx
                         .ui_current_event()
                         .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                        && crate::ui_click::once(&click_path)
                     {
                         if let Ok(mut e) = events.lock() {
                             e.vision = Some(vision);
@@ -356,10 +366,12 @@ impl SessionUi {
             for lane in 0..5 {
                 let owner = timing.clone();
                 let events = self.events.clone();
-                ctx.ui_register_path_events(&format!("{PATH}.lane{lane}"), move |ctx| {
+                let click_path = format!("{PATH}.lane{lane}");
+                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                     if ctx
                         .ui_current_event()
                         .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                        && crate::ui_click::once(&click_path)
                         && owner.phase() == Some(Phase::Ready)
                     {
                         if let (Some(key), Ok(mut events)) = (owner.match_key(), events.lock()) {

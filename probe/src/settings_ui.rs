@@ -1067,10 +1067,12 @@ impl SettingsUi {
         items.extend(emote_panel::events());
         for (node, event) in items {
             let queue = self.events.clone();
-            ctx.ui_register_path_events(&format!("{PATH}.window.{node}"), move |ctx| {
+            let click_path = format!("{PATH}.window.{node}");
+            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                 if ctx
                     .ui_current_event()
                     .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                    && crate::ui_click::once(&click_path)
                 {
                     if let Ok(mut q) = queue.lock() {
                         q.push(event.clone());

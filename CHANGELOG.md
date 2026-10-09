@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.83.2 — 2026-10-10
+
+- The language menu still would not reopen after a change. The 0.83.1 log showed why: every click on a rebuilt window arrived twice (open, then close, in the same millisecond). The game keeps a path's click callbacks when our window is removed and rebuilt within a match, and the rebuild registers again. New ui_click.rs lets each node's click through once per 50 ms; all 8 registration sites (settings, shop, session bar) use it. This also covers the shop checkboxes, camera lock and Tab toggles after a background-colour or language rebuild, which would have flipped twice.
+
 ## 0.83.1 — 2026-10-10
 
 - Boxes instead of characters (Simplified Chinese, Thai and others in the language list): the game picks a font set entry by ITS language, and each entry only covered that language's script. Every entry of the mod's two font sets now falls back to all the game's script fonts (Latin/Cyrillic/Vietnamese, SC, TC, JP, KR, Thai), keeping its own fonts first. New tools/font_fallbacks.py (also used by generate_hud_fonts.py) rewrites them and their digests.

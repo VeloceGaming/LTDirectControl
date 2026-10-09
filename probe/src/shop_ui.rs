@@ -1413,10 +1413,12 @@ impl ShopUi {
         items.extend((0..CHIPS).map(|i| (format!("chip{i}"), Event::Chip(i))));
         for (node, event) in items {
             let queue = self.events.clone();
-            ctx.ui_register_path_events(&format!("{PATH}.{node}"), move |ctx| {
+            let click_path = format!("{PATH}.{node}");
+            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
                 if ctx
                     .ui_current_event()
                     .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                    && crate::ui_click::once(&click_path)
                 {
                     if let Ok(mut q) = queue.lock() {
                         q.push(event);

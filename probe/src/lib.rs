@@ -68,6 +68,7 @@ mod test_cheats;
 mod test_support;
 mod tooltip_layout;
 mod tooltips;
+mod ui_click;
 mod ui_graphics;
 mod ui_state;
 mod ui_theme;
