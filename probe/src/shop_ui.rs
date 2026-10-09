@@ -2,8 +2,8 @@
 //! approved HTML preview (kept outside git) in 1920x1080 coordinates;
 //! positions below are relative to the 1360x872 window at (180, 78).
 //! Buying only queues for crate::shop; the simulation performs purchases.
-use crate::stat_icons::{self, StatIcon};
 use crate::lang::{tr, trf};
+use crate::stat_icons::{self, StatIcon};
 use crate::{camera::Rect, hud_motion, platform_input::Keys, player_hud::HudUi, shop, Logger};
 use mod_api_stable::{StableClient, UiEventKindV1};
 use std::{
@@ -1424,7 +1424,9 @@ impl ShopUi {
     fn buy(&mut self, view: &shop::View, item: usize, log: &Logger) {
         let name = view.cat[item].key.clone();
         if !view.manual {
-            self.say(tr("Manual shopping is off: turn it on in Settings › Combat & casting"));
+            self.say(tr(
+                "Manual shopping is off: turn it on in Settings › Combat & casting",
+            ));
             return;
         }
         match self.purchase_offer(view, item) {
@@ -1656,9 +1658,9 @@ impl ShopUi {
                 }
                 Event::QueueBuild => {
                     if !view.manual {
-                        self.say(
-                            tr("Manual shopping is off: turn it on in Settings › Combat & casting"),
-                        );
+                        self.say(tr(
+                            "Manual shopping is off: turn it on in Settings › Combat & casting",
+                        ));
                     } else {
                         let added = shop::SHOP.enqueue_back(&view.live.build, |item| {
                             self.choices.get(&item).cloned()
@@ -2555,7 +2557,12 @@ impl ShopUi {
             )
         } else {
             match &offer {
-                shop::Offer::Owned => (tr("Unavailable").to_owned(), false, "~3a3837ff", String::new()),
+                shop::Offer::Owned => (
+                    tr("Unavailable").to_owned(),
+                    false,
+                    "~3a3837ff",
+                    String::new(),
+                ),
                 shop::Offer::Blocked => (
                     trf(
                         "No free slot · {used}/{slots}",
@@ -2564,7 +2571,8 @@ impl ShopUi {
                     false,
                     "~3a3837ff",
                     if chosen.is_some() {
-                        tr("Chosen path needs a free slot; other components stay in your bag.").into()
+                        tr("Chosen path needs a free slot; other components stay in your bag.")
+                            .into()
                     } else {
                         String::new()
                     },
@@ -2641,14 +2649,23 @@ impl ShopUi {
                         )
                     )]
                 ),
-                trf("Step price {price}", &[("price", &number(view.cat[focus].price))])
+                trf(
+                    "Step price {price}",
+                    &[("price", &number(view.cat[focus].price))]
+                )
             ),
             None if view.live.owned.contains(&focus) => format!(
                 "{}    {}",
                 tr("Owned"),
-                trf("Step price {price}", &[("price", &number(view.cat[focus].price))])
+                trf(
+                    "Step price {price}",
+                    &[("price", &number(view.cat[focus].price))]
+                )
             ),
-            None => trf("Step price {price}", &[("price", &number(view.cat[focus].price))]),
+            None => trf(
+                "Step price {price}",
+                &[("price", &number(view.cat[focus].price))],
+            ),
         };
         self.text(ctx, "d_cost", &cost);
         let tags = (0..STAT_FILTERS.len())

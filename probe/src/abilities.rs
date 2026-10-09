@@ -906,20 +906,29 @@ impl Abilities {
         let message = if result.is_some() {
             format!("{} cast sent", NAMES[request.slot])
         } else if level.is_some_and(|l| l < [1, 3, 5][request.slot]) {
-            format!("{}: Lv {}", NAMES[request.slot], [1, 3, 5][request.slot])
+            crate::lang::trf(
+                "{key}: Lv {level}",
+                &[
+                    ("key", &NAMES[request.slot]),
+                    ("level", &[1, 3, 5][request.slot]),
+                ],
+            )
         } else if cooldown > 0 {
             format!("{}: {:.1}s", NAMES[request.slot], cooldown as f32 / 60.)
         } else if desc.is_none() {
-            format!(
-                "{} unavailable: current ability data not ready",
-                NAMES[request.slot]
+            crate::lang::trf(
+                "{key} unavailable: current ability data not ready",
+                &[("key", &NAMES[request.slot])],
             )
         } else if desc.is_some_and(|d| d.casting == 0 && d.target == 2) {
-            format!("{} needs an ally under crowd control", NAMES[request.slot])
+            crate::lang::trf(
+                "{key} needs an ally under crowd control",
+                &[("key", &NAMES[request.slot])],
+            )
         } else {
-            format!(
-                "{} not cast: invalid aim/target or native cast unavailable",
-                NAMES[request.slot]
+            crate::lang::trf(
+                "{key} not cast: invalid aim/target or native cast unavailable",
+                &[("key", &NAMES[request.slot])],
             )
         };
         if let Ok(mut s) = self.0.lock() {
@@ -1029,7 +1038,10 @@ impl Abilities {
                 NAMES[slot], request.stamp.id
             ));
         } else {
-            s.message = Some((format!("{} could not start", NAMES[slot]), Instant::now()));
+            s.message = Some((
+                crate::lang::trf("{key} could not start", &[("key", &NAMES[slot])]),
+                Instant::now(),
+            ));
             log.write(&format!(
                 "ABILITY REJECTED {} trace_id={} reason=native-consumer-did-not-spend-cooldown action={action} age_ms={} waiting={} bound={:?}",
                 NAMES[slot], request.stamp.id, request.at.elapsed().as_millis(), request.waiting, request.bound

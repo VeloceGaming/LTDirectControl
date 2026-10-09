@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.83.0 — 2026-10-10
+
+- All of the mod's own text follows the mod language (342 texts in each of the 16 translated languages): the whole Settings window (every option, choice, keybind, the acquisition and emote panels), the shop (filters, headings, buttons, status, messages, recipe paths), the HUD (respawn, cooldown, purchase tooltips), ability feedback, the session bar tooltips, the Tab panel headers and the emote wheel hint. Stat names follow League's localised terms; Traditional Chinese matches the Riot item mod (物理防禦, 技能疾速).
+- Plurals and word order are per language: the code passes named values (`{count}`, `{gold}`, `{item}`) and separate texts for one and several, so Russian and Polish use their own counting forms.
+- Kept in English on purpose: key names (Q, Shift, Mouse 4…), emote names (GG, Nice, Hype, Oops, Focus), log lines, emote-import error details, and the developer no-cooldown tag. The lang test collects every text from `tr`/`trf` calls plus the settings tables, page names, stat filters and slot names.
+
 ## 0.82.0 — 2026-10-10
 
 - Mod text in the game's language, first slice. New lang.rs: English source text is the key (`tr`, `trf` with named `{values}`); translations in `probe/lang/<code>.json` for all 16 other game languages; a test requires every text in every language with the same `{values}`. Settings > Interface > Language > Mod language: Auto (the game's language, identified from its own word for "Close" via the SDK text lookup, rechecked every second) or any of the 17 languages; `LANGUAGE ...` log lines record the detection. Windows rebuild when the language changes (ui_theme::refresh keys on background + language).

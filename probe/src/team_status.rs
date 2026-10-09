@@ -305,8 +305,8 @@ impl TeamUi {
                 ("level", "LV"),
                 ("kda", "K / D / A"),
                 ("cs", "CS"),
-                ("items", "ITEMS"),
-                ("gold", "GOLD"),
+                ("items", crate::lang::tr("ITEMS")),
+                ("gold", crate::lang::tr("GOLD")),
             ] {
                 self.text(ctx, &format!("{side_path}.headers.{id}"), text.into());
             }

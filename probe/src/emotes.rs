@@ -264,7 +264,7 @@ fn template() -> String {
     s.push_str(&label(
         "hint",
         329,
-        "Release to show · Esc / right-click cancel",
+        crate::lang::tr("Release to show · Esc / right-click cancel"),
     ));
     s.push_str("}\n#floating:image { width: 88px; height: 88px; visible: false; ignore_event: true; z: 2290; }\n}\n");
     s

@@ -581,24 +581,27 @@ impl SessionUi {
                 (
                     "primary",
                     if preparing {
-                        "Start · F11"
+                        crate::lang::tr("Start · F11")
                     } else if ai {
-                        "Take control · F11"
+                        crate::lang::tr("Take control · F11")
                     } else {
                         if phase == Phase::Paused {
-                            "Resume · F11"
+                            crate::lang::tr("Resume · F11")
                         } else {
-                            "Pause · F11"
+                            crate::lang::tr("Pause · F11")
                         }
                     },
                 ),
-                ("camera", "Lock camera · Y\nHold Space to follow"),
-                ("tab", "Team details · Tab"),
-                ("release", "Return control to AI · F12"),
-                ("settings", "Settings"),
-                ("vision_own", "Own-team vision"),
-                ("vision_other", "Opposing-team vision"),
-                ("vision_all", "All-team vision"),
+                (
+                    "camera",
+                    crate::lang::tr("Lock camera · Y\nHold Space to follow"),
+                ),
+                ("tab", crate::lang::tr("Team details · Tab")),
+                ("release", crate::lang::tr("Return control to AI · F12")),
+                ("settings", crate::lang::tr("Settings")),
+                ("vision_own", crate::lang::tr("Own-team vision")),
+                ("vision_other", crate::lang::tr("Opposing-team vision")),
+                ("vision_all", crate::lang::tr("All-team vision")),
             ] {
                 let path = format!("{PATH}.{node}");
                 if ctx.ui_visible(&path) == Some(true)

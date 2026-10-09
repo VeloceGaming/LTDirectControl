@@ -37,9 +37,12 @@ fn death_countdown(alive: bool, ticks: usize) -> String {
     if alive {
         String::new()
     } else if ticks > 0 {
-        format!("Respawning in {}", ticks.div_ceil(60))
+        crate::lang::trf(
+            "Respawning in {seconds}",
+            &[("seconds", &ticks.div_ceil(60))],
+        )
     } else {
-        "Respawning…".into()
+        crate::lang::tr("Respawning…").into()
     }
 }
 
@@ -291,7 +294,7 @@ fn hp_percent(s: &Snapshot) -> f32 {
 }
 fn cooldown(ticks: usize) -> String {
     if ticks == 0 {
-        "Ready".into()
+        crate::lang::tr("Ready").into()
     } else {
         format!("{:.1}s", (ticks as f64 / 6.).ceil() / 10.)
     }
@@ -867,19 +870,23 @@ impl HudUi {
                 None,
                 String::new(),
                 0.,
-                "Manual shopping: nothing queued. Open the shop (P) to buy.".into(),
+                crate::lang::tr("Manual shopping: nothing queued. Open the shop (P) to buy.")
+                    .into(),
             ),
             _ if manual.is_some() => {
                 let (target, next, price, gold) = manual.clone().flatten().expect("queued step");
                 let short = price.saturating_sub(gold);
                 let tooltip = format!(
-                    "{}\nNext: {} · {price} gold\n{}",
+                    "{}\n{}\n{}",
                     name(&target),
-                    name(&next),
+                    crate::lang::trf(
+                        "Next: {item} · {price} gold",
+                        &[("item", &name(&next)), ("price", &price)]
+                    ),
                     if short == 0 {
-                        "Buys at base".into()
+                        crate::lang::tr("Buys at base").to_owned()
                     } else {
-                        format!("{short} more gold")
+                        crate::lang::trf("{gold} more gold", &[("gold", &short)])
                     }
                 );
                 let progress = if price == 0 {
@@ -910,39 +917,61 @@ impl HudUi {
                 let mut tooltip = format!("{}\n", name(&f.target));
                 if let Some(next) = &f.next {
                     tooltip.push_str(&format!(
-                        "Next: {} · {} gold\n{} more gold\n",
-                        name(&next.key),
-                        next.price,
-                        next.price.saturating_sub(s.gold)
+                        "{}\n{}\n",
+                        crate::lang::trf(
+                            "Next: {item} · {price} gold",
+                            &[("item", &name(&next.key)), ("price", &next.price)]
+                        ),
+                        crate::lang::trf(
+                            "{gold} more gold",
+                            &[("gold", &next.price.saturating_sub(s.gold))]
+                        )
                     ));
                 }
                 if !f.affordable.is_empty() {
-                    tooltip.push_str("At base now:\n");
+                    tooltip.push_str(crate::lang::tr("At base now:"));
+                    tooltip.push('\n');
                     for p in &f.affordable {
-                        tooltip.push_str(&format!("{} · {} gold\n", name(&p.key), p.price));
+                        tooltip.push_str(&crate::lang::trf(
+                            "{item} · {price} gold",
+                            &[("item", &name(&p.key)), ("price", &p.price)],
+                        ));
+                        tooltip.push('\n');
                     }
                 }
                 if f.branching {
-                    tooltip.push_str("The game chooses an upgrade branch when buying:\n");
-                    tooltip.push_str("A + after the HUD amount means the minimum shortfall; the chosen branch may cost more.\n");
+                    tooltip.push_str(crate::lang::tr(
+                        "The game chooses an upgrade branch when buying:",
+                    ));
+                    tooltip.push('\n');
+                    tooltip.push_str(crate::lang::tr("A + after the HUD amount means the minimum shortfall; the chosen branch may cost more."));
+                    tooltip.push('\n');
                     for p in &f.alternatives {
-                        tooltip.push_str(&format!(
-                            "{} · {} gold · {} more gold\n",
-                            name(&p.key),
-                            p.price,
-                            p.price.saturating_sub(s.gold)
+                        tooltip.push_str(&crate::lang::trf(
+                            "{item} · {price} gold · {gold} more gold",
+                            &[
+                                ("item", &name(&p.key)),
+                                ("price", &p.price),
+                                ("gold", &p.price.saturating_sub(s.gold)),
+                            ],
                         ));
+                        tooltip.push('\n');
                     }
-                    tooltip.push_str("Further purchases are not yet fixed.");
+                    tooltip.push_str(crate::lang::tr("Further purchases are not yet fixed."));
                 }
                 (self.item_icon(key), text, progress, tooltip)
             }
-            (Some(_), Some(_)) => (None, "✓".into(), 100., "Automatic build complete".into()),
+            (Some(_), Some(_)) => (
+                None,
+                "✓".into(),
+                100.,
+                crate::lang::tr("Automatic build complete").into(),
+            ),
             _ => (
                 None,
                 "—".into(),
                 0.,
-                "Automatic purchase information is not available yet.".into(),
+                crate::lang::tr("Automatic purchase information is not available yet.").into(),
             ),
         };
         self.purchase_icon = icon.clone();
@@ -1163,7 +1192,7 @@ impl HudUi {
         if compact {
             self.props(ctx, "tooltip.art", "visible: false;".into(), log);
             let title = if i == crate::inventory::PURCHASE && !self.purchase_ready {
-                "Purchase information unavailable"
+                crate::lang::tr("Purchase information unavailable")
             } else {
                 title
             };
