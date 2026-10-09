@@ -26,6 +26,7 @@ mod hud_motion;
 mod hud_style;
 mod input_trace;
 mod inventory;
+mod lang;
 mod logging;
 mod map_path;
 mod minimap;

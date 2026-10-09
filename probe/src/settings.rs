@@ -173,6 +173,16 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.4,
     },
     OptionDef {
+        key: "mod_language",
+        page: 3,
+        section: "Language",
+        label: "Mod language",
+        hint: "Auto follows the game's language.",
+        // Stored as an index into lang::CHOICES: never reorder.
+        control: Control::Choice(&crate::lang::CHOICES),
+        default: 0.,
+    },
+    OptionDef {
         key: "cursor_size",
         page: 3,
         section: "Cursor",

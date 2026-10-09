@@ -22,6 +22,7 @@ pub(crate) struct ClientObservations {
     pub(crate) screen_effect: screen_effect::Effect,
     pub(crate) ai_handback: ai_handback::AiHandback,
     pub(crate) emotes: emotes::Emotes,
+    pub(crate) language: lang::Probe,
 }
 
 pub(crate) struct Client {
@@ -154,8 +155,16 @@ impl Client {
         }
     }
     fn post_update_inner(&self, ctx: &mut StableClient<'_>, dt_micros: u64) {
-        // A new background colour (applied in Settings) rebuilds the windows
-        // through their usual missing-node path.
+        // A new background colour or mod language (applied in Settings, or
+        // the game's language changing) rebuilds the windows through their
+        // usual missing-node path.
+        if let Ok(mut o) = self.observations.lock() {
+            o.language.update(ctx, &self.logger);
+        }
+        if lang::sync().is_some() {
+            self.logger
+                .write(&format!("LANGUAGE mod text now {}", lang::code()));
+        }
         ui_theme::sync();
         for path in [
             player_hud::PATH,

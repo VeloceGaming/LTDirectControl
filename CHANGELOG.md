@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.82.0 — 2026-10-10
+
+- Mod text in the game's language, first slice. New lang.rs: English source text is the key (`tr`, `trf` with named `{values}`); translations in `probe/lang/<code>.json` for all 16 other game languages; a test requires every text in every language with the same `{values}`. Settings > Interface > Language > Mod language: Auto (the game's language, identified from its own word for "Close" via the SDK text lookup, rechecked every second) or any of the 17 languages; `LANGUAGE ...` log lines record the detection. Windows rebuild when the language changes (ui_theme::refresh keys on background + language).
+- Translated so far: the Settings window frame (title, pause notes, footer buttons, status), page names and hints, and the Mod language option. Every option label, hint, section and choice already goes through the table and shows English until translated.
+- Select menus with more than three choices open as a two-column grid (the language list has 18).
+
 ## 0.81.0 — 2026-10-10
 
 - Renamed for the public release: mod ID, crate and DLL `lt_direct_control` (was `lt_direct_control_probe`), in-game name "LT Takeover: Open-Source Direct Control", author Layton. Every packaged art path follows (`asset/lt_direct_control/...`, including the two font sets, re-fingerprinted). Settings, keybinds, logs and emotes stay in `%LOCALAPPDATA%\LTDirectControl`.

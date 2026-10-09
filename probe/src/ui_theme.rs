@@ -10,8 +10,8 @@ use std::sync::{
 /// The design's background, `#1c1a18`.
 pub const DEFAULT: u32 = 0x1c_1a18;
 static BACKGROUND: AtomicU32 = AtomicU32::new(DEFAULT);
-/// Windows and the background they were built with.
-static BUILT: Mutex<Vec<(&'static str, u32)>> = Mutex::new(Vec::new());
+/// Windows and the background (and mod language) they were built with.
+static BUILT: Mutex<Vec<(&'static str, u64)>> = Mutex::new(Vec::new());
 
 /// Once per frame on the client thread: pick up an applied change.
 pub fn sync() {
@@ -111,7 +111,8 @@ pub fn format(rgb: u32) -> String {
 /// with an older background is removed, so it rebuilds with the current one
 /// through its usual missing-node path.
 pub fn refresh(ctx: &mut StableClient<'_>, path: &'static str) {
-    let now = background();
+    // Window text is part of the template, so the language counts too.
+    let now = u64::from(background()) | (crate::lang::generation() as u64) << 32;
     let Ok(mut built) = BUILT.lock() else {
         return;
     };

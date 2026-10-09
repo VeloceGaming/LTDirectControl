@@ -4,6 +4,7 @@
 use crate::{
     camera::Rect,
     hud_motion,
+    lang::tr,
     native_timing::{MatchKey, NativeTiming, Phase},
     platform_input::Keys,
     settings::{self, Chord, Control, Values, BINDINGS, OPTIONS},
@@ -25,7 +26,9 @@ pub static SCROLL: AtomicI32 = AtomicI32::new(0);
 const NAV_EMOTES: usize = 4;
 const NAV_ADVANCED: usize = 5;
 const PAGE_EMOTES: usize = 7;
-const PAGES: [(&str, &str, &str); 6] = [
+/// Choices a select menu can show (the mod language has 18).
+const POPUP_MAX: usize = 18;
+pub(crate) const PAGES: [(&str, &str, &str); 6] = [
     (
         "Combat & casting",
         "Choose how movement, targeting and ability inputs behave.",
@@ -427,7 +430,7 @@ fn template() -> String {
         "title",
         (37, 45, 400, 42),
         34,
-        "Settings",
+        tr("Settings"),
         true,
         "ffffffff",
         "Left",
@@ -437,7 +440,7 @@ fn template() -> String {
         "pause",
         (855, 33, 400, 24),
         17,
-        "Paused for settings",
+        tr("Paused for settings"),
         false,
         "b3d543ff",
         "Right",
@@ -447,7 +450,7 @@ fn template() -> String {
         "return",
         (855, 60, 400, 20),
         14,
-        "Match resumes when you close this window",
+        tr("Match resumes when you close this window"),
         false,
         "989694ff",
         "Right",
@@ -583,7 +586,7 @@ fn template() -> String {
         "reset",
         (33, 781, 206, 48),
         2,
-        "Restore this page",
+        tr("Restore this page"),
         18,
         2015,
         "",
@@ -592,7 +595,7 @@ fn template() -> String {
         "status",
         (255, 783, 700, 44),
         15,
-        "No changes",
+        tr("No changes"),
         false,
         "989694ff",
         "Left",
@@ -602,7 +605,7 @@ fn template() -> String {
         "cancel",
         (1028, 781, 114, 48),
         2,
-        "Cancel",
+        tr("Cancel"),
         18,
         2015,
         "",
@@ -611,7 +614,7 @@ fn template() -> String {
         "apply",
         (1159, 781, 168, 48),
         2,
-        "Apply & close",
+        tr("Apply & close"),
         18,
         2015,
         "",
@@ -619,7 +622,9 @@ fn template() -> String {
     // Select menu: opens from the field's vertical centre, behind a copy of the field.
     let mut popup = String::from("#popup:color { x: 907px; y: 0px; width: 386px; height: 50px; color: #00000000; ignore_event: true; visible: false; z: 2030;\n#shadow:color { x: -2px; y: 28px; width: 390px; height: 232px; color: #00000066; rounding: Uniform { rounding: 6; } ignore_event: true; z: 2029; }\n#menu:color { x: 0px; y: 25px; width: 386px; height: 230px; color: #d4d2d3ff; rounding: Uniform { rounding: 6; } ignore_event: false; z: 2030; }\n");
     popup.push_str(&rect("rule", (0, 62, 386, 1), "c6c4c5ff", 2031));
-    for k in 0..3 {
+    // Up to three choices list under the field; longer lists (the mod
+    // language) use a two-column grid, positioned when the menu opens.
+    for k in 0..POPUP_MAX {
         let mut children = label(
             "text",
             (22, 0, 300, 63),
@@ -634,7 +639,7 @@ fn template() -> String {
         children.push_str(&image("check", "ef_check", (346, 23, 18), "ffffffff", 2033));
         popup.push_str(&button(
             &format!("opt{k}"),
-            (0, 63 + k * 64, 386, 63),
+            (0, 63 + k as i32 % 3 * 64, 386, 63),
             0,
             "",
             17,
@@ -644,7 +649,7 @@ fn template() -> String {
         if k < 2 {
             popup.push_str(&rect(
                 &format!("div{k}"),
-                (0, 126 + k * 64, 386, 1),
+                (0, 126 + k as i32 * 64, 386, 1),
                 "c6c4c5ff",
                 2032,
             ));
@@ -696,7 +701,7 @@ fn template() -> String {
         "dismiss",
         (612, 405, 114, 48),
         2,
-        "Cancel",
+        tr("Cancel"),
         17,
         2052,
         "",
@@ -1046,7 +1051,7 @@ impl SettingsUi {
             items.push((format!("row{i}.check_hit"), Event::Toggle(i)));
             items.push((format!("row{i}.field"), Event::Field(i)));
         }
-        for k in 0..3 {
+        for k in 0..POPUP_MAX {
             items.push((format!("popup.opt{k}"), Event::Popup(k)));
         }
         for i in 0..ADVANCED.len() {
@@ -1206,30 +1211,30 @@ impl SettingsUi {
                 );
             }
         }
-        self.text(ctx, "page_title", PAGES[self.page].0);
-        self.text(ctx, "page_hint", PAGES[self.page].1);
+        self.text(ctx, "page_title", tr(PAGES[self.page].0));
+        self.text(ctx, "page_hint", tr(PAGES[self.page].1));
         self.text(
             ctx,
             "position",
             &format!("{:02} / {:02}", self.page + 1, PAGES.len()),
         );
-        self.text(ctx, "nav_note", "Settings apply to every\nmatch.");
+        self.text(ctx, "nav_note", tr("Settings apply to every\nmatch."));
         self.text(
             ctx,
             "pause",
             if self.paused_by_me {
-                "Paused for settings"
+                tr("Paused for settings")
             } else {
-                "Match already paused"
+                tr("Match already paused")
             },
         );
         self.text(
             ctx,
             "return",
             if self.paused_by_me {
-                "Match resumes when you close this window"
+                tr("Match resumes when you close this window")
             } else {
-                "Match stays paused when you close this window"
+                tr("Match stays paused when you close this window")
             },
         );
         for (i, (title, _, _)) in PAGES.iter().enumerate() {
@@ -1266,7 +1271,7 @@ impl SettingsUi {
                 format!("color: #{ink}; line_height: 27;"),
             );
             // The design wraps the first title inside its 126 px label column.
-            let title = title.replacen(" & ", " &\n", 1);
+            let title = tr(title).replacen(" & ", " &\n", 1);
             self.text(ctx, &format!("{node}.label"), &title);
         }
         self.paint(
@@ -1355,9 +1360,9 @@ impl SettingsUi {
             } else if self.capture.is_some() {
                 "Listening… Esc cancels; Backspace clears."
             } else if dirty {
-                "Unsaved changes"
+                tr("Unsaved changes")
             } else {
-                "No changes"
+                tr("No changes")
             },
         );
         self.props(
@@ -1417,6 +1422,7 @@ impl SettingsUi {
                     let node = format!("sec{sections}");
                     sections += 1;
                     self.props(ctx, &node, format!("visible: true; y: {y}px;"));
+                    let title = tr(title);
                     self.text(ctx, &format!("{node}.text"), title);
                     let start = 30. + crate::hud_style::width(title, 16.) * 1.08 + 12.;
                     self.props(
@@ -1547,7 +1553,7 @@ impl SettingsUi {
         match entry {
             Entry::Bind(index) => {
                 let def = &BINDINGS[index];
-                self.text(ctx, &format!("{row}.label"), def.label);
+                self.text(ctx, &format!("{row}.label"), tr(def.label));
                 self.props(
                     ctx,
                     &format!("{row}.label"),
@@ -1585,8 +1591,8 @@ impl SettingsUi {
             }
             Entry::Opt(index) => {
                 let def = &OPTIONS[index];
-                self.text(ctx, &format!("{row}.label"), def.label);
-                self.text(ctx, &format!("{row}.hint"), def.hint);
+                self.text(ctx, &format!("{row}.label"), tr(def.label));
+                self.text(ctx, &format!("{row}.hint"), tr(def.hint));
                 self.props(
                     ctx,
                     &format!("{row}.label"),
@@ -1642,8 +1648,8 @@ impl SettingsUi {
                             &format!("{row}.check_box.mark"),
                             format!("visible: {checked}; x: {}px;", if hover { 7 } else { 6 }),
                         );
-                        self.text(ctx, &format!("{row}.check_label"), def.label);
-                        self.text(ctx, &format!("{row}.check_hint"), def.hint);
+                        self.text(ctx, &format!("{row}.check_label"), tr(def.label));
+                        self.text(ctx, &format!("{row}.check_hint"), tr(def.hint));
                         for node in ["check_label", "check_hint"] {
                             self.visible(ctx, &format!("{row}.{node}"), true);
                         }
@@ -1713,7 +1719,11 @@ impl SettingsUi {
                         );
                         let ink = if hover { "ffffffff" } else { "393939ff" };
                         self.props(ctx,&format!("{row}.field"),format!("visible: true; ignore_event: false; btn: {{ back_color: #{back:08x}; color: #~242221ff; stroke: 1; }}"));
-                        self.text(ctx, &format!("{row}.field.value"), options[value as usize]);
+                        self.text(
+                            ctx,
+                            &format!("{row}.field.value"),
+                            tr(options[value as usize]),
+                        );
                         self.props(
                             ctx,
                             &format!("{row}.field.value"),
@@ -1895,7 +1905,7 @@ impl SettingsUi {
             format!("visible: {};", at.is_some() || fade > 0.02),
         );
         let Some((index, y)) = at else {
-            for k in 0..3 {
+            for k in 0..POPUP_MAX {
                 self.props(ctx, &format!("popup.opt{k}"), "ignore_event: true;".into());
             }
             return;
@@ -1905,9 +1915,14 @@ impl SettingsUi {
             return;
         };
         let value = self.draft.number(def.key) as usize;
+        let grid = options.len() > 3;
+        let (cols, row_h, col_w) = if grid { (2, 40, 193) } else { (1, 64, 386) };
+        let rows = options.len().div_ceil(cols) as i32;
+        // The field copy (38 px) plus the choices.
+        let height = 38 + if grid { rows * row_h + 4 } else { 192 };
         // Open downward unless the menu would leave the window.
-        let up = y + 25 + 230 > 850 - 8;
-        let menu = if up { 25 - 230 } else { 25 };
+        let up = y + 25 + height > 850 - 8;
+        let menu = if up { 25 - height } else { 25 };
         let first = if up { menu } else { 63 };
         let rule = if up { -13 } else { 62 };
         let alpha = (fade * 255.) as u8;
@@ -1915,14 +1930,15 @@ impl SettingsUi {
         self.props(
             ctx,
             "popup.menu",
-            format!("y: {menu}px; color: #d4d2d3{alpha:02x};"),
+            format!("y: {menu}px; height: {height}px; color: #d4d2d3{alpha:02x};"),
         );
         self.props(
             ctx,
             "popup.shadow",
             format!(
-                "y: {}px; color: #000000{:02x};",
+                "y: {}px; height: {}px; color: #000000{:02x};",
                 menu + 3,
+                height + 2,
                 (f32::from(alpha) * 0.4) as u8
             ),
         );
@@ -1931,11 +1947,12 @@ impl SettingsUi {
             "popup.rule",
             format!("y: {rule}px; color: #c6c4c5{alpha:02x};"),
         );
-        self.text(ctx, "popup.field.value", options[value]);
-        for k in 0..3 {
+        self.text(ctx, "popup.field.value", tr(options[value]));
+        for k in 0..POPUP_MAX {
             let node = format!("popup.opt{k}");
             let present = k < options.len();
-            let oy = first + k as i32 * 64;
+            let (col, row) = ((k % cols) as i32, (k / cols) as i32);
+            let (ox, oy) = (col * col_w, first + row * row_h);
             if k < 2 {
                 self.props(
                     ctx,
@@ -1943,7 +1960,7 @@ impl SettingsUi {
                     format!(
                         "y: {}px; visible: {}; color: #c6c4c5{alpha:02x};",
                         oy + 63,
-                        k + 1 < options.len()
+                        !grid && k + 1 < options.len()
                     ),
                 );
             }
@@ -1959,8 +1976,31 @@ impl SettingsUi {
                 self.tone(&node, hover, (0xd4d2d300, 0x8a8989ff, 0x707070ff))
             };
             let back = (back & 0xffffff00) | ((back & 0xff) * u32::from(alpha) / 255);
-            self.props(ctx,&node,format!("visible: true; ignore_event: false; y: {oy}px; btn: {{ back_color: #{back:08x}; color: #00000000; stroke: 0; }}"));
-            self.text(ctx, &format!("{node}.text"), options[k]);
+            self.props(ctx,&node,format!("visible: true; ignore_event: false; x: {ox}px; y: {oy}px; width: {col_w}px; height: {}px; btn: {{ back_color: #{back:08x}; color: #00000000; stroke: 0; }}", row_h - 1));
+            // List: the template's geometry; grid: smaller rows and text.
+            let (text_w, inner, text_size, bar_y, check_y) = if grid {
+                (
+                    col_w - 66,
+                    row_h - 1,
+                    15,
+                    (row_h - 21) / 2,
+                    (row_h - 19) / 2,
+                )
+            } else {
+                (300, 63, 17, 22, 23)
+            };
+            self.props(
+                ctx,
+                &format!("{node}.text"),
+                format!("width: {text_w}px; height: {inner}px; size: {text_size};"),
+            );
+            self.props(ctx, &format!("{node}.bar"), format!("y: {bar_y}px;"));
+            self.props(
+                ctx,
+                &format!("{node}.check"),
+                format!("x: {}px; y: {check_y}px;", col_w - 40),
+            );
+            self.text(ctx, &format!("{node}.text"), tr(options[k]));
             let ink = if selected { "ffffff" } else { "393939" };
             self.props(
                 ctx,
@@ -2137,17 +2177,19 @@ mod tests {
                 .count(),
             BINDINGS.len()
         );
-        // Interface: cursor preview follows the size row; next section at 212.
+        // Interface: the Language section (142 px) comes first; the cursor
+        // preview follows the size row; next section at 212 + 142.
         let (iface, _) = layout(3);
-        assert_eq!(iface[2], (Entry::Cursor, 124.));
-        assert_eq!(iface[3].1, 212.);
+        assert_eq!(iface[0], (Entry::Section("Language"), 0.));
+        assert_eq!(iface[4], (Entry::Cursor, 124. + 142.));
+        assert_eq!(iface[5].1, 212. + 142.);
         // Camera fits; the new Interface debug section uses the existing
         // scrollbar and retains the design's 24 px bottom padding.
         assert!(max_scroll(1) > 0.);
         assert!(max_scroll(0) > 0.);
         assert_eq!(max_scroll(2), 0.);
         // Emotes have a fixed body; Interface retains its scrolling viewport.
-        assert_eq!(max_scroll(3), 57.);
+        assert_eq!(max_scroll(3), 57. + 142.);
         assert_eq!(max_scroll(PAGE_EMOTES), 0.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);
