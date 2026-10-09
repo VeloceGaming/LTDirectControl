@@ -22,8 +22,22 @@
 # licenses, disclaimers and the codebase are tracked).
 /design-qa.md
 /Nerdge_Stamp.jpg
-/design/**/design-qa.md
-/design/**/qa/
-/design/**/qa-*/
-/design/**/game.webp
-/design/hud/stat-icons/
+# Design pages stay local too; tracked only where a tool reads them
+# directly to generate packaged art.
+/design/*
+!/design/cursor/
+/design/cursor/*
+!/design/cursor/index.html
+!/design/hud/
+/design/hud/*
+!/design/hud/index.html
+!/design/hud/endfield-assets/
+/design/hud/endfield-assets/*
+!/design/hud/endfield-assets/icons/
+# Design-review and QA tools.
+/tools/check_hud_review.cjs
+/tools/inspect_hud_review.cjs
+/tools/qa_settings_preview.cjs
+/tools/render_design_reference.cjs
+/tools/prepare_hud_review.py
+/tools/prepare_endfield_preview.py

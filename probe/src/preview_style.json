@@ -1,5 +1,5 @@
 {
-  "_about": "Skill-preview look (design/previews/concept.html, Endfield x League). Widths and sizes are screen pixels, opacities 0..1, angles radians. Override any key in %LOCALAPPDATA%\\LTDirectControl\\preview_style.json; changes apply on the next start.",
+  "_about": "Skill-preview look (the user's Endfield x League design). Widths and sizes are screen pixels, opacities 0..1, angles radians. Override any key in %LOCALAPPDATA%\\LTDirectControl\\preview_style.json; changes apply on the next start.",
 
   "yellow": "#fdee00",
   "white": "#fffdf1",

@@ -1,5 +1,5 @@
 //! Skill previews: geometry from the game's effect data, drawn in the
-//! Endfield x League design (design/previews/concept.html). Every colour and
+//! user's Endfield x League design (kept outside git). Every colour and
 //! size comes from crate::preview_style; this file only places the pieces.
 //! Live effect families supply footprints; explicit declarations are a fallback.
 //! Unsupported effects retain a reach/aim guide, without guessed hits.

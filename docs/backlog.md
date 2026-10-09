@@ -45,7 +45,7 @@ are listed at the end for reference.
   frame and hover grey by the same offset (`ui_theme`); text inks fixed.
   Stat icons (game sheet plus the mod's sprite sheet) also in shop filters.
 - Skill preview redesign (0.75.0-0.75.3, accepted) from the user's design
-  (design/previews/concept.html); the 0.75 Drawing test setting was
+  (kept outside git); the 0.75 Drawing test setting was
   removed after acceptance (0.77.3 housekeeping).
 
 - Selection pass (0.72.0-0.72.3, accepted): bodies measured from the art,

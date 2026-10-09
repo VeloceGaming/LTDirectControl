@@ -1,5 +1,5 @@
 //! Native settings window. The schema owns rows; this module owns draft editing and UI lifecycle.
-//! Geometry and colours follow the approved HTML preview (design/hud/review-settings.html),
+//! Geometry and colours follow the approved HTML preview (the author's design, kept outside git),
 //! measured in 1920x1080 coordinates; positions below are relative to the 1360x850 window.
 use crate::{
     camera::Rect,

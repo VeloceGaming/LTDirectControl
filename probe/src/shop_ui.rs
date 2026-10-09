@@ -1,5 +1,5 @@
 //! Native shop window (P or the strip's shop button). Layout follows the
-//! approved preview design/hud/review-shop.html in 1920x1080 coordinates;
+//! approved HTML preview (kept outside git) in 1920x1080 coordinates;
 //! positions below are relative to the 1360x872 window at (180, 78).
 //! Buying only queues for crate::shop; the simulation performs purchases.
 use crate::stat_icons::{self, StatIcon};

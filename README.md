@@ -120,7 +120,8 @@ Everything lives in `probe/src`. The crate is still named
 | Logging and diagnostics | `logging.rs` (log detail levels), `perf.rs`, `attack_trace.rs`, `shop_trace.rs`, `input_trace.rs`, `result_audit.rs`, `runtime_storage.rs` |
 
 Other folders: `probe/ui`, `probe/font`, `probe/cursor` (packaged artwork),
-`design/` (HTML design previews), `tools/` (build, verification and
+`design/` (only the design sources the art generators read; design pages,
+screenshots and QA files stay local), `tools/` (build, verification and
 reverse-engineering scripts), `docs/` (guides; `docs/history` holds notes from
 each development pass).
 

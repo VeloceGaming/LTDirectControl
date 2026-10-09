@@ -1,5 +1,5 @@
 //! The skill-preview look: every colour, width, opacity and size of the
-//! design (design/previews/concept.html), kept apart from the geometry.
+//! user's design (kept outside git), kept apart from the geometry.
 //! Defaults are `preview_style.json`, built in; any subset of its keys can
 //! be overridden in `%LOCALAPPDATA%\LTDirectControl\preview_style.json`
 //! (read once at start-up).

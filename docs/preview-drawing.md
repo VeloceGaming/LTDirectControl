@@ -72,5 +72,5 @@ that does not exist yet is a small code addition; after that it is
 settings.
 
 To keep the design and the game identical, the design page
-(`design/previews/index.html`) can be limited to the same calls: strips,
+(kept outside git) can be limited to the same calls: strips,
 discs, upright boxes, upright stretched SVGs and fixed-size rotated images.
