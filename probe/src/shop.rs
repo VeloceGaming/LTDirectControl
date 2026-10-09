@@ -457,7 +457,8 @@ pub struct View {
     pub in_base: bool,
     /// Inventory capacity (native final-build length), 0 when unknown.
     pub capacity: usize,
-    /// The game completed the build plan this match (Answer::AskGameFirst).
+    /// The game completed the build plan this match (Answer::AskGameFirst)
+    /// and `live.build` was read after it.
     pub planned: bool,
 }
 
@@ -499,10 +500,14 @@ struct State {
     hold: Vec<usize>,
     /// "Vanilla order": finish the first order before buying for the next.
     vanilla_order: bool,
-    /// The game's own buy-new decision ran once this match (see
-    /// `Answer::AskGameFirst`); its log line waits for the next publish.
+    /// The game's own buy-new decision was requested once this match (see
+    /// `Answer::AskGameFirst`), and has run; its log line waits for the
+    /// next publish.
     planned: bool,
     planned_log: Option<String>,
+    /// A publish after that decision: `live.build` holds the whole plan.
+    /// (The decision runs in the buyer, after this tick's publish.)
+    plan_ready: bool,
 }
 
 /// Fields 2-3 mirror `State::player` and "holding anyone", so the buyer
@@ -558,6 +563,7 @@ impl Shop {
                 vanilla_order: false,
                 planned: false,
                 planned_log: None,
+                plan_ready: false,
             }),
             Mutex::new(None),
             AtomicUsize::new(0),
@@ -663,7 +669,7 @@ impl Shop {
             queue: s.queue.iter().map(|o| o.item).collect(),
             orders: s.queue.clone(),
             manual: s.player != 0,
-            planned: s.planned,
+            planned: s.plan_ready,
             in_base: s
                 .asked
                 .is_some_and(|t| t.elapsed() < Duration::from_millis(400)),
@@ -699,6 +705,9 @@ impl Shop {
         };
         if let Some(line) = s.planned_log.take() {
             write(&line);
+            if live.is_some() {
+                s.plan_ready = true;
+            }
         }
         if s.mode_log.as_deref() != Some(described.as_str()) {
             write(&format!(
@@ -949,8 +958,10 @@ mod tests {
         assert_eq!(shop.upgrade_answer(0xa), Answer::Nothing);
         assert_eq!(shop.new_item_answer(0xa), Answer::AskGameFirst);
         assert_eq!(shop.new_item_answer(0xa), Answer::Nothing);
-        assert!(shop.view().unwrap().planned);
+        // Ready only after a publish that follows the game's decision (it
+        // runs in the buyer, after the tick's publish).
         shop.game_decided(Some(0), (Some(4), Some(6)));
+        assert!(!shop.view().unwrap().planned);
         let lines = std::sync::Mutex::new(Vec::new());
         shop.publish(Mode::Manual(0xa), Some(riot()), live(&[], 500), |l| {
             lines.lock().unwrap().push(l.to_owned())
@@ -960,6 +971,7 @@ mod tests {
             .unwrap()
             .iter()
             .any(|l| l.contains("SHOP DRY RUN") && l.contains("Some(4) -> Some(6)")));
+        assert!(shop.view().unwrap().planned);
         // A new match asks again.
         shop.due((2, 1, 1), 1);
         shop.publish(Mode::Manual(0xa), Some(riot()), live(&[], 500), |_| {});

@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.78.1 — 2026-10-09
+
+- The shop's self-opening waited too little: 0.78.0 opened it (and paused) in the same tick as the game's one-time decision, which runs in the buyer after that tick's build read, so Recommended kept the four-item read until the match resumed. The user's log proved the decision itself works (`SHOP DRY RUN ... build Some(4) -> Some(6)`, nothing bought). The shop now opens after the next publish, whose build read follows the decision.
+
 ## 0.78.0 — 2026-10-09
 
 - Recommended shows the whole build plan from the start. The AI (and the Riot item mod, which adds slots 5-6 then, pinned items included) completes the plan inside the game's buy-new decision at its first purchase; Manual shopping answered that question for the controlled champion, so the plan stayed at the game's first four items until the first manual purchase. Now, once per match after Start, the buy-new hook calls the game's decision with the caller's six arguments (four registers plus the two stack arguments of call site 0x146b959), discards its answer and asks the shop again (`Answer::AskGameFirst`; a second pass-through is never allowed). Logged as `SHOP DRY RUN ... build N -> M items; game wanted ... (discarded)`; any purchase it made would show as SHOP UNEXPECTED.

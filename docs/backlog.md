@@ -27,7 +27,7 @@ are listed at the end for reference.
    `tools/audit_tooltips.py`.
 4. **Emotes.** The last item of the post-shop investigation
    ([investigation-pass-65.md](investigation-pass-65.md)); not started.
-5. **Whole build plan from the start (0.78.0, untested).** Manual shopping
+5. **Whole build plan from the start (0.78.0-0.78.1).** 0.78.0 log: the decision grows the plan 4 -> 6, nothing bought; 0.78.1 opens the shop one tick later so Recommended shows it. Manual shopping
    skipped the game's buy-new decision, where the AI / Riot complete the plan
    (slots 5-6). 0.78.0 runs that decision once, discarding its answer, and
    opens the shop when done. Confirm `SHOP DRY RUN ... 4 -> 6` and no
