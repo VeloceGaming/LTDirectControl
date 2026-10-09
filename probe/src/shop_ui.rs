@@ -2,6 +2,7 @@
 //! approved preview design/hud/review-shop.html in 1920x1080 coordinates;
 //! positions below are relative to the 1360x872 window at (180, 78).
 //! Buying only queues for crate::shop; the simulation performs purchases.
+use crate::stat_icons::{self, StatIcon};
 use crate::{camera::Rect, hud_motion, platform_input::Keys, player_hud::HudUi, shop, Logger};
 use mod_api_stable::{StableClient, UiEventKindV1};
 use std::{
@@ -102,7 +103,7 @@ fn projected(view: &shop::View) -> (shop::Live, Vec<usize>) {
     })
 }
 
-const PATH: &str = "ingame.lt_shop";
+pub(crate) const PATH: &str = "ingame.lt_shop";
 pub static SCROLL: AtomicI32 = AtomicI32::new(0);
 /// Open shop window rectangle, for wheel routing; None when closed.
 pub static AREA: Mutex<Option<Rect>> = Mutex::new(None);
@@ -165,6 +166,21 @@ const STAT_FILTERS: [(&str, &[&str]); 12] = [
     ("Move Speed", &["move_speed_mult"]),
     ("Armor Pen", &["defence_penetration"]),
     ("Magic Pen", &["magic_resistance_penetration"]),
+];
+/// Each stat filter's icon (crate::stat_icons), in STAT_FILTERS order.
+const STAT_ICONS: [StatIcon; 12] = [
+    stat_icons::AD,
+    stat_icons::AP,
+    stat_icons::ATTACK_SPEED,
+    stat_icons::CRIT,
+    stat_icons::HASTE,
+    stat_icons::LIFESTEAL,
+    stat_icons::ARMOR,
+    stat_icons::MAGIC_RESIST,
+    stat_icons::HEALTH,
+    stat_icons::MOVE_SPEED,
+    stat_icons::ARMOR_PEN,
+    stat_icons::MAGIC_PEN,
 ];
 fn has(item: &shop::Item, filter: usize) -> bool {
     STAT_FILTERS[filter]
@@ -356,16 +372,21 @@ fn recipe_choice_button(name: &str, bounds: (i32, i32, i32, i32), text: &str) ->
 }
 
 fn template() -> String {
-    let mut s = format!("lt_shop:color {{ x: {}px; y: {}px; width: {}px; height: {}px; z: 1500; color: #4b4a49ff; ignore_event: false; visible: false; rounding: Uniform {{ rounding: 2; }}\n", WINDOW.0, WINDOW.1, WINDOW.2, WINDOW.3);
-    s.push_str(&rect("fill", (1, 1, 1358, 870), "1c1a18f5", 1501));
+    let mut s = format!("lt_shop:color {{ x: {}px; y: {}px; width: {}px; height: {}px; z: 1500; color: #~4b4a49ff; ignore_event: false; visible: false; rounding: Uniform {{ rounding: 2; }}\n", WINDOW.0, WINDOW.1, WINDOW.2, WINDOW.3);
+    s.push_str(&rect(
+        "fill",
+        (1, 1, 1358, 870),
+        &crate::ui_theme::hex(0xf5),
+        1501,
+    ));
     // Grid layer (z 1505-1509) sits under the masks and panels (z 1520+).
     for i in 0..HEADS {
         s.push_str(&format!("#head{i}:color {{ x: {GRID_X}px; y: 0px; width: 592px; height: 30px; color: #00000000; ignore_event: true; visible: false; z: 1505;\n{}{}}}\n",
             label("text", (0, 0, 300, 24), 14, "", true, "989694ff", "Left", 1506),
-            rect("line", (170, 12, 422, 1), "4b4a49ff", 1506)));
+            rect("line", (170, 12, 422, 1), "~4b4a49ff", 1506)));
     }
     for i in 0..TILES {
-        let mut c = rect("frame", (11, 3, 50, 50), "4b4a49ff", 1506);
+        let mut c = rect("frame", (11, 3, 50, 50), "~4b4a49ff", 1506);
         c.push_str(&rect("fill", (12, 4, 48, 48), "161513ff", 1506));
         c.push_str(&art("icon", (12, 4, 48), 1507));
         c.push_str(&label(
@@ -407,7 +428,7 @@ fn template() -> String {
     }
     // Recommended list.
     for i in 0..RECS {
-        let mut c = rect("plate", (0, 0, 592, 68), "292726ff", 1505);
+        let mut c = rect("plate", (0, 0, 592, 68), "~292726ff", 1505);
         c.push_str(&art("icon", (12, 10, 48), 1506));
         c.push_str(&label(
             "name",
@@ -477,16 +498,33 @@ fn template() -> String {
         1505,
     ));
     // Masks clip partly visible grid rows.
-    s.push_str(&rect("mask_top", (208, 1, 632, 83), "1c1a18ff", 1520));
-    s.push_str(&rect("mask_bottom", (208, 770, 632, 10), "1c1a18ff", 1520));
-    s.push_str(&rect("scroll_track", (828, 84, 4, 686), "3a3837ff", 1521));
+    s.push_str(&rect(
+        "mask_top",
+        (208, 1, 632, 83),
+        &crate::ui_theme::hex(0xff),
+        1520,
+    ));
+    s.push_str(&rect(
+        "mask_bottom",
+        (208, 770, 632, 10),
+        &crate::ui_theme::hex(0xff),
+        1520,
+    ));
+    s.push_str(&rect("scroll_track", (828, 84, 4, 686), "~3a3837ff", 1521));
     s.push_str(&rect("scroll_thumb", (828, 84, 4, 120), "989694ff", 1522));
     s.push_str(&rect("grid_view", (GRID_X, 84, 604, 686), "00000000", 1501));
     // Header.
-    s.push_str(&rect("top", (1, 1, 1358, 67), "22201eff", 1521));
-    s.push_str(&rect("top_rule", (1, 68, 1358, 1), "4b4a49ff", 1522));
-    s.push_str(&glyph("title", "ef_bag", (64, 18, 32), "eeececff", 1523));
-    s.push_str(&rect("pill", (128, 18, 420, 32), "3a3837ff", 1523));
+    // Strips are the background + 6 (design: #22201e on #1c1a18).
+    s.push_str(&rect(
+        "top",
+        (1, 1, 1358, 67),
+        &crate::ui_theme::shade(6, 0xff),
+        1521,
+    ));
+    s.push_str(&rect("top_rule", (1, 68, 1358, 1), "~4b4a49ff", 1522));
+    // Full-colour user artwork; the asset wrapper supplies the 7.5° CCW tilt.
+    s.push_str("#title:image { x: 32px; y: 2px; width: 64px; height: 64px; source: \"asset/lt_direct_control_probe/ui/nerdge_stamp\"; color: #ffffffff; ignore_event: true; z: 1523; }");
+    s.push_str(&rect("pill", (128, 18, 420, 32), "~3a3837ff", 1523));
     s.push_str(&glyph(
         "pill_icon",
         "ef_recall",
@@ -567,7 +605,7 @@ fn template() -> String {
         &glyph("icon", "ef_x", (11, 11, 22), "cbc9c7ff", 1524),
     ));
     // Left rail.
-    s.push_str(&rect("rail_rule", (208, 69, 1, 711), "4b4a49ff", 1521));
+    s.push_str(&rect("rail_rule", (208, 69, 1, 711), "~4b4a49ff", 1521));
     s.push_str(&rect("tab_indicator", (12, 84, 184, 52), "eeececff", 1522));
     for (i, (name, text, icon)) in [
         ("tab_rec", "Recommended", "ef_star"),
@@ -637,9 +675,24 @@ fn template() -> String {
             &c,
         ));
     }
+    // Filter icons: above each filter row (not inside its button).
+    for i in 0..FILTERS {
+        for (f, icon) in STAT_ICONS.iter().enumerate() {
+            s.push_str(&icon.node(
+                &format!("ficon{i}_{f}"),
+                (12 + 15, 236 + i as i32 * 38 + 10, 18),
+                1526,
+            ));
+        }
+    }
     // Detail panel.
-    s.push_str(&rect("detail_rule", (840, 69, 1, 711), "4b4a49ff", 1521));
-    s.push_str(&rect("detail_fill", (841, 69, 518, 711), "1c1a18ff", 1521));
+    s.push_str(&rect("detail_rule", (840, 69, 1, 711), "~4b4a49ff", 1521));
+    s.push_str(&rect(
+        "detail_fill",
+        (841, 69, 518, 711),
+        &crate::ui_theme::hex(0xff),
+        1521,
+    ));
     // Right panel, League order: Builds into (focused item) → recipe tree
     // (root, fixed until an item is picked from the list) → Buy → detail.
     s.push_str(&label(
@@ -663,7 +716,7 @@ fn template() -> String {
         1523,
     ));
     for i in 0..INTO {
-        let mut c = rect("frame", (3, 1, 38, 38), "4b4a49ff", 1524);
+        let mut c = rect("frame", (3, 1, 38, 38), "~4b4a49ff", 1524);
         c.push_str(&rect("fill", (4, 2, 36, 36), "161513ff", 1524));
         c.push_str(&art("icon", (4, 2, 36), 1525));
         c.push_str(&label(
@@ -686,7 +739,7 @@ fn template() -> String {
             &c,
         ));
     }
-    s.push_str(&rect("into_rule", (841, 170, 518, 1), "4b4a49ff", 1522));
+    s.push_str(&rect("into_rule", (841, 170, 518, 1), "~4b4a49ff", 1522));
     s.push_str(&label(
         "recipe_head",
         (862, 180, 220, 20),
@@ -784,7 +837,7 @@ fn template() -> String {
     for i in 0..RECIPE {
         let col = i % RECIPE_COLS;
         let y = RECIPE_Y as i32 + 20 + (i / RECIPE_COLS) as i32 * RECIPE_ROW_H as i32;
-        let mut c = rect("frame", (3, 1, 38, 38), "4b4a49ff", 1524);
+        let mut c = rect("frame", (3, 1, 38, 38), "~4b4a49ff", 1524);
         c.push_str(&rect("fill", (4, 2, 36, 36), "161513ff", 1524));
         c.push_str(&art("icon", (4, 2, 36), 1525));
         c.push_str(&label(
@@ -811,7 +864,7 @@ fn template() -> String {
             s.push_str(&rect(
                 &format!("recipe_link{i}"),
                 (906 + col as i32 * 66, y + 20, 22, 2),
-                "4b4a49ff",
+                "~4b4a49ff",
                 1523,
             ));
         }
@@ -837,13 +890,13 @@ fn template() -> String {
     s.push_str(&rect(
         "d_rule",
         (841, DETAIL_Y as i32 - 12, 518, 1),
-        "4b4a49ff",
+        "~4b4a49ff",
         1522,
     ));
     s.push_str(&rect(
         "d_frame",
         (861, DETAIL_Y as i32, 66, 66),
-        "4b4a49ff",
+        "~4b4a49ff",
         1522,
     ));
     s.push_str(&art("d_icon", (862, DETAIL_Y as i32 + 1, 64), 1523));
@@ -887,7 +940,7 @@ fn template() -> String {
     s.push_str(&rect(
         "d_scroll_track",
         (1334, BODY_Y as i32, 4, 300),
-        "3a3837ff",
+        "~3a3837ff",
         1523,
     ));
     s.push_str(&rect(
@@ -897,7 +950,7 @@ fn template() -> String {
         1524,
     ));
     // Hover tooltip, following the cursor while it stays over the item.
-    let mut tip = rect("art_frame", (15, 15, 50, 50), "4b4a49ff", 1551);
+    let mut tip = rect("art_frame", (15, 15, 50, 50), "~4b4a49ff", 1551);
     tip.push_str(&art("art", (16, 16, 48), 1552));
     tip.push_str(&label(
         "title",
@@ -921,10 +974,15 @@ fn template() -> String {
     ));
     tip.push_str(&rect("rule", (16, 76, 388, 1), "ffffff3b", 1551));
     tip.push_str(&format!("#body:label {{ @\"asset/base/style/main#label\"; x: 16px; y: 86px; width: 388px; height: 100px; size: {}; text: \"\"; color: #d6d6d6ff; align_x: Left; align_y: Top; line_height: {}; ignore_event: true; z: 1552; }}\n", BODY_SIZE as i32, LINE_H as i32));
-    s.push_str(&format!("#tip:color {{ x: 0px; y: 0px; width: {TIP_W}px; height: 160px; color: #1e1e1dd9; rounding: Uniform {{ rounding: 8; }} ignore_event: true; visible: false; z: 1550;\n{tip}}}\n"));
+    s.push_str(&format!("#tip:color {{ x: 0px; y: 0px; width: {TIP_W}px; height: 160px; color: #~1e1e1dd9; rounding: Uniform {{ rounding: 8; }} ignore_event: true; visible: false; z: 1550;\n{tip}}}\n"));
     // Bottom bar.
-    s.push_str(&rect("bottom", (1, 780, 1358, 91), "22201eff", 1521));
-    s.push_str(&rect("bottom_rule", (1, 780, 1358, 1), "4b4a49ff", 1522));
+    s.push_str(&rect(
+        "bottom",
+        (1, 780, 1358, 91),
+        &crate::ui_theme::shade(6, 0xff),
+        1521,
+    ));
+    s.push_str(&rect("bottom_rule", (1, 780, 1358, 1), "~4b4a49ff", 1522));
     s.push_str(&label(
         "items_head",
         (24, 796, 80, 18),
@@ -956,7 +1014,7 @@ fn template() -> String {
             "fdee00ff",
             1526,
         ));
-        s.push_str(&format!("#slot{i}:color {{ x: {}px; y: 797px; width: 58px; height: 58px; color: #4b4a49ff; ignore_event: false; visible: false; z: 1523;\n{c}}}\n", 110 + i as i32 * 64));
+        s.push_str(&format!("#slot{i}:color {{ x: {}px; y: 797px; width: 58px; height: 58px; color: #~4b4a49ff; ignore_event: false; visible: false; z: 1523;\n{c}}}\n", 110 + i as i32 * 64));
     }
     s.push_str(&label(
         "queue_head",
@@ -979,7 +1037,7 @@ fn template() -> String {
         1523,
     ));
     for i in 0..CHIPS {
-        let mut c = rect("plate", (0, 0, 176, 50), "292726ff", 1524);
+        let mut c = rect("plate", (0, 0, 176, 50), "~292726ff", 1524);
         c.push_str(&art("icon", (6, 7, 36), 1525));
         c.push_str(&label(
             "name",
@@ -1033,7 +1091,7 @@ fn template() -> String {
         "Left",
         1531,
     ));
-    s.push_str(&format!("#toast:color {{ x: 852px; y: {}px; width: 496px; height: 34px; color: #1e1e1df2; rounding: Uniform {{ rounding: 4; }} ignore_event: true; visible: false; z: 1530;\n{toast}}}\n", BUY_Y as i32 + 54));
+    s.push_str(&format!("#toast:color {{ x: 852px; y: {}px; width: 496px; height: 34px; color: #~1e1e1df2; rounding: Uniform {{ rounding: 4; }} ignore_event: true; visible: false; z: 1530;\n{toast}}}\n", BUY_Y as i32 + 54));
     s.push_str("}\n");
     crate::hud_style::fonts(s)
 }
@@ -1528,7 +1586,9 @@ impl ShopUi {
             self.spawn = Some(Instant::now());
             self.cache.clear();
             self.registered = false;
-            if !ctx.ui_spawn_source("ingame", &template()) || !ctx.ui_exists(PATH) {
+            if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
+                || !ctx.ui_exists(PATH)
+            {
                 self.open = false;
                 log.write("SHOP UI spawn failed");
                 return Vec::new();
@@ -1724,7 +1784,7 @@ impl ShopUi {
         if let Some((t, at, tone)) = toast {
             let fade = hud_motion::easing((at.elapsed().as_secs_f32() / 0.117).min(1.), true);
             let alpha = (242. * fade).round() as u8;
-            self.props(ctx, "toast", format!("color: #1e1e1d{alpha:02x};"));
+            self.props(ctx, "toast", format!("color: #~1e1e1d{alpha:02x};"));
             self.props(ctx, "toast.bar", format!("color: #{tone};"));
             self.text(ctx, "toast.text", &t);
         }
@@ -1794,7 +1854,7 @@ impl ShopUi {
         self.props(
             ctx,
             "pause.box",
-            format!("color: #{};", if on { "3a3837ff" } else { "eeececff" }),
+            format!("color: #{};", if on { "~3a3837ff" } else { "eeececff" }),
         );
         self.visible(ctx, "pause.rail", on);
         self.visible(ctx, "pause.check", on);
@@ -1802,7 +1862,7 @@ impl ShopUi {
         self.props(
             ctx,
             "vanilla.box",
-            format!("color: #{};", if on { "3a3837ff" } else { "eeececff" }),
+            format!("color: #{};", if on { "~3a3837ff" } else { "eeececff" }),
         );
         self.visible(ctx, "vanilla.rail", on);
         self.visible(ctx, "vanilla.check", on);
@@ -1856,9 +1916,22 @@ impl ShopUi {
                     };
                     self.text(ctx, &format!("{node}.label"), label);
                     self.text(ctx, &format!("{node}.count"), &count.to_string());
+                    for j in 0..STAT_ICONS.len() {
+                        let shown = f == Some(j);
+                        let alpha = if count == 0 { "66" } else { "ff" };
+                        self.props(
+                            ctx,
+                            &format!("ficon{i}_{j}"),
+                            format!("visible: {shown}; color: #ffffff{alpha};"),
+                        );
+                    }
                     // The yellow bar fades with the 83 ms row wipe; the row tint follows.
                     let t = self.motion.tonal(&format!("f{i}"), f32::from(on), 0.083);
-                    let back = hud_motion::color(0x2927_2600, 0x2927_26ff, t);
+                    let back = hud_motion::color(
+                        crate::ui_theme::tone(0x2927_2600),
+                        crate::ui_theme::tone(0x2927_26ff),
+                        t,
+                    );
                     self.props(ctx, &node, format!("btn: {{ back_color: #{back}; }}"));
                     let bar = hud_motion::color(0xfdee_0000, 0xfdee_00ff, t);
                     self.props(ctx, &format!("{node}.bar"), format!("color: #{bar};"));
@@ -1866,7 +1939,9 @@ impl ShopUi {
                         ctx,
                         &format!("{node}.label"),
                         format!(
-                            "color: #{};",
+                            "x: {}px; width: {}px; color: #{};",
+                            if f.is_some() { 41 } else { 15 },
+                            if f.is_some() { 89 } else { 120 },
                             if on {
                                 "ffffffff"
                             } else if count == 0 {
@@ -1877,7 +1952,12 @@ impl ShopUi {
                         ),
                     );
                 }
-                None => self.visible(ctx, &node, false),
+                None => {
+                    self.visible(ctx, &node, false);
+                    for j in 0..STAT_ICONS.len() {
+                        self.props(ctx, &format!("ficon{i}_{j}"), "visible: false;".into());
+                    }
+                }
             }
         }
     }
@@ -1993,7 +2073,11 @@ impl ShopUi {
         let h = self
             .motion
             .tonal(&format!("h_{key}"), f32::from(hover), 0.1);
-        u32::from_str_radix(&hud_motion::color(0x0000_0000, 0x3a38_37ff, h), 16).unwrap_or(0)
+        u32::from_str_radix(
+            &hud_motion::color(0x0000_0000, crate::ui_theme::tone(0x3a38_37ff), h),
+            16,
+        )
+        .unwrap_or(0)
     }
 
     fn render_recommended(
@@ -2362,7 +2446,7 @@ impl ShopUi {
                     self.props(
                         ctx,
                         &format!("recipe_link{i}"),
-                        format!("color: #{};", if automatic { GOOD } else { "4b4a49ff" }),
+                        format!("color: #{};", if automatic { GOOD } else { "~4b4a49ff" }),
                     );
                 }
             }
@@ -2388,7 +2472,7 @@ impl ShopUi {
                 BAD
             };
             self.props(ctx, &format!("{node}.price"), format!("color: #{color};"));
-            let frame = if step == focus { SELECTED } else { "4b4a49ff" };
+            let frame = if step == focus { SELECTED } else { "~4b4a49ff" };
             self.props(ctx, &format!("{node}.frame"), format!("color: #{frame};"));
             // Owned: dimmed with a tick. Not buyable now: dimmed, no tick.
             let dim = have || !affordable;
@@ -2411,14 +2495,14 @@ impl ShopUi {
             (
                 "Manual shopping off".to_owned(),
                 false,
-                "3a3837ff",
+                "~3a3837ff",
                 "The game is auto-buying for this champion.".to_owned(),
             )
         } else if buying {
             (
                 "Purchasing".to_owned(),
                 false,
-                "3a3837ff",
+                "~3a3837ff",
                 if self.paused {
                     "Applies when the match resumes.".to_owned()
                 } else {
@@ -2427,11 +2511,11 @@ impl ShopUi {
             )
         } else {
             match &offer {
-                shop::Offer::Owned => ("Unavailable".to_owned(), false, "3a3837ff", String::new()),
+                shop::Offer::Owned => ("Unavailable".to_owned(), false, "~3a3837ff", String::new()),
                 shop::Offer::Blocked => (
                     format!("No free slot · {}/{}", view.live.owned.len(), view.capacity),
                     false,
-                    "3a3837ff",
+                    "~3a3837ff",
                     if chosen.is_some() {
                         "Chosen path needs a free slot; other components stay in your bag.".into()
                     } else {
@@ -2478,7 +2562,7 @@ impl ShopUi {
         };
         let hover = enabled && Self::hovered(ctx, "buy", cursor);
         let ink = if enabled { "1c1a18ff" } else { "989694ff" };
-        let color = u32::from_str_radix(back, 16).unwrap_or(0);
+        let color = crate::ui_theme::color(back).unwrap_or(0);
         let tinted = u32::from_str_radix(
             &hud_motion::color(
                 color,
@@ -2513,7 +2597,13 @@ impl ShopUi {
         let tags = (0..STAT_FILTERS.len())
             .filter(|f| has(&view.cat[focus], *f))
             .take(3)
-            .map(|f| STAT_FILTERS[f].0.to_uppercase())
+            .map(|f| {
+                format!(
+                    "{} {}",
+                    STAT_ICONS[f].inline(),
+                    STAT_FILTERS[f].0.to_uppercase()
+                )
+            })
             .chain(std::iter::once(format!(
                 "LEVEL {}",
                 view.cat[focus].tier + 1
@@ -2578,7 +2668,12 @@ impl ShopUi {
         let (base, over, ink, border) = if selected {
             (0xfdee_00ff, 0xcfc0_00ff, "1c1a18ff", "fdee00ff")
         } else {
-            (0x3a38_37ff, 0x2927_26ff, "eeececff", "6f6d6bff")
+            (
+                crate::ui_theme::tone(0x3a38_37ff),
+                crate::ui_theme::tone(0x2927_26ff),
+                "eeececff",
+                "6f6d6bff",
+            )
         };
         let back = hud_motion::color(base, over, t);
         self.props(ctx, node, format!("ignore_event: false; btn: {{ back_color: #{back}; color: #{border}; stroke: 1; }} text: {{ text: {}; size: 16; color: #{ink}; }}", json(label)));
@@ -2683,7 +2778,7 @@ impl ShopUi {
             ctx,
             "tip",
             format!(
-                "visible: true; x: {:.0}px; y: {:.0}px; height: {height:.0}px; color: #1e1e1d{alpha:02x};",
+                "visible: true; x: {:.0}px; y: {:.0}px; height: {height:.0}px; color: #~1e1e1d{alpha:02x};",
                 x - WINDOW.0,
                 y - WINDOW.1
             ),
@@ -2736,7 +2831,10 @@ impl ShopUi {
             self.props(
                 ctx,
                 &node,
-                format!("color: #{};", if pending { "fdee00ff" } else { "4b4a49ff" }),
+                format!(
+                    "color: #{};",
+                    if pending { "fdee00ff" } else { "~4b4a49ff" }
+                ),
             );
             self.visible(ctx, &format!("{node}.pending"), pending);
         }
@@ -2795,6 +2893,10 @@ fn number(n: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn every_stat_filter_has_an_icon() {
+        assert_eq!(STAT_ICONS.len(), STAT_FILTERS.len());
+    }
 
     #[test]
     fn description_scroll_reaches_the_end_clamps_and_resets_for_a_new_item() {

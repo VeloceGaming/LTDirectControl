@@ -151,6 +151,34 @@ effect types by apply address (`size` in bytes):
 | 18c76c0/72, 18d36b0/64, 1990300/64 | Attack, ApAttack, Heal | none |
 | 1698810/16, 19df350/8, 14dfcf0/8, 14f8d10/8 | Knockback, Fear, BlockAttack, BlockMoveSkill | none |
 | 1ade340/40 | Native (hand-coded skill) | cast range only |
+| 160fd80/88 | Ice Mage ult (0.75.2) | cone from the caster toward the aim (range word 0, cosine x1000 word 3) |
+| 18c1cc0/80 | Bard ult (0.75.2) | aura around the caster (range word 0) |
+| 18bec80/48 | Exorcist ult (0.75.2) | area at the cast (range word 4) |
+| 1ad9600/48 | bleed (ticks, period) | none (per-unit) |
+| 1a1c090/96, 1278940/40, 18d0a10/24, 1426d40/16 | Gunner Q shot, Gunner R sub-shots, Bard Q buff, Exorcist W | none (single target or self) |
+
+Hand-written base-game skills keep their parameters in `champion_info`
+(asset/base/setting/champion_info): Ice Mage R's words are exactly
+`range, attack, attack_ratio, cos(half_angle), half_angle_deg, knockback
+speed/tick, slow, slow_duration, block_skill_tick, sweep_duration`. Ranges
+in the live tree can differ from the file by the patch adjustment (Bard R
+99000 for 100000, Exorcist R 61000 for 60000). Cavalry Knight R's
+`19de840/112` (32000, 240 ticks) is its speed road (user, 0.75.2): a
+self buff that leaves a path from the cast point to the knight, so it has
+no preview area.
+
+Dancer R (`1aebb90/80`, 0.75.3): `attack, ratio, return attack, its ratio,
+range, attack_range (hit radius), speed, base_count, max_count, _`. From
+its apply code: blade count = `min(max_count, base_count + caster stack)`,
+the stack being entity +0x648 (stat block `stack`, kills, right before the
+position at +0x658/+0x660); with `half = count / 2`, blade 0 flies at the
+aim, blades 1..=half turn +60° x i / half and the rest -60° x (i - half) /
+half (integer millidegrees, sine table), positive clockwise on screen.
+Each blade returns along its own line.
+
+Effects recognised without an area (buffs, single-target shots, visuals,
+damage on units already hit) are named in `NO_AREA` and no longer reported
+as unknown; a skill made only of them shows no direction guide.
 
 Replaying the logged trees (57 skills, about 19 champions): 23 had a
 footprint before 0.73, 33 after. Still without one: self-buffs and

@@ -38,6 +38,8 @@ pub struct Keys {
     pub abilities: [bool; 3],
     pub recall: bool,
     pub shop: bool,
+    /// Stats panel toggle (crate::stats_ui).
+    pub stats_panel: bool,
     /// Home and End held together (test_cheats; not rebindable).
     pub home_end: bool,
     /// Current primary/secondary champion-only binding states.
@@ -247,6 +249,7 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         cast_modes: std::array::from_fn(|i| v.number(["cast_q", "cast_w", "cast_r"][i]) as u8),
         recall: pressed("recall"),
         shop: pressed("shop"),
+        stats_panel: pressed("stats_panel"),
         champion_toggle: std::array::from_fn(|i| {
             v.binding("champion_only")[i].is_some_and(|c| {
                 raw.0[c.code as usize] && crate::settings::modifiers(&raw.0) & c.mods == c.mods

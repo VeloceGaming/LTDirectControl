@@ -12,7 +12,11 @@ pub(crate) type AimFn = unsafe extern "system" fn(usize, usize, usize, usize, us
 pub(crate) static PRESERVED_AIMS: AtomicUsize = AtomicUsize::new(0);
 /// Read from the current SDK simulation borrow, not the previous consumer hook.
 /// SDK entity_pos (2e16650) uses this shared-borrow +208 getter and these fields.
-pub(crate) unsafe fn attack_range(state: usize, table: usize, actor: usize) -> Option<u64> {
+pub(crate) unsafe fn attack_ranges(
+    state: usize,
+    table: usize,
+    actor: usize,
+) -> Option<(u64, Option<u64>)> {
     let shared = SHARED.get()?;
     let base = verified_base()?;
     owned_key(shared, actor)?;
@@ -34,7 +38,17 @@ pub(crate) unsafe fn attack_range(state: usize, table: usize, actor: usize) -> O
     if entity == 0 || owned_entity(shared, entity).map(|(_, id)| id) != Some(actor) {
         return None;
     }
-    read_effect_metadata(entity, 0x488).map(|d| d.range)
+    let current = read_effect_metadata(entity, 0x488)?.range;
+    let maximum = read_attack_maximum(entity, crate::acquisition::cap());
+    Some((current, maximum))
+}
+/// The same fingerprinted AA descriptor used above: no new pointer or hook.
+pub(crate) unsafe fn read_attack_maximum(entity: usize, cap: Option<u64>) -> Option<u64> {
+    crate::acquisition::maximum(
+        std::ptr::read_unaligned((entity + 0x498) as *const u64),
+        std::ptr::read_unaligned((entity + 0x4a0) as *const u64),
+        cap,
+    )
 }
 pub(crate) unsafe fn manual_aim_words(
     shared: &Shared,
@@ -250,6 +264,27 @@ pub(crate) unsafe extern "system" fn attack_hook(entity: usize, input: usize, ev
 pub(crate) unsafe extern "system" fn auto_attack_hook(entity: usize, input: usize, events: usize) {
     attack_hook_from("native-auto", entity, input, events);
 }
+/// Native InputTarget::Target is a POD tag (low dword) and entity ID.
+/// Stop only a matching, in-range manual order. The caller always forwards
+/// the attack afterwards, so native readiness, windup and damage still decide.
+pub(crate) unsafe fn stop_for_manual_attack(
+    entity: usize,
+    input: usize,
+    ticket: StopTicket,
+    events: usize,
+    notify: StopEventFn,
+) -> bool {
+    let Some(target) = ticket.attack_target else {
+        return false;
+    };
+    if input == 0
+        || std::ptr::read_unaligned(input as *const u32) != 0
+        || std::ptr::read_unaligned((input + 8) as *const usize) != target
+    {
+        return false;
+    }
+    stop_movement(entity, ticket.actor, events, notify)
+}
 pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize, events: usize) {
     crate::perf::hook(crate::perf::Hook::Attack);
     if let Some(shared) = SHARED.get() {
@@ -260,8 +295,20 @@ pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize,
         catch_unwind(AssertUnwindSafe(|| {
             let (key, actor) = owned_entity(shared, entity)?;
             observe_owned_abilities(shared, entity, key, actor);
-            if source == "input" && take_stop_ticket(key, actor).is_some_and(|t| t.cancel_recall) {
-                cancel_recall(shared, entity, actor, events);
+            if let Some(ticket) = (source == "input")
+                .then(|| take_stop_ticket(key, actor))
+                .flatten()
+            {
+                if ticket.cancel_recall {
+                    cancel_recall(shared, entity, actor, events);
+                }
+                let action = std::ptr::read_unaligned((entity + 0x70) as *const usize);
+                let notify: StopEventFn =
+                    std::mem::transmute(NOTIFY_STOP.load(Ordering::Acquire));
+                if stop_for_manual_attack(entity, input, ticket, events, notify) && action == 2 {
+                    let cooldown = std::ptr::read_unaligned((entity + 0xb0) as *const usize);
+                    shared.logger.write(&format!("ATTACK WAIT_STOP actor={actor} target={:?} in_range=true action=2->0 cooldown={cooldown}; native attack attempt follows", ticket.attack_target));
+                }
             }
             Some((
                 shared,

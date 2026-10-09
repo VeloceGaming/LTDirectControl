@@ -19,6 +19,47 @@ const PARABOLIC: usize = 0x1612510;
 const RUSH_TIME: usize = 0x15b28f0;
 const SWITCH_BY_BUFF: usize = 0x18bf2d0;
 const MOVE_TO_TARGET: usize = 0x1af4470;
+// 0.75.2, hand-written base-game skills: fields matched word for word to
+// the champion's `champion_info` entry (ranges after patch adjustment).
+const ICE_MAGE_ULT: usize = 0x160fd80;
+const BARD_ULT: usize = 0x18c1cc0;
+const EXORCIST_ULT: usize = 0x18bec80;
+const DANCER_ULT: usize = 0x1aebb90;
+/// The caster's current stack (stat block `stack`, entity +0x648, just
+/// before its position at +0x658): Dancer R's extra blades. Set by `read`.
+const ENTITY_STACK: usize = 0x648;
+thread_local! {
+    static CASTER_STACK: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+/// Recognised effects with no area of their own (buffs, single-target
+/// shots, visuals, damage on units already hit): named, not reported.
+const NO_AREA: &[(usize, usize, &str)] = &[
+    (0x1279800, 288, "AddBuff"),
+    (0x1281860, 296, "AddCasterBuff"),
+    (0x18c1480, 24, "Sfx"),
+    (0x18e40b0, 24, "TargetSfx"),
+    (0x18e2630, 48, "ViewEffect"),
+    (0x18c6c20, 24, "CasterViewEffect"),
+    (0x19de6f0, 32, "CasterAnimation"),
+    (0x18c76c0, 72, "Attack"),
+    (0x18d36b0, 64, "ApAttack"),
+    (0x1990300, 64, "Heal"),
+    (0x1698810, 16, "Knockback"),
+    (0x19df350, 8, "Fear"),
+    (0x14dfcf0, 8, "BlockAttack"),
+    (0x14f8d10, 8, "BlockMoveSkill"),
+    (0x14e0490, 72, "TargetProjectile"),
+    (0x1ad9600, 48, "Bleed"),
+    (0x1a1c090, 96, "Gunner Q shot"),
+    (0x1285690, 16, "caster wrapper"),
+    (0x1278940, 40, "Gunner R sub-shots"),
+    (0x18d0a10, 24, "Bard Q buff"),
+    (0x1426d40, 16, "Exorcist W buff"),
+    // Cavalry Knight R: a speed road from the cast point to the knight,
+    // shaped by where she moves afterwards (user, 0.75.2).
+    (0x127d060, 344, "Cavalry Knight R buff"),
+    (0x19de840, 112, "Cavalry Knight R road"),
+];
 /// A champion's body radius (game setting `champion_radius`, 10000): the
 /// sweep of a timed dash, whose own hit width is not in its payload.
 const CHAMPION_RADIUS: f32 = 10.;
@@ -328,6 +369,62 @@ unsafe fn payload(
                 depth + 1,
             );
         }
+        (Some(ICE_MAGE_ULT), 88) => {
+            // { range, attack, ratio, cosine x1000, half angle (deg),
+            // knockback speed/ticks, slow, slow ticks, silence, sweep }: a
+            // cone swept from the caster toward the aim.
+            out.family("native IceMage ult");
+            let cosine = word(object + 24) as i64;
+            match distance(word(object) as u64).filter(|_| (-1000..=1000).contains(&cosine)) {
+                Some(radius) => out.add(
+                    Shape::Cone {
+                        radius,
+                        cosine: cosine as f32 / 1000.,
+                    },
+                    Placement::Caster,
+                ),
+                None => out.issue("invalid native ice mage cone"),
+            }
+        }
+        (Some(BARD_ULT), 80) => {
+            // { range, attack/speed/power boosts, ratio, armour and resist
+            // reduction, channel ticks, period }: an aura around the bard.
+            out.family("native Bard ult");
+            match distance(word(object) as u64) {
+                Some(radius) => out.add(Shape::Circle { radius }, Placement::Caster),
+                None => out.issue("invalid native bard aura"),
+            }
+        }
+        (Some(EXORCIST_ULT), 48) => {
+            // { attack, ratio, damage per buff, its ratio, range, delay }: an
+            // area of `range` where the cast lands (its cast range is separate).
+            out.family("native Exorcist ult");
+            match distance(word(object + 32) as u64) {
+                Some(radius) => out.add(Shape::Circle { radius }, inherited),
+                None => out.issue("invalid native exorcist area"),
+            }
+        }
+        (Some(DANCER_ULT), 80) => {
+            // { attack, ratio, return attack, its ratio, range, hit radius,
+            // speed, base count, max count, _ }: blades fanned from the
+            // caster; count = min(max, base + the caster's stack).
+            out.family("native Dancer ult");
+            let count = (word(object + 56) + CASTER_STACK.with(|c| c.get())).min(word(object + 64));
+            match (
+                distance(word(object + 32) as u64),
+                distance(word(object + 40) as u64),
+            ) {
+                (Some(length), Some(radius)) if (1..=16).contains(&count) => out.add(
+                    Shape::Fan {
+                        count,
+                        radius,
+                        length,
+                    },
+                    Placement::Caster,
+                ),
+                _ => out.issue("invalid native dancer fan"),
+            }
+        }
         (Some(MOVE_TO_TARGET), 40) => {
             // Movement onto the target unit: { applied effects, speed, _ }.
             out.family("native MoveToTarget");
@@ -415,6 +512,13 @@ unsafe fn payload(
                 out.issue("invalid native channel line dimensions");
             }
         }
+        (Some(apply), size) if NO_AREA.iter().any(|(a, s, _)| *a == apply && *s == size) => {
+            let name = NO_AREA
+                .iter()
+                .find(|(a, _, _)| *a == apply)
+                .map_or("", |n| n.2);
+            out.family(format!("native {name}"));
+        }
         _ => {
             let label = apply.map_or_else(
                 || "foreign apply".to_owned(),
@@ -431,6 +535,7 @@ unsafe fn payload(
 pub unsafe fn read(base: usize, entity: usize, offset: usize) -> Geometry {
     let mut result = Geometry::default();
     let mut nodes = 0;
+    CASTER_STACK.with(|c| c.set(word(entity + ENTITY_STACK).min(64)));
     effect(
         base,
         word(entity + offset),
@@ -638,6 +743,53 @@ mod tests {
         // Candygel W (JSON: MoveToTarget speed 4000).
         let g = decode(MOVE_TO_TARGET, 40, &[0, 8, 0, 0xfa0, 0], Placement::Aim);
         assert_eq!(g.footprints[0].shape, Shape::Movement { blink: false });
+        // Ice Mage R (logged; champion_info range 70000, half angle 45°).
+        let ult = [
+            0x11170, 0x50, 0x32, 0x2c3, 0x2d, 0xbb8, 0xf, 0x3c, 0xb4, 0x78, 0x14,
+        ];
+        let g = decode(ICE_MAGE_ULT, 88, &ult, Placement::Aim);
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Cone {
+                radius: 70.,
+                cosine: 0.707
+            }
+        );
+        assert_eq!(g.footprints[0].placement, Placement::Caster);
+        // Bard R (logged; range 100000, 99000 after patch): an aura.
+        let ult = [0x182b8, 0x64, 0x6a, 0x33, 0x96, 0x32, 0x1e, 0x1e, 0xf0, 3];
+        let g = decode(BARD_ULT, 80, &ult, Placement::Aim);
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 99. });
+        assert_eq!(g.footprints[0].placement, Placement::Caster);
+        // Exorcist R (logged; range 60000, 61000 after patch) at the cast.
+        let ult = [0x96, 0x4c, 0x64, 0xa, 0xee48, 0x3c];
+        let g = decode(EXORCIST_ULT, 48, &ult, Placement::Aim);
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 61. });
+        assert_eq!(g.footprints[0].placement, Placement::Aim);
+        // Dancer R (logged; champion_info range 130000 -> 134000, attack
+        // range 10000, base 4, max 10): 4 blades without stacks.
+        let ult = [0x14, 0x1f, 0x28, 0x32, 0x20b70, 0x2710, 0xe0e, 4, 10, 7];
+        let g = decode(DANCER_ULT, 80, &ult, Placement::Aim);
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Fan {
+                count: 4,
+                radius: 10.,
+                length: 134.
+            }
+        );
+        // Stacks add blades up to the maximum.
+        CASTER_STACK.with(|c| c.set(9));
+        let g = decode(DANCER_ULT, 80, &ult, Placement::Aim);
+        assert!(matches!(
+            g.footprints[0].shape,
+            Shape::Fan { count: 10, .. }
+        ));
+        CASTER_STACK.with(|c| c.set(0));
+        // Recognised effects without an area are named, not reported.
+        let g = decode(0x1281860, 296, &[0; 37], Placement::Aim);
+        assert!(g.footprints.is_empty() && g.issues.is_empty());
+        assert_eq!(g.families, ["native AddCasterBuff"]);
         // An empty Delayed wrapper is traversed without inventing a footprint.
         let g = decode(DELAYED, 32, &[0, 8, 0, 0x24], Placement::Aim);
         assert!(g.footprints.is_empty() && g.issues.is_empty());

@@ -85,8 +85,11 @@
     "font/numeric.font_set": "37e54e38927a92479ae2627f4c450752dfd9fd95b5c16ea40d615843d4836dfb",
     "ui/ef_star.png": "788ef18abe5f5c1344b0b02feb97cfeb1dcbbc824ae3a92a34b258e7f15aae19",
     "ui/ef_grid.png": "d3d14acc4632261977580b2cec771deaee3cdf8fa55eca6eed37c3c0a9bb497a",
-    "ui/ef_bag.png": "d6ffcf361544c4f9efc203b020d47b176d92c028fcaca28a2d6cd88a0d914886"
+    "ui/ef_bag.png": "d6ffcf361544c4f9efc203b020d47b176d92c028fcaca28a2d6cd88a0d914886",
+    "ui/nerdge_stamp.png": "fe33479aea3889364f7364759824e9c97fc742959d9083480b19fbee0bbd1d85",
+    "ui/stat_icons#sheet.png": "9f1ce64a3f5389e2ceda647b7a372c280f1b30405f8947ae5a3fe8068346a219",
+    "ui/stat_icons#data.sprite_sheet": "8ebf031ae4f804a297fece158eb762f7039e1914c4caa651e1d503b5ef207463"
   },
-  "palette": "white Endfield SVG masks tinted by native UI; previous cursor/glyph art retained",
+  "palette": "Endfield masks tinted by native UI; full-colour user shop stamp; previous cursor/glyph art retained",
   "rendering": "source paths, palette and typography assets verified; native rendering pending user test"
 }

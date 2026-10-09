@@ -12,6 +12,8 @@ pub enum Control {
     Choice(&'static [&'static str]),
     Toggle,
     Slider(f64, f64, f64, &'static str),
+    /// A 0xRRGGBB colour typed as "#rrggbb".
+    Color,
 }
 pub struct OptionDef {
     pub key: &'static str,
@@ -38,7 +40,7 @@ pub static OPTIONS: &[OptionDef] = &[
         section: "Targeting",
         label: "Champion-only during attack-move",
         hint: "Applies to both A → left-click and Shift + right-click.",
-        control: Control::Choice(&["Ignore mode", "Honor mode"]),
+        control: Control::Choice(&["Ignore", "Honor"]),
         default: 0.,
     },
     OptionDef {
@@ -79,7 +81,7 @@ pub static OPTIONS: &[OptionDef] = &[
     },
     OptionDef {
         key: "attack_cancel",
-        page: 0,
+        page: 4,
         section: "Attacks",
         label: "Cancel attack wind-down",
         hint: "A move, stop or held skill after the hit cuts the swing short.",
@@ -88,7 +90,7 @@ pub static OPTIONS: &[OptionDef] = &[
     },
     OptionDef {
         key: "manual_shop",
-        page: 0,
+        page: 4,
         section: "Shopping",
         label: "Manual shopping",
         hint: "Auto-buy stops for your champion; buy from the shop (P) instead.",
@@ -104,6 +106,16 @@ pub static OPTIONS: &[OptionDef] = &[
         hint: "",
         control: Control::Toggle,
         default: 0.,
+    },
+    // Shown as a checkbox inside the shop window only (page 9 is never laid out).
+    OptionDef {
+        key: "stats_panel_shown",
+        page: 9,
+        section: "Interface",
+        label: "Stats panel",
+        hint: "",
+        control: Control::Toggle,
+        default: 1.,
     },
     // Shown as a checkbox inside the shop window only (page 9 is never laid out).
     OptionDef {
@@ -170,6 +182,15 @@ pub static OPTIONS: &[OptionDef] = &[
         default: crate::cursor::DEFAULT_SIZE as f64,
     },
     OptionDef {
+        key: "background_color",
+        page: 3,
+        section: "Appearance",
+        label: "Background colour",
+        hint: "Hex colour of the mod's panels and HUD strip, e.g. #1c1a18. Applies when you apply settings.",
+        control: Control::Color,
+        default: crate::ui_theme::DEFAULT as f64,
+    },
+    OptionDef {
         key: "low_health_effect",
         page: 3,
         section: "Battlefield feedback",
@@ -197,8 +218,17 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.,
     },
     OptionDef {
+        key: "acquisition_debug",
+        page: 5,
+        section: "Debug",
+        label: "Show live acquisition radius",
+        hint: "Yellow: acquisition. White: AA reach. Uses live targeting values for your champion.",
+        control: Control::Toggle,
+        default: 0.,
+    },
+    OptionDef {
         key: "log_level",
-        page: 3,
+        page: 5,
         section: "Debug",
         label: "Log detail",
         hint: "Verbose adds per-click and per-second traces for investigations.",
@@ -207,7 +237,7 @@ pub static OPTIONS: &[OptionDef] = &[
     },
     OptionDef {
         key: "selection_debug",
-        page: 3,
+        page: 5,
         section: "Debug",
         label: "Show selection markers",
         hint: "Show hover and selected-target ground markers for selection tuning.",
@@ -313,6 +343,13 @@ pub static BINDINGS: &[BindingDef] = &[
     bind!("tab", "Control & camera", "Team details (hold)", 9, 0),
     bind!("shop", "Control & camera", "Shop", 0x50, 0),
     bind!(
+        "stats_panel",
+        "Control & camera",
+        "Stats panel (toggle)",
+        0x43,
+        0
+    ),
+    bind!(
         "camera_toggle",
         "Control & camera",
         "Lock / unlock camera",
@@ -395,6 +432,13 @@ impl Values {
             Control::Slider(lo, hi, step, _) => {
                 ((n.clamp(lo, hi) / step).round() * step).clamp(lo, hi)
             }
+            Control::Color => {
+                if n.fract() == 0. && (0. ..=f64::from(0xff_ffff)).contains(&n) {
+                    n
+                } else {
+                    def.default
+                }
+            }
         }
     }
     pub fn set(&mut self, key: &str, n: f64) {
@@ -474,6 +518,12 @@ impl Values {
         })
     }
     pub fn reset_page(&mut self, page: usize) {
+        if page == 6 {
+            self.0
+                .as_object_mut()
+                .expect("settings object")
+                .remove("acquisition");
+        }
         if page == 1 {
             for d in BINDINGS {
                 for i in 0..2 {
@@ -532,18 +582,37 @@ impl Settings {
     pub fn new(root: Option<&Path>) -> Self {
         let value = root
             .and_then(|p| std::fs::read(p.join("controls.json")).ok())
-            .filter(|b| b.len() <= 65536)
+            .filter(|b| b.len() <= 1_048_576)
             .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
             .filter(Value::is_object)
             .unwrap_or_else(|| json!({"version":1}));
+        let mut value = Values(value);
+        let before = value.clone();
+        crate::acquisition::migrate_defaults(&mut value);
+        let migrated = value.0 != before.0;
         Self {
-            values: Mutex::new(Values(value)),
-            dirty: Mutex::default(),
+            values: Mutex::new(value),
+            dirty: Mutex::new(migrated.then(Instant::now)),
             root: root.map(Path::to_owned),
         }
     }
     pub fn snapshot(&self) -> Values {
         self.values.lock().map(|v| v.clone()).unwrap_or_default()
+    }
+    fn input_snapshot(&self) -> Values {
+        self.values
+            .lock()
+            .map(|v| {
+                Values(Value::Object(
+                    v.0.as_object()
+                        .expect("settings object")
+                        .iter()
+                        .filter(|(k, _)| k.as_str() != "acquisition")
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect(),
+                ))
+            })
+            .unwrap_or_default()
     }
     pub fn number(&self, key: &str) -> f64 {
         self.values
@@ -553,6 +622,12 @@ impl Settings {
     }
     pub fn size(&self) -> u32 {
         self.number("cursor_size") as u32
+    }
+    pub fn acquisition_radius(&self, name: &str, current: u64, maximum: Option<u64>) -> u64 {
+        self.values.lock().map_or_else(
+            |_| crate::acquisition::radius(&Values::default(), name, current, maximum),
+            |v| crate::acquisition::radius(&v, name, current, maximum),
+        )
     }
     pub fn low_health(&self) -> bool {
         self.number("low_health_effect") == 1.
@@ -570,6 +645,7 @@ impl Settings {
         self.apply(v);
     }
     pub fn apply(&self, mut v: Values) {
+        crate::acquisition::register_defaults(&mut v, &crate::acquisition::champions());
         for d in OPTIONS {
             v.set(d.key, v.number(d.key));
         }
@@ -594,7 +670,7 @@ impl Settings {
         std::fs::create_dir_all(root)?;
         let path = root.join("controls.json");
         let mut old = match std::fs::read(&path) {
-            Ok(b) if b.len() <= 65536 => {
+            Ok(b) if b.len() <= 1_048_576 => {
                 serde_json::from_slice::<Value>(&b).map_err(std::io::Error::other)?
             }
             Ok(_) => return Err(std::io::Error::other("Existing controls.json too large")),
@@ -640,7 +716,9 @@ impl Settings {
     }
 }
 pub fn current() -> Values {
-    GLOBAL.get().map_or_else(Values::default, |s| s.snapshot())
+    GLOBAL
+        .get()
+        .map_or_else(Values::default, |s| s.input_snapshot())
 }
 /// Change and save one option from outside the settings window.
 pub fn set_option(key: &str, n: f64) {
@@ -685,6 +763,7 @@ mod tests {
         v.set("champion_mode", 1.);
         v.set("hover_outline", 0.);
         v.set("selection_debug", 1.);
+        crate::acquisition::set_custom(&mut v, "workshop/hero", Some(135.5));
         store.apply(v);
         store.save().unwrap();
         let loaded = Settings::new(Some(&root));
@@ -693,6 +772,19 @@ mod tests {
         assert_eq!(loaded.number("champion_mode"), 1.);
         assert_eq!(loaded.number("hover_outline"), 0.);
         assert_eq!(loaded.number("selection_debug"), 1.);
+        assert_eq!(
+            crate::acquisition::custom(&loaded.snapshot(), "workshop/hero"),
+            Some(135.5)
+        );
+        assert_eq!(
+            loaded.acquisition_radius("workshop/hero", 160_000, Some(190_000)),
+            160_000
+        );
+        assert_eq!(
+            loaded.acquisition_radius("workshop/hero", 80_000, Some(190_000)),
+            135_500
+        );
+        assert!(loaded.input_snapshot().0.get("acquisition").is_none());
         assert_eq!(
             loaded.snapshot().binding("q")[0],
             Some(Chord {

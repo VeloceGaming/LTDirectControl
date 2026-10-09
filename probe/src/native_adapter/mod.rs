@@ -103,11 +103,14 @@ pub fn set_outline_targets(
 }
 
 /// Current AA range, copied only during the controlled worker's SDK borrow.
-pub fn attack_range(sim: &mod_api_stable::StableSim<'_>, actor: usize) -> Option<u64> {
+pub fn attack_ranges(
+    sim: &mod_api_stable::StableSim<'_>,
+    actor: usize,
+) -> Option<(u64, Option<u64>)> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     unsafe {
         sim.with_native_context(|state, table| {
-            windows::attack_range(state as usize, table as usize, actor)
+            windows::attack_ranges(state as usize, table as usize, actor)
         })
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
@@ -231,6 +234,8 @@ struct StopTicket {
     actor: usize,
     hold: bool,
     cancel_recall: bool,
+    /// An SDK-accepted AA target confirmed in range on this worker tick.
+    attack_target: Option<usize>,
 }
 thread_local! {
     static STOP_TICKET: std::cell::Cell<Option<StopTicket>> = const { std::cell::Cell::new(None) };
@@ -240,12 +245,14 @@ pub fn arm_stop(
     actor: Option<usize>,
     hold: bool,
     cancel_recall: bool,
+    attack_target: Option<usize>,
 ) {
     STOP_TICKET.set(actor.map(|actor| StopTicket {
         key,
         actor,
         hold,
         cancel_recall,
+        attack_target,
     }));
 }
 

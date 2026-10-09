@@ -3,6 +3,106 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.77.4 — 2026-10-09
+
+- Housekeeping: removed the 0.75 Drawing test setting (Settings › Advanced › Debug) and drawing_test.rs; the preview redesign it checked is accepted. A saved `drawing_test` value is kept as an unknown field and ignored. Backlog refreshed to 0.77.3.
+
+## 0.77.3 — 2026-10-09
+
+- Stall report (0.77.2 froze mid-match: the worker stopped at tick 4919 with nothing logged). The viewer now writes `WORKER STALL` when a running match has published no frame for 3 s (not while paused, not while the worker waits for playback), with played tick, frame counts, phase and the last step the worker entered (`last_step=` Bind, Team, Shop, StatsPanel, Hud, AttackRange, Combat, Abilities, Dispatch, Publication, ...; `Outside` = not in the mod's per-tick code), and `WORKER RESUMED` if it continues. Both are Safety lines, written at every log level. Markers are two relaxed atomics on the viewed match's worker only (new worker_watch.rs).
+- Target frame glyphs: towers (and the nexus) show the game's tower icon, monsters its jungle icon (`asset/base/ui/icons/tower`, `jungle`); minions keep the mod's minion glyph.
+
+## 0.77.2 — 2026-10-09
+
+- The background colour now moves the design's whole warm-grey ladder, not only the darkest layer: settings rows and hint box, text-field fill, frames and rules (`#4b4a49`), scroll tracks, the shop pill, plates and disabled buttons, the vision toggle track, tooltips and toasts (`#1e1e1d`), hover and pressed tones, health wells and modal shades. Each shifts by the background's distance from `#1c1a18` per channel (new `ui_theme::tone`), so the default looks exactly as before. Templates and properties write these as `#~rrggbbaa`, rewritten by `ui_theme::themed` at spawn and in `hud_motion::properties`; the minimap frame line uses `tone` directly. Text inks stay fixed.
+
+## 0.77.1 — 2026-10-09
+
+- Own stats panel: rows 21 px apart instead of 18 (panel 92 px tall instead of 80), still vertically centred on the skill slots.
+- Target frame relaid out for a unit with no mana: health bar across the top (shield appended as `(+N)`), portrait with level badge beside the 3 x 4 stats grid; 292 x 129 instead of 292 x 172. The unit-type note is gone (the glyph shows it).
+- Fixed the Background colour swatch: on a stroked node `color` is the edge and `back_color` the fill, so it now sets `back_color`.
+- More surfaces follow the background colour: HUD skill and inventory slot insets (background + 5, empty inventory slot + 13) and the Tab panel's item and portrait insets (+ 8); the Tab panel now rebuilds when the colour changes.
+
+## 0.77.0 — 2026-10-09
+
+- Stats panels (the vanilla spectator panel is hidden under direct control). Your champion's 12 stats sit left of the Q slot in the HUD's skill-slot style (grey frame, inset fill = background + 5, drop shadow), toggled by the new Stats panel binding (default C, rebindable; remembered as `stats_panel_shown`). A left-click on any unit selects it, as in League (attack-move and pending casts keep the click; UI and the minimap are ignored); empty ground clears it. The selected unit's frame at the top left shows its head portrait (the game's face icon; a unit glyph for minions, towers and monsters), level, health bar (green ally, red enemy) and the same stats. It hides when the unit dies or leaves your team's vision.
+- Stats, icons only: AD, AP, attack speed (60 / attack interval), armor, magic resist, ability haste, crit, move speed (per second), range (live AA range), lifesteal, armor and magic penetration. Haste, lifesteal and penetration are summed from the unit's buffs. Read on the viewed worker during the HUD sample (new stats_panel.rs, stats_ui.rs); `STATS own raw ...` is logged every 10 s to check the values against the game's own panel. The stat icon code moved to the shared stat_icons.rs.
+
+## 0.76.8 — 2026-10-09
+
+- The shop's top and bottom strips follow the background colour, keeping the design's relation (`#22201e` = background + 6 on each channel), via the new `ui_theme::shade(delta, alpha)` for surfaces derived from the background.
+
+## 0.76.7 — 2026-10-09
+
+- Fixed shop filters not responding (0.76.6): each filter label received two alternating property strings per frame (position, then colour), so both were re-sent to the game every frame; they are one string again. The filter icons also moved out of the filter buttons to sit above each row, leaving the buttons exactly as before 0.76.6.
+- Fixed the garbled detail tag for the mod's own icons: inline text images need a sprite sheet and a frame name, so the seven icons now ship as one sheet, `ui/stat_icons#sheet.png` + `stat_icons#data.sprite_sheet` (frames `crit_0`, `haste_0`, ...), the format Workshop mods use. UI assets 93 -> 88.
+
+## 0.76.6 — 2026-10-09
+
+- Shop stat filters show an 18 px icon before each label (the "All" row keeps its label at the left edge); an icon dims with its label when no item matches. The item detail tags show the same icon before each stat name, inline in the text. Icons: the game's stat sheet for Attack Damage, Ability Power, Attack Speed, Armor, Magic Resist, Health and Move Speed; the mod's new 9x9 icons for Critical Strike, Ability Haste, Life Steal, Armor Pen and Magic Pen.
+- The seven new icons ship as `ui/stat_*.png` (UI assets 86 -> 93), generated and recorded by tools/generate_stat_icons.py; verify_build checks the count and digests.
+
+## 0.76.5 — 2026-10-09
+
+- Settings › Interface › Appearance › Background colour: a free hex colour ("#rrggbb", in the settings text-field style with a swatch) replacing the design's `#1c1a18` on every mod surface: HUD strip and slot gaps, session buttons and their hover tone, settings window, masks, conflict dialog and Acquisition page, shop window, masks and detail panel, and the battlefield notice plate. Dark text on bright buttons keeps its fixed ink. Invalid text shows orange and keeps the last valid colour; the colour applies on Apply, when the windows rebuild through their usual missing-node path (new ui_theme.rs).
+- New tools/generate_stat_icons.py: original 9x9 single-colour icons for stats the game has no icon for (crit, armor and magic penetration, HP regen, shield, lifesteal, haste), written to design/hud/stat-icons/ with a review page. Not used in game yet.
+
+## 0.76.4 — 2026-10-09
+
+- Aligned the Acquisition search field's right edge with the champion portrait grid, including its text mirror and focus decoration. Shortened champion-only attack-move choices to Ignore and Honor without changing their behaviour.
+- Replaced the shop header bag icon with the supplied Nerdge_Stamp_Transparent.png artwork, tilted 7.5 degrees counter-clockwise. A reproducible SVG wrapper renders the unchanged source to a transparent UI asset; the stamp fits inside the header and retains its original colours.
+- Set Automatic acquisition's default/reset minimum to 120 game units, with the existing +5 AA buffer. Saved shared values and champion Custom overrides are preserved; maximum scaling AA reach and live AA floors are unchanged.
+
+## 0.76.3 — 2026-10-09
+
+- Fixed Advanced's Acquisition and Debug buttons being blocked by the settings clipping mask. The navigation subtree now follows the masks, its enclosing input layer is explicitly above them, and its passive container lets the child buttons receive clicks. Scrolling masks remain event-blocking for clipped content; settings drafts and subpage layout are preserved.
+
+## 0.76.2 — 2026-10-09
+
+- Fixed stale champion faces in unused portrait slots. Empty cells are hidden, cleared and non-interactive; a reused cell reloads its face and becomes clickable again. The grid uses five complete rows beneath Advanced's new subpage bar.
+- Advanced now has General, Acquisition and Debug subpages. Cancel attack wind-down and Manual shopping moved to General; logging, selection collision markers and drawing tests moved to Debug. Each subpage restores only its own options.
+- Acquisition exposes the shared Automatic minimum and AA buffer as numeric game-unit fields (defaults 70 and 5), with a separate reset that preserves champion overrides. All Automatic champions now inherit the shared minimum; obsolete generated per-champion minima are removed once. Custom radii still floor at current AA reach. Invalid numbers block Apply; changes retain the existing draft, Cancel and pause behaviour.
+- Debug's Show live acquisition radius draws a yellow acquisition ring, a thinner white AA ring and both numeric values around the controlled champion. Values come from the same selected-player simulation callback as targeting, independent of settings browsing or draft edits. Background matches cannot overwrite them; paused matches retain their last sample and running matches suppress stale samples.
+- Caret restoration was investigated and deferred with user permission. The native editor draws at fixed z=100 and the SDK exposes no caret/selection offsets. Committed text and the focus underline remain visible; the caret, selection and uncommitted IME composition remain a known visual limitation. No new native hook was added.
+
+## 0.76.1 — 2026-10-09
+
+- Moved champion acquisition controls to Advanced. A fixed settings pane sits beside a compact, scrollable grid of game-cropped champion faces; the selected face has a yellow outline. Complete rows stay inside the body, including when switching from a scrolled page. Combat & casting retains its original layout. Restore this page resets acquisition preferences only on Advanced.
+- Champion search accepts internal IDs and names in the game's supplied languages, plus available translations from enabled mods. The controlled champion is initially visible. Portrait clicks resolve through the last displayed slot map, and face images are refreshed only when their slot changes.
+- Search and radius fields have explicit labels and visible text above the modal: native text-edit rendering has a fixed low layer. Native typing/IME state is retained, with a visible focus indicator; Automatic shows a read-only computed value and Custom enables the numeric editor and slider.
+- Reduced Automatic's minimum from 120 to 70 game units and its buffer from 10 to 5. It still uses maximum scaling AA reach, and Custom still floors at current AA reach. Old generated defaults migrate once; per-champion custom radii and other saved preferences are preserved.
+
+## 0.76.0 — 2026-10-09
+
+- Attack-move has a separate acquisition radius: Automatic uses the larger of the 120-unit baseline, maximum level-scaled AA reach + 10, and current AA reach + 10. The live game experience table supplies the level cap; the controlled champion's fingerprinted native AA descriptor supplies range growth. Unknown or uncapped scaling falls back to current reach. Acquired enemies outside AA range are approached, including enemies away from the clicked destination; actual AA range still controls cooldown waiting and movement stops.
+- Combat & casting settings include a searchable active champion selector (Workshop champions included), Automatic/Custom choice, radius slider and numeric entry, current/max AA reach, effective radius, and per-champion restore. Custom radius is floored at current AA reach without rewriting the chosen value. Apply/Cancel and existing pause ownership apply to the entire draft; preferences and champion defaults persist in controls.json. Input polling avoids copying this potentially large champion table.
+
+## 0.75.4 — 2026-10-09
+
+- In-range manual basic attacks stop ordinary movement before the native attack consumer checks cooldown, including orders accepted by the SDK. The current target and worker/match must match; native attacks still run normally, and cooldowns, windups, skill casts, pending hits and forced movement are preserved. Verbose logs include the in-range decision and each movement stop.
+- Ground A-click and Shift + right-click acquire enemies only within the champion's current native AA range, replacing the fixed 120-unit search radius. If no enemy is in reach, they continue toward the clicked destination. Direct right-click and A-click on an enemy retain their explicit target and approach it when out of range. Target highlights use the same acquisition range.
+
+## 0.75.3 — 2026-10-09
+
+- Dancer R previews as a fan of blades (like Ashe's W in League), read from its apply code: count = min(max_count 10, base_count 4 + the caster's kill stack, entity +0x648, the stat block's `stack`); blade 0 flies at the aim, the next half turn +60° x i / half and the rest -60° x (i - half) / half, clockwise on screen, so even counts are lopsided exactly as in game. Each blade is drawn as its 134-unit corridor (10-unit hit radius) with the smaller dash-size head.
+- Effects recognised without an area (buffs, single-target shots, visuals, damage on units already hit, Cavalry Knight R's buff and speed road) are named instead of reported as unknown; a skill made only of them shows no direction guide. Cavalry Knight R, Gunner, Bard Q and Exorcist W no longer draw a misleading arrow.
+
+## 0.75.2 — 2026-10-09
+
+- Skill previews for three hand-written base-game ultimates, their fields matched word for word to `champion_info` (ranges after the patch adjustment): Ice Mage R is a 70-unit, 90° cone swept from the caster toward the aim (it showed only the direction guide); Bard R an aura around Bard (99 units); Exorcist R an area where the cast lands (61 units, separate from its 100-unit cast range). Cones placed at the caster now face the aim.
+- The other unknown types in the logged trees are single-target or self effects and correctly show no area: Gunner Q (shot), Gunner R (sub-shots buff), Bard Q (attack-speed buff), Exorcist W (buff), Executioner W (bleed, `1ad9600/48`). Cavalry Knight R's `19de840/112` stays unidentified.
+
+## 0.75.1 — 2026-10-09
+
+- Skill previews drawn in the user's Endfield x League design (design/previews/concept.html), replacing the hatching. Pieces: range as a quiet gray ring with no fill; ground areas with a 6.5% field, bright rim (dark under-stroke, glow, main stroke, white core), four clipped yellow accents and a centre grip (self areas without the grip); skillshots as a 4.5% corridor with thin white edges plus the open-spearhead arrow (48 px head); cones with a strip-filled sector, rim, centre spine and inner arc; walls (the game's upright rectangles) with one wide strip as fill, bright short ends and a grip; dashes as the open spearhead (37 px head, a grip when very short); blinks as a four-part aperture with a pin; unit targets as a team-coloured ground arc (red enemy, blue ally; the hover outline is the existing one) and a yellow overhead marker, orange beyond range. Unavailable skills are gray; aim beyond range adds an orange dashed line and ring.
+- Every colour, width, opacity and size lives in the new preview_style.json (preview_style.rs); any subset can be overridden in `%LOCALAPPDATA%\LTDirectControl\preview_style.json`, read at start-up (logged as PREVIEW STYLE). Fills use non-overlapping 3 px strips; area fills use one native disc when clear of the UI and strips (which clip) otherwise. The skill decoders are unchanged.
+- Not built: the design's 550 ms dash reveal. The 0.75.0 Drawing test setting stays until the design is accepted.
+
+## 0.75.0 — 2026-10-09
+
+- Diagnostic for the skill-preview redesign (design/previews/concept.html), no behaviour change: Settings › Interface › Debug › Drawing test draws a fixed card on the battlefield with the calls the design depends on and the mod has not used in game yet: 64/24/8 px strips at 6.5% and 25% opacity, flat and at 30° (square ends, even transparency); two crossing 25% strips (stacked transparency); the open-spearhead head strip-filled with 3 px strips (seams); a 90 px disc at 6.5% inside a segmented rim (fill matches the rim). New drawing_test.rs, with the strip fill the renderer will reuse.
+- Logged camera extents are always square (819.2 x 819.2, otherwise 1024 x 1024), so filled discs stay round on screen.
+
 ## 0.74.4 — 2026-10-09
 
 - Tidy-up, no behaviour change: the 0.70 SPRITE CALIBRATION / SPRITE SAMPLE diagnostics are removed (the selection work they served is done). PREVIEW TREE / PREVIEW ROSTER stay until the previews are finished.

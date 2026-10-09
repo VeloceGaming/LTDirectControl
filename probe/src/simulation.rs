@@ -61,6 +61,8 @@ impl StablePlayerAi for Simulation {
     fn think(&mut self, ctx: &mut StableAiContext<'_>, _base: Option<InputV1>) -> Option<InputV1> {
         // The same session lock, held via its own handle so the steps below
         // may borrow `self` mutably.
+        // Stall report markers (crate::worker_watch); Outside again on return.
+        let _watch = crate::worker_watch::begin(ctx.player_id());
         let gate = self.session_gate.clone();
         let _session = gate.read().ok()?;
         let tick = ctx.tick();
@@ -75,6 +77,9 @@ impl StablePlayerAi for Simulation {
             lane,
             side,
         };
+        let step = |s| crate::worker_watch::enter(s, player_id);
+        use crate::worker_watch::Step;
+        step(Step::Bind);
         let (
             selected,
             proposal,
@@ -95,14 +100,20 @@ impl StablePlayerAi for Simulation {
             };
             let key = (sim.seed(), origin.match_id, origin.set_index);
             self.bind_session(&sim, &origin, key, call);
+            step(Step::Roster);
             let selected = origin.kind == 2
                 && self.timing.owns_worker(key)
                 && self.movement.hud_identity() == Some((key, player_id));
             self.sample_prepared_roster(&sim, &origin, key, call);
+            step(Step::Team);
             self.sample_team(&sim, &origin, key, call);
+            step(Step::Purchases);
             self.trace_purchases(&sim, &origin, key, call);
+            step(Step::Shop);
             self.publish_shop(&sim, &origin, key, call);
+            step(Step::Hud);
             self.sample_hud(&sim, &origin, key, call);
+            step(Step::Controlled);
             let current_champion = selected
                 .then(|| {
                     sim.get_player(player_id)
@@ -112,6 +123,7 @@ impl StablePlayerAi for Simulation {
             if selected {
                 self.observe_controlled(&sim, key, call, &current_champion);
             }
+            step(Step::Units);
             let collect_units = selected
                 && self.timing.allows_input(key)
                 && current_champion.as_ref().is_some_and(|c| c.is_alive());
@@ -154,6 +166,37 @@ impl StablePlayerAi for Simulation {
             if let Some(c) = current_champion.as_ref().filter(|c| c.is_alive()) {
                 self.abilities.observe_units(key, c.id(), &skill_units);
             }
+            step(Step::AttackRange);
+            let attack_ranges = current_champion
+                .as_ref()
+                .filter(|_| selected && self.timing.allows_input(key))
+                .and_then(|champion| native_adapter::attack_ranges(&sim, champion.id()));
+            let attack_range = attack_ranges.map(|r| r.0);
+            let acquisition_range = current_champion.as_ref().and_then(|champion| {
+                let (current, maximum) = attack_ranges?;
+                let name = champion.name()?;
+                crate::acquisition::observe(&name, current, maximum);
+                Some(crate::settings::GLOBAL.get().map_or_else(
+                    || {
+                        crate::acquisition::radius(
+                            &crate::settings::Values::default(),
+                            &name,
+                            current,
+                            maximum,
+                        )
+                    },
+                    |s| s.acquisition_radius(&name, current, maximum),
+                ))
+            });
+            if selected && self.timing.allows_input(key) {
+                let sample = current_champion
+                    .as_ref()
+                    .filter(|c| c.is_alive())
+                    .and_then(|c| Some((c.pos(), attack_range?, acquisition_range?)));
+                self.movement
+                    .observe_acquisition_debug(key, player_id, sample);
+            }
+            step(Step::Combat);
             let candidate = if selected && self.timing.allows_input(key) {
                 current_champion
                     .as_ref()
@@ -188,7 +231,12 @@ impl StablePlayerAi for Simulation {
                                 })
                             })
                             .collect();
-                        self.movement.combat_input(player_id, champion.pos(), units)
+                        self.movement.combat_input(
+                            player_id,
+                            champion.pos(),
+                            units,
+                            acquisition_range,
+                        )
                     })
             } else {
                 None
@@ -199,7 +247,7 @@ impl StablePlayerAi for Simulation {
                 .zip(candidate.as_ref())
                 .filter(|(_, (input, _))| input.kind == mod_api_stable::InputKindV1::Attack.code())
                 .and_then(|(champion, (_, chase))| {
-                    let range = native_adapter::attack_range(&sim, champion.id())?;
+                    let range = attack_range?;
                     Some(combat::attack_in_range(champion.pos(), (*chase)?, range))
                 });
             self.log_sample(&sim, &origin, call);
@@ -218,9 +266,11 @@ impl StablePlayerAi for Simulation {
                 attack_in_range,
             )
         };
+        step(Step::Items);
         if live_worker {
             self.hud.capture_items(ctx, match_key, &self.logger);
         }
+        step(Step::Abilities);
         let skill = actor
             .zip(position)
             .filter(|_| selected && self.timing.allows_input(match_key))
@@ -253,6 +303,7 @@ impl StablePlayerAi for Simulation {
                 }
             })
         });
+        step(Step::Dispatch);
         let valid = candidate
             .as_ref()
             .is_some_and(|input| ctx.is_valid_input(input));
@@ -276,7 +327,7 @@ impl StablePlayerAi for Simulation {
                     || mode != self.last_manual_mode)
                 || candidate.is_none() && self.last_manual)
         {
-            self.logger.write(&format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} base={_base:?}"));
+            self.logger.write(&format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} attack_in_range={attack_in_range:?} base={_base:?}"));
         }
         if valid && live_worker {
             let stamp = skill
@@ -300,6 +351,9 @@ impl StablePlayerAi for Simulation {
                 actor.filter(|_| valid && matches!(mode, Some("hold" | "move" | "attack"))),
                 valid && mode == Some("hold"),
                 valid && self.movement.take_cancel_recall(player_id),
+                candidate
+                    .filter(|_| valid && mode == Some("attack") && attack_in_range == Some(true))
+                    .map(|input| input.target.target_id),
             );
         }
         if candidate.is_some() && !valid {
@@ -578,6 +632,12 @@ impl Simulation {
                         self.movement.observe_position(None);
                         self.abilities.observe_actor(key, None, None, cooldowns);
                     }
+                    crate::worker_watch::enter(
+                        crate::worker_watch::Step::StatsPanel,
+                        call.player_id,
+                    );
+                    crate::stats_panel::sample(sim, champion.as_ref(), &self.logger);
+                    crate::worker_watch::enter(crate::worker_watch::Step::Hud, call.player_id);
                     self.hud.observe_tick(
                         player_hud::Snapshot {
                             key,

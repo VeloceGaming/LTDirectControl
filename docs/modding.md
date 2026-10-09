@@ -105,14 +105,35 @@ may need a new number.
 
 Add an `OptionDef` to `OPTIONS` in `settings.rs`:
 
-- `page`: 0 Combat & casting, 2 Camera, 3 Interface; 9 hides it from the
-  window.
+- `page`: 0 Combat & casting, 2 Camera, 3 Interface, 4 Advanced General, 5 Advanced Debug; 9 hides it from the
+  window. Advanced Acquisition uses a dedicated page 6 body.
 - `control`: `Toggle`, `Choice(&[..])` or `Slider(min, max, step, unit)`.
 - `default`.
 
 Read it anywhere with `crate::settings::option("key")`, or with
 `self.settings.number("key")` inside `Client`. The settings window draws
 the row and saves the value; no other code is needed.
+
+Advanced uses General / Acquisition / Debug subpages. Per-champion acquisition
+settings are the fixed 475-unit Acquisition body in
+`settings_ui/acquisition_panel.rs`; formulas and copied range metadata live in
+`acquisition.rs`. Extend those modules for related controls. They edit the same
+settings draft and use the same Apply/Cancel/pause lifecycle. Full snapshots
+include the champion table; input snapshots deliberately exclude it.
+The portrait grid scrolls by complete rows and reuses a fixed slot pool. Keep its
+last-rendered slot mapping separate from the current filtered list. Search uses
+`acquisition_names.json` for base translations and reads enabled mods' `.i18n`
+files at initialization; native `i18n` supplies the current display name.
+Automatic defaults are a shared 120-unit minimum and +5 buffer, editable in-game.
+Version 3 removes generated per-champion minima so shared edits affect every
+Automatic champion; custom overrides and version 2 shared edits survive. Legacy
+generated 120/+10 defaults still migrate once. The Debug overlay uses the exact
+selected-player targeting sample (position, AA, acquisition), retained while
+paused and expired after 250 ms while running. Never calculate it from browsed
+champion metadata or draft settings. Native text edits retain
+input and IME handling; high-layer labels mirror committed text because the
+native editor's own text/selection/caret draw at fixed z=100. The focus underline
+is visible; native selection/caret and uncommitted IME text are not mirrored.
 
 ### Add a HUD element or a window
 
@@ -147,6 +168,23 @@ They have unit tests. The native buyer only asks two questions,
 and performs every purchase. With Manual shopping on, missing data fails
 closed and nothing is bought.
 
+### Colours
+
+The UI background (`#1c1a18` in the design) is a player setting. Build any
+new surface with `crate::ui_theme::hex(alpha)` (templates) or
+`ui_theme::rgba(alpha)` (drawn colours) instead of the literal, and call
+`ui_theme::refresh(ctx, PATH)` for a new window (see `Client::post_update`)
+so it rebuilds when the colour changes. Dark text on bright buttons keeps
+its fixed ink.
+
+The rest of the design's warm greys (rows, frames, hovers, wells) move with
+the background by the same offset. In templates and property strings write
+them as `#~rrggbbaa` (e.g. `#~3a3837ff`); `ui_theme::themed` rewrites them
+at spawn and in `hud_motion::properties`. Drawn or blended colours use
+`ui_theme::tone(0x3a3837ff)`, and a colour held as text is read with
+`ui_theme::color("~3a3837ff")`. Keep a plain `#` for text inks so they stay
+readable on any background.
+
 ### Draw on the battlefield
 
 Draw in `Client::post_render`. `camera::CameraFrame` projects world
@@ -167,8 +205,15 @@ Previews come from the game's own skill data, never per-skill code:
   To add a type, find it in the PREVIEW TREE log lines, match its words to
   a champion JSON that uses it, then add a decoder and a test with the
   logged words.
-- `skill_preview.rs` places and draws the footprints (`placed`, `drawing`).
-  Data-driven and Workshop champions' JSON trees are the fallback.
+- `skill_preview.rs` places the footprints (`placed`) and draws them as the
+  design's pieces (`drawing`: area, corridor with the spearhead arrow,
+  cone, wall, dash, blink, unit target, range ring). Data-driven and
+  Workshop champions' JSON trees are the fallback.
+- `preview_style.json` holds every colour, width, opacity and size of the
+  look (`preview_style.rs` loads it). Players can override any subset of
+  its keys in `%LOCALAPPDATA%\LTDirectControl\preview_style.json`; it is
+  read at start-up. A new kind of detail (a glow, a pulse) is a code
+  addition to the pieces; after that it is a style value.
 
 ### Change hover and click selection
 

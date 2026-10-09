@@ -2,7 +2,6 @@
 //! native input validation and combat routines retain damage/timing authority.
 use mod_api_stable::{InputKindV1, InputTargetV1, InputV1};
 
-pub const ACQUISITION_RADIUS: u64 = 120_000;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Order {
     Move((u64, u64)),
@@ -42,13 +41,14 @@ pub fn rejected_attack(
 impl Order {
     #[cfg(test)]
     pub fn resolve(self, position: (u64, u64), units: &[Unit]) -> (InputV1, Option<(u64, u64)>) {
-        self.resolve_filtered(position, units, false)
+        self.resolve_filtered(position, units, false, Some(120_000))
     }
     pub fn resolve_filtered(
         self,
         position: (u64, u64),
         units: &[Unit],
         champion_only: bool,
+        attack_range: Option<u64>,
     ) -> (InputV1, Option<(u64, u64)>) {
         let options = crate::settings::current();
         self.resolve_policy(
@@ -57,6 +57,7 @@ impl Order {
             champion_only,
             options.number("attack_move_filter") == 1.,
             options.number("attack_move_preference") == 1.,
+            attack_range,
         )
     }
     fn resolve_policy(
@@ -66,6 +67,7 @@ impl Order {
         champion_only: bool,
         honor: bool,
         near_cursor: bool,
+        attack_range: Option<u64>,
     ) -> (InputV1, Option<(u64, u64)>) {
         let target = match self {
             Self::Move(goal) => return (ground(position, goal), None),
@@ -74,8 +76,7 @@ impl Order {
                 .iter()
                 .filter(|u| !honor || !champion_only || u.is_champion)
                 .filter(|u| {
-                    let limit = u128::from(ACQUISITION_RADIUS).pow(2);
-                    distance(position, u.position) <= limit
+                    attack_range.is_some_and(|range| attack_in_range(position, u.position, range))
                 })
                 .min_by_key(|u| {
                     (
@@ -285,6 +286,71 @@ pub fn hover_color(unit: Unit) -> u32 {
 mod tests {
     use super::*;
     #[test]
+    fn ground_attack_move_acquires_only_in_current_aa_range_and_resumes_its_destination() {
+        let pos = (200_000, 200_000);
+        let goal = (600_000, 200_000);
+        let target = Unit {
+            position: (260_000, 200_000),
+            ..units()[1]
+        };
+        let order = Order::AttackMove(goal);
+        for range in [None, Some(59_999)] {
+            assert_eq!(
+                order.resolve_filtered(pos, &[target], false, range),
+                (InputV1::move_to(goal.0, goal.1), None)
+            );
+        }
+        let (attack, chase) = order.resolve_filtered(pos, &[target], false, Some(60_000));
+        assert_eq!(attack.kind, InputKindV1::Attack.code());
+        assert_eq!(attack.target.target_id, target.id);
+        assert_eq!(chase, Some(target.position));
+        assert_eq!(
+            rejected_attack(pos, chase, Some(true)),
+            InputV1::move_to(pos.0, pos.1)
+        );
+        let moved = Unit {
+            position: (260_001, 200_000),
+            ..target
+        };
+        assert_eq!(
+            order.resolve_filtered(pos, &[moved], false, Some(60_000)),
+            (InputV1::move_to(goal.0, goal.1), None)
+        );
+        // Explicit right-click/A-click targets stay explicit, even out of range
+        // or when metadata is unavailable: they retain the approach fallback.
+        for range in [None, Some(10_000)] {
+            let (attack, chase) =
+                Order::Attack(moved.id).resolve_filtered(pos, &[moved], false, range);
+            assert_eq!(attack.kind, InputKindV1::Attack.code());
+            assert_eq!(chase, Some(moved.position));
+            assert_eq!(
+                rejected_attack(pos, chase, Some(false)),
+                InputV1::move_to(moved.position.0, moved.position.1)
+            );
+        }
+    }
+    #[test]
+    fn attack_move_cursor_preference_cannot_acquire_an_out_of_range_enemy() {
+        let pos = (200_000, 200_000);
+        let near = Unit {
+            position: (220_000, 200_000),
+            ..units()[0]
+        };
+        let far = Unit {
+            position: (270_000, 200_000),
+            ..units()[1]
+        };
+        let (input, _) = Order::AttackMove(far.position).resolve_policy(
+            pos,
+            &[near, far],
+            false,
+            false,
+            true,
+            Some(60_000),
+        );
+        assert_eq!(input.target.target_id, near.id);
+    }
+    #[test]
     fn cooldown_wait_holds_in_range_but_keeps_target_for_later_attack() {
         let position = (300_000, 200_000);
         let target = Unit {
@@ -458,7 +524,7 @@ mod tests {
         let order = Order::AttackMove(list[1].position);
         assert_eq!(
             order
-                .resolve_policy(pos, &list, false, true, true)
+                .resolve_policy(pos, &list, false, true, true, Some(120_000))
                 .0
                 .target
                 .target_id,
@@ -466,14 +532,16 @@ mod tests {
         );
         assert_eq!(
             order
-                .resolve_policy(pos, &list, true, true, true)
+                .resolve_policy(pos, &list, true, true, true, Some(120_000))
                 .0
                 .target
                 .target_id,
             2
         );
         assert_eq!(
-            order.resolve_policy(pos, &list[1..], true, true, true).0,
+            order
+                .resolve_policy(pos, &list[1..], true, true, true, Some(120_000))
+                .0,
             InputV1::move_to(300_000, 200_000)
         );
     }
@@ -755,7 +823,14 @@ mod tests {
         let order = Order::AttackMove((305_000, 200_000));
         assert_eq!(
             order
-                .resolve_policy((200_000, 200_000), &units(), true, false, true)
+                .resolve_policy(
+                    (200_000, 200_000),
+                    &units(),
+                    true,
+                    false,
+                    true,
+                    Some(120_000)
+                )
                 .0
                 .target
                 .target_id,
@@ -765,7 +840,14 @@ mod tests {
         mixed[0].is_champion = false;
         assert_eq!(
             order
-                .resolve_policy((200_000, 200_000), &mixed, true, false, false)
+                .resolve_policy(
+                    (200_000, 200_000),
+                    &mixed,
+                    true,
+                    false,
+                    false,
+                    Some(120_000)
+                )
                 .0
                 .target
                 .target_id,
@@ -773,7 +855,7 @@ mod tests {
         );
         assert_eq!(
             order
-                .resolve_policy((200_000, 200_000), &mixed, true, true, false)
+                .resolve_policy((200_000, 200_000), &mixed, true, true, false, Some(120_000))
                 .0
                 .target
                 .target_id,

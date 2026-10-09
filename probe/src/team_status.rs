@@ -7,7 +7,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const PATH: &str = "ingame.lt_team_status";
+pub const PATH: &str = "ingame.lt_team_status";
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Player {
@@ -146,11 +146,14 @@ fn label(s: &mut String, id: &str, x: usize, w: usize, size: usize, color: &str,
     s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1204; font: \"asset/lt_direct_control_probe/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {}; ignore_event: true; }}\n", if right { "Right" } else { "Left" }));
 }
 fn item_tile(i: usize) -> String {
-    format!("item{i}:color {{ width: 32px; height: 32px; z: 1203; color: #4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1204; color: #242220ff; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1206; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
+    // Insets: background + 8.
+    let inset = crate::ui_theme::shade(8, 0xff);
+    format!("item{i}:color {{ width: 32px; height: 32px; z: 1203; color: #~4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1206; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
 }
 fn template() -> String {
-    let mut s = String::from("lt_team_status:color { anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; y: -80px; z: 1200; color: #1e1e1df5; rounding: Uniform { rounding: 2; } ignore_event: true;\n#top:color { height: 1px; width: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n#bottom:color { anchor_y: 1; pivot_y: 1; height: 1px; width: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n");
-    s.push_str("#left:color { width: 1px; height: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n#right:color { anchor_x: 1; pivot_x: 1; width: 1px; height: 100%; z: 1201; color: #4b4a49ff; ignore_event: true; }\n");
+    let inset = crate::ui_theme::shade(8, 0xff);
+    let mut s = String::from("lt_team_status:color { anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; y: -80px; z: 1200; color: #~1e1e1df5; rounding: Uniform { rounding: 2; } ignore_event: true;\n#top:color { height: 1px; width: 100%; z: 1201; color: #~4b4a49ff; ignore_event: true; }\n#bottom:color { anchor_y: 1; pivot_y: 1; height: 1px; width: 100%; z: 1201; color: #~4b4a49ff; ignore_event: true; }\n");
+    s.push_str("#left:color { width: 1px; height: 100%; z: 1201; color: #~4b4a49ff; ignore_event: true; }\n#right:color { anchor_x: 1; pivot_x: 1; width: 1px; height: 100%; z: 1201; color: #~4b4a49ff; ignore_event: true; }\n");
     for side in 0..2 {
         s.push_str(&format!("#side{side}:empty {{ y: 16px; ignore_event: true;\n#headers:empty {{ width: 100%; height: 34px; ignore_event: true;\n"));
         for (id, x, w) in [
@@ -165,7 +168,7 @@ fn template() -> String {
         }
         s.push_str("}\n");
         for lane in 0..5 {
-            s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1201;\n#selected:color {{ width: 2px; height: 100%; z: 1202; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1202; color: #4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1203; color: #4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1204; color: #242220ff; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1206; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1207; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
+            s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1201;\n#selected:color {{ width: 2px; height: 100%; z: 1202; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1202; color: #~4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1203; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1204; color: #{inset}; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1205; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1206; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control_probe/font/numeric\"; width: 100%; height: 100%; z: 1207; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
             for (id, x, w, size, color) in [
                 ("level", 64, 34, 17, "cbc9c7ff"),
                 ("kda", 104, 122, 22, "eeececff"),
@@ -176,7 +179,7 @@ fn template() -> String {
             }
             for i in 0..6 {
                 s.push('#');
-                s.push_str(&item_tile(i));
+                s.push_str(&crate::ui_theme::themed(&item_tile(i)));
                 s.push('\n');
             }
             s.push_str("}\n");
@@ -233,7 +236,7 @@ impl TeamUi {
                 return;
             }
             self.spawn_at = Some(Instant::now());
-            let ok = ctx.ui_spawn_source("ingame", &template());
+            let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
             log.write(&format!(
                 "TAB styled panel spawn={ok} exists={}",
                 ctx.ui_exists(PATH)
@@ -258,8 +261,10 @@ impl TeamUi {
             let mut ok = true;
             for side in 0..2 {
                 for lane in 0..5 {
-                    ok &= ctx
-                        .ui_spawn_source(&format!("{PATH}.side{side}.lane{lane}"), &item_tile(i));
+                    ok &= ctx.ui_spawn_source(
+                        &format!("{PATH}.side{side}.lane{lane}"),
+                        &crate::ui_theme::themed(&item_tile(i)),
+                    );
                 }
             }
             if !ok {

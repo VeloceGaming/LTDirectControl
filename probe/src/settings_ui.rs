@@ -18,9 +18,10 @@ use std::{
     },
     time::{Duration, Instant},
 };
-const PATH: &str = "ingame.lt_settings";
+pub(crate) const PATH: &str = "ingame.lt_settings";
+mod acquisition_panel;
 pub static SCROLL: AtomicI32 = AtomicI32::new(0);
-const PAGES: [(&str, &str, &str); 4] = [
+const PAGES: [(&str, &str, &str); 5] = [
     (
         "Combat & casting",
         "Choose how movement, targeting and ability inputs behave.",
@@ -41,10 +42,31 @@ const PAGES: [(&str, &str, &str); 4] = [
         "Cursor and battlefield feedback, alongside your existing HUD.",
         "ef_panels",
     ),
+    (
+        "Advanced",
+        "Fine-tune controls, acquisition and diagnostic tools.",
+        "ef_settings",
+    ),
 ];
 // Scrolling content viewport (window coordinates).
 const VIEW_TOP: f32 = 225.;
 const VIEW_BOTTOM: f32 = 760.;
+const ADVANCED: [&str; 3] = ["General", "Acquisition", "Debug"];
+// Internal schema pages: General 4, Debug 5, Acquisition 6.
+fn active_page(page: usize, advanced: usize) -> usize {
+    if page == 4 {
+        [4, 6, 5][advanced]
+    } else {
+        page
+    }
+}
+fn view_top(page: usize) -> f32 {
+    if page >= 4 {
+        VIEW_TOP + 60.
+    } else {
+        VIEW_TOP
+    }
+}
 const CONTENT_X: i32 = 273;
 const CONTENT_W: i32 = 1042;
 const CONTROL_X: i32 = 634; // Row-relative control column (386 px wide).
@@ -64,6 +86,7 @@ enum Entry {
     Opt(usize),
     Bind(usize),
     Cursor,
+    Acquisition,
 }
 impl Entry {
     fn height(self) -> f32 {
@@ -77,6 +100,7 @@ impl Entry {
             },
             Entry::Bind(_) => 70.,
             Entry::Cursor => 64.,
+            Entry::Acquisition => acquisition_panel::HEIGHT as f32,
         }
     }
     /// Margin below this entry; a following section uses at least 24 px.
@@ -84,12 +108,18 @@ impl Entry {
         match self {
             Entry::Hint | Entry::Section(_) => 12.,
             Entry::Head | Entry::Cursor => 0.,
-            Entry::Opt(_) | Entry::Bind(_) => 6.,
+            Entry::Opt(_) | Entry::Bind(_) | Entry::Acquisition => 6.,
         }
     }
 }
 /// Page content as (entry, top) in scroll coordinates, plus the content height.
 fn layout(page: usize) -> (Vec<(Entry, f32)>, f32) {
+    if page == 6 {
+        return (
+            vec![(Entry::Acquisition, 0.)],
+            acquisition_panel::HEIGHT as f32,
+        );
+    }
     let mut entries = Vec::new();
     if page == 1 {
         entries.push(Entry::Hint);
@@ -133,13 +163,18 @@ fn layout(page: usize) -> (Vec<(Entry, f32)>, f32) {
     (out, y)
 }
 fn max_scroll(page: usize) -> f32 {
+    if page == 6 {
+        return 0.;
+    }
     // The design keeps 24 px of padding below the last item.
-    (layout(page).1 + 24. - (VIEW_BOTTOM - VIEW_TOP)).max(0.)
+    (layout(page).1 + 24. - (VIEW_BOTTOM - view_top(page))).max(0.)
 }
 
 #[derive(Clone)]
 enum Event {
+    Acquisition(acquisition_panel::Action),
     Page(usize),
+    Advanced(usize),
     Seg(usize, usize),
     Toggle(usize),
     Field(usize),
@@ -185,7 +220,7 @@ fn button(
     z: i32,
     children: &str,
 ) -> String {
-    format!("#{name}:color_icon_button {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: {z}; btn: {{ color: #4b4a49ff; back_color: #00000000; stroke: 0; rounding: Uniform {{ rounding: {rounding}; }} }} text: {{ @\"asset/base/style/main#bold_label\"; align_x: Center; align_y: Center; text: {}; size: {size}; color: #eeececff; }} {children}}}\n",json(text))
+    format!("#{name}:color_icon_button {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: {z}; btn: {{ color: #~4b4a49ff; back_color: #00000000; stroke: 0; rounding: Uniform {{ rounding: {rounding}; }} }} text: {{ @\"asset/base/style/main#bold_label\"; align_x: Center; align_y: Center; text: {}; size: {size}; color: #eeececff; }} {children}}}\n",json(text))
 }
 
 /// Native UI has no CSS blur. Two translucent plates give raised controls the
@@ -215,8 +250,8 @@ fn raised_button(
 }
 fn row_template(i: usize) -> String {
     let mut c = String::new();
-    c.push_str(&rect("edge", (0, 0, CONTENT_W, 1), "4b4a49ff", 2004));
-    c.push_str(&rect("shade", (0, 83, CONTENT_W, 1), "292726ff", 2004));
+    c.push_str(&rect("edge", (0, 0, CONTENT_W, 1), "~4b4a49ff", 2004));
+    c.push_str(&rect("shade", (0, 83, CONTENT_W, 1), "~292726ff", 2004));
     // A compact checkbox row is itself the hit target, as in the updated preview.
     c.push_str("#check_box:color { x: 24px; y: 13px; width: 30px; height: 30px; color: #201e1dff; rounding: Uniform { rounding: 2; } ignore_event: true; visible: false; z: 2006; #fill:color { x: 2px; y: 2px; width: 26px; height: 26px; color: #eeececff; ignore_event: true; z: 2007; } #rail:color { x: 4px; y: 6px; width: 3px; height: 18px; color: #fdee00ff; ignore_event: true; visible: false; z: 2008; } #mark:image { x: 6px; y: 6px; width: 18px; height: 18px; source: \"asset/lt_direct_control_probe/ui/ef_check\"; color: #ffffffff; ignore_event: true; visible: false; z: 2008; } }\n");
     c.push_str(&label(
@@ -269,7 +304,7 @@ fn row_template(i: usize) -> String {
         2005,
     ));
     // Segmented control: one track, one sliding indicator, two labels.
-    c.push_str(&format!("#track:color {{ x: {CONTROL_X}px; y: 13px; width: 386px; height: 50px; color: #5b5b5bff; rounding: Uniform {{ rounding: 25; }} ignore_event: true; z: 2005; #pill_shadow:color {{ x: -2px; y: -2px; width: 207px; height: 54px; color: #00000059; rounding: Uniform {{ rounding: 27; }} ignore_event: true; z: 2005; }} #ind:color {{ x: 0px; y: 0px; width: 203px; height: 50px; color: #eeececff; rounding: Uniform {{ rounding: 25; }} ignore_event: true; z: 2006; #upper:color {{ x: 20px; y: 0px; width: 163px; height: 1px; color: #ffffffff; ignore_event: true; z: 2007; }} #lower:color {{ x: 20px; y: 49px; width: 163px; height: 1px; color: #ffffffff; ignore_event: true; z: 2007; }} }} "));
+    c.push_str(&format!("#track:color {{ x: {CONTROL_X}px; y: 13px; width: 386px; height: 50px; color: #~5b5b5bff; rounding: Uniform {{ rounding: 25; }} ignore_event: true; z: 2005; #pill_shadow:color {{ x: -2px; y: -2px; width: 207px; height: 54px; color: #00000059; rounding: Uniform {{ rounding: 27; }} ignore_event: true; z: 2005; }} #ind:color {{ x: 0px; y: 0px; width: 203px; height: 50px; color: #eeececff; rounding: Uniform {{ rounding: 25; }} ignore_event: true; z: 2006; #upper:color {{ x: 20px; y: 0px; width: 163px; height: 1px; color: #ffffffff; ignore_event: true; z: 2007; }} #lower:color {{ x: 20px; y: 49px; width: 163px; height: 1px; color: #ffffffff; ignore_event: true; z: 2007; }} }} "));
     for j in 0..2 {
         c.push_str(&label(
             &format!("opt{j}"),
@@ -322,7 +357,7 @@ fn row_template(i: usize) -> String {
         &field,
     ));
     // Slider: native input node with drawn track, fill and capsule thumb.
-    c.push_str(&format!("#slider:slider {{ x: {CONTROL_X}px; y: 17px; width: 294px; height: 50px; z: 2006; background: Color {{ prop: {{ color: #00000000; }} }} foreground: Color {{ prop: {{ color: #00000000; }} }} view_min_ratio: 0.0; ratio: 0.0; #track:color {{ y: 6px; width: 100%; height: 6px; color: #6d6c6aff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2007; }} #fill:color {{ y: 6px; width: 50%; height: 6px; color: #eeececff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2008; }} #thumb:color {{ x: 0px; y: 0px; width: 50px; height: 18px; pivot_x: 0.5; rounding: Uniform {{ rounding: 9; }} color: #eeececff; ignore_event: true; z: 2009; }} }}\n"));
+    c.push_str(&format!("#slider:slider {{ x: {CONTROL_X}px; y: 17px; width: 294px; height: 50px; z: 2006; background: Color {{ prop: {{ color: #00000000; }} }} foreground: Color {{ prop: {{ color: #00000000; }} }} view_min_ratio: 0.0; ratio: 0.0; #track:color {{ y: 6px; width: 100%; height: 6px; color: #~6d6c6aff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2007; }} #fill:color {{ y: 6px; width: 50%; height: 6px; color: #eeececff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2008; }} #thumb:color {{ x: 0px; y: 0px; width: 50px; height: 18px; pivot_x: 0.5; rounding: Uniform {{ rounding: 9; }} color: #eeececff; ignore_event: true; z: 2009; }} }}\n"));
     c.push_str(&label(
         "number",
         (CONTROL_X + 316, 12, 70, 28),
@@ -344,11 +379,22 @@ fn row_template(i: usize) -> String {
             "",
         ));
     }
-    format!("#row{i}:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 84px; color: #3a3837ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; visible: false; z: 2003;\n{c}}}\n")
+    // Colour: the shared text field plus a swatch of the typed colour.
+    c.push_str(&format!(
+        "#hex_box:empty {{ x: {CONTROL_X}px; y: 17px; width: 386px; height: 50px; visible: false; ignore_event: true; z: 2006;\n{}#swatch:color {{ x: 266px; y: 0px; width: 120px; height: 50px; color: #~6d6c6aff; back_color: #{}; stroke: 1; rounding: Uniform {{ rounding: 2; }} ignore_event: true; z: 2007; }}\n}}\n",
+        acquisition_panel::edit("hex", (0, 0, 250, 50), "#1c1a18"),
+        crate::ui_theme::hex(0xff)
+    ));
+    format!("#row{i}:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 84px; color: #~3a3837ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; visible: false; z: 2003;\n{c}}}\n")
 }
 fn template() -> String {
-    let mut s = String::from("lt_settings:color { width: 1920px; height: 1080px; z: 1999; color: #100f0de0; ignore_event: false; visible: false;\n#window:color { x: 280px; y: 115px; width: 1360px; height: 850px; color: #4b4a49ff; z: 2000; ignore_event: false; rounding: Uniform { rounding: 2; }\n");
-    s.push_str(&rect("fill", (1, 1, 1358, 848), "1c1a18ff", 2001));
+    let mut s = String::from("lt_settings:color { width: 1920px; height: 1080px; z: 1999; color: #~100f0de0; ignore_event: false; visible: false;\n#window:color { x: 280px; y: 115px; width: 1360px; height: 850px; color: #~4b4a49ff; z: 2000; ignore_event: false; rounding: Uniform { rounding: 2; }\n");
+    s.push_str(&rect(
+        "fill",
+        (1, 1, 1358, 848),
+        &crate::ui_theme::hex(0xff),
+        2001,
+    ));
     // Header.
     s.push_str(&label(
         "eyebrow",
@@ -399,8 +445,8 @@ fn template() -> String {
         2015,
         &image("icon", "ef_x", (11, 11, 22), "cbc9c7ff", 2016),
     ));
-    s.push_str(&rect("head_rule", (1, 112, 1358, 1), "4b4a49ff", 2015));
-    s.push_str(&rect("nav_rule", (238, 113, 1, 647), "4b4a49ff", 2015));
+    s.push_str(&rect("head_rule", (1, 112, 1358, 1), "~4b4a49ff", 2015));
+    s.push_str(&rect("nav_rule", (238, 113, 1, 647), "~4b4a49ff", 2015));
     // Navigation.
     for (i, (_, _, glyph)) in PAGES.iter().enumerate() {
         let mut children = image("icon", glyph, (18, 24, 25), "cbc9c7ff", 2017);
@@ -435,12 +481,12 @@ fn template() -> String {
         2015,
     ));
     // Scrolling content. Masks above and below clip partially visible rows.
-    s.push_str(&format!("#hintbox:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 45px; color: #3a3837ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; visible: false; z: 2003;\n{}{}}}\n",rect("bar",(0,0,3,45),"fdee00ff",2004),label("text",(16,0,1010,45),15,"",false,"cbc9c7ff","Left",2004)));
+    s.push_str(&format!("#hintbox:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 45px; color: #~3a3837ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; visible: false; z: 2003;\n{}{}}}\n",rect("bar",(0,0,3,45),"fdee00ff",2004),label("text",(16,0,1010,45),15,"",false,"cbc9c7ff","Left",2004)));
     for i in 0..SECTIONS {
         s.push_str(&format!("#sec{i}:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 22px; color: #00000000; ignore_event: true; visible: false; z: 2003;\n{}{}{}}}\n",
             image("chev","ef_chevron_right",(0,2,18),"a3a19fff",2004),
             label("text",(30,-2,600,26),16,"",true,"cbc9c7ff","Left",2004),
-            rect("line",(160,10,880,1),"4b4a49ff",2004)));
+            rect("line",(160,10,880,1),"~4b4a49ff",2004)));
     }
     for i in 0..HEADS {
         s.push_str(&format!(
@@ -453,12 +499,35 @@ fn template() -> String {
     for i in 0..ROWS {
         s.push_str(&row_template(i));
     }
+    s.push_str(&acquisition_panel::template());
     s.push_str(&format!("#cursor_ex:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 64px; color: #00000000; ignore_event: true; visible: false; z: 2003;\n{}{}}}\n",
         "#img:image { x: 24px; y: 16px; width: 32px; height: 32px; source: \"asset/lt_direct_control_probe/ui/cursor_preview\"; ignore_event: true; z: 2004; }\n",
         label("text",(72,21,300,22),14,"Cursor size preview",false,"989694ff","Left",2004)));
-    s.push_str("#mask_top:color { x: 239px; y: 113px; width: 1120px; height: 112px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n#mask_bottom:color { x: 1px; y: 760px; width: 1358px; height: 89px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n");
-    s.push_str(&rect("foot_rule", (1, 760, 1358, 1), "4b4a49ff", 2015));
-    s.push_str(&rect("scroll_track", (1351, 225, 5, 535), "3a3837ff", 2013));
+    s.push_str(&"#mask_top:color { x: 239px; y: 113px; width: 1120px; height: 112px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n#mask_bottom:color { x: 1px; y: 760px; width: 1358px; height: 89px; color: #1c1a18ff; ignore_event: false; z: 2012; }\n".replace("#1c1a18ff", &format!("#{}", crate::ui_theme::hex(0xff))));
+    // The enclosing input layer must clear the clipping masks as well as
+    // the buttons' draw layers. Declare this subtree after the blockers and
+    // ignore events on its empty container so only its buttons receive clicks.
+    s.push_str(&format!("#advanced_nav:empty {{ x: {CONTENT_X}px; y: 225px; width: {CONTENT_W}px; height: 54px; visible: false; ignore_event: true; z: 2013;"));
+    for (i, title) in ADVANCED.iter().enumerate() {
+        s.push_str(&raised_button(
+            &format!("sub{i}"),
+            (i as i32 * 190, 0, 180, 40),
+            2,
+            title,
+            17,
+            2014,
+            "",
+        ));
+    }
+    s.push_str(&rect("line", (0, 53, CONTENT_W, 1), "~4b4a49ff", 2013));
+    s.push('}');
+    s.push_str(&rect("foot_rule", (1, 760, 1358, 1), "~4b4a49ff", 2015));
+    s.push_str(&rect(
+        "scroll_track",
+        (1351, 225, 5, 535),
+        "~3a3837ff",
+        2013,
+    ));
     s.push_str(&rect("scroll_thumb", (1351, 225, 5, 120), "989694ff", 2014));
     // Page heading.
     s.push_str(&label(
@@ -584,7 +653,7 @@ fn template() -> String {
     popup.push_str("}\n");
     s.push_str(&popup);
     // Binding conflict dialog.
-    s.push_str("#conflict_shade:color { x: -280px; y: -115px; width: 1920px; height: 1080px; color: #100f0dcc; ignore_event: false; visible: false; z: 2049; }\n#conflict:color { x: 390px; y: 235px; width: 580px; height: 250px; color: #989694ff; ignore_event: false; visible: false; z: 2050; #fill:color { x: 1px; y: 1px; width: 578px; height: 248px; color: #1c1a18ff; ignore_event: true; z: 2051; } }\n");
+    s.push_str(&"#conflict_shade:color { x: -280px; y: -115px; width: 1920px; height: 1080px; color: #~100f0dcc; ignore_event: false; visible: false; z: 2049; }\n#conflict:color { x: 390px; y: 235px; width: 580px; height: 250px; color: #989694ff; ignore_event: false; visible: false; z: 2050; #fill:color { x: 1px; y: 1px; width: 578px; height: 248px; color: #1c1a18ff; ignore_event: true; z: 2051; } }\n".replace("#1c1a18ff", &format!("#{}", crate::ui_theme::hex(0xff))));
     s.push_str(&label(
         "conflict_title",
         (422, 263, 516, 36),
@@ -628,8 +697,10 @@ fn template() -> String {
 }
 #[derive(Default)]
 pub struct SettingsUi {
+    acquisition: acquisition_panel::Panel,
     open: bool,
     page: usize,
+    advanced: usize,
     scroll: f32,
     draft: Values,
     original: Values,
@@ -649,6 +720,8 @@ pub struct SettingsUi {
     registered: bool,
     pointer_down: bool,
     motion: crate::hud_motion::Motion,
+    /// The colour field: (option index, its text, the draft colour it shows).
+    hex: (Option<usize>, String, u32),
 }
 impl SettingsUi {
     pub fn open(
@@ -666,6 +739,8 @@ impl SettingsUi {
         };
         self.original = store.snapshot();
         self.draft = self.original.clone();
+        self.acquisition = acquisition_panel::Panel::new();
+        self.hex = (None, String::new(), 0);
         self.bound = Some((key, timing.generation()));
         self.paused_by_me = phase == Phase::Running;
         if self.paused_by_me {
@@ -699,7 +774,7 @@ impl SettingsUi {
         log: &Logger,
     ) {
         if apply {
-            if !self.draft.essential() {
+            if !self.draft.essential() || self.acquisition.invalid {
                 return;
             }
             store.apply(self.draft.clone());
@@ -846,11 +921,29 @@ impl SettingsUi {
             return;
         }
         match event {
+            Event::Acquisition(action) => {
+                if active_page(self.page, self.advanced) == 6 {
+                    self.acquisition.handle(action, &mut self.draft);
+                }
+            }
             Event::Page(p) => {
                 self.page = p;
+                self.motion.reset();
+                self.acquisition.hide();
                 self.scroll = 0.;
                 self.drop = None;
                 self.slots = [None; ROWS];
+            }
+            Event::Advanced(p) => {
+                if self.page == 4 && p < ADVANCED.len() {
+                    self.advanced = p;
+                    self.scroll = 0.;
+                    self.motion.reset();
+                    self.drop = None;
+                    self.slots = [None; ROWS];
+                    self.acquisition.hide();
+                    log.write(&format!("SETTINGS advanced_subpage={}", ADVANCED[p]));
+                }
             }
             Event::Seg(slot, choice) => {
                 if let Some(Entry::Opt(i)) = self.slots[slot] {
@@ -888,7 +981,10 @@ impl SettingsUi {
                 }
             }
             Event::Reset => {
-                self.draft.reset_page(self.page);
+                self.draft.reset_page(active_page(self.page, self.advanced));
+                if active_page(self.page, self.advanced) == 6 {
+                    self.acquisition.reset_all();
+                }
                 self.drop = None;
             }
             Event::Apply => self.close(timing, store, true, log),
@@ -913,7 +1009,7 @@ impl SettingsUi {
             ("replace".into(), Event::Replace),
             ("dismiss".into(), Event::Dismiss),
         ];
-        for i in 0..4 {
+        for i in 0..PAGES.len() {
             items.push((format!("nav{i}"), Event::Page(i)));
         }
         for i in 0..ROWS {
@@ -927,6 +1023,10 @@ impl SettingsUi {
         for k in 0..3 {
             items.push((format!("popup.opt{k}"), Event::Popup(k)));
         }
+        for i in 0..ADVANCED.len() {
+            items.push((format!("advanced_nav.sub{i}"), Event::Advanced(i)));
+        }
+        items.extend(acquisition_panel::events());
         for (node, event) in items {
             let queue = self.events.clone();
             ctx.ui_register_path_events(&format!("{PATH}.window.{node}"), move |ctx| {
@@ -977,7 +1077,9 @@ impl SettingsUi {
             self.spawn = Some(Instant::now());
             self.cache.clear();
             self.registered = false;
-            if !ctx.ui_spawn_source("ingame", &template()) || !ctx.ui_exists(PATH) {
+            if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
+                || !ctx.ui_exists(PATH)
+            {
                 self.close(timing, store, false, log);
                 log.write("SETTINGS window spawn failed; pause ownership restored");
                 return Vec::new();
@@ -988,6 +1090,9 @@ impl SettingsUi {
             self.register(ctx);
         }
         ctx.ui_set_visible(PATH, true);
+        if active_page(self.page, self.advanced) == 6 {
+            self.acquisition.sync(ctx, &mut self.draft);
+        }
         let capturing = self.capture.is_some();
         self.capture(keys);
         let queued = self
@@ -1014,10 +1119,19 @@ impl SettingsUi {
         }
         let notches = SCROLL.swap(0, Ordering::Relaxed);
         if notches != 0 && self.capture.is_none() && self.pending.is_none() {
-            self.scroll = (self.scroll - notches as f32 * NOTCH).clamp(0., max_scroll(self.page));
+            if active_page(self.page, self.advanced) == 6 {
+                if self.hovered(ctx, "acquisition.grid_hit", keys.cursor) {
+                    self.acquisition.scroll(notches);
+                }
+            } else {
+                self.scroll = (self.scroll - notches as f32 * NOTCH)
+                    .clamp(0., max_scroll(active_page(self.page, self.advanced)));
+            }
             self.drop = None;
         }
-        self.scroll = self.scroll.clamp(0., max_scroll(self.page));
+        self.scroll = self
+            .scroll
+            .clamp(0., max_scroll(active_page(self.page, self.advanced)));
         self.pointer_down = keys.focused && keys.raw.0[1];
         let cursor = keys.cursor.filter(|_| keys.focused);
         self.render_frame(ctx, cursor);
@@ -1027,9 +1141,48 @@ impl SettingsUi {
         full
     }
     fn render_frame(&mut self, ctx: &mut StableClient<'_>, cursor: Option<(f32, f32)>) {
+        self.visible(ctx, "advanced_nav", self.page == 4);
+        self.props(
+            ctx,
+            "mask_top",
+            format!("height: {}px;", if self.page == 4 { 172 } else { 112 }),
+        );
+        if self.page == 4 {
+            for i in 0..ADVANCED.len() {
+                let selected = self.advanced == i;
+                self.paint(
+                    ctx,
+                    &format!("advanced_nav.sub{i}"),
+                    true,
+                    cursor,
+                    if selected {
+                        (0xfdee00ff, 0xfdee00ff, 0xddd000ff)
+                    } else {
+                        (
+                            crate::ui_theme::tone(0x3a3837ff),
+                            crate::ui_theme::tone(0x5b5958ff),
+                            crate::ui_theme::tone(0x4b4a49ff),
+                        )
+                    },
+                    (
+                        if selected {
+                            0xfdee00ff
+                        } else {
+                            crate::ui_theme::tone(0x6d6c6aff)
+                        },
+                        1,
+                    ),
+                    if selected { 0x393939ff } else { 0xeeececff },
+                );
+            }
+        }
         self.text(ctx, "page_title", PAGES[self.page].0);
         self.text(ctx, "page_hint", PAGES[self.page].1);
-        self.text(ctx, "position", &format!("0{} / 04", self.page + 1));
+        self.text(
+            ctx,
+            "position",
+            &format!("{:02} / {:02}", self.page + 1, PAGES.len()),
+        );
         self.text(ctx, "nav_note", "Settings apply to every\nmatch.");
         self.text(
             ctx,
@@ -1056,7 +1209,15 @@ impl SettingsUi {
             let back = if selected {
                 0xfdee00ff
             } else {
-                self.tone(&node, hover, (0x1c1a1800, 0x3a3837ff, 0x4b4a49ff))
+                self.tone(
+                    &node,
+                    hover,
+                    (
+                        crate::ui_theme::rgba(0),
+                        crate::ui_theme::tone(0x3a3837ff),
+                        crate::ui_theme::tone(0x4b4a49ff),
+                    ),
+                )
             };
             let ink = if selected {
                 "393939ff".into()
@@ -1083,8 +1244,12 @@ impl SettingsUi {
             "close",
             true,
             cursor,
-            (0x1c1a1800, 0x3a3837ff, 0x4b4a49ff),
-            (0x4b4a49ff, 1),
+            (
+                crate::ui_theme::rgba(0),
+                crate::ui_theme::tone(0x3a3837ff),
+                crate::ui_theme::tone(0x4b4a49ff),
+            ),
+            (crate::ui_theme::tone(0x4b4a49ff), 1),
             0xeeececff,
         );
         let close_hover = self.hovered(ctx, "close", cursor);
@@ -1096,14 +1261,18 @@ impl SettingsUi {
                 if close_hover { "ffffffff" } else { "cbc9c7ff" }
             ),
         );
-        let essential = self.draft.essential();
+        let essential = self.draft.essential() && !self.acquisition.invalid;
         self.paint(
             ctx,
             "reset",
             true,
             cursor,
-            (0x1c1a1800, 0x4b4a49ff, 0x5b5b5bff),
-            (0x4b4a49ff, 1),
+            (
+                crate::ui_theme::rgba(0),
+                crate::ui_theme::tone(0x4b4a49ff),
+                crate::ui_theme::tone(0x5b5b5bff),
+            ),
+            (crate::ui_theme::tone(0x4b4a49ff), 1),
             0xcbc9c7ff,
         );
         self.paint(
@@ -1111,8 +1280,12 @@ impl SettingsUi {
             "cancel",
             true,
             cursor,
-            (0x3a3837ff, 0x4b4a49ff, 0x5b5b5bff),
-            (0x4b4a49ff, 1),
+            (
+                crate::ui_theme::tone(0x3a3837ff),
+                crate::ui_theme::tone(0x4b4a49ff),
+                crate::ui_theme::tone(0x5b5b5bff),
+            ),
+            (crate::ui_theme::tone(0x4b4a49ff), 1),
             0xeeececff,
         );
         if essential {
@@ -1132,16 +1305,22 @@ impl SettingsUi {
                 "apply",
                 false,
                 cursor,
-                (0x6f6d6cff, 0x6f6d6cff, 0x6f6d6cff),
+                (
+                    crate::ui_theme::tone(0x6f6d6cff),
+                    crate::ui_theme::tone(0x6f6d6cff),
+                    crate::ui_theme::tone(0x6f6d6cff),
+                ),
                 (0x77757480, 1),
-                0x3a3837ff,
+                crate::ui_theme::tone(0x3a3837ff),
             );
         }
         let dirty = self.draft.0 != self.original.0;
         self.text(
             ctx,
             "status",
-            if !essential {
+            if self.acquisition.invalid {
+                "Enter valid acquisition values in Advanced before applying."
+            } else if !essential {
                 "Bind movement, start and return-to-AI before applying."
             } else if self.capture.is_some() {
                 "Listening… Esc cancels; Backspace clears."
@@ -1170,15 +1349,22 @@ impl SettingsUi {
         cursor: Option<(f32, f32)>,
         keys: Keys,
     ) {
-        let (entries, _) = layout(self.page);
-        let scroll = self.motion.value("scroll", self.scroll, 0.167);
+        let page = active_page(self.page, self.advanced);
+        let top = view_top(page);
+        let (entries, _) = layout(page);
+        let scroll = if page == 6 {
+            0.
+        } else {
+            self.motion.value("scroll", self.scroll, 0.167)
+        };
         let (mut rows, mut sections, mut heads) = (0, 0, 0);
         let mut hint = false;
         let mut cursor_ex = false;
+        let mut acquisition = false;
         let mut slots = [None; ROWS];
         for (entry, top) in entries {
-            let y = VIEW_TOP + top - scroll;
-            if y + entry.height() <= VIEW_TOP || y >= VIEW_BOTTOM {
+            let y = view_top(page) + top - scroll;
+            if y + entry.height() <= view_top(page) || y >= VIEW_BOTTOM {
                 continue;
             }
             let y = y.round() as i32;
@@ -1238,12 +1424,22 @@ impl SettingsUi {
                     );
                     self.props(ctx, "cursor_ex.text", format!("x: {}px;", 24 + size + 16));
                 }
+                Entry::Acquisition => {
+                    acquisition = true;
+                    let mut panel = std::mem::take(&mut self.acquisition);
+                    panel.render(self, ctx, y, cursor, keys);
+                    self.acquisition = panel;
+                }
                 _ => {}
             }
         }
         self.slots = slots;
         self.visible(ctx, "hintbox", hint);
         self.visible(ctx, "cursor_ex", cursor_ex);
+        self.visible(ctx, "acquisition", acquisition);
+        if !acquisition {
+            self.acquisition.hide();
+        }
         for i in sections..SECTIONS {
             self.visible(ctx, &format!("sec{i}"), false);
         }
@@ -1269,13 +1465,18 @@ impl SettingsUi {
             }
         }
         // Scrollbar.
-        let max = max_scroll(self.page);
-        let view = VIEW_BOTTOM - VIEW_TOP;
+        let max = max_scroll(active_page(self.page, self.advanced));
+        let view = VIEW_BOTTOM - top;
+        self.props(
+            ctx,
+            "scroll_track",
+            format!("y: {top}px; height: {view}px;"),
+        );
         self.visible(ctx, "scroll_track", max > 0.);
         self.visible(ctx, "scroll_thumb", max > 0.);
         if max > 0. {
             let thumb = (view * view / (view + max)).max(40.);
-            let y = VIEW_TOP + (view - thumb) * (scroll / max).clamp(0., 1.);
+            let y = top + (view - thumb) * (scroll / max).clamp(0., 1.);
             self.props(
                 ctx,
                 "scroll_thumb",
@@ -1301,7 +1502,7 @@ impl SettingsUi {
         );
         self.props(ctx, &format!("{row}.shade"), format!("y: {}px;", h - 1));
         let hidden = "visible: false; ignore_event: true;";
-        let mut show = [false; 6]; // segmented, field, slider, checkbox, unused, keys
+        let mut show = [false; 6]; // segmented, field, slider, checkbox, colour, keys
         match entry {
             Entry::Bind(index) => {
                 let def = &BINDINGS[index];
@@ -1328,7 +1529,15 @@ impl SettingsUi {
                     } else if chord.is_some() {
                         ((0xeeececff, 0xb8b6b5ff, 0x989694ff), 0xffffffff, 0x393939ff)
                     } else {
-                        ((0x3a3837ff, 0x3a3837ff, 0x4b4a49ff), 0x5b5b5bff, 0x989694ff)
+                        (
+                            (
+                                crate::ui_theme::tone(0x3a3837ff),
+                                crate::ui_theme::tone(0x3a3837ff),
+                                crate::ui_theme::tone(0x4b4a49ff),
+                            ),
+                            crate::ui_theme::tone(0x5b5b5bff),
+                            0x989694ff,
+                        )
                     };
                     self.paint(ctx, &node, true, cursor, colors, (border, 1), ink);
                 }
@@ -1413,7 +1622,7 @@ impl SettingsUi {
                         let track = self.tone(
                             &format!("track_{}", def.key),
                             hover,
-                            (0x5b5b5bff, 0x7f7f7fff, 0x6a6a6aff),
+                            (crate::ui_theme::tone(0x5b5b5bff), 0x7f7f7fff, 0x6a6a6aff),
                         );
                         self.props(
                             ctx,
@@ -1462,7 +1671,7 @@ impl SettingsUi {
                             (0xeeececff, 0x8e8e8eff, 0x707070ff),
                         );
                         let ink = if hover { "ffffffff" } else { "393939ff" };
-                        self.props(ctx,&format!("{row}.field"),format!("visible: true; ignore_event: false; btn: {{ back_color: #{back:08x}; color: #242221ff; stroke: 1; }}"));
+                        self.props(ctx,&format!("{row}.field"),format!("visible: true; ignore_event: false; btn: {{ back_color: #{back:08x}; color: #~242221ff; stroke: 1; }}"));
                         self.text(ctx, &format!("{row}.field.value"), options[value as usize]);
                         self.props(
                             ctx,
@@ -1474,6 +1683,10 @@ impl SettingsUi {
                             &format!("{row}.field.caret"),
                             format!("color: #{ink};"),
                         );
+                    }
+                    Control::Color => {
+                        show[4] = true;
+                        self.render_color(ctx, &row, index, value as u32);
                     }
                     Control::Slider(lo, hi, step, unit) => {
                         show[2] = true;
@@ -1563,6 +1776,56 @@ impl SettingsUi {
                 self.props(ctx, &format!("{row}.key{j}"), hidden.into());
             }
         }
+        if !show[4] {
+            self.visible(ctx, &format!("{row}.hex_box"), false);
+        }
+    }
+    /// The colour row: typed text updates the draft when it is a valid
+    /// "#rrggbb"; a draft changed elsewhere (Reset) rewrites the text. The
+    /// native field draws beneath the window, so its text is mirrored.
+    fn render_color(&mut self, ctx: &mut StableClient<'_>, row: &str, index: usize, current: u32) {
+        let def = &OPTIONS[index];
+        self.visible(ctx, &format!("{row}.hex_box"), true);
+        let node = format!("{PATH}.window.{row}.hex_box.hex");
+        if let Some(text) = ctx.ui_text_edit_text(&node) {
+            if self.hex.0 != Some(index) || (text == self.hex.1 && current != self.hex.2) {
+                // First shown, or reset: show the draft colour.
+                let shown = crate::ui_theme::format(current);
+                ctx.ui_set_text_edit_text(&node, &shown);
+                self.hex = (Some(index), shown, current);
+            } else if text != self.hex.1 {
+                if let Some(rgb) = crate::ui_theme::parse(&text) {
+                    self.draft.set(def.key, f64::from(rgb));
+                    self.hex.2 = rgb;
+                }
+                self.hex.1 = text;
+            }
+        }
+        let valid = crate::ui_theme::parse(&self.hex.1).is_some();
+        let editing = ctx
+            .ui_state_json(&node)
+            .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok())
+            .and_then(|v| v.get("is_editing").and_then(serde_json::Value::as_bool))
+            .unwrap_or(false);
+        let label = format!("{row}.hex_box.hex_value");
+        let text = self.hex.1.clone();
+        self.text(ctx, &label, &text);
+        self.props(
+            ctx,
+            &label,
+            format!("color: #{};", if valid { "eeececff" } else { "ff642eff" }),
+        );
+        self.props(
+            ctx,
+            &format!("{row}.hex_box.hex_focus"),
+            format!("visible: {editing}; color: #fdee00ff;"),
+        );
+        self.props(
+            ctx,
+            &format!("{row}.hex_box.swatch"),
+            // On a stroked node `color` is the edge, `back_color` the fill.
+            format!("back_color: #{:06x}ff;", self.hex.2),
+        );
     }
     fn render_popup(&mut self, ctx: &mut StableClient<'_>, cursor: Option<(f32, f32)>) {
         // Locate the open select's field in the current frame; scrolled-away menus close.
@@ -1696,8 +1959,12 @@ impl SettingsUi {
             "dismiss",
             true,
             cursor,
-            (0x3a3837ff, 0x4b4a49ff, 0x5b5b5bff),
-            (0x4b4a49ff, 1),
+            (
+                crate::ui_theme::tone(0x3a3837ff),
+                crate::ui_theme::tone(0x4b4a49ff),
+                crate::ui_theme::tone(0x5b5b5bff),
+            ),
+            (crate::ui_theme::tone(0x4b4a49ff), 1),
             0xeeececff,
         );
         self.paint(
@@ -1804,14 +2071,19 @@ mod tests {
     }
     #[test]
     fn layout_matches_measured_design_spacing() {
-        // Combat: sections at 0 and 322, rows 90 px apart (measured in the preview).
+        // Advanced has its own fixed body; Combat retains its original spacing.
         let (combat, _) = layout(0);
         assert_eq!(combat[0], (Entry::Section("Targeting"), 0.));
         assert_eq!(combat[1].1, 34.);
         assert_eq!(combat[2].1, 124.);
         assert_eq!(combat[4], (Entry::Section("Ability casting"), 322.));
-        assert_eq!(combat[5].1, 356.);
-        assert!(combat.iter().any(|(e, _)| *e == Entry::Section("Attacks")));
+        assert_eq!(layout(6), (vec![(Entry::Acquisition, 0.)], 475.));
+        assert_eq!(max_scroll(4), 0.);
+        assert!(!combat.iter().any(|(e, _)| *e == Entry::Section("Attacks")));
+        assert!(layout(4)
+            .0
+            .iter()
+            .any(|(e, _)| *e == Entry::Section("Attacks")));
         // Keybinds: hint, section at 69, header at 103, first row at 132.
         let (keys, _) = layout(1);
         assert_eq!(keys[0], (Entry::Hint, 0.));
@@ -1833,23 +2105,24 @@ mod tests {
         assert!(max_scroll(1) > 0.);
         assert!(max_scroll(0) > 0.);
         assert_eq!(max_scroll(2), 0.);
-        // 0.66: the Log detail choice row adds 90 px to Interface.
-        assert_eq!(max_scroll(3), 119.);
+        // Interface fits after 0.76.2 moved Debug to Advanced; 0.76.5's
+        // Appearance section (background colour row) scrolls it by 57 px.
+        assert_eq!(max_scroll(3), 57.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);
         assert_eq!(camera[1].0.height(), 56.);
     }
     #[test]
     fn visible_rows_never_exceed_the_slot_pools() {
-        for page in 0..4 {
+        for page in 0..=6 {
             let (entries, _) = layout(page);
             let mut scroll = 0.;
             while scroll <= max_scroll(page) {
                 let shown: Vec<_> = entries
                     .iter()
                     .filter(|(e, top)| {
-                        let y = VIEW_TOP + top - scroll;
-                        y + e.height() > VIEW_TOP && y < VIEW_BOTTOM
+                        let y = view_top(page) + top - scroll;
+                        y + e.height() > view_top(page) && y < VIEW_BOTTOM
                     })
                     .collect();
                 let rows = shown
@@ -1907,6 +2180,59 @@ mod tests {
         assert!(ui.capture.is_none());
     }
     #[test]
+    fn advanced_navigation_clears_clipping_mask_and_switches_all_subpages() {
+        let source = template();
+        let mask = source.find("#mask_bottom:color").unwrap();
+        let nav = source.find("#advanced_nav:empty").unwrap();
+        assert!(
+            nav > mask,
+            "navigation subtree must follow the blocking masks"
+        );
+        let header = &source[nav..source[nav..].find("#sub0:").unwrap() + nav];
+        assert!(header.contains("ignore_event: true; z: 2013;"));
+        // Mask z=2012 and child buttons z=2014. Keep the container itself above
+        // the mask too; visible drawing alone does not establish click access.
+        assert!(source.contains("ignore_event: false; z: 2012;"));
+        let timing = NativeTiming::new(false);
+        let store = settings::Settings::new(None);
+        let log = crate::test_support::logger("advanced-subpages");
+        let mut ui = SettingsUi {
+            page: 4,
+            ..Default::default()
+        };
+        crate::acquisition::set_custom(&mut ui.draft, "ghost", Some(85.));
+        for (subpage, schema) in [(1, 6), (2, 5), (0, 4), (1, 6)] {
+            ui.scroll = 170.;
+            ui.slots[0] = Some(Entry::Opt(0));
+            ui.handle(
+                Event::Advanced(subpage),
+                Keys::default(),
+                &timing,
+                &store,
+                &log,
+            );
+            assert_eq!(active_page(ui.page, ui.advanced), schema);
+            assert_eq!(ui.scroll, 0.);
+            assert!(ui.slots.iter().all(Option::is_none));
+            assert_eq!(crate::acquisition::custom(&ui.draft, "ghost"), Some(85.));
+            if schema == 6 {
+                assert_eq!(layout(schema).0, vec![(Entry::Acquisition, 0.)]);
+            } else {
+                assert!(layout(schema)
+                    .0
+                    .iter()
+                    .any(|(e, _)| matches!(e, Entry::Opt(_))));
+            }
+        }
+        ui.handle(Event::Page(3), Keys::default(), &timing, &store, &log);
+        ui.handle(Event::Advanced(2), Keys::default(), &timing, &store, &log);
+        assert_eq!(
+            (ui.page, ui.advanced),
+            (3, 1),
+            "hidden subpage events cannot change other pages"
+        );
+    }
+    #[test]
     fn export_window() {
         if let Ok(dir) = std::env::var("LT_HUD_EXPORT_DIR") {
             std::fs::write(std::path::Path::new(&dir).join("settings.ui"), template()).unwrap();
@@ -1917,6 +2243,42 @@ mod tests {
         for i in 0..ROWS {
             assert!(t.contains(&format!("#row{i}:color")));
         }
+    }
+    #[test]
+    fn acquisition_draft_cancel_apply_and_invalid_input_follow_window_transaction() {
+        let timing = NativeTiming::new(false);
+        let store = settings::Settings::new(None);
+        let log = crate::test_support::logger("acquisition-settings-transaction");
+        let mut ui = SettingsUi {
+            open: true,
+            draft: store.snapshot(),
+            ..Default::default()
+        };
+        crate::acquisition::set_custom(&mut ui.draft, "mod/hero", Some(145.));
+        assert_eq!(
+            crate::acquisition::custom(&store.snapshot(), "mod/hero"),
+            None
+        );
+        ui.close(&timing, &store, false, &log);
+        assert_eq!(
+            crate::acquisition::custom(&store.snapshot(), "mod/hero"),
+            None
+        );
+        ui.open = true;
+        ui.acquisition.invalid = true;
+        ui.close(&timing, &store, true, &log);
+        assert!(ui.open);
+        assert_eq!(
+            crate::acquisition::custom(&store.snapshot(), "mod/hero"),
+            None
+        );
+        ui.acquisition.invalid = false;
+        ui.close(&timing, &store, true, &log);
+        assert!(!ui.open);
+        assert_eq!(
+            crate::acquisition::custom(&store.snapshot(), "mod/hero"),
+            Some(145.)
+        );
     }
     #[test]
     fn raw_edges_do_not_confuse_high_keys() {

@@ -693,6 +693,11 @@ fn basic_attack_metadata_uses_current_effect_growth_and_bonus_without_pointer_ca
             .range,
         72_000
     );
+    assert_eq!(
+        unsafe { read_attack_maximum(entity, Some(12)) },
+        Some(115_000)
+    );
+    assert_eq!(unsafe { read_attack_maximum(entity, None) }, None);
     bytes[0x498..0x4a0].copy_from_slice(&u64::MAX.to_le_bytes());
     assert!(unsafe { read_effect_metadata(bytes.as_ptr() as usize, 0x488) }.is_none());
     bytes[0x498..0x4a0].copy_from_slice(&60_000u64.to_le_bytes());
@@ -1001,6 +1006,127 @@ fn stop_emits_native_event_once_and_clears_only_movement() {
         }
         assert_eq!(seen, vec![17]);
     }
+}
+#[test]
+fn accepted_manual_attack_stops_movement_during_cooldown_without_changing_combat_state() {
+    unsafe extern "system" fn notify(events: usize, actor: usize) {
+        (&mut *(events as *mut Vec<usize>)).push(actor);
+    }
+    let mut entity = vec![0u64; 0x6c0 / 8];
+    let address = entity.as_mut_ptr() as usize;
+    let mut seen = Vec::<usize>::new();
+    let events = &mut seen as *mut Vec<usize> as usize;
+    let target = [0usize, 29, 0];
+    let ticket = StopTicket {
+        key: (1, 2, 3),
+        actor: 17,
+        hold: false,
+        cancel_recall: false,
+        attack_target: Some(29),
+    };
+    unsafe {
+        std::ptr::write_unaligned((address + 0x68) as *mut u32, 15);
+        for cooldown in [41usize, 0] {
+            std::ptr::write_unaligned((address + 0x70) as *mut usize, 2);
+            std::ptr::write_unaligned((address + 0xb0) as *mut usize, cooldown);
+            std::ptr::write_unaligned((address + 0x2b0) as *mut usize, 1);
+            let before = entity.clone();
+            assert!(stop_for_manual_attack(
+                address,
+                target.as_ptr() as usize,
+                ticket,
+                events,
+                notify
+            ));
+            assert_eq!(
+                std::ptr::read_unaligned((address + 0x70) as *const usize),
+                0
+            );
+            // Only the action tag changes; cooldown, position, action payload
+            // and pending-effect queue all survive both waiting and ready AAs.
+            entity[0x70 / 8] = before[0x70 / 8];
+            assert_eq!(entity, before);
+        }
+    }
+    assert_eq!(seen, vec![17, 17]);
+}
+#[test]
+fn manual_attack_stop_preserves_other_targets_windups_casts_and_forced_movement() {
+    unsafe extern "system" fn notify(_: usize, _: usize) {
+        panic!("unexpected stop event");
+    }
+    let mut entity = vec![0u64; 0x6c0 / 8];
+    let address = entity.as_mut_ptr() as usize;
+    let ticket = StopTicket {
+        key: (1, 2, 3),
+        actor: 17,
+        hold: false,
+        cancel_recall: false,
+        attack_target: Some(29),
+    };
+    unsafe {
+        std::ptr::write_unaligned((address + 0x68) as *mut u32, 15);
+        std::ptr::write_unaligned((address + 0x70) as *mut usize, 2);
+        let before = entity.clone();
+        for target in [[0usize, 30, 0], [1, 29, 0], [2, 29, 0]] {
+            assert!(!stop_for_manual_attack(
+                address,
+                target.as_ptr() as usize,
+                ticket,
+                0,
+                notify
+            ));
+            assert_eq!(entity, before);
+        }
+        let target = [0usize, 29, 0];
+        assert!(!stop_for_manual_attack(
+            address,
+            target.as_ptr() as usize,
+            StopTicket {
+                attack_target: None,
+                ..ticket
+            },
+            0,
+            notify
+        ));
+        for action in [1usize, 3, 4, 5, 6] {
+            std::ptr::write_unaligned((address + 0x70) as *mut usize, action);
+            let before = entity.clone();
+            assert!(!stop_for_manual_attack(
+                address,
+                target.as_ptr() as usize,
+                ticket,
+                0,
+                notify
+            ));
+            assert_eq!(entity, before);
+        }
+        std::ptr::write_unaligned((address + 0x70) as *mut usize, 2);
+        let effects = [6usize, 0, 0, 0, 0];
+        std::ptr::write_unaligned((address + 0x2c0) as *mut usize, effects.as_ptr() as usize);
+        std::ptr::write_unaligned((address + 0x2c8) as *mut usize, 1);
+        let before = entity.clone();
+        assert!(!stop_for_manual_attack(
+            address,
+            target.as_ptr() as usize,
+            ticket,
+            0,
+            notify
+        ));
+        assert_eq!(entity, before);
+    }
+}
+#[test]
+fn manual_attack_stop_ticket_is_single_use_and_scoped_to_actor_and_match() {
+    let key = (1, 2, 3);
+    arm_stop(key, Some(17), false, false, Some(29));
+    assert!(take_stop_ticket((1, 2, 4), 17).is_none());
+    assert!(take_stop_ticket(key, 18).is_none());
+    assert_eq!(take_stop_ticket(key, 17).unwrap().attack_target, Some(29));
+    assert!(take_stop_ticket(key, 17).is_none());
+    arm_stop(key, Some(17), false, false, Some(29));
+    arm_stop(key, None, false, false, None);
+    assert!(take_stop_ticket(key, 17).is_none());
 }
 #[test]
 fn recall_stop_emits_once_and_preserves_timer_effects_and_other_actions() {

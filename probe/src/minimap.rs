@@ -39,7 +39,16 @@ pub fn draw_frame(ctx: &mut StableClient<'_>, camera: &CameraControl) {
         ((x + 0.5, y + 3.), (x + 0.5, y + size - 3.)),
         ((x + size - 0.5, y + 3.), (x + size - 0.5, y + size - 3.)),
     ] {
-        ctx.draw_line("UI", a.0, a.1, b.0, b.1, 1., 1002, 0x4b4a49ff);
+        ctx.draw_line(
+            "UI",
+            a.0,
+            a.1,
+            b.0,
+            b.1,
+            1.,
+            1002,
+            crate::ui_theme::tone(0x4b4a49ff),
+        );
     }
     for (cx, cy, sx, sy) in [
         (x, y, 1., 1.),

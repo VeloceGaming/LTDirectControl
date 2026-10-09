@@ -1,22 +1,19 @@
 # Backlog
 
-What is left to do, as of 0.74.4 (2026-10-09). Finished and declined items
+What is left to do, as of 0.77.3 (2026-10-09). Finished and declined items
 are listed at the end for reference.
 
 ## Open
 
-1. **Skill preview redesign.** The user is redesigning the previews from
-   [preview-drawing.md](preview-drawing.md). Before building it, a small
-   drawing test build should confirm in game what that sheet marks as
-   untried: very wide lines, `draw_svg` and `draw_sprite`. Then the preview
-   look moves into a layered renderer: each preview piece (area, corridor,
-   cone, movement, range ring, target) becomes a list of layers in a style
-   file, built to the design.
-2. **Skill previews still missing** for base-game skills built from effect
-   types no JSON names yet: Gunner Q and R, Bard Q and R, Exorcist R,
-   Cavalry Knight R, and an unknown `1ad9600/48` inside Executioner W and the
-   Poison Dart Hunter skills. Needs static analysis of the game code, as in
-   0.71. Bard W (changed by the 0.74.1 landing rule) is untested in game.
+1. **Match freeze (0.77.2, once).** The worker stopped mid-match with
+   nothing logged. 0.77.3 logs `WORKER STALL ... last_step=...` (always
+   written); if it recurs, the line names where the worker stopped.
+2. **Skill previews.** 0.75.2 decodes Ice Mage R (cone), Bard R (aura) and
+   Exorcist R (area at the cast), matched to `champion_info`; Gunner Q/R/W,
+   Bard Q, Exorcist W and Executioner W are single-target or self buffs and
+   correctly show no area. 0.75.3: Dancer R as a fan of 4-10 blades from
+   her kill stack; Cavalry Knight R (a speed buff and road) shows no
+   direction guide. Bard W (changed by the 0.74.1 landing rule) is untested in game.
    The user keeps observing every champion's preview over time.
    Known limits, accepted for now: buff-dependent skills (SwitchByBuff)
    show the unbuffed version; dashes that stop at the first unit (Rush) have
@@ -30,13 +27,26 @@ are listed at the end for reference.
    `tools/audit_tooltips.py`.
 4. **Emotes.** The last item of the post-shop investigation
    ([investigation-pass-65.md](investigation-pass-65.md)); not started.
-5. **Champion stats (optional).** The game's match HUD already shows AD, AP,
-   Armor, MR, attack speed and move speed. Adding stats it does not show
-   (ability haste, crit, range, lifesteal, penetration) is optional; the
-   SDK can read them.
-6. **Public release.** Rename the mod ID and finish the Steam description.
+5. **Stats panel values from items.** Haste, lifesteal and penetration are
+   summed from buffs; check them against the game's own panel with items
+   that grant them (`STATS own raw` lines, every 10 s).
+6. **UI refactor (later, when the user is motivated).** Option 1 of the
+   customisation discussion: let modders restyle the HUD without editing
+   Rust templates. The background colour (0.76-0.77.2) is the built-in
+   limited customisation meanwhile.
+7. **Public release.** Rename the mod ID and finish the Steam description.
 
 ## Done
+
+- Stats panels (0.77.0-0.77.3, accepted): own stats left of the Q slot
+  (C toggles), League-style left-click selection with a target frame
+  (face or tower / jungle / minion glyph, health and shield, 12 stats).
+- Background colour (0.76.4-0.77.2): one setting moves every surface,
+  frame and hover grey by the same offset (`ui_theme`); text inks fixed.
+  Stat icons (game sheet plus the mod's sprite sheet) also in shop filters.
+- Skill preview redesign (0.75.0-0.75.3, accepted) from the user's design
+  (design/previews/concept.html); the 0.75 Drawing test setting was
+  removed after acceptance (0.77.3 housekeeping).
 
 - Selection pass (0.72.0-0.72.3, accepted): bodies measured from the art,
   placed with the game's draw data; the agreed League-style ranking.
@@ -47,6 +57,9 @@ are listed at the end for reference.
 - Shop "Vanilla order" option, default on (0.67.0).
 
 ## Declined
+
+- The design's 550 ms dash reveal (user, 2026-10-09: "means little and can
+  backfire").
 
 - Esc on the shop also opens the game's Esc menu (user, 2026-10-09: too
   much work for a small thing). The SDK cannot consume keys and the game

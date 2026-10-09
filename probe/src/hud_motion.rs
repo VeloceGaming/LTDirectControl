@@ -134,7 +134,9 @@ pub fn properties(
     path: &str,
     source: &str,
 ) -> bool {
-    write_properties(cache, path, source, |value| {
+    // Design greys (`#~rrggbbaa`) follow the background colour.
+    let source = crate::ui_theme::themed(source);
+    write_properties(cache, path, &source, |value| {
         ctx.ui_set_properties(path, value)
     })
 }

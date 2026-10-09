@@ -29,6 +29,8 @@ const SAFETY: &[&str] = &[
     "SHOP HOOKS",
     "CURSOR native",
     "CURSOR window",
+    "WORKER STALL",
+    "WORKER RESUMED",
 ];
 /// Lines starting with one of these are written only at Verbose.
 const VERBOSE: &[&str] = &[

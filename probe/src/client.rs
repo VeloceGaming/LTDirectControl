@@ -15,6 +15,7 @@ pub(crate) struct ClientObservations {
     pub(crate) session_ui: session_ui::SessionUi,
     pub(crate) settings_ui: settings_ui::SettingsUi,
     pub(crate) shop_ui: shop_ui::ShopUi,
+    pub(crate) stats_ui: stats_ui::StatsUi,
     pub(crate) result_audit: result_audit::ResultAudit,
     pub(crate) team_ui: team_status::TeamUi,
     pub(crate) early_input: Option<(u64, platform_input::Keys)>,
@@ -98,6 +99,20 @@ impl Client {
         }
     }
     fn post_update_inner(&self, ctx: &mut StableClient<'_>, dt_micros: u64) {
+        // A new background colour (applied in Settings) rebuilds the windows
+        // through their usual missing-node path.
+        ui_theme::sync();
+        for path in [
+            player_hud::PATH,
+            session_ui::PATH,
+            settings_ui::PATH,
+            shop_ui::PATH,
+            team_status::PATH,
+            stats_ui::OWN,
+            stats_ui::TARGET,
+        ] {
+            ui_theme::refresh(ctx, path);
+        }
         self.install_once(ctx);
         let scene = ctx.client_scene_kind();
         let battlefield = scene == Some(mod_api_stable::ClientSceneKindV1::InGame);
@@ -148,6 +163,7 @@ impl Client {
                 &self.logger,
             );
         }
+        acquisition::refresh(ctx, self.timing.generation());
         self.choose_prepared_athlete(keys);
         test_cheats::update(keys.home_end && battlefield, &self.logger);
         self.timing.heartbeat(
@@ -260,6 +276,18 @@ impl Client {
                 self.movement.draw_minimap_path(ctx, &self.camera);
             }
             cursor::draw_clicks(ctx, &self.camera, &self.movement.click_feedback());
+        }
+        if self.settings.number("acquisition_debug") == 1.
+            && matches!(
+                self.timing.ui_phase(),
+                Some(native_timing::Phase::Running | native_timing::Phase::Paused)
+            )
+        {
+            self.movement.draw_acquisition_debug(
+                ctx,
+                &self.camera,
+                self.timing.ui_phase() == Some(native_timing::Phase::Paused),
+            );
         }
         // The no-cooldown test option changes the real match: always shown.
         if test_cheats::active() {
@@ -478,6 +506,13 @@ impl Client {
                 hovered_skill = observations.hud_ui.hovered_skill(ctx, keys.cursor);
             }
             hud_bounds = observations.hud_ui.bounds(ctx);
+            hud_bounds.extend(observations.stats_ui.apply(
+                ctx,
+                battlefield,
+                controls,
+                keys.stats_panel && keys.focused,
+                &self.logger,
+            ));
             drop(t);
             let t = perf::time(perf::Section::Team);
             {

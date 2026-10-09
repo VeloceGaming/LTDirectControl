@@ -18,7 +18,7 @@ mod shop;
 mod tests;
 mod tooltips;
 mod view;
-pub(super) use combat::attack_range;
+pub(super) use combat::attack_ranges;
 use combat::*;
 use input::*;
 use layout::*;

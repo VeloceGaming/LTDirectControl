@@ -1,0 +1,270 @@
+{
+  "alchemist": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "android": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "archer": {
+    "growth_range": 0,
+    "range": 70000
+  },
+  "astrologer": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "bard": {
+    "growth_range": 0,
+    "range": 80000
+  },
+  "barrier_magician": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "berserker": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "bomber": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "boomerang_hunter": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "cavalry_knight": {
+    "growth_range": 0,
+    "range": 27000
+  },
+  "chef": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "circus_blade": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "clown": {
+    "growth_range": 0,
+    "range": 40000
+  },
+  "crossbowman": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "dancer": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "dark_mage": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "demon": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "dokkaebi": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "druid": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "dual_blader": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "enchanter": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "executioner": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "exorcist": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "fighter": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "gambler": {
+    "growth_range": 0,
+    "range": 70000
+  },
+  "ghost": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "guardian_spirit": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "gunner": {
+    "growth_range": 0,
+    "range": 50000
+  },
+  "hammerer": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "harpooner": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "hitman": {
+    "growth_range": 0,
+    "range": 40000
+  },
+  "hunter": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "ice_mage": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "illusionist": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "inquisitor": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "jiangshi": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "knight": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "lancer": {
+    "growth_range": 0,
+    "range": 30000
+  },
+  "lightning_mage": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "magic_knight": {
+    "growth_range": 0,
+    "range": 26000
+  },
+  "monk": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "necromancer": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "nightmare": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "ninja": {
+    "growth_range": 0,
+    "range": 23000
+  },
+  "ogre": {
+    "growth_range": 0,
+    "range": 28000
+  },
+  "plague_doctor": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "poison_dart_hunter": {
+    "growth_range": 0,
+    "range": 50000
+  },
+  "pole_warrior": {
+    "growth_range": 0,
+    "range": 30000
+  },
+  "priest": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "prisoner": {
+    "growth_range": 0,
+    "range": 28000
+  },
+  "pyromancer": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "pythoness": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "sand_mage": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "shadowmancer": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "shield_bearer": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "siege_breaker": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "soldier": {
+    "growth_range": 3000,
+    "range": 60000
+  },
+  "spellbreaker": {
+    "growth_range": 0,
+    "range": 28000
+  },
+  "strongman": {
+    "growth_range": 0,
+    "range": 28000
+  },
+  "swordman": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "taoist": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "vampire": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "voodoo_shaman": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "werewolf": {
+    "growth_range": 0,
+    "range": 25000
+  },
+  "whip_master": {
+    "growth_range": 0,
+    "range": 40000
+  },
+  "white_mage": {
+    "growth_range": 0,
+    "range": 60000
+  },
+  "wind_mage": {
+    "growth_range": 0,
+    "range": 60000
+  }
+}

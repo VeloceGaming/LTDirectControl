@@ -57,6 +57,10 @@ struct State {
     viewer_bind_base: usize,
     played_tick: usize,
     pending_action: Option<(MatchKey, Phase, SessionAction)>,
+    /// Last worker progress while running (crate::worker_watch), and when a
+    /// reported stall began.
+    progress: Option<Instant>,
+    stalled: Option<Instant>,
 }
 pub struct NativeTiming {
     state: Mutex<State>,
@@ -124,6 +128,8 @@ impl NativeTiming {
                 viewer_bind_base: 0,
                 played_tick: 0,
                 pending_action: None,
+                progress: None,
+                stalled: None,
             }),
         }
     }
@@ -266,6 +272,9 @@ impl NativeTiming {
         s.reason.clear();
         s.key = None;
         s.worker = None;
+        crate::worker_watch::bind(0);
+        s.progress = None;
+        s.stalled = None;
         s.sender = None;
         s.view = None;
         s.selected = false;
@@ -388,6 +397,7 @@ impl NativeTiming {
         }
         s.key = Some(key);
         s.worker = Some(crate::platform_input::thread_id());
+        crate::worker_watch::bind(crate::platform_input::thread_id());
         s.phase = Phase::Loading;
         s.began = Instant::now();
         s.worker_bind_base = s.worker_calls;
@@ -442,6 +452,8 @@ impl NativeTiming {
     /// Called after a successful frame send in the runtime-identified worker.
     /// The current tick has returned and all three output locks are released.
     pub fn after_publication(&self, sender: usize, log: &Logger) {
+        crate::worker_watch::enter(crate::worker_watch::Step::Publication, usize::MAX);
+        let _outside = crate::worker_watch::Outside;
         let generation = {
             let Ok(mut s) = self.state.lock() else { return };
             if !s.installed
@@ -456,6 +468,14 @@ impl NativeTiming {
             }
             s.sender = Some(sender);
             s.produced += 1;
+            s.progress = Some(Instant::now());
+            if let Some(since) = s.stalled.take() {
+                log.write(&format!(
+                    "WORKER RESUMED after {} ms; produced={}",
+                    since.elapsed().as_millis(),
+                    s.produced
+                ));
+            }
             let published = s.produced;
             for trace in s
                 .traces
@@ -573,6 +593,7 @@ impl NativeTiming {
         }
         let Ok(mut s) = self.state.lock() else { return };
         self.wake.notify_all();
+        Self::watch_worker(&mut s, log);
         let previous_played = s.played_tick;
         s.played_tick = played;
         let used = before.saturating_sub(after);
@@ -616,6 +637,29 @@ impl NativeTiming {
         }
         if used > 2 || s.consumed > s.produced + 1 {
             Self::release(&mut s, "Unexpected publication/playback frame counts", log);
+        }
+    }
+    /// Viewer, each frame: a running match whose worker has published
+    /// nothing for crate::worker_watch::STALL is reported once (not while
+    /// paused, and not while the worker legitimately waits for playback).
+    fn watch_worker(s: &mut State, log: &Logger) {
+        let now = Instant::now();
+        if !matches!(s.phase, Phase::Running | Phase::Ai) || s.produced > s.consumed {
+            s.progress = Some(now);
+            return;
+        }
+        let since = *s.progress.get_or_insert(now);
+        if s.stalled.is_none() && now.duration_since(since) >= crate::worker_watch::STALL {
+            s.stalled = Some(since);
+            let (step, player) = crate::worker_watch::last();
+            log.write(&format!(
+                "WORKER STALL no frame for {} ms; played_tick={} produced={} consumed={} phase={:?} last_step={step:?} player={player:?}",
+                now.duration_since(since).as_millis(),
+                s.played_tick,
+                s.produced,
+                s.consumed,
+                s.phase
+            ));
         }
     }
     pub fn trace_dispatch(
@@ -772,6 +816,31 @@ mod tests {
         s.client = Some(crate::platform_input::thread_id());
         drop(s);
         t
+    }
+    #[test]
+    fn a_running_worker_without_frames_is_reported_once() {
+        let log = logger("worker-stall");
+        let t = active();
+        let mut s = t.state.lock().unwrap();
+        s.phase = Phase::Running;
+        (s.produced, s.consumed) = (5, 5);
+        let old = Instant::now() - Duration::from_secs(4);
+        s.progress = Some(old);
+        NativeTiming::watch_worker(&mut s, &log);
+        assert_eq!(s.stalled, Some(old));
+        NativeTiming::watch_worker(&mut s, &log);
+        assert_eq!(s.stalled, Some(old));
+        // Waiting for playback (a frame queued) or paused is not a stall.
+        s.stalled = None;
+        s.progress = Some(old);
+        s.produced = 6;
+        NativeTiming::watch_worker(&mut s, &log);
+        assert!(s.stalled.is_none() && s.progress != Some(old));
+        s.produced = 5;
+        s.phase = Phase::Paused;
+        s.progress = Some(old);
+        NativeTiming::watch_worker(&mut s, &log);
+        assert!(s.stalled.is_none() && s.progress != Some(old));
     }
     #[test]
     fn repeated_handoffs_keep_binding_pacing_and_never_reclaim_on_mouse_input() {

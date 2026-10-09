@@ -21,10 +21,13 @@ Each call also takes a **z** (draw order); higher is drawn on top.
 
 Already used by this mod and seen in game: `draw_line` (all current
 previews, including alpha), `draw_circle` (cursor dot), `draw_rect`
-(diagnostic bar). **Not yet tried in game**: very wide lines (tens of
-pixels), `draw_svg` and `draw_sprite`. A short test build should confirm
-them before a design depends on them (end caps of wide lines, how the SVG
-tint mixes with its own colours, sprite filtering).
+(diagnostic bar). **Confirmed in game by the 0.75.0 drawing test**: lines
+up to 64 px wide have square ends and an even fill at any angle; 3 px
+strips fill a shape without visible seams; two crossing 25% strips darken
+only mildly; a filled disc sits exactly inside a segmented rim (the game
+camera has the same scale on both axes). **Not yet tried in game**:
+`draw_svg` and `draw_sprite` (how the SVG tint mixes with its own colours,
+sprite filtering).
 
 ## What each preview piece can be built from
 

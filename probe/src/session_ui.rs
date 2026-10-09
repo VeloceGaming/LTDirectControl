@@ -11,7 +11,7 @@ use std::{
     sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
-const PATH: &str = "ingame.lt_session_controls";
+pub(crate) const PATH: &str = "ingame.lt_session_controls";
 /// In-match strip controls: Pause, AI, Camera, Settings, vision group, Tab.
 const STRIP_W: f32 = 656.;
 const VISION_X: f32 = 200.;
@@ -48,14 +48,16 @@ struct Events {
     vision: Option<crate::camera::Vision>,
 }
 fn button(s: &mut String, name: &str, glyph: &str, x: usize, y: usize) {
-    s.push_str(&format!("#{name}:color_icon_button {{ x: {x}px; y: {y}px; width: 48px; height: 44px; z: 1102; visible: false; btn: {{ color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }}"));
+    let bg = crate::ui_theme::hex(0xff);
+    s.push_str(&format!("#{name}:color_icon_button {{ x: {x}px; y: {y}px; width: 48px; height: 44px; z: 1102; visible: false; btn: {{ color: #~4b4a49ff; back_color: #{bg}; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }}"));
     s.push_str(&ui_graphics::image("glyph", glyph, 11, 9, 26, 1105));
     s.push_str("}\n");
 }
 fn template() -> String {
+    let bg = crate::ui_theme::hex(0xff);
     let mut s=String::from("lt_session_controls:empty { width: 456px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62px; z: 1100; ignore_event: true;\n");
     for lane in 0..5 {
-        s.push_str(&format!("#lane{lane}:color_icon_button {{ x: {}px; y: 4px; width: 72px; height: 72px; z: 1102; btn: {{ color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }} #portrait:image {{ x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; }} }}\n",lane*80));
+        s.push_str(&format!("#lane{lane}:color_icon_button {{ x: {}px; y: 4px; width: 72px; height: 72px; z: 1102; btn: {{ color: #~4b4a49ff; back_color: #{bg}; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }} #portrait:image {{ x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; }} }}\n",lane*80));
     }
     s.push_str(&ui_graphics::image(
         "loading",
@@ -78,11 +80,11 @@ fn template() -> String {
         button(&mut s, name, glyph, 0, 0);
     }
     s.push_str(r##"#tab_key:color { x: 592px; y: 17px; width: 30px; height: 22px; z: 1104; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @"asset/base/style/main#bold_label"; width: 100%; height: 100%; size: 13; align_x: Center; align_y: Center; color: #393939ff; text: "Tab"; ignore_event: true; z: 1105; } }
-    #rule_controls:color { x: 194px; y: 17px; width: 1px; height: 22px; z: 1101; color: #4b4a49ff; ignore_event: true; }
-    #rule_vision:color { x: 342px; y: 17px; width: 1px; height: 22px; z: 1101; color: #4b4a49ff; ignore_event: true; }
-    #vision_track:color { x: 200px; y: 6px; width: 136px; height: 44px; z: 1101; color: #3a3837ff; rounding: Uniform { rounding: 3; } ignore_event: true; }
+    #rule_controls:color { x: 194px; y: 17px; width: 1px; height: 22px; z: 1101; color: #~4b4a49ff; ignore_event: true; }
+    #rule_vision:color { x: 342px; y: 17px; width: 1px; height: 22px; z: 1101; color: #~4b4a49ff; ignore_event: true; }
+    #vision_track:color { x: 200px; y: 6px; width: 136px; height: 44px; z: 1101; color: #~3a3837ff; rounding: Uniform { rounding: 3; } ignore_event: true; }
     #vision_indicator:color { x: 202px; y: 8px; width: 40px; height: 40px; z: 1102; color: #eeececff; rounding: Uniform { rounding: 2; } ignore_event: true; }
-    #tooltip:color { x: 0px; y: -68px; width: 310px; height: 56px; z: 1200; color: #1e1e1dd9; ignore_event: true; visible: false; rounding: Uniform { rounding: 3; } #text:label { @"asset/base/style/main#label"; x: 12px; y: 8px; width: 286px; height: 40px; size: 20; color: #ffffffff; ignore_event: true; z: 1201; } }
+    #tooltip:color { x: 0px; y: -68px; width: 310px; height: 56px; z: 1200; color: #~1e1e1dd9; ignore_event: true; visible: false; rounding: Uniform { rounding: 3; } #text:label { @"asset/base/style/main#label"; x: 12px; y: 8px; width: 286px; height: 40px; size: 20; color: #ffffffff; ignore_event: true; z: 1201; } }
     }"##);
     for (node, color) in [("vision_own", "53b8e4ff"), ("vision_other", "ff642eff")] {
         s=s.replace(&format!("#{node}:color_icon_button {{"),&format!("#{node}:color_icon_button {{ #mark:color {{ x: 6px; y: 13px; width: 3px; height: 18px; z: 1104; color: #{color}; ignore_event: true; }}"));
@@ -172,7 +174,11 @@ impl SessionUi {
             self.motion
                 .value(&format!("select_{node}"), if accent { 1. } else { 0. }, 0.1);
         let primary = node == "primary" && preparing;
-        let base = if preparing { 0x4b4a49ff } else { 0x4b4a4900 };
+        let base = if preparing {
+            crate::ui_theme::tone(0x4b4a49ff)
+        } else {
+            crate::ui_theme::tone(0x4b4a4900)
+        };
         let border = crate::hud_motion::color(base, 0xfdee00ff, selected);
         let border = crate::hud_motion::color(
             u32::from_str_radix(&border, 16).unwrap_or(base),
@@ -182,11 +188,19 @@ impl SessionUi {
         let background = if primary {
             crate::hud_motion::color(0xfdee00ff, 0xc9be00ff, hover)
         } else {
-            crate::hud_motion::color(0x1c1a18ff, 0x3a3837ff, hover)
+            crate::hud_motion::color(
+                crate::ui_theme::rgba(0xff),
+                crate::ui_theme::tone(0x3a3837ff),
+                hover,
+            )
         };
         let background = crate::hud_motion::color(
-            u32::from_str_radix(&background, 16).unwrap_or(0x1c1a18ff),
-            if primary { 0xaea400ff } else { 0x5b5b5bff },
+            u32::from_str_radix(&background, 16).unwrap_or(crate::ui_theme::rgba(0xff)),
+            if primary {
+                0xaea400ff
+            } else {
+                crate::ui_theme::tone(0x5b5b5bff)
+            },
             press,
         );
         let stroke = if accent && !primary { 2 } else { 1 };
@@ -267,7 +281,9 @@ impl SessionUi {
             self.portraits.clear();
             self.attempted.clear();
             self.registered = false;
-            if !ctx.ui_spawn_source("ingame", &template()) || !ctx.ui_exists(PATH) {
+            if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
+                || !ctx.ui_exists(PATH)
+            {
                 return Vec::new();
             }
             log.write("SESSION portrait UI spawned");
@@ -433,7 +449,8 @@ impl SessionUi {
                 f32::from(hovered_vision == Some(i)),
                 0.1,
             );
-            let shade = crate::hud_motion::color(0x5b5b5bff, 0xb8b6b5ff, selected);
+            let shade =
+                crate::hud_motion::color(crate::ui_theme::tone(0x5b5b5bff), 0xb8b6b5ff, selected);
             self.props(
                 ctx,
                 &format!("{node}.hover"),
@@ -625,7 +642,7 @@ impl SessionUi {
             let x =
                 ((tx + tw / 2. - bx) * sx - width / 2.).clamp(-bx * sx, 1920. - bx * sx - width);
             let y = (ty - by) * sy - height as f32 - 12.;
-            self.props(ctx,"tooltip",format!("visible: true; x: {x:.2}px; y: {y:.2}px; width: {width:.2}px; height: {height}px; color: #1e1e1d{:02x};",(217.*fade)as u8));
+            self.props(ctx,"tooltip",format!("visible: true; x: {x:.2}px; y: {y:.2}px; width: {width:.2}px; height: {height}px; color: #~1e1e1d{:02x};",(217.*fade)as u8));
             self.props(
                 ctx,
                 "tooltip.text",

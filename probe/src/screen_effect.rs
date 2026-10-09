@@ -76,7 +76,7 @@ impl Effect {
                 ));
             }
             source.push('}');
-            let ok = ctx.ui_spawn_source("ingame", &source);
+            let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&source));
             log.write(&format!(
                 "SCREEN EFFECT native UI spawn={ok} exists={}",
                 ctx.ui_exists(PATH)

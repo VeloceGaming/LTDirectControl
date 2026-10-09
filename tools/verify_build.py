@@ -73,8 +73,12 @@ hud_art = load('hud-glyphs.json')
 assert digest(root / hud_art['source']) == hud_art['source_sha256']
 assert len(hud_art['files']) == 8
 ui_art = load('ui-graphics.json')
-assert len(ui_art['files']) == 85
-for record in [hud_art, ui_art, load('settings-glyphs.json'), load('shop-glyphs.json'), load('endfield-glyphs.json')]:
+assert len(ui_art['files']) == 88  # 86 + stat icon sprite sheet and data (0.76.7)
+stamp = load('shop-stamp.json')
+assert digest(root / stamp['source']) == stamp['source_sha256']
+assert stamp['rotation_degrees_clockwise'] == -7.5
+assert stamp['display_size'] == [64, 64]
+for record in [hud_art, ui_art, stamp, load('settings-glyphs.json'), load('shop-glyphs.json'), load('endfield-glyphs.json')]:
     for name, value in record['files'].items():
         assert digest(package / name) == value, name
     for name, value in record.get('sources', {}).items():
@@ -126,7 +130,7 @@ record = {
     'source_sha256': {p.relative_to(root).as_posix(): digest(p) for p in sources},
     'ui_asset_hashes': ui_art['files'],
     'font_check': font_check,
-    'automated_checks': f'{args.probe_tests} probe tests passed; Clippy with warnings denied, formatting and release build passed; {len(anchors)} executable anchors, ABI 6/null-host rejection, 85 UI/font assets and SVG fingerprints verified; {len(profile["layout_anchors"])} layout guards verified; fonts: {font_check}; ZIP verified separately.',
+    'automated_checks': f'{args.probe_tests} probe tests passed; Clippy with warnings denied, formatting and release build passed; {len(anchors)} executable anchors, ABI 6/null-host rejection, {len(ui_art["files"])} UI/font assets and source fingerprints verified; {len(profile["layout_anchors"])} layout guards verified; fonts: {font_check}; ZIP verified separately.',
     'game_test': 'pending user test on 0.6.3; native rendering/gameplay not verified by automated tests',
     'installation': 'Package verified; installation pending.',
 }

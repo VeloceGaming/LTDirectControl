@@ -344,12 +344,14 @@ fn label(
     source.push_str(&format!("#{id}:label {{ @\"asset/base/style/main#bold_label\"; x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: 1005; size: {size}; color: #{color}; align_y: Center; {align} {outline} ignore_event: true; }}\n"));
 }
 fn inventory_tile(i: usize) -> String {
-    format!("item{i}:color {{ x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #background:color {{ x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #unknown:label {{ @\"asset/base/style/main#label\"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: \"?\"; visible: false; ignore_event: true; }} }}\n")
+    // Slot insets: background + 5.
+    let inset = crate::ui_theme::shade(5, 0xff);
+    format!("item{i}:color {{ x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #background:color {{ x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #unknown:label {{ @\"asset/base/style/main#label\"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: \"?\"; visible: false; ignore_event: true; }} }}\n")
 }
 fn template() -> String {
     let mut s = format!("lt_player_hud:empty {{ width: {WIDTH}px; height: {HEIGHT}px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true;\n");
     // Battlefield ends at y1024. Controls remain in the last 50 px.
-    s.push_str("#strip:color { y: 90px; width: 1560px; height: 56px; z: 1000; color: #1c1a18ff; ignore_event: true; }\n#combat:empty { x: 832px; y: 4px; width: 256px; height: 80px; ignore_event: true; }\n#edge:color { y: 90px; width: 1560px; height: 1px; z: 1001; color: #4b4a49ff; ignore_event: true; }\n");
+    s.push_str(&"#strip:color { y: 90px; width: 1560px; height: 56px; z: 1000; color: #1c1a18ff; ignore_event: true; }\n#combat:empty { x: 832px; y: 4px; width: 256px; height: 80px; ignore_event: true; }\n#edge:color { y: 90px; width: 1560px; height: 1px; z: 1001; color: #~4b4a49ff; ignore_event: true; }\n".replace("#1c1a18ff", &format!("#{}", crate::ui_theme::hex(0xff))));
     // Session controls (Pause, AI, Camera, Settings, vision group) occupy x 8-350
     // with their own dividers; K/D/A, CS and Tab follow, then B recall beside HP.
     for x in [0, 1544] {
@@ -372,7 +374,7 @@ fn template() -> String {
         label(&mut s, id, (x, 102, w, 32), size, color);
     }
     label(&mut s, "level", (730, 100, 40, 36), 24, "ffffffff");
-    s.push_str("#health:color { x: 780px; y: 106px; width: 360px; height: 24px; z: 1001; color: #0e0d0cff; ignore_event: true; #trail:color { width: 0%; height: 100%; z: 1002; color: #efe6cfff; ignore_event: true; } #fill:color { width: 0%; height: 100%; z: 1003; color: #2e7d46ff; ignore_event: true; } }\n");
+    s.push_str("#health:color { x: 780px; y: 106px; width: 360px; height: 24px; z: 1001; color: #~0e0d0cff; ignore_event: true; #trail:color { width: 0%; height: 100%; z: 1002; color: #efe6cfff; ignore_event: true; } #fill:color { width: 0%; height: 100%; z: 1003; color: #2e7d46ff; ignore_event: true; } }\n");
     for i in 0..32 {
         s.push_str(&format!("#hp_tick{i}:color {{ x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }}\n"));
     }
@@ -387,10 +389,11 @@ fn template() -> String {
         1005,
     ));
     label(&mut s, "respawn", (953, 106, 56, 24), 22, "ffffffff");
-    s.push_str("#death_banner:color { x: 810px; y: -844px; width: 300px; height: 52px; z: 1120; color: #1e1e1df0; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; z: 1121; size: 26; align_x: Center; align_y: Center; color: #ffffffff; ignore_event: true; } }\n");
+    s.push_str("#death_banner:color { x: 810px; y: -844px; width: 300px; height: 52px; z: 1120; color: #~1e1e1df0; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; z: 1121; size: 26; align_x: Center; align_y: Center; color: #ffffffff; ignore_event: true; } }\n");
+    let inset = crate::ui_theme::shade(5, 0xff);
     for (i, key) in KEYS.iter().enumerate() {
         let x = SKILL_X + i * SKILL_STEP;
-        s.push_str(&format!("#skill{i}:color {{ x: {x}px; y: {SKILL_Y}px; width: 80px; height: 80px; z: 1001; color: #4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #shadow:color {{ x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; }} #background:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #211f1dff; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #png:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #shade:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; }} #drain_edge:color {{ x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; }} #keycap:color {{ x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }} "));
+        s.push_str(&format!("#skill{i}:color {{ x: {x}px; y: {SKILL_Y}px; width: 80px; height: 80px; z: 1001; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #shadow:color {{ x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; }} #background:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #png:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #shade:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; }} #drain_edge:color {{ x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; }} #keycap:color {{ x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }} "));
         label(&mut s, "cooldown", (2, 27, 76, 30), 27, "ffffffff");
         label(&mut s, "uses", (56, 4, 20, 22), 19, "fdee00ff");
         s.push_str(&crate::ui_graphics::image("lock", "lock", 28, 28, 24, 1005));
@@ -411,7 +414,8 @@ fn template() -> String {
                 2 => (0, t, 1, 4),
                 _ => (35, t, 1, 4),
             };
-            next.push_str(&format!("#gap{side}_{j}:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: 1002; color: #1c1a18ff; ignore_event: true; }}\n"));
+            let bg = crate::ui_theme::hex(0xff);
+            next.push_str(&format!("#gap{side}_{j}:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: 1002; color: #{bg}; ignore_event: true; }}\n"));
         }
     }
     next.push_str("}\n");
@@ -459,8 +463,8 @@ fn template() -> String {
         20,
         1003,
     ));
-    s.push_str("#feedback:color { x: 700px; y: -42px; width: 520px; height: 30px; z: 1112; color: #1e1e1df0; visible: false; ignore_event: true; #text:label { @\"asset/base/style/main#label\"; x: 10px; width: 500px; height: 30px; z: 1113; size: 16; color: #cbc9c7ff; ignore_event: true; } }\n");
-    s.push_str(r##"#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #1e1e1dd9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
+    s.push_str("#feedback:color { x: 700px; y: -42px; width: 520px; height: 30px; z: 1112; color: #~1e1e1df0; visible: false; ignore_event: true; #text:label { @\"asset/base/style/main#label\"; x: 10px; width: 500px; height: 30px; z: 1113; size: 16; color: #cbc9c7ff; ignore_event: true; } }\n");
+    s.push_str(r##"#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #~1e1e1dd9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
         #art:color { x: 16px; y: 24px; width: 48px; height: 48px; z: 1111; color: #00000000; ignore_event: true; #icon:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } #png:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } }
         #title:label { @"asset/base/style/main#label"; x: 76px; y: 23px; width: 419px; height: 32px; z: 1112; size: 27; line_height: 32; align_y: Top; color: #ffffffff; ignore_event: true; }
         #meta:label { @"asset/base/style/main#label"; x: 100px; y: 61px; width: 150px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
@@ -725,7 +729,10 @@ impl HudUi {
         log: &Logger,
     ) {
         for i in self.allocated_slots..count {
-            if !ctx.ui_spawn_source(PATH, &crate::hud_style::fonts(inventory_tile(i))) {
+            if !ctx.ui_spawn_source(
+                PATH,
+                &crate::ui_theme::themed(&crate::hud_style::fonts(inventory_tile(i))),
+            ) {
                 log.write(&format!("INVENTORY slot spawn rejected index={i}"));
                 break;
             }
@@ -1150,7 +1157,7 @@ impl HudUi {
             let width = (crate::hud_style::width(title, 20.) + 64.).clamp(160., 529.);
             let (title, lines) = crate::hud_style::wrap(title, 20., width - 64.);
             let height = lines * 26 + 32;
-            self.props(ctx,"tooltip",format!("visible: true; x: {}px; y: {}px; width: {width:.2}px; height: {height}px; color: #1e1e1d{alpha:02x};",1556.-width,78.-height as f32),log);
+            self.props(ctx,"tooltip",format!("visible: true; x: {}px; y: {}px; width: {width:.2}px; height: {height}px; color: #~1e1e1d{alpha:02x};",1556.-width,78.-height as f32),log);
             self.props(ctx,"tooltip.title",format!("x: 52px; y: 16px; width: {}px; height: {}px; size: 20; line_height: 26; color: #ffffff{ink:02x};",width-64.,height-32),log);
             self.text(ctx, "tooltip.title", title, log);
             return;
@@ -1177,7 +1184,7 @@ impl HudUi {
         } else {
             78 - height as i32
         };
-        self.props(ctx,"tooltip",format!("visible: true; x: {x}px; y: {y}px; width: {width}px; height: {height}px; color: #1e1e1d{alpha:02x};"),log);
+        self.props(ctx,"tooltip",format!("visible: true; x: {x}px; y: {y}px; width: {width}px; height: {height}px; color: #~1e1e1d{alpha:02x};"),log);
         self.props(ctx,"tooltip.title",format!("x: {left}px; y: 23px; width: {}px; height: {}px; size: 27; line_height: 32; color: #ffffff{ink:02x};",width as f32-34.-left,32.*title_lines as f32),log);
         self.text(ctx, "tooltip.title", title, log);
         self.props(
@@ -1443,7 +1450,7 @@ impl HudUi {
             self.allocated_slots = 6;
             self.purchase_inputs = None;
             self.failed = false;
-            let spawned = ctx.ui_spawn_source("ingame", &template());
+            let spawned = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
             log.write(&format!(
                 "PLAYER HUD spawn={spawned} exists={}",
                 ctx.ui_exists(PATH)
@@ -1495,7 +1502,11 @@ impl HudUi {
         }
         self.shop_pressed = pressed && (shop_hover || self.shop_pressed);
         let tint = self.motion.tonal("shop_hover", f32::from(shop_hover), 0.1);
-        let back = crate::hud_motion::color(0x3a38_3700, 0x3a38_37ff, tint);
+        let back = crate::hud_motion::color(
+            crate::ui_theme::tone(0x3a38_3700),
+            crate::ui_theme::tone(0x3a38_37ff),
+            tint,
+        );
         self.props(ctx, "shop_hit", format!("color: #{back};"), log);
         if !playing {
             self.hover = None;
@@ -1736,15 +1747,15 @@ impl HudUi {
                 log,
             );
             let color = if !learned {
-                "4b4a49ff"
+                "~4b4a49ff"
             } else if skills.aiming == Some(i) {
                 "fdee00ff"
             } else if unavailable || skills.available[i].is_none() || !ready {
-                "4b4a49ff"
+                "~4b4a49ff"
             } else if i == 2 {
                 "fdee00ff"
             } else {
-                "4b4a49ff"
+                "~4b4a49ff"
             };
             let node = format!("skill{i}");
             let hover = self.tile_hover(ctx, &node, cursor);
@@ -1754,7 +1765,7 @@ impl HudUi {
             let press =
                 self.motion
                     .tonal(&format!("press_{node}"), f32::from(hover && pressed), 0.083);
-            let border = u32::from_str_radix(color, 16).unwrap_or(0x4b4a49ff);
+            let border = crate::ui_theme::color(color).unwrap_or(crate::ui_theme::tone(0x4b4a49ff));
             let border = crate::hud_motion::color(border, 0xffffffff, h);
             self.props(
                 ctx,
@@ -1817,12 +1828,12 @@ impl HudUi {
                 format!(
                     "color: #{};",
                     crate::hud_motion::color(
-                        if s.items.get(i).is_some() {
-                            0x211f1dff
-                        } else {
-                            0x292725ff
-                        },
-                        0x3a3837ff,
+                        // Filled: background + 5; empty: + 13.
+                        crate::ui_theme::shade_rgba(
+                            if s.items.get(i).is_some() { 5 } else { 13 },
+                            0xff,
+                        ),
+                        crate::ui_theme::tone(0x3a3837ff),
                         (h - press * 0.25).clamp(0., 1.)
                     )
                 ),
@@ -1834,7 +1845,7 @@ impl HudUi {
                     &node,
                     format!(
                         "color: #{};",
-                        crate::hud_motion::color(0x4b4a49ff, 0xffffffff, h)
+                        crate::hud_motion::color(crate::ui_theme::tone(0x4b4a49ff), 0xffffffff, h)
                     ),
                     log,
                 );

@@ -12,6 +12,7 @@
 //! frame pacing between the two threads in `native_timing`.
 
 mod abilities;
+mod acquisition;
 mod attack_trace;
 mod camera;
 mod client;
@@ -37,6 +38,7 @@ mod own_selection;
 mod perf;
 mod platform_input;
 mod player_hud;
+mod preview_style;
 mod purchase_tracker;
 mod result_audit;
 mod runtime_storage;
@@ -52,6 +54,9 @@ mod simulation;
 mod skill_preview;
 mod sprite_art;
 mod sprite_picking;
+mod stat_icons;
+mod stats_panel;
+mod stats_ui;
 mod team_info;
 mod team_status;
 mod test_cheats;
@@ -61,7 +66,9 @@ mod tooltip_layout;
 mod tooltips;
 mod ui_graphics;
 mod ui_state;
+mod ui_theme;
 mod wheel;
+mod worker_watch;
 
 use client::Client;
 use mod_api_stable::{
@@ -180,6 +187,8 @@ fn init(host: &StableHost) -> StableMod {
         env!("CARGO_PKG_VERSION")
     ));
     sprite_picking::initialize(&logger);
+    preview_style::load(&logger);
+    acquisition::initialize(&logger);
     skill_preview::initialize(&logger);
     logger.write(
         "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=1 movement_enabled=true"
