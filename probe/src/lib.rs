@@ -13,6 +13,7 @@
 
 mod abilities;
 mod acquisition;
+mod ai_handback;
 mod attack_trace;
 mod camera;
 mod client;

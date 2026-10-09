@@ -99,6 +99,9 @@ impl StablePlayerAi for Simulation {
                 return None;
             };
             let key = (sim.seed(), origin.match_id, origin.set_index);
+            if crate::native_timing::left_match(key) {
+                return None;
+            }
             self.bind_session(&sim, &origin, key, call);
             step(Step::Roster);
             let selected = origin.kind == 2

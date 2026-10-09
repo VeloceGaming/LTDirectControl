@@ -20,6 +20,7 @@ pub(crate) struct ClientObservations {
     pub(crate) team_ui: team_status::TeamUi,
     pub(crate) early_input: Option<(u64, platform_input::Keys)>,
     pub(crate) screen_effect: screen_effect::Effect,
+    pub(crate) ai_handback: ai_handback::AiHandback,
 }
 
 pub(crate) struct Client {
@@ -173,6 +174,9 @@ impl Client {
             &self.logger,
         );
         self.rearm_if_needed(ctx, keys, pre_match, save_exit);
+        if let Ok(mut o) = self.observations.lock() {
+            o.ai_handback.update(ctx, &self.timing, keys, &self.logger);
+        }
         let session_action = self.timing.take_action();
         if let Some(action) = session_action {
             // Exclude an in-flight SDK think while changing input ownership.

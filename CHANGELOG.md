@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.78.2 — 2026-10-09
+
+- AI control: the game's layout toggle works again ("exit full screen", F). The mod forced full screen every frame even in AI control; it now restores the spectator's own camera, vision and layout once on entering AI control and leaves the toggle alone, forcing full screen again on taking control. A session released from AI control keeps the layout the spectator chose.
+- AI control keeps the match paced at 1x, one frame ahead, so F11 can take control back; the game's speed buttons and its "view result" button need the game to run ahead. Changing speed or pressing 立即查看比賽結果 (`ingame.option_buttons.view_result` / `pad_view_result`) in AI control now hands the match fully back to the game (new ai_handback.rs, logged as NATIVE RELEASE with the reason); the result button may need a second press.
+- Leaving a match mid-way: the game finishes it in the background at full speed, and the mod's per-tick code still ran for every player and tick (session locks shared with the UI). The left match's ticks now return at the first step (lock-free key check, `SESSION left mid-match ...`). Suspected cause of the brief ~3 FPS interactions after leaving; not yet measured.
+
 ## 0.78.1 — 2026-10-09
 
 - The shop's self-opening waited too little: 0.78.0 opened it (and paused) in the same tick as the game's one-time decision, which runs in the buyer after that tick's build read, so Recommended kept the four-item read until the match resumed. The user's log proved the decision itself works (`SHOP DRY RUN ... build Some(4) -> Some(6)`, nothing bought). The shop now opens after the next publish, whose build read follows the decision.

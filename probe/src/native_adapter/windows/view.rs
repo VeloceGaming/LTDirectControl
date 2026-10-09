@@ -94,8 +94,12 @@ impl CameraLease {
         }
         std::ptr::copy_nonoverlapping(self.original.as_ptr(), (config + 0x18) as *mut u8, 16);
         std::ptr::write((config + 0x4b) as *mut u8, self.original_vision);
-        std::ptr::write((config + 0x45) as *mut u8, self.original_full_width);
-        std::ptr::write((ingame + 0x9234) as *mut u8, self.original_ui_full_width);
+        // Released from AI control: the layout is the spectator's already
+        // (they may have toggled it, e.g. to reach "view result").
+        if !self.ai_camera {
+            std::ptr::write((config + 0x45) as *mut u8, self.original_full_width);
+            std::ptr::write((ingame + 0x9234) as *mut u8, self.original_ui_full_width);
+        }
         true
     }
 }
@@ -197,28 +201,31 @@ pub(crate) unsafe fn prepare_camera(
             ));
             *lease = Some(saved);
         }
-        if !lease
-            .as_ref()
-            .is_some_and(|l| l.full_width(view, config, ingame))
-        {
+        let Some(saved) = lease.as_mut() else {
+            return;
+        };
+        if shared.timing.phase() == Some(crate::native_timing::Phase::Ai) {
+            // AI control: the spectator's camera, vision and layout come
+            // back once, then the game's own toggles (full screen F and its
+            // button) work; full screen is forced again on taking control.
+            if saved.layout_matches(view, config, ingame) && !saved.ai_camera {
+                std::ptr::copy_nonoverlapping(
+                    saved.original.as_ptr(),
+                    (config + 0x18) as *mut u8,
+                    16,
+                );
+                std::ptr::write((config + 0x4b) as *mut u8, saved.original_vision);
+                std::ptr::write((config + 0x45) as *mut u8, saved.original_full_width);
+                std::ptr::write((ingame + 0x9234) as *mut u8, saved.original_ui_full_width);
+                saved.ai_camera = true;
+                saved.effective_vision = u8::MAX;
+            }
             return;
         }
-        if let Some(saved) = lease.as_mut() {
-            if shared.timing.phase() == Some(crate::native_timing::Phase::Ai) {
-                if !saved.ai_camera {
-                    std::ptr::copy_nonoverlapping(
-                        saved.original.as_ptr(),
-                        (config + 0x18) as *mut u8,
-                        16,
-                    );
-                    std::ptr::write((config + 0x4b) as *mut u8, saved.original_vision);
-                    saved.ai_camera = true;
-                    saved.effective_vision = u8::MAX;
-                }
-                return;
-            }
-            saved.ai_camera = false;
+        if !saved.full_width(view, config, ingame) {
+            return;
         }
+        saved.ai_camera = false;
     } else {
         return;
     }
@@ -571,7 +578,7 @@ pub(crate) unsafe fn view_hook_body(
     // Reassert after the viewer too, before render/camera capture, without
     // recapturing our own forced value as the spectator's preference.
     if let Ok(lease) = CAMERA_LEASE.lock() {
-        if let Some(saved) = lease.as_ref() {
+        if let Some(saved) = lease.as_ref().filter(|l| !l.ai_camera) {
             saved.full_width(view, config, ingame_ui);
         }
     }

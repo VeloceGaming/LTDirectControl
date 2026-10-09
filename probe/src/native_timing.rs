@@ -5,6 +5,19 @@ use std::sync::{Condvar, Mutex};
 use std::time::{Duration, Instant};
 
 pub type MatchKey = (u64, u64, u64);
+
+/// A match the player left mid-way: the game finishes it in the background
+/// at full speed, and the mod's per-tick work for it is skipped from the
+/// first step (read lock-free; 0 = none).
+static LEFT_MATCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+fn key_id(key: MatchKey) -> u64 {
+    // Never 0, so 0 can mean "none".
+    (key.0 ^ key.1.rotate_left(21) ^ key.2.rotate_left(42)) | 1
+}
+/// Worker: this match was left by the player; do nothing for it.
+pub fn left_match(key: MatchKey) -> bool {
+    LEFT_MATCH.load(std::sync::atomic::Ordering::Relaxed) == key_id(key)
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Phase {
     Armed,
@@ -184,6 +197,10 @@ impl NativeTiming {
         }
         if was_battlefield && !battlefield && s.key.is_some() {
             Self::release(&mut s, "Left battlefield", log);
+            if let Some(key) = s.key {
+                LEFT_MATCH.store(key_id(key), std::sync::atomic::Ordering::Relaxed);
+                log.write("SESSION left mid-match; the game finishes it in the background without the mod's per-tick work");
+            }
         }
         if s.phase == Phase::Loading
             && s.boundary_seen
@@ -816,6 +833,14 @@ mod tests {
         s.client = Some(crate::platform_input::thread_id());
         drop(s);
         t
+    }
+    #[test]
+    fn a_left_match_is_recognised_by_key_only() {
+        assert_ne!(key_id((0, 0, 0)), 0);
+        LEFT_MATCH.store(key_id((7, 8, 9)), std::sync::atomic::Ordering::Relaxed);
+        assert!(left_match((7, 8, 9)));
+        assert!(!left_match((7, 8, 10)));
+        LEFT_MATCH.store(0, std::sync::atomic::Ordering::Relaxed);
     }
     #[test]
     fn a_running_worker_without_frames_is_reported_once() {
