@@ -1,6 +1,6 @@
 # Backlog
 
-What is left to do, as of 0.77.3 (2026-10-09). Finished and declined items
+What is left to do, as of 0.80.0 (2026-10-10). Finished and declined items
 are listed at the end for reference.
 
 ## Open
@@ -25,8 +25,13 @@ are listed at the end for reference.
    broader in-game testing. See
    [investigation-tooltips-native.md](investigation-tooltips-native.md) and
    `tools/audit_tooltips.py`.
-4. **Emotes.** The last item of the post-shop investigation
-   ([investigation-pass-65.md](investigation-pass-65.md)); not started.
+4. **Emotes and performance validation.** The user accepted the built-in
+   wheel and display controls (0.79.0–0.79.1). Static PNG import/library
+   assignment is implemented in 0.80.0; native imported texture loading
+   after restart still needs user testing. Custom sounds and animated
+   imports are deferred. Detailed performance capture/reporting is available;
+   lower-spec hardware and extended compatibility runs remain outstanding.
+   See [emotes-and-performance.md](emotes-and-performance.md).
 5. **Whole build plan from the start (0.78.0-0.78.1).** 0.78.0 log: the decision grows the plan 4 -> 6, nothing bought; 0.78.1 opens the shop one tick later so Recommended shows it. Manual shopping
    skipped the game's buy-new decision, where the AI / Riot complete the plan
    (slots 5-6). 0.78.0 runs that decision once, discarding its answer, and

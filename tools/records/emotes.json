@@ -1,0 +1,14 @@
+{
+  "source": "tools/generate_emotes.cjs",
+  "source_sha256": "0254f1157521cd16a618469e54941b3678d9def83afd2dae5692b6a5317105b0",
+  "files": {
+    "ui/emote_gg.png": "9f3848c0c97a2be4bc60cc6df772e07fd54169bfaddec58bfe8533788771ccf9",
+    "ui/emote_nice.png": "df2029d24cb8879533afdc7dfe7e13cef04a5def5c669b36ed2b7f8e553255ad",
+    "ui/emote_hype.png": "64b0c1e8b864aa85fd3ca3d196244fad622dd17b94f94c7298ed2dc238f5283d",
+    "ui/emote_oops.png": "e6fb216a893d12401b867841fd9b193b10644372302ca586ec1ea57851344fa8",
+    "ui/emote_focus.png": "d1282ab730c4138579b7a7debddc07409b78f093f27545bdc503a3ea11382d78",
+    "sound/sfx/emote.wav": "c28fe3711ca2b296ec881b8c00886ee6c5fd76e45bd3d59f19f37d9a6f9ed477"
+  },
+  "art": "Five original vector faces: GG, Nice, Hype, Oops, Focus. No third-party reference art.",
+  "sound": "Original 160ms mono 24kHz 16-bit PCM two-note confirmation. Optional, off by default."
+}

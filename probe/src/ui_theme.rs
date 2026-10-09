@@ -15,7 +15,7 @@ static BUILT: Mutex<Vec<(&'static str, u32)>> = Mutex::new(Vec::new());
 
 /// Once per frame on the client thread: pick up an applied change.
 pub fn sync() {
-    let v = crate::settings::current().number("background_color");
+    let v = crate::settings::option("background_color");
     BACKGROUND.store(v as u32 & 0xff_ffff, Ordering::Relaxed);
 }
 /// The background as 0xRRGGBB.

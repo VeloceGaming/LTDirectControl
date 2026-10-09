@@ -25,6 +25,17 @@ static OWNED_STEER_ENTRIES: AtomicUsize = AtomicUsize::new(0);
 static DIRECT_STEPS: AtomicUsize = AtomicUsize::new(0);
 static STEER_POINTER_REJECTIONS: AtomicUsize = AtomicUsize::new(0);
 static DEATH_GREYSCALE: AtomicBool = AtomicBool::new(false);
+pub(crate) fn asset_digest(bytes: &[u8]) -> Result<String, String> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        windows::sha256(bytes)
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        let _ = bytes;
+        Err("Image checksums require the supported Windows host".into())
+    }
+}
 #[cfg(all(windows, target_arch = "x86_64"))]
 pub(crate) fn verified_base() -> Option<usize> {
     windows::verified_base()

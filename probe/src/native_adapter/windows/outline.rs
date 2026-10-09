@@ -277,6 +277,7 @@ pub(crate) unsafe extern "system" fn outline_hook(
     a7: usize,
     a8: usize,
 ) -> usize {
+    let _profile = crate::perf::work(crate::perf::Work::OutlineInclusive);
     let original: OutlineRenderFn = std::mem::transmute(ORIGINAL_OUTLINE.load(Ordering::Acquire));
     let result = original(out, view, a3, a4, a5, a6, a7, a8);
     crate::perf::hook(crate::perf::Hook::Outline);

@@ -7,7 +7,7 @@
 //! hot counter (that contention is what the 0.65 fast paths remove).
 use crate::Logger;
 use std::cell::Cell;
-use std::sync::atomic::{AtomicU64, Ordering::Relaxed};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering::Relaxed};
 use std::sync::OnceLock;
 use std::time::Instant;
 
@@ -135,6 +135,104 @@ const SLOW_MICROS: u64 = 25_000;
 const SLOW_LINES_PER_WINDOW: u64 = 8;
 const FLUSH_EVERY: u64 = 1024;
 
+// Opt-in timings are separate from client callbacks: overlapping/nested work
+// must never be added to mod_total_ms. Histograms have fixed storage, no event
+// queue, and report conservative power-of-two upper bounds in microseconds.
+static CAPTURE: AtomicBool = AtomicBool::new(false);
+#[derive(Clone, Copy)]
+pub enum Work {
+    Think,
+    Units,
+    Combat,
+    OwnedAbilities,
+    OwnedSteering,
+    OutlineInclusive,
+    LogIo,
+    CaptureToPlayback,
+    AttackInclusive,
+    SkillInclusive,
+    MoveInclusive,
+    ShopDecision,
+}
+const WORK_NAMES: [&str; 12] = [
+    "sdk_think_all_threads_incl_gate",
+    "selected_unit_scan",
+    "selected_combat",
+    "owned_ability_observation",
+    "owned_steering_mod",
+    "outline_incl_native",
+    "log_io_incl_rotation",
+    "capture_to_playback",
+    "attack_incl_native_all_threads",
+    "skill_incl_native_all_threads",
+    "move_incl_native_all_threads",
+    "shop_answer_mod_incl_lock",
+];
+const WORK_BINS: usize = 25;
+static WORK_STATS: [Stat; WORK_NAMES.len()] = [const { Stat::new() }; WORK_NAMES.len()];
+static WORK_HIST: [[AtomicU64; WORK_BINS]; WORK_NAMES.len()] =
+    [const { [const { AtomicU64::new(0) }; WORK_BINS] }; WORK_NAMES.len()];
+pub fn set_capture(enabled: bool) {
+    CAPTURE.store(enabled, Relaxed);
+}
+pub fn capture_enabled() -> bool {
+    CAPTURE.load(Relaxed)
+}
+pub struct WorkTimer(Work, Option<Instant>);
+pub fn work(kind: Work) -> WorkTimer {
+    WorkTimer(kind, capture_enabled().then(Instant::now))
+}
+impl Drop for WorkTimer {
+    fn drop(&mut self) {
+        if let Some(at) = self.1 {
+            record_work(self.0, at.elapsed().as_micros() as u64);
+        }
+    }
+}
+fn work_bin(us: u64) -> usize {
+    if us <= 1 {
+        0
+    } else {
+        (64 - (us - 1).leading_zeros() as usize).min(WORK_BINS - 1)
+    }
+}
+fn record_work(kind: Work, us: u64) {
+    WORK_STATS[kind as usize].add(us);
+    WORK_HIST[kind as usize][work_bin(us)].fetch_add(1, Relaxed);
+}
+pub fn playback_latency(at: Instant) {
+    if capture_enabled() {
+        record_work(Work::CaptureToPlayback, at.elapsed().as_micros() as u64);
+    }
+}
+fn work_percentile(bins: &[u64; WORK_BINS], count: u64, numerator: u64) -> String {
+    if count == 0 {
+        return "-".into();
+    }
+    let wanted = count.saturating_mul(numerator).div_ceil(100);
+    let mut seen = 0;
+    for (i, n) in bins.iter().enumerate() {
+        seen += n;
+        if seen >= wanted {
+            return if i == WORK_BINS - 1 {
+                format!(">{}", 1u64 << (i - 1))
+            } else {
+                format!("<= {}", 1u64 << i)
+            };
+        }
+    }
+    "-".into()
+}
+fn report_work(log: &Logger) {
+    for (i, s) in WORK_STATS.iter().enumerate() {
+        let (total, max, count) = s.take();
+        let bins = std::array::from_fn(|j| WORK_HIST[i][j].swap(0, Relaxed));
+        if let Some(avg) = total.checked_div(count) {
+            log.write(&format!("PERF WORK {} count={count} avg_us={avg} max_us={max} p95_us={} p99_us={} total_us={total}; overlapping scopes, not additive CPU totals", WORK_NAMES[i], work_percentile(&bins, bins.iter().sum(), 95), work_percentile(&bins, bins.iter().sum(), 99)));
+        }
+    }
+}
+
 thread_local! {
     static LOCAL_COUNTS: [[Cell<u64>; 2]; HOOKS] =
         const { [const { [const { Cell::new(0) }; 2] }; HOOKS] };
@@ -228,18 +326,14 @@ fn listed(values: &[(usize, u64)], range: std::ops::Range<usize>) -> String {
 pub fn frame(battlefield: bool, scene: &dyn std::fmt::Debug, log: &Logger) {
     let at = now();
     let last = LAST_FRAME.swap(at, Relaxed);
-    let since: Vec<(usize, u64)> = FRAME
-        .iter()
-        .enumerate()
-        .map(|(i, f)| (i, f.swap(0, Relaxed)))
-        .filter(|(_, us)| *us > 0)
-        .collect();
+    let since: [(usize, u64); SECTIONS] = std::array::from_fn(|i| (i, FRAME[i].swap(0, Relaxed)));
     if last != 0 {
         let interval = at - last;
         INTERVALS[((interval / 1000) as usize).min(100)].fetch_add(1, Relaxed);
         INTERVAL_MAX.fetch_max(interval, Relaxed);
         if battlefield
             && interval >= SLOW_MICROS
+            && crate::logging::enabled("PERF SLOW")
             && SLOW_LINES.fetch_add(1, Relaxed) < SLOW_LINES_PER_WINDOW
         {
             let total: u64 = since
@@ -331,6 +425,7 @@ pub fn frame(battlefield: bool, scene: &dyn std::fmt::Debug, log: &Logger) {
         group(BREAKDOWN_END..SECTIONS),
         LOG_BYTES.swap(0, Relaxed),
     ));
+    report_work(log);
 }
 
 #[cfg(test)]
@@ -356,5 +451,21 @@ mod tests {
         assert_eq!(Section::WorkerAfterSend as usize + 1, SECTIONS);
         assert_eq!(HOOK_NAMES[Hook::Outline as usize], "outline");
         assert_eq!(WAIT_NAMES[Wait::Pacing as usize], "worker_pacing");
+    }
+    #[test]
+    fn work_histogram_bounds_do_not_understate_samples() {
+        assert_eq!(work_bin(0), 0);
+        assert_eq!(work_bin(1), 0);
+        assert_eq!(work_bin(2), 1);
+        assert_eq!(work_bin(3), 2);
+        assert_eq!(work_bin(4), 2);
+        assert_eq!(work_bin(u64::MAX), WORK_BINS - 1);
+        let mut bins = [0; WORK_BINS];
+        bins[4] = 95;
+        bins[10] = 4;
+        bins[WORK_BINS - 1] = 1;
+        assert_eq!(work_percentile(&bins, 100, 95), "<= 16");
+        assert_eq!(work_percentile(&bins, 100, 99), "<= 1024");
+        assert_eq!(work_percentile(&bins, 100, 100), ">8388608");
     }
 }

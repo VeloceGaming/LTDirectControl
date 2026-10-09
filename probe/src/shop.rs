@@ -823,6 +823,7 @@ impl Shop {
             return Answer::Native;
         }
         crate::perf::hook(crate::perf::Hook::ShopLocked);
+        let _profile = crate::perf::work(crate::perf::Work::ShopDecision);
         let since = Instant::now();
         let Ok(mut s) = self.0.lock() else {
             return Answer::Native;

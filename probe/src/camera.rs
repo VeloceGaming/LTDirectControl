@@ -29,6 +29,8 @@ pub struct CameraFrame {
     pub viewport: Rect,
     pub center: (f32, f32),
     pub extent: (f32, f32),
+    /// Native camera zoom (0.5..=3.0), independent of cropped UI dimensions.
+    pub zoom: f32,
     pub minimap: Rect,
 }
 impl CameraFrame {
@@ -170,6 +172,13 @@ impl CameraControl {
             .lock()
             .map_or_else(|_| Vec::new(), |s| s.blocked.clone())
     }
+    pub fn overlay_intersects(&self, r: Rect) -> bool {
+        self.state.lock().map_or(true, |s| {
+            s.blocked
+                .iter()
+                .any(|b| r.x < b.x + b.w && r.x + r.w > b.x && r.y < b.y + b.h && r.y + r.h > b.y)
+        })
+    }
     pub fn capture(&self, frame: CameraFrame) {
         if let Ok(mut s) = self.state.lock() {
             s.frame = frame.valid().then_some((frame, Instant::now()));
@@ -264,15 +273,19 @@ impl CameraControl {
             s.engaged = true;
             s.locked = keys.camera_lock_default;
         }
-        let minimap_navigation =
-            keys.focused && keys.left && keys.cursor.is_some_and(|p| frame.minimap.contains(p));
+        let minimap_navigation = keys.focused
+            && !keys.emote_capture
+            && keys.left
+            && keys.cursor.is_some_and(|p| frame.minimap.contains(p));
         if s.expected_follow && native_mode == 1 && minimap_navigation && !recenter {
             s.locked = false;
             s.expected_follow = false;
             s.interrupted_space = keys.space;
             log.write("CAMERA explicit minimap navigation; unlocked");
         }
-        if s.toggle_requested || keys.focused && keys.camera_toggle && !s.previous_y {
+        if s.toggle_requested
+            || keys.focused && !keys.emote_capture && keys.camera_toggle && !s.previous_y
+        {
             s.toggle_requested = false;
             s.locked = !s.locked;
             s.interrupted_space = false;
@@ -283,7 +296,11 @@ impl CameraControl {
         }
         let mut request = None;
         let mut drag = false;
-        if !keys.focused || !keys.middle || keys.camera_options.is_some_and(|o| !o.1) {
+        if !keys.focused
+            || keys.emote_capture
+            || !keys.middle
+            || keys.camera_options.is_some_and(|o| !o.1)
+        {
             s.drag_active = false;
         } else if !s.previous_middle {
             s.drag_active = keys.cursor.is_some_and(|p| {
@@ -320,7 +337,7 @@ impl CameraControl {
             if s.expected_follow || native_mode != 1 {
                 request = Some(Request::Free(frame.center));
             }
-            if keys.focused && !keys.middle {
+            if keys.focused && !keys.emote_capture && !keys.middle {
                 if let Some(p) = keys
                     .cursor
                     .filter(|_| keys.camera_options.is_none_or(|o| o.0))
@@ -364,7 +381,12 @@ impl CameraControl {
                 }
             }
         }
-        if !following && !drag && keys.focused && (keys.dx != 0 || keys.dy != 0) {
+        if !following
+            && !drag
+            && keys.focused
+            && !keys.emote_capture
+            && (keys.dx != 0 || keys.dy != 0)
+        {
             let elapsed = if dt.is_finite() {
                 dt.clamp(0., 0.05)
             } else {
@@ -462,6 +484,7 @@ mod tests {
             },
             center: (480., 480.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: Rect {
                 x: 1581.,
                 y: 740.,
@@ -532,6 +555,7 @@ mod tests {
         assert_eq!(panned.unproject((1060., 637.)), Some((630_000, 330_000)));
         let zoomed = CameraFrame {
             extent: (512., 512.),
+            zoom: 1.,
             ..panned
         };
         assert_eq!(zoomed.unproject((1060., 637.)), Some((605_000, 305_000)));
@@ -554,6 +578,7 @@ mod tests {
         assert_eq!(f.unproject((f32::NAN, 100.)), None);
         assert!(!CameraFrame {
             extent: (0., 1.),
+            zoom: 1.,
             ..f
         }
         .valid());

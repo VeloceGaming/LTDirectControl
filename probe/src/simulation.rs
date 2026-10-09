@@ -59,12 +59,13 @@ impl StablePlayerAi for Simulation {
     }
 
     fn think(&mut self, ctx: &mut StableAiContext<'_>, _base: Option<InputV1>) -> Option<InputV1> {
+        let _profile = perf::work(perf::Work::Think);
         // The same session lock, held via its own handle so the steps below
         // may borrow `self` mutably.
         // Stall report markers (crate::worker_watch); Outside again on return.
         let _watch = crate::worker_watch::begin(ctx.player_id());
         let gate = self.session_gate.clone();
-        let _session = gate.read().ok()?;
+        let _session;
         let tick = ctx.tick();
         let player_id = ctx.player_id();
         let athlete = ctx.athlete_id();
@@ -102,6 +103,9 @@ impl StablePlayerAi for Simulation {
             if crate::native_timing::left_match(key) {
                 return None;
             }
+            step(Step::SessionGate);
+            _session = gate.read().ok()?;
+            step(Step::Bind);
             self.bind_session(&sim, &origin, key, call);
             step(Step::Roster);
             let selected = origin.kind == 2
@@ -131,29 +135,33 @@ impl StablePlayerAi for Simulation {
                 && self.timing.allows_input(key)
                 && current_champion.as_ref().is_some_and(|c| c.is_alive());
             let skill_units = if collect_units {
+                let _profile = perf::work(perf::Work::Units);
                 (0..sim.entity_count())
                     .filter_map(|index| {
                         let unit = sim.entity_at(index)?;
                         (unit.is_alive()
                             && unit.is_targetable()
                             && (unit.team() == side || sim.is_visible(side, unit.id())))
-                        .then(|| combat::Unit {
-                            id: unit.id(),
-                            position: unit.pos(),
-                            radius: unit.radius() as u64,
-                            is_champion: unit.is_champion(),
-                            is_minion: unit.is_minion(),
-                            friendly: unit.team() == side,
-                            in_cc: (0..unit.cc_count().min(64))
-                                .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
-                            is_tower: unit.is_tower() || unit.name().as_deref() == Some("nexus"),
-                            body: sprite_picking::entity_body(
-                                unit.name().as_deref(),
-                                unit.is_champion(),
-                                unit.is_minion(),
-                                unit.is_tower(),
-                                unit.radius() as u64,
-                            ),
+                        .then(|| {
+                            let name = unit.name();
+                            combat::Unit {
+                                id: unit.id(),
+                                position: unit.pos(),
+                                radius: unit.radius() as u64,
+                                is_champion: unit.is_champion(),
+                                is_minion: unit.is_minion(),
+                                friendly: unit.team() == side,
+                                in_cc: (0..unit.cc_count().min(64))
+                                    .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
+                                is_tower: unit.is_tower() || name.as_deref() == Some("nexus"),
+                                body: sprite_picking::entity_body(
+                                    name.as_deref(),
+                                    unit.is_champion(),
+                                    unit.is_minion(),
+                                    unit.is_tower(),
+                                    unit.radius() as u64,
+                                ),
+                            }
                         })
                     })
                     .collect::<Vec<_>>()
@@ -205,35 +213,10 @@ impl StablePlayerAi for Simulation {
                     .as_ref()
                     .filter(|champion| champion.is_alive())
                     .and_then(|champion| {
-                        let units = (0..sim.entity_count())
-                            .filter_map(|index| {
-                                let unit = sim.entity_at(index)?;
-                                (unit.id() != champion.id()
-                                    && unit.team() != side
-                                    && unit.is_alive()
-                                    && unit.is_targetable()
-                                    && sim.is_visible(side, unit.id()))
-                                .then(|| combat::Unit {
-                                    id: unit.id(),
-                                    position: unit.pos(),
-                                    radius: unit.radius() as u64,
-                                    is_champion: unit.is_champion(),
-                                    is_minion: unit.is_minion(),
-                                    friendly: false,
-                                    in_cc: (0..unit.cc_count().min(64))
-                                        .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
-                                    is_tower: unit.is_tower()
-                                        || unit.name().as_deref() == Some("nexus"),
-                                    body: sprite_picking::entity_body(
-                                        unit.name().as_deref(),
-                                        unit.is_champion(),
-                                        unit.is_minion(),
-                                        unit.is_tower(),
-                                        unit.radius() as u64,
-                                    ),
-                                })
-                            })
-                            .collect();
+                        let _profile = perf::work(perf::Work::Combat);
+                        // Same live borrow, visibility and targetability as the
+                        // skill snapshot. Reuse scalar data; no second SDK scan.
+                        let units = combat::enemy_units(&skill_units, champion.id());
                         self.movement.combat_input(
                             player_id,
                             champion.pos(),
@@ -330,7 +313,7 @@ impl StablePlayerAi for Simulation {
                     || mode != self.last_manual_mode)
                 || candidate.is_none() && self.last_manual)
         {
-            self.logger.write(&format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} attack_in_range={attack_in_range:?} base={_base:?}"));
+            self.logger.verbose(|| format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} attack_in_range={attack_in_range:?} base={_base:?}"));
         }
         if valid && live_worker {
             let stamp = skill

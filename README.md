@@ -38,10 +38,16 @@ All bindings can be changed in the mod's Settings window (gear button).
 | Start, pause, resume or reclaim control / hand control to AI | F11 / F12 |
 | Team details | Hold Tab |
 | Shop | P, or the gold button on the HUD |
+| Local emote wheel | Hold T, choose a direction, release; Escape/right-click cancels |
 | Lock camera / hold to follow | Y / Space |
 | Drag or pan the camera | Middle mouse / I J K L, edge scrolling, mouse wheel to zoom |
 
 ## What's in it
+
+Static custom emotes can be imported through **Settings › Emotes › Library**:
+Open folder, add PNGs (up to 256 × 256 and 1 MiB), Refresh, assign to the wheel,
+Apply, then restart the game. Visible artwork is normalized automatically;
+original files stay untouched. Custom sounds and animation are deferred.
 
 - **Controls**: persistent orders like League (move, attack, attack-move,
   stop, recall), skill aiming with range previews, attack wind-down
@@ -62,6 +68,10 @@ All bindings can be changed in the mod's Settings window (gear button).
   selected champion to AI; F11 or Take control reclaims the same champion in
   that match. AI playback stays at 1x so the worker remains synchronized.
   Handoffs clear pending movement and casts; mouse clicks do not reclaim control.
+- **Emotes**: five original faces shown locally above your champion, with a
+  short pop animation and 2-second display. Settings > Emotes controls height,
+  scale, camera zoom behavior and cooldown (default 1.5 seconds), with a silent
+  live preview. The wheel preserves existing orders. Sound is optional there.
 
 ## Install
 
@@ -73,9 +83,12 @@ All bindings can be changed in the mod's Settings window (gear button).
    press F11 or click Start.
 
 Settings are saved in `%LOCALAPPDATA%\LTDirectControl\controls.json`; the log
-is `probe.log` in the same folder. Settings › Interface › Debug › Log detail
+is `probe.log` in the same folder. Settings › Advanced › Debug › Log detail
 chooses how much it records (Normal by default; Verbose for investigations).
 Log levels are assigned by line tag in `probe/src/logging.rs`.
+The same Debug page has optional detailed performance capture. See
+[emotes and performance](docs/emotes-and-performance.md) for timing coverage,
+compatibility checks and lower-spec testing limits.
 
 ## Build from source
 

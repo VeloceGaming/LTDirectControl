@@ -145,6 +145,7 @@ pub(crate) unsafe fn camera_frame(
         minimap,
         center: (f(0x114), f(0x118)),
         extent: (f(0x11c), f(0x120)),
+        zoom: f(0x110),
     };
     frame.valid().then_some(frame)
 }

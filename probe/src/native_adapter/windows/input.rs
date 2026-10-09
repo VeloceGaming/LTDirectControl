@@ -40,9 +40,11 @@ pub(crate) unsafe extern "system" fn input_hook(
             || keys.start
             || keys.release
         {
-            shared.logger.write(&format!(
-                "NATIVE SPECTATOR_KEY suppressed tag={tag:x} key={key:x} bound_view={view:x}"
-            ));
+            shared.logger.verbose(|| {
+                format!(
+                    "NATIVE SPECTATOR_KEY suppressed tag={tag:x} key={key:x} bound_view={view:x}"
+                )
+            });
             true
         } else {
             false

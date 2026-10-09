@@ -130,8 +130,11 @@ pub(crate) unsafe fn observe_owned_abilities(
     if owned_entity(shared, entity) != Some((key, actor)) {
         return false;
     }
-    for line in ATTACK_TRACE.sample(key, actor, attack_snapshot(entity)) {
-        shared.logger.write(&line);
+    let _profile = crate::perf::work(crate::perf::Work::OwnedAbilities);
+    if crate::logging::verbose() {
+        for line in ATTACK_TRACE.sample(key, actor, attack_snapshot(entity)) {
+            shared.logger.write(&line);
+        }
     }
     // Use the same borrowed state for readiness and the native action/count
     // snapshot, including immediately after a consumer spends cooldown.
@@ -286,6 +289,7 @@ pub(crate) unsafe fn stop_for_manual_attack(
     stop_movement(entity, ticket.actor, events, notify)
 }
 pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize, events: usize) {
+    let _profile = crate::perf::work(crate::perf::Work::AttackInclusive);
     crate::perf::hook(crate::perf::Hook::Attack);
     if let Some(shared) = SHARED.get() {
         let _ = catch_unwind(AssertUnwindSafe(|| inventory(shared, entity)));
@@ -329,7 +333,7 @@ pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize,
     original(entity, input, events);
     if let Some((shared, key, actor, previous_len, before_cooldown, before)) = selected {
         let after = attack_snapshot(entity);
-        if after.cooldown > before_cooldown {
+        if after.cooldown > before_cooldown && crate::logging::verbose() {
             let start = crate::attack_trace::Start {
                 before,
                 after,
@@ -407,6 +411,7 @@ pub(crate) unsafe fn attack_snapshot(entity: usize) -> crate::attack_trace::Snap
 }
 
 pub(crate) unsafe fn skill_hook(slot: usize, entity: usize, input: usize, events: usize) {
+    let _profile = crate::perf::work(crate::perf::Work::SkillInclusive);
     let original: AttackFn = std::mem::transmute(ORIGINAL_SKILLS[slot].load(Ordering::Acquire));
     let selected = catch_unwind(AssertUnwindSafe(|| {
         SHARED.get().and_then(|shared| {

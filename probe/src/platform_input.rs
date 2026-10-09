@@ -40,6 +40,9 @@ pub struct Keys {
     pub shop: bool,
     /// Stats panel toggle (crate::stats_ui).
     pub stats_panel: bool,
+    pub emote: bool,
+    /// Cosmetic wheel owns physical edges; existing world orders continue.
+    pub emote_capture: bool,
     /// Home and End held together (test_cheats; not rebindable).
     pub home_end: bool,
     /// Current primary/secondary champion-only binding states.
@@ -178,7 +181,7 @@ pub fn poll() -> Keys {
     if crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed) {
         raw.0 = std::array::from_fn(|i| down(i as i32));
     } else {
-        let v = crate::settings::current();
+        let v = crate::settings::current_shared();
         let mut needed = [false; 256];
         for d in crate::settings::BINDINGS {
             for c in v.binding(d.key).into_iter().flatten() {
@@ -200,7 +203,7 @@ pub fn poll() -> Keys {
 }
 
 pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
-    let v = crate::settings::current();
+    let v = crate::settings::current_shared();
     let pressed = |key| v.pressed(key, &raw.0);
     let previews = [
         pressed("preview_q"),
@@ -250,6 +253,8 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         recall: pressed("recall"),
         shop: pressed("shop"),
         stats_panel: pressed("stats_panel"),
+        emote: pressed("emote"),
+        emote_capture: crate::ui_state::EMOTE_CAPTURE.load(std::sync::atomic::Ordering::Relaxed),
         champion_toggle: std::array::from_fn(|i| {
             v.binding("champion_only")[i].is_some_and(|c| {
                 raw.0[c.code as usize] && crate::settings::modifiers(&raw.0) & c.mods == c.mods

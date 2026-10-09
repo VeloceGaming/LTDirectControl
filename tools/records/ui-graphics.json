@@ -88,7 +88,17 @@
     "ui/ef_bag.png": "d6ffcf361544c4f9efc203b020d47b176d92c028fcaca28a2d6cd88a0d914886",
     "ui/nerdge_stamp.png": "fe33479aea3889364f7364759824e9c97fc742959d9083480b19fbee0bbd1d85",
     "ui/stat_icons#sheet.png": "9f1ce64a3f5389e2ceda647b7a372c280f1b30405f8947ae5a3fe8068346a219",
-    "ui/stat_icons#data.sprite_sheet": "8ebf031ae4f804a297fece158eb762f7039e1914c4caa651e1d503b5ef207463"
+    "ui/stat_icons#data.sprite_sheet": "8ebf031ae4f804a297fece158eb762f7039e1914c4caa651e1d503b5ef207463",
+    "ui/emote_gg.png": "9f3848c0c97a2be4bc60cc6df772e07fd54169bfaddec58bfe8533788771ccf9",
+    "ui/emote_nice.png": "df2029d24cb8879533afdc7dfe7e13cef04a5def5c669b36ed2b7f8e553255ad",
+    "ui/emote_hype.png": "64b0c1e8b864aa85fd3ca3d196244fad622dd17b94f94c7298ed2dc238f5283d",
+    "ui/emote_oops.png": "e6fb216a893d12401b867841fd9b193b10644372302ca586ec1ea57851344fa8",
+    "ui/emote_focus.png": "d1282ab730c4138579b7a7debddc07409b78f093f27545bdc503a3ea11382d78",
+    "sound/sfx/emote.wav": "c28fe3711ca2b296ec881b8c00886ee6c5fd76e45bd3d59f19f37d9a6f9ed477",
+    "ui/bundled/emote_bomber_nice.png": "31d00120f05cd24900a83d11dda1d36c874be134b7a8cb933b07d939b2fc6d10",
+    "ui/bundled/emote_clown_son.png": "29afbf836a506b8e8ff3ba40f68fb58149d04dd5168c65d8f4555a021f148291",
+    "ui/bundled/emote_ghost_wajaja.png": "4a510c8bcb260d4bfc3ef836d991bd7b6ba232898ac477eab320b307e9495e11",
+    "ui/bundled/emote_monk_no_kills.png": "9d0d165483789164c931e85e9915d20d9956d4c53e400de634b52bd767db1bea"
   },
   "palette": "Endfield masks tinted by native UI; full-colour user shop stamp; previous cursor/glyph art retained",
   "rendering": "source paths, palette and typography assets verified; native rendering pending user test"

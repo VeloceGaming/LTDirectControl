@@ -84,11 +84,12 @@ const VERBOSE: &[&str] = &[
 ];
 
 pub fn level_of(line: &str) -> Level {
-    let lower = |s: &str| s.to_ascii_lowercase();
     if SAFETY.iter().any(|p| line.starts_with(p))
-        || ["panic", "failed", "failure"]
-            .iter()
-            .any(|w| lower(line).contains(w))
+        || ["panic", "failed", "failure"].iter().any(|w| {
+            line.as_bytes()
+                .windows(w.len())
+                .any(|part| part.eq_ignore_ascii_case(w.as_bytes()))
+        })
     {
         Level::Safety
     } else if VERBOSE.iter().any(|p| line.starts_with(p)) {
@@ -114,7 +115,13 @@ pub fn set(setting: f64) {
     CHOSEN.store(level as u8, Ordering::Relaxed);
 }
 pub fn enabled(line: &str) -> bool {
+    if line.starts_with("PERF ") && crate::perf::capture_enabled() {
+        return true;
+    }
     level_of(line) as u8 <= CHOSEN.load(Ordering::Relaxed)
+}
+pub fn verbose() -> bool {
+    CHOSEN.load(Ordering::Relaxed) >= Level::Verbose as u8
 }
 
 #[cfg(test)]

@@ -215,6 +215,7 @@ mod tests {
                 },
                 center: (480., 480.),
                 extent: (1920., 1920.),
+                zoom: 1.,
                 minimap: r,
             };
             for p in [

@@ -7,3 +7,5 @@ pub static SETTINGS_OPEN: AtomicBool = AtomicBool::new(false);
 /// The shop window is open: Esc belongs to the shop (it must not also cancel
 /// a recall).
 pub static SHOP_OPEN: AtomicBool = AtomicBool::new(false);
+/// Includes the closing edge and held cancel buttons, so they cannot leak.
+pub static EMOTE_CAPTURE: AtomicBool = AtomicBool::new(false);

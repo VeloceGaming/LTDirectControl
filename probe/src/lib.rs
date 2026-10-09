@@ -19,6 +19,8 @@ mod camera;
 mod client;
 mod combat;
 mod cursor;
+mod emote_library;
+mod emotes;
 mod hud_icons;
 mod hud_motion;
 mod hud_style;
@@ -112,6 +114,11 @@ impl Logger {
     fn write(&self, text: &str) {
         self.write_sample(text, false);
     }
+    fn verbose(&self, make: impl FnOnce() -> String) {
+        if logging::verbose() {
+            self.write(&make());
+        }
+    }
 
     fn write_sample(&self, text: &str, background: bool) {
         if !logging::enabled(text) {
@@ -123,6 +130,7 @@ impl Logger {
         if state.file.is_none() {
             return;
         }
+        let _io = perf::work(perf::Work::LogIo);
         if background {
             if state.background_lines >= 200 {
                 return;
@@ -200,6 +208,7 @@ fn init(host: &StableHost) -> StableMod {
     let cast_on_release = runtime_storage::cast_on_release(directory.as_deref());
     let settings = Arc::new(settings::Settings::new(directory.as_deref()));
     let _ = settings::GLOBAL.set(settings.clone());
+    emote_library::initialize(directory.as_deref(), &logger);
     let cursor = cursor::Cursor::new(settings.clone());
     logging::set(settings.number("log_level"));
     logger.write(&format!("CONTROLS cast_on_release={cast_on_release}; default quickcast; Shift normal cast; Alt self cast"));

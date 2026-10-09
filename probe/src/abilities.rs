@@ -344,6 +344,11 @@ impl Abilities {
             s.message = None;
         }
     }
+    pub fn interaction_busy(&self) -> bool {
+        self.0
+            .lock()
+            .is_ok_and(|s| s.preview.is_some() || s.pending.is_some() || s.dispatched.is_some())
+    }
     pub fn hud_skills(&self) -> HudSkills {
         let Ok(s) = self.0.lock() else {
             return HudSkills::default();
@@ -408,6 +413,9 @@ impl Abilities {
         s.focused = keys.focused;
         s.champion_only = keys.champion_only;
         s.updated = Some(Instant::now());
+        if active && keys.focused && keys.emote_capture {
+            return action;
+        }
         s.aim = keys
             .cursor
             .filter(|p| !camera.command_blocked(*p))
@@ -617,7 +625,10 @@ impl Abilities {
     pub fn observe_units(&self, key: MatchKey, actor: usize, units: &[Unit]) {
         if let Ok(mut s) = self.0.lock() {
             if s.key == Some(key) && s.actor == Some(actor) {
-                s.units = Some((units.to_vec(), Instant::now()));
+                let (saved, at) = s.units.get_or_insert_with(|| (Vec::new(), Instant::now()));
+                saved.clear();
+                saved.extend_from_slice(units);
+                *at = Instant::now();
             }
         }
     }
@@ -1283,6 +1294,22 @@ mod tests {
         assert_eq!(a.cursor_feedback(true), Some(SkillCursor::Invalid));
     }
     #[test]
+    fn emote_capture_does_not_cast_or_replay_held_skill() {
+        let (a, c, log) = setup(2, 5);
+        let captured = Keys {
+            emote_capture: true,
+            ..keys(true, false)
+        };
+        a.update(captured, true, &c, &log);
+        assert!(!a.interaction_busy());
+        assert!(take(&a, &[], |_| true, &log).is_none());
+        a.update(keys(true, false), true, &c, &log);
+        assert!(take(&a, &[], |_| true, &log).is_none());
+        a.update(keys(false, false), true, &c, &log);
+        a.update(keys(true, false), true, &c, &log);
+        assert!(take(&a, &[], |_| true, &log).is_some());
+    }
+    #[test]
     fn simultaneous_click_skill_keeps_one_cast_but_a_later_click_cancels() {
         let (a, c, log) = setup(2, 5);
         let press = Keys {
@@ -1741,6 +1768,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,

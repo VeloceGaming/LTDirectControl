@@ -1268,6 +1268,7 @@ mod tests {
             },
             center: (480., 480.),
             extent: (1024., 1024.),
+            zoom: 1.,
         }
     }
     #[test]
@@ -1776,10 +1777,12 @@ mod tests {
             },
             center: (480., 480.),
             extent: (1024., 1024.),
+            zoom: 1.,
         };
         for extent in [512., 1024., 2048.] {
             let frame = CameraFrame {
                 extent: (extent, extent),
+                zoom: 1.,
                 ..frame
             };
             let d = drawing(

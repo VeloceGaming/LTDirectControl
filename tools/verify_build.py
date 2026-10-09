@@ -73,12 +73,19 @@ hud_art = load('hud-glyphs.json')
 assert digest(root / hud_art['source']) == hud_art['source_sha256']
 assert len(hud_art['files']) == 8
 ui_art = load('ui-graphics.json')
-assert len(ui_art['files']) == 88  # 86 + stat icon sprite sheet and data (0.76.7)
+emotes = load('emotes.json')
+assert digest(root / emotes['source']) == emotes['source_sha256']
+assert len(emotes['files']) == 6
+bundled_emotes = load('bundled-emotes.json')
+assert digest(root / bundled_emotes['source']) == bundled_emotes['source_sha256']
+assert digest(root / bundled_emotes['catalogue']) == bundled_emotes['catalogue_sha256']
+assert len(bundled_emotes['entries']) == len(bundled_emotes['files']) == 4
+assert len(ui_art['files']) == 98  # 88 existing + five faces + optional sound + four bundled faces
 stamp = load('shop-stamp.json')
 assert digest(root / stamp['source']) == stamp['source_sha256']
 assert stamp['rotation_degrees_clockwise'] == -7.5
 assert stamp['display_size'] == [64, 64]
-for record in [hud_art, ui_art, stamp, load('settings-glyphs.json'), load('shop-glyphs.json'), load('endfield-glyphs.json')]:
+for record in [hud_art, ui_art, stamp, emotes, bundled_emotes, load('settings-glyphs.json'), load('shop-glyphs.json'), load('endfield-glyphs.json')]:
     for name, value in record['files'].items():
         assert digest(package / name) == value, name
     for name, value in record.get('sources', {}).items():

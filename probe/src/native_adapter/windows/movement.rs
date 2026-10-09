@@ -32,6 +32,7 @@ pub(crate) unsafe extern "system" fn steer_hook(
         let shared = SHARED.get()?;
         PATCHES.get()?;
         let key = owned_steering(shared, actor, x, y)?;
+        let _profile = crate::perf::work(crate::perf::Work::OwnedSteering);
         OWNED_STEER_ENTRIES.fetch_add(1, Ordering::Relaxed);
         // These fields belong to the current borrowed native entity. No
         // pointer from an earlier input call or published frame is reused.
@@ -154,6 +155,7 @@ pub(crate) unsafe fn cancel_recall(shared: &Shared, entity: usize, actor: usize,
     }
 }
 pub(crate) unsafe extern "system" fn move_hook(entity: usize, x: u64, y: u64, events: usize) {
+    let _profile = crate::perf::work(crate::perf::Work::MoveInclusive);
     crate::perf::hook(crate::perf::Hook::Move);
     let original: MoveFn = std::mem::transmute(ORIGINAL_MOVE.load(Ordering::Acquire));
     let Some(shared) = SHARED.get() else {

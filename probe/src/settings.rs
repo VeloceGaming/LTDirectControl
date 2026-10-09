@@ -218,6 +218,42 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.,
     },
     OptionDef {
+        key: "emotes", page: 7, section: "Emotes", label: "Emote wheel",
+        hint: "Hold the bound key, choose a direction, then release. Centre selects GG. Local display only.",
+        control: Control::Toggle, default: 1.,
+    },
+    OptionDef {
+        key: "emote_sound", page: 7, section: "Emotes", label: "Emote sound",
+        hint: "A quiet confirmation sound when an emote is displayed.",
+        control: Control::Toggle, default: 0.,
+    },
+    OptionDef {
+        key: "emote_height", page: 7, section: "Display", label: "Height",
+        hint: "Distance from the champion's ground position to the image's lower edge.",
+        control: Control::Slider(0., 240., 1., " px"), default: 108.,
+    },
+    OptionDef {
+        key: "emote_scale", page: 7, section: "Display", label: "Scale",
+        hint: "100% displays an 88 px image at normal zoom.",
+        control: Control::Slider(50., 200., 5., "%"), default: 100.,
+    },
+    OptionDef {
+        key: "emote_zoom", page: 7, section: "Display", label: "Zoom scaling",
+        hint: "Follow camera scales both image size and height with battlefield zoom.",
+        control: Control::Choice(&["Fixed screen size", "Follow camera"]), default: 0.,
+    },
+    OptionDef {
+        key: "emote_cooldown", page: 7, section: "Timing", label: "Cooldown",
+        hint: "Shared by all emotes. A new emote replaces the previous image.",
+        control: Control::Slider(0.25, 6., 0.25, " s"), default: 1.5,
+    },
+    OptionDef {
+        key: "perf_capture", page: 5, section: "Debug",
+        label: "Capture performance measurements",
+        hint: "Aggregates client, simulation, hook and input-to-playback timings every 10 seconds. Adds profiling overhead.",
+        control: Control::Toggle, default: 0.,
+    },
+    OptionDef {
         key: "acquisition_debug",
         page: 5,
         section: "Debug",
@@ -342,6 +378,7 @@ pub static BINDINGS: &[BindingDef] = &[
     ),
     bind!("tab", "Control & camera", "Team details (hold)", 9, 0),
     bind!("shop", "Control & camera", "Shop", 0x50, 0),
+    bind!("emote", "Control & camera", "Emote wheel (hold)", 0x54, 0),
     bind!(
         "stats_panel",
         "Control & camera",
@@ -518,6 +555,9 @@ impl Values {
         })
     }
     pub fn reset_page(&mut self, page: usize) {
+        if page == 7 {
+            crate::emote_library::reset_slots(self);
+        }
         if page == 6 {
             self.0
                 .as_object_mut()
@@ -575,6 +615,7 @@ impl Chord {
 }
 pub struct Settings {
     values: Mutex<Values>,
+    input: Mutex<Arc<Values>>,
     dirty: Mutex<Option<Instant>>,
     root: Option<PathBuf>,
 }
@@ -590,8 +631,10 @@ impl Settings {
         let before = value.clone();
         crate::acquisition::migrate_defaults(&mut value);
         let migrated = value.0 != before.0;
+        let input = Arc::new(input_values(&value));
         Self {
             values: Mutex::new(value),
+            input: Mutex::new(input),
             dirty: Mutex::new(migrated.then(Instant::now)),
             root: root.map(Path::to_owned),
         }
@@ -600,19 +643,13 @@ impl Settings {
         self.values.lock().map(|v| v.clone()).unwrap_or_default()
     }
     fn input_snapshot(&self) -> Values {
-        self.values
+        (*self.input_shared()).clone()
+    }
+    fn input_shared(&self) -> Arc<Values> {
+        self.input
             .lock()
-            .map(|v| {
-                Values(Value::Object(
-                    v.0.as_object()
-                        .expect("settings object")
-                        .iter()
-                        .filter(|(k, _)| k.as_str() != "acquisition")
-                        .map(|(k, v)| (k.clone(), v.clone()))
-                        .collect(),
-                ))
-            })
-            .unwrap_or_default()
+            .map(|v| v.clone())
+            .unwrap_or_else(|_| Arc::new(Values::default()))
     }
     pub fn number(&self, key: &str) -> f64 {
         self.values
@@ -656,6 +693,9 @@ impl Settings {
             }
         }
         if let Ok(mut saved) = self.values.lock() {
+            if let Ok(mut input) = self.input.lock() {
+                *input = Arc::new(input_values(&v));
+            }
             *saved = v;
             if let Ok(mut at) = self.dirty.lock() {
                 *at = Some(Instant::now());
@@ -715,6 +755,25 @@ impl Settings {
         }
     }
 }
+fn input_values(v: &Values) -> Values {
+    Values(Value::Object(
+        v.0.as_object()
+            .expect("settings object")
+            .iter()
+            .filter(|(k, _)| k.as_str() != "acquisition")
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
+    ))
+}
+/// Immutable applied options/bindings. Constructed on change, shared by hot
+/// input/targeting readers without cloning the JSON document every poll.
+pub fn current_shared() -> Arc<Values> {
+    static DEFAULT: OnceLock<Arc<Values>> = OnceLock::new();
+    GLOBAL.get().map_or_else(
+        || DEFAULT.get_or_init(|| Arc::new(Values::default())).clone(),
+        |s| s.input_shared(),
+    )
+}
 pub fn current() -> Values {
     GLOBAL
         .get()
@@ -737,6 +796,30 @@ pub fn option(key: &str) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn shared_input_changes_only_on_apply_and_preserves_old_readers() {
+        let store = Settings::new(None);
+        let first = store.input_shared();
+        assert!(Arc::ptr_eq(&first, &store.input_shared()));
+        let mut v = store.snapshot();
+        v.set("emotes", 0.);
+        v.bind(
+            "emote",
+            0,
+            Some(Chord {
+                code: 0x55,
+                mods: 0,
+            }),
+        );
+        store.apply(v);
+        let next = store.input_shared();
+        assert!(!Arc::ptr_eq(&first, &next));
+        assert_eq!(first.number("emotes"), 1.);
+        assert_eq!(next.number("emotes"), 0.);
+        assert_eq!(first.binding("emote")[0].unwrap().code, 0x54);
+        assert_eq!(next.binding("emote")[0].unwrap().code, 0x55);
+        assert!(next.0.get("acquisition").is_none());
+    }
     #[test]
     fn saved_keybinds_options_and_unknown_fields_survive_reload() {
         let root = std::env::temp_dir().join(format!(

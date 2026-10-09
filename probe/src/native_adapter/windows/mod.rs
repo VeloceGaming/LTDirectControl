@@ -172,7 +172,7 @@ extern "system" {
     fn BCryptCloseAlgorithmProvider(handle: *mut c_void, flags: u32) -> i32;
 }
 
-fn sha256(bytes: &[u8]) -> Result<String, String> {
+pub(super) fn sha256(bytes: &[u8]) -> Result<String, String> {
     let algorithm: Vec<u16> = "SHA256\0".encode_utf16().collect();
     let mut handle = std::ptr::null_mut();
     let mut digest = [0u8; 32];

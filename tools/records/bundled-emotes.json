@@ -1,0 +1,56 @@
+{
+  "source": "tools/prepare_bundled_emotes.cjs",
+  "source_sha256": "25a0227a59244d3019455d65b9859f146f05c43e344f8abcb802a94b2573af84",
+  "catalogue": "probe/src/emote_library/bundled.rs",
+  "catalogue_sha256": "55a0093654c2e6db1b9295974b8aaa9e53eb7ff4d745ac6ddc4f245c3f1a744a",
+  "art": "Four user-provided emotes; originals remain outside the repository and are not modified.",
+  "canvas": [
+    256,
+    256
+  ],
+  "visible_longest_side": 224,
+  "entries": [
+    {
+      "filename": "Bomber_Nice.png",
+      "label": "Bomber Nice",
+      "glyph": "bundled/emote_bomber_nice",
+      "id": "custom:76748612ca88e03b29cdb61d0f0216e81c36dfbfb324fb48401222b52e74fea9",
+      "aliases": [
+        "custom:095b17f31f8dd414e3486d07a8e2df09cdc323d367cf0cfe0d88617700d6639a"
+      ],
+      "source_sha256": "586ebdd4a269f354efc3a5bb63dd8ed0ff08f4bd34242ee7879ddcbe8c04cdd4"
+    },
+    {
+      "filename": "Clown_Son.png",
+      "label": "Clown Son",
+      "glyph": "bundled/emote_clown_son",
+      "id": "custom:88735e8bc8c8b9b2aa91fb3914afb7ee1858fe543f27be1db9da33c0be10f603",
+      "aliases": [
+        "custom:ebb21be8c025cd896337941adab61bd444686d04deb1f018acac107d906f904a"
+      ],
+      "source_sha256": "3df97ea82191a04eb1d17ac86c4cf46f57d92275bac5dc0536922c26ad3518e4"
+    },
+    {
+      "filename": "Ghost_Wajaja.png",
+      "label": "Ghost Wajaja",
+      "glyph": "bundled/emote_ghost_wajaja",
+      "id": "custom:da6a9fec2dc06e6b5d25d15f540d3c7ace410c2c28478bd3983416135757f6e0",
+      "aliases": [],
+      "source_sha256": "d6343ae2a7593476448b84f02c778987a5ccb3a316af0fd0151e19be403ac46d"
+    },
+    {
+      "filename": "Monk_NoKills.png",
+      "label": "Monk No Kills",
+      "glyph": "bundled/emote_monk_no_kills",
+      "id": "custom:4c7ba3d30bc278054b1d40a771f67a1d318cbc20609db8829c9bc3c91fc36bdb",
+      "aliases": [],
+      "source_sha256": "8df62d791df5f414667afbfb675fb29bf78746d5da2907b786e22a06bba850b3"
+    }
+  ],
+  "files": {
+    "ui/bundled/emote_bomber_nice.png": "31d00120f05cd24900a83d11dda1d36c874be134b7a8cb933b07d939b2fc6d10",
+    "ui/bundled/emote_clown_son.png": "29afbf836a506b8e8ff3ba40f68fb58149d04dd5168c65d8f4555a021f148291",
+    "ui/bundled/emote_ghost_wajaja.png": "4a510c8bcb260d4bfc3ef836d991bd7b6ba232898ac477eab320b307e9495e11",
+    "ui/bundled/emote_monk_no_kills.png": "9d0d165483789164c931e85e9915d20d9956d4c53e400de634b52bd767db1bea"
+  }
+}

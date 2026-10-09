@@ -3,6 +3,33 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.80.1 — 2026-10-10
+
+- Add four user-provided bundled Library emotes: Bomber Nice, Clown Son, Ghost Wajaja and Monk No Kills, using the corrected `Bomber_Nice.png` and `Clown_Son.png`. They are separate normalized 256 × 256 PNG assets, with visible art fitted to 224 pixels, and are available without copying files to AppData or restarting to import them. The original five wheel defaults stay the same.
+- Preserve filename-derived assignments, including the old Bomber/Clown filenames, and avoid duplicate Library entries when originals are also in the personal import folder. Personal variants still use the existing import/restart flow; originals and saved settings are not overwritten. Custom sounds remain deferred.
+- Imported emotes now also normalize to 256 × 256, preserving the existing padding proportions and on-screen size. Originals remain untouched. Updating cached personal images still needs a restart after staging; bundled images are ready immediately after launching this release. Custom sounds remain deferred.
+
+## 0.80.0 — 2026-10-10
+
+- Emotes > Library: Open folder, Refresh, paged emote grid and assignment to the five existing wheel slots. Assignments use the Settings draft, Apply/Cancel and Restore this page. Unicode filenames are supported; missing or unavailable imports use the slot's built-in emote without changing saved assignments. The original five emotes remain available.
+- Static PNG imports from the user log/settings folder's `emotes` subfolder (`%LOCALAPPDATA%\LTDirectControl\emotes` normally): up to 256 × 256 pixels, 1 MiB per file and 64 imports. Decode to RGBA, trim transparent margins, preserve aspect, fit visible art into 112 × 112 and centre on a transparent 128 × 128 canvas. Originals remain untouched. Animated PNGs, malformed/oversized/empty images and file links are rejected with reasons in the library and log. Custom sounds and animated imports are deferred.
+- Imports are prepared at startup or on explicit Refresh (a single background worker, with bounded scanning/decoding); rendering reads an immutable catalogue, with no file loading or image decoding per tick. Content-versioned files in the installed mod's `ui/imported` cache preserve textures that may still be in use. New/changed images require a game restart and display Restart in the library until then. No texture-reload hook or game save modification is introduced. Native imported texture loading still requires user testing after restart.
+- Emotes > Display keeps placement, scale, zoom mode, cooldown and shared sound controls. Preview uses a fixed display scale and pans at extreme settings instead of shrinking to fit, so 200% and 300% camera samples differ. Long imported names are bounded in the wheel/library.
+
+## 0.79.1 — 2026-10-10
+
+- Dedicated Emotes settings page with height (0–240 UI px), scale (50–200%), fixed-screen/follow-camera zoom behavior and shared cooldown (0.25–6 seconds, default 1.5). Existing enabled/sound settings keep their values. Defaults preserve the previous image size and height. Following camera zoom scales image size, vertical gap and pop lift using the actual native zoom value.
+- Silent live draft preview beside the controls, Replay and 50/100/200/300% sample camera zoom buttons. The preview shares gameplay geometry and animation, fits extreme settings without clipping, runs while Settings pauses the match and never changes the match camera, cooldown or sound. Apply/Cancel/Restore this page use the existing settings transaction.
+- A newly triggered emote replaces the current image after the configured cooldown. Two-second display and pause behavior are unchanged. Minimum cooldown exceeds the packaged 160 ms sound duration; unsupported sound requests now log a reason. Native rendering, audio and zoom appearance remain pending user testing.
+
+## 0.79.0 — 2026-10-10
+
+- Local emote wheel: hold T (rebindable), choose GG/Nice/Hype/Oops/Focus and release; Escape/right-click cancels. Five original images, one reused native overlay, 2-second display/pop/fade and 6-second cooldown, optional quiet sound (off by default). Match playback drives durations, including pause. No network/AI/replay integration. Settings > Interface can disable emotes; existing world orders continue while choosing.
+- Emote input is blocked during shop/settings and skill/attack-move aiming. Focus loss, death, AI handover and new matches clear the wheel/image; held keys and cancel clicks are drained to prevent accidental commands. Cooldown persists across same-match focus/death/AI transitions. The wheel fits screen edges; the floating image stays off HUD/minimap. UI spawn failures retry slowly and do not release gameplay control.
+- Advanced > Debug > Capture performance measurements: fixed-size opt-in timing histograms cover SDK callbacks, unit scanning, combat, selected mod hook work, native-inclusive attack/skill/move/outline hooks, shop lock/decision work, log I/O/rotation and capture-to-playback delay. Ten-second reports include counts, averages, maxima and p95/p99 upper bounds. Client callback totals remain explicitly separate from native-inclusive/overlapping work. Input trace storage is bounded and capture can continue past the ordinary diagnostic sample limit.
+- Performance: reuse one entity scan for skills and attacks; retain enemy/hover/ability snapshot vector capacity; share applied input settings without per-poll JSON copies; skip disabled attack trace construction and mutex work; lazily format selected verbose messages; remove lowercase allocations in log severity checks and the client frame counter's temporary vector. Left-match rejection now precedes the session gate. Input frequency, worker lead, game timing and safety guards are unchanged.
+- Added a read-only numeric performance report tool and a compatibility/lower-spec test guide in docs/emotes-and-performance.md. Native rendering, sound, gameplay and actual lower-spec performance remain pending user testing; automated checks do not establish an FPS improvement.
+
 ## 0.78.2 — 2026-10-09
 
 - AI control: the game's layout toggle works again ("exit full screen", F). The mod forced full screen every frame even in AI control; it now restores the spectator's own camera, vision and layout once on entering AI control and leaves the toggle alone, forcing full screen again on taking control. A session released from AI control keeps the layout the spectator chose.

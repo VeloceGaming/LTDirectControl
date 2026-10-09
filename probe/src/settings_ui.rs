@@ -20,8 +20,12 @@ use std::{
 };
 pub(crate) const PATH: &str = "ingame.lt_settings";
 mod acquisition_panel;
+mod emote_panel;
 pub static SCROLL: AtomicI32 = AtomicI32::new(0);
-const PAGES: [(&str, &str, &str); 5] = [
+const NAV_EMOTES: usize = 4;
+const NAV_ADVANCED: usize = 5;
+const PAGE_EMOTES: usize = 7;
+const PAGES: [(&str, &str, &str); 6] = [
     (
         "Combat & casting",
         "Choose how movement, targeting and ability inputs behave.",
@@ -43,6 +47,11 @@ const PAGES: [(&str, &str, &str); 5] = [
         "ef_panels",
     ),
     (
+        "Emotes",
+        "Choose emotes and adjust placement, size and timing. Apply saves your choices.",
+        "emote_gg",
+    ),
+    (
         "Advanced",
         "Fine-tune controls, acquisition and diagnostic tools.",
         "ef_settings",
@@ -54,14 +63,16 @@ const VIEW_BOTTOM: f32 = 760.;
 const ADVANCED: [&str; 3] = ["General", "Acquisition", "Debug"];
 // Internal schema pages: General 4, Debug 5, Acquisition 6.
 fn active_page(page: usize, advanced: usize) -> usize {
-    if page == 4 {
+    if page == NAV_ADVANCED {
         [4, 6, 5][advanced]
+    } else if page == NAV_EMOTES {
+        PAGE_EMOTES
     } else {
         page
     }
 }
 fn view_top(page: usize) -> f32 {
-    if page >= 4 {
+    if (4..=6).contains(&page) {
         VIEW_TOP + 60.
     } else {
         VIEW_TOP
@@ -87,6 +98,7 @@ enum Entry {
     Bind(usize),
     Cursor,
     Acquisition,
+    Emotes,
 }
 impl Entry {
     fn height(self) -> f32 {
@@ -101,6 +113,7 @@ impl Entry {
             Entry::Bind(_) => 70.,
             Entry::Cursor => 64.,
             Entry::Acquisition => acquisition_panel::HEIGHT as f32,
+            Entry::Emotes => emote_panel::HEIGHT as f32,
         }
     }
     /// Margin below this entry; a following section uses at least 24 px.
@@ -108,12 +121,15 @@ impl Entry {
         match self {
             Entry::Hint | Entry::Section(_) => 12.,
             Entry::Head | Entry::Cursor => 0.,
-            Entry::Opt(_) | Entry::Bind(_) | Entry::Acquisition => 6.,
+            Entry::Opt(_) | Entry::Bind(_) | Entry::Acquisition | Entry::Emotes => 6.,
         }
     }
 }
 /// Page content as (entry, top) in scroll coordinates, plus the content height.
 fn layout(page: usize) -> (Vec<(Entry, f32)>, f32) {
+    if page == PAGE_EMOTES {
+        return (vec![(Entry::Emotes, 0.)], emote_panel::HEIGHT as f32);
+    }
     if page == 6 {
         return (
             vec![(Entry::Acquisition, 0.)],
@@ -163,7 +179,7 @@ fn layout(page: usize) -> (Vec<(Entry, f32)>, f32) {
     (out, y)
 }
 fn max_scroll(page: usize) -> f32 {
-    if page == 6 {
+    if page == 6 || page == PAGE_EMOTES {
         return 0.;
     }
     // The design keeps 24 px of padding below the last item.
@@ -173,6 +189,7 @@ fn max_scroll(page: usize) -> f32 {
 #[derive(Clone)]
 enum Event {
     Acquisition(acquisition_panel::Action),
+    Emote(emote_panel::Action),
     Page(usize),
     Advanced(usize),
     Seg(usize, usize),
@@ -500,6 +517,7 @@ fn template() -> String {
         s.push_str(&row_template(i));
     }
     s.push_str(&acquisition_panel::template());
+    s.push_str(&emote_panel::template());
     s.push_str(&format!("#cursor_ex:color {{ x: {CONTENT_X}px; y: 0px; width: {CONTENT_W}px; height: 64px; color: #00000000; ignore_event: true; visible: false; z: 2003;\n{}{}}}\n",
         "#img:image { x: 24px; y: 16px; width: 32px; height: 32px; source: \"asset/lt_direct_control_probe/ui/cursor_preview\"; ignore_event: true; z: 2004; }\n",
         label("text",(72,21,300,22),14,"Cursor size preview",false,"989694ff","Left",2004)));
@@ -698,6 +716,7 @@ fn template() -> String {
 #[derive(Default)]
 pub struct SettingsUi {
     acquisition: acquisition_panel::Panel,
+    emotes: emote_panel::Panel,
     open: bool,
     page: usize,
     advanced: usize,
@@ -740,6 +759,7 @@ impl SettingsUi {
         self.original = store.snapshot();
         self.draft = self.original.clone();
         self.acquisition = acquisition_panel::Panel::new();
+        self.emotes = emote_panel::Panel::default();
         self.hex = (None, String::new(), 0);
         self.bound = Some((key, timing.generation()));
         self.paused_by_me = phase == Phase::Running;
@@ -921,6 +941,11 @@ impl SettingsUi {
             return;
         }
         match event {
+            Event::Emote(action) => {
+                if self.page == NAV_EMOTES {
+                    self.emotes.handle(action, &mut self.draft);
+                }
+            }
             Event::Acquisition(action) => {
                 if active_page(self.page, self.advanced) == 6 {
                     self.acquisition.handle(action, &mut self.draft);
@@ -930,12 +955,13 @@ impl SettingsUi {
                 self.page = p;
                 self.motion.reset();
                 self.acquisition.hide();
+                self.emotes.hide();
                 self.scroll = 0.;
                 self.drop = None;
                 self.slots = [None; ROWS];
             }
             Event::Advanced(p) => {
-                if self.page == 4 && p < ADVANCED.len() {
+                if self.page == NAV_ADVANCED && p < ADVANCED.len() {
                     self.advanced = p;
                     self.scroll = 0.;
                     self.motion.reset();
@@ -1027,6 +1053,7 @@ impl SettingsUi {
             items.push((format!("advanced_nav.sub{i}"), Event::Advanced(i)));
         }
         items.extend(acquisition_panel::events());
+        items.extend(emote_panel::events());
         for (node, event) in items {
             let queue = self.events.clone();
             ctx.ui_register_path_events(&format!("{PATH}.window.{node}"), move |ctx| {
@@ -1141,13 +1168,16 @@ impl SettingsUi {
         full
     }
     fn render_frame(&mut self, ctx: &mut StableClient<'_>, cursor: Option<(f32, f32)>) {
-        self.visible(ctx, "advanced_nav", self.page == 4);
+        self.visible(ctx, "advanced_nav", self.page == NAV_ADVANCED);
         self.props(
             ctx,
             "mask_top",
-            format!("height: {}px;", if self.page == 4 { 172 } else { 112 }),
+            format!(
+                "height: {}px;",
+                if self.page == NAV_ADVANCED { 172 } else { 112 }
+            ),
         );
-        if self.page == 4 {
+        if self.page == NAV_ADVANCED {
             for i in 0..ADVANCED.len() {
                 let selected = self.advanced == i;
                 self.paint(
@@ -1361,6 +1391,7 @@ impl SettingsUi {
         let mut hint = false;
         let mut cursor_ex = false;
         let mut acquisition = false;
+        let mut emotes = false;
         let mut slots = [None; ROWS];
         for (entry, top) in entries {
             let y = view_top(page) + top - scroll;
@@ -1430,6 +1461,12 @@ impl SettingsUi {
                     panel.render(self, ctx, y, cursor, keys);
                     self.acquisition = panel;
                 }
+                Entry::Emotes => {
+                    emotes = true;
+                    let mut panel = std::mem::take(&mut self.emotes);
+                    panel.render(self, ctx, y, cursor, keys);
+                    self.emotes = panel;
+                }
                 _ => {}
             }
         }
@@ -1437,6 +1474,10 @@ impl SettingsUi {
         self.visible(ctx, "hintbox", hint);
         self.visible(ctx, "cursor_ex", cursor_ex);
         self.visible(ctx, "acquisition", acquisition);
+        self.visible(ctx, "emote_panel", emotes);
+        if !emotes {
+            self.emotes.hide();
+        }
         if !acquisition {
             self.acquisition.hide();
         }
@@ -2105,16 +2146,16 @@ mod tests {
         assert!(max_scroll(1) > 0.);
         assert!(max_scroll(0) > 0.);
         assert_eq!(max_scroll(2), 0.);
-        // Interface fits after 0.76.2 moved Debug to Advanced; 0.76.5's
-        // Appearance section (background colour row) scrolls it by 57 px.
+        // Emotes have a fixed body; Interface retains its scrolling viewport.
         assert_eq!(max_scroll(3), 57.);
+        assert_eq!(max_scroll(PAGE_EMOTES), 0.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);
         assert_eq!(camera[1].0.height(), 56.);
     }
     #[test]
     fn visible_rows_never_exceed_the_slot_pools() {
-        for page in 0..=6 {
+        for page in 0..=7 {
             let (entries, _) = layout(page);
             let mut scroll = 0.;
             while scroll <= max_scroll(page) {
@@ -2197,7 +2238,7 @@ mod tests {
         let store = settings::Settings::new(None);
         let log = crate::test_support::logger("advanced-subpages");
         let mut ui = SettingsUi {
-            page: 4,
+            page: NAV_ADVANCED,
             ..Default::default()
         };
         crate::acquisition::set_custom(&mut ui.draft, "ghost", Some(85.));
@@ -2230,6 +2271,49 @@ mod tests {
             (ui.page, ui.advanced),
             (3, 1),
             "hidden subpage events cannot change other pages"
+        );
+    }
+    #[test]
+    fn emote_draft_reset_cancel_and_apply_remain_transactional() {
+        let timing = NativeTiming::new(false);
+        let store = settings::Settings::new(None);
+        let log = crate::test_support::logger("emote-settings-transaction");
+        let mut ui = SettingsUi {
+            open: true,
+            page: NAV_EMOTES,
+            draft: store.snapshot(),
+            ..Default::default()
+        };
+        ui.draft.set("emote_height", 180.);
+        ui.draft.set("emote_scale", 150.);
+        ui.draft.set("emote_cooldown", 0.5);
+        let library = crate::emote_library::Snapshot::default();
+        crate::emote_library::assign(&mut ui.draft, 0, &library.entries[3].art.id, &library);
+        assert_eq!(store.number("emote_height"), 108.);
+        ui.close(&timing, &store, false, &log);
+        assert_eq!(store.number("emote_scale"), 100.);
+        assert!(store.snapshot().0.get("emote_slots").is_none());
+        ui.open = true;
+        ui.draft = store.snapshot();
+        ui.draft.set("emote_scale", 200.);
+        crate::emote_library::assign(&mut ui.draft, 1, &library.entries[4].art.id, &library);
+        ui.handle(Event::Reset, Keys::default(), &timing, &store, &log);
+        assert_eq!(ui.draft.number("emote_scale"), 100.);
+        assert_eq!(ui.draft.number("emote_cooldown"), 1.5);
+        assert!(ui.draft.0.get("emote_slots").is_none());
+        ui.draft.set("emote_height", 120.);
+        ui.draft.set("emote_scale", 150.);
+        ui.draft.set("emote_zoom", 1.);
+        ui.draft.set("emote_cooldown", 0.25);
+        crate::emote_library::assign(&mut ui.draft, 2, &library.entries[0].art.id, &library);
+        ui.close(&timing, &store, true, &log);
+        assert_eq!(store.number("emote_height"), 120.);
+        assert_eq!(store.number("emote_scale"), 150.);
+        assert_eq!(store.number("emote_zoom"), 1.);
+        assert_eq!(store.number("emote_cooldown"), 0.25);
+        assert_eq!(
+            library.assigned(&store.snapshot(), 2).art.id,
+            library.entries[0].art.id
         );
     }
     #[test]

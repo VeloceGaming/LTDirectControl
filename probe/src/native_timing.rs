@@ -253,6 +253,10 @@ impl NativeTiming {
     pub fn match_key(&self) -> Option<MatchKey> {
         self.state.lock().ok()?.key
     }
+    /// Cosmetic durations follow frames actually played, including pauses.
+    pub fn presentation_tick(&self) -> usize {
+        self.state.lock().map_or(0, |s| s.played_tick)
+    }
     pub fn generation(&self) -> u64 {
         self.state.lock().map_or(0, |s| s.generation)
     }
@@ -622,6 +626,7 @@ impl NativeTiming {
             .is_some_and(|t| t.published && t.frame <= consumed)
         {
             let trace = s.traces.pop_front().unwrap();
+            crate::perf::playback_latency(trace.stamp.at);
             log.write(&format!("INPUT TRACE played id={} kind={} frame={} played_tick={played} capture_to_playback_us={}; frame playback, not measured movement/projectile onset", trace.stamp.id, trace.stamp.label, trace.frame, trace.stamp.at.elapsed().as_micros()));
         }
         if mode == ViewMode::Running
@@ -690,11 +695,15 @@ impl NativeTiming {
         if s.key != Some(key)
             || s.worker != Some(crate::platform_input::thread_id())
             || s.phase != Phase::Running
-            || s.trace_count >= 300
+            || (s.trace_count >= 300 && !crate::perf::capture_enabled())
         {
             return;
         }
-        s.trace_count += 1;
+        s.trace_count = s.trace_count.saturating_add(1);
+        // A stalled viewer cannot grow the diagnostics queue without limit.
+        if s.traces.len() >= 64 {
+            s.traces.pop_front();
+        }
         let frame = s.produced + 1;
         s.traces.push_back(crate::input_trace::FrameTrace {
             stamp,

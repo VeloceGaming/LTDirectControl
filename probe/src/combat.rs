@@ -20,6 +20,12 @@ pub struct Unit {
     pub is_tower: bool,
     pub body: Option<crate::sprite_picking::Body>,
 }
+pub fn enemy_units(units: &[Unit], actor: usize) -> impl Iterator<Item = Unit> + '_ {
+    units
+        .iter()
+        .copied()
+        .filter(move |u| !u.friendly && u.id != actor)
+}
 fn distance(a: (u64, u64), b: (u64, u64)) -> u128 {
     let x = u128::from(a.0.abs_diff(b.0));
     let y = u128::from(a.1.abs_diff(b.1));
@@ -50,7 +56,7 @@ impl Order {
         champion_only: bool,
         attack_range: Option<u64>,
     ) -> (InputV1, Option<(u64, u64)>) {
-        let options = crate::settings::current();
+        let options = crate::settings::current_shared();
         self.resolve_policy(
             position,
             units,
@@ -285,6 +291,46 @@ pub fn hover_color(unit: Unit) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn reused_snapshot_excludes_allies_and_actor_without_changing_enemy_data() {
+        let enemy = Unit {
+            id: 20,
+            position: (250_000, 200_000),
+            radius: 8_000,
+            is_champion: false,
+            is_minion: true,
+            friendly: false,
+            in_cc: true,
+            is_tower: false,
+            body: None,
+        };
+        let units = [
+            Unit {
+                id: 7,
+                friendly: false,
+                ..enemy
+            },
+            Unit {
+                id: 10,
+                friendly: true,
+                ..enemy
+            },
+            enemy,
+            Unit {
+                id: 21,
+                is_tower: true,
+                ..enemy
+            },
+        ];
+        let selected: Vec<_> = enemy_units(&units, 7).collect();
+        assert_eq!(
+            selected.iter().map(|u| u.id).collect::<Vec<_>>(),
+            vec![20, 21]
+        );
+        assert_eq!(selected[0].position, enemy.position);
+        assert_eq!(selected[0].radius, enemy.radius);
+        assert!(selected[0].in_cc && selected[0].is_minion && selected[1].is_tower);
+    }
     #[test]
     fn ground_attack_move_acquires_only_in_current_aa_range_and_resumes_its_destination() {
         let pos = (200_000, 200_000);
@@ -581,6 +627,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (extent, extent),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,

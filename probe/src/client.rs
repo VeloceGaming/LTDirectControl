@@ -21,6 +21,7 @@ pub(crate) struct ClientObservations {
     pub(crate) early_input: Option<(u64, platform_input::Keys)>,
     pub(crate) screen_effect: screen_effect::Effect,
     pub(crate) ai_handback: ai_handback::AiHandback,
+    pub(crate) emotes: emotes::Emotes,
 }
 
 pub(crate) struct Client {
@@ -43,6 +44,7 @@ pub(crate) struct Client {
 impl Drop for Client {
     fn drop(&mut self) {
         ui_state::SETTINGS_OPEN.store(false, Ordering::Relaxed);
+        ui_state::EMOTE_CAPTURE.store(false, Ordering::Relaxed);
         self.settings.flush(true, &self.logger);
         self.cursor.shutdown();
         wheel::shutdown();
@@ -82,6 +84,57 @@ impl Client {
 }
 
 impl Client {
+    fn emote_context(
+        &self,
+        keys: platform_input::Keys,
+        battlefield: bool,
+        running: bool,
+    ) -> emotes::Context {
+        let anchor = self.movement.cosmetic_anchor();
+        let identity = anchor.map(|a| emotes::Identity {
+            generation: self.timing.generation(),
+            key: a.key,
+            player: a.player,
+        });
+        let alive = anchor.is_some_and(|a| a.position.is_some());
+        emotes::Context {
+            identity,
+            tick: self.timing.presentation_tick(),
+            controlling: battlefield && self.timing.client_controls(None),
+            running,
+            alive,
+            enabled: self.settings.number("emotes") == 1.,
+            cooldown_ticks: emotes::Config::from_values(&settings::current_shared()).cooldown_ticks,
+            blocked: ui_state::SETTINGS_OPEN.load(Ordering::Relaxed)
+                || ui_state::SHOP_OPEN.load(Ordering::Relaxed),
+            aiming: self.abilities.interaction_busy() || self.movement.attack_move_armed(),
+            may_open: keys.emote
+                && keys.cursor.is_some_and(|p| {
+                    !self.camera.command_blocked(p)
+                        && self
+                            .camera
+                            .frame()
+                            .is_some_and(|f| f.unproject(p).is_some())
+                }),
+        }
+    }
+    fn emote_input(&self, keys: &mut platform_input::Keys, battlefield: bool, running: bool) {
+        // Idle pre_update needs only the already-polled flags. Context and
+        // lifecycle are refreshed once in the normal UI step below.
+        if !keys.emote
+            && !keys.emote_capture
+            && self
+                .observations
+                .lock()
+                .is_ok_and(|o| !o.emotes.input_pending())
+        {
+            return;
+        }
+        let context = self.emote_context(*keys, battlefield, running);
+        if let Ok(mut o) = self.observations.lock() {
+            o.emotes.input(keys, context);
+        }
+    }
     fn pre_update_inner(&self, ctx: &mut StableClient<'_>) {
         if ctx.client_scene_kind() != Some(mod_api_stable::ClientSceneKindV1::InGame)
             || ui_state::SETTINGS_OPEN.load(Ordering::Relaxed)
@@ -92,6 +145,7 @@ impl Client {
         // Use the last rendered camera and visible UI masks. These describe
         // what the user clicked, before the host advances camera/playback.
         let mut keys = platform_input::poll();
+        self.emote_input(&mut keys, true, self.timing.client_running());
         self.resolve_targeting(&mut keys, true);
         self.movement.update(keys, true, false, &self.logger);
         self.gameplay_input(keys, true);
@@ -111,6 +165,7 @@ impl Client {
             team_status::PATH,
             stats_ui::OWN,
             stats_ui::TARGET,
+            emotes::PATH,
         ] {
             ui_theme::refresh(ctx, path);
         }
@@ -219,7 +274,7 @@ impl Client {
         );
         let skills = self.abilities.hud_skills();
         let status = self.abilities.feedback().unwrap_or_default();
-        let frame = Frame {
+        let mut frame = Frame {
             keys,
             battlefield,
             controls,
@@ -230,7 +285,8 @@ impl Client {
             skills,
             status,
         };
-        let (hud_bounds, hovered_skill) = self.apply_windows(ctx, &frame);
+        let (hud_bounds, hovered_skill) = self.apply_windows(ctx, &mut frame);
+        keys = frame.keys;
         let Frame { snapshot, .. } = frame;
         self.block_native_ui(ctx, hud_bounds);
         if early.is_none() || !gameplay_active {
@@ -347,6 +403,7 @@ impl StableExtension for Client {
         );
         let _t = perf::time(perf::Section::Post);
         logging::set(self.settings.number("log_level"));
+        perf::set_capture(self.settings.number("perf_capture") == 1.);
         self.post_update_inner(ctx, dt_micros);
     }
     fn post_render(&self, ctx: &mut StableClient<'_>) {
@@ -463,7 +520,7 @@ impl Client {
     fn apply_windows(
         &self,
         ctx: &mut StableClient<'_>,
-        frame: &Frame,
+        frame: &mut Frame,
     ) -> (Vec<camera::Rect>, Option<usize>) {
         let Frame {
             keys,
@@ -502,11 +559,15 @@ impl Client {
                 skills,
                 status,
                 keys.cursor.filter(|_| keys.focused),
-                keys.left && keys.focused,
+                keys.left && keys.focused && !keys.emote_capture,
                 &self.hud,
                 &self.logger,
             );
-            if controls && keys.focused && snapshot.as_ref().is_some_and(|s| s.alive) {
+            if controls
+                && keys.focused
+                && !keys.emote_capture
+                && snapshot.as_ref().is_some_and(|s| s.alive)
+            {
                 hovered_skill = observations.hud_ui.hovered_skill(ctx, keys.cursor);
             }
             hud_bounds = observations.hud_ui.bounds(ctx);
@@ -514,7 +575,7 @@ impl Client {
                 ctx,
                 battlefield,
                 controls,
-                keys.stats_panel && keys.focused,
+                keys.stats_panel && keys.focused && !keys.emote_capture,
                 &self.logger,
             ));
             drop(t);
@@ -548,7 +609,7 @@ impl Client {
                 &self.camera,
                 &self.settings,
                 keys.cursor.filter(|_| keys.focused),
-                keys.left && keys.focused,
+                keys.left && keys.focused && !keys.emote_capture,
                 &self.logger,
             ));
             if observations.session_ui.take_settings() {
@@ -604,6 +665,23 @@ impl Client {
             }
             drop(t);
             let t = perf::time(perf::Section::Effect);
+            let mut emote_keys = keys;
+            let mut emote_context = self.emote_context(keys, battlefield, running);
+            emote_context.alive &= snapshot.as_ref().is_none_or(|s| s.alive);
+            observations.emotes.input(&mut emote_keys, emote_context);
+            frame.keys.emote_capture = emote_keys.emote_capture;
+            observations.emotes.apply(
+                ctx,
+                &self.camera,
+                self.movement.cosmetic_anchor().and_then(|a| a.position),
+                controls
+                    && battlefield
+                    && keys.focused
+                    && !ui_state::SETTINGS_OPEN.load(Ordering::Relaxed)
+                    && !ui_state::SHOP_OPEN.load(Ordering::Relaxed),
+                emotes::Config::from_values(&settings::current_shared()),
+                &self.logger,
+            );
             observations.screen_effect.update(
                 self.settings.low_health(),
                 controls && battlefield,
@@ -678,7 +756,11 @@ impl Client {
         let hover_timer = perf::time(perf::Section::Hover);
         let (hover, attack) = self.movement.refresh_hover(
             &self.camera,
-            self.native_enabled && gameplay_active && battlefield && keys.focused,
+            self.native_enabled
+                && gameplay_active
+                && battlefield
+                && keys.focused
+                && !keys.emote_capture,
             self.abilities.hover_target(keys.alt),
         );
         let outline_enabled = self.settings.number("hover_outline") == 1.;
@@ -746,15 +828,17 @@ impl Client {
             return;
         }
         observations.last_sample_micros = observations.elapsed_micros;
-        self.logger.write(&format!(
-            "CONTROL DIAGNOSTIC {} | {:?} | {:?} | {} | {:?} | attack_aim={}",
-            self.timing.describe(),
-            self.movement.describe(),
-            self.abilities.status(),
-            self.camera.describe(),
-            self.movement.notice(),
-            self.movement.attack_move_armed()
-        ));
+        self.logger.verbose(|| {
+            format!(
+                "CONTROL DIAGNOSTIC {} | {:?} | {:?} | {} | {:?} | attack_aim={}",
+                self.timing.describe(),
+                self.movement.describe(),
+                self.abilities.status(),
+                self.camera.describe(),
+                self.movement.notice(),
+                self.movement.attack_move_armed()
+            )
+        });
         if self.native_enabled && !native_adapter::sample_status(&self.logger) {
             self.timing
                 .cancel("Native CALL bytes changed after installation", &self.logger);

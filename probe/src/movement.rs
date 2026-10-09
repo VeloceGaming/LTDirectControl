@@ -12,6 +12,12 @@ use std::time::{Duration, Instant};
 const LANES: [&str; 5] = ["top", "jungle", "mid", "bottom", "support"];
 pub(crate) const ATTACK_CLICK_DURATION: Duration = Duration::from_millis(120);
 #[derive(Clone, Copy)]
+pub struct CosmeticAnchor {
+    pub key: MatchKey,
+    pub player: usize,
+    pub position: Option<(u64, u64)>,
+}
+#[derive(Clone, Copy)]
 pub struct ClickFeedback {
     pub position: (u64, u64),
     pub attack: bool,
@@ -349,7 +355,7 @@ impl Movement {
         &self,
         player: usize,
         position: (u64, u64),
-        units: Vec<Unit>,
+        units: impl IntoIterator<Item = Unit>,
         acquisition_range: Option<u64>,
     ) -> Option<(InputV1, Option<(u64, u64)>)> {
         if !self.enabled {
@@ -359,7 +365,8 @@ impl Movement {
         if state.selection.selected()?.player != player {
             return None;
         }
-        state.units = units;
+        state.units.clear();
+        state.units.extend(units);
         state.units_updated = Some(Instant::now());
         state.order_range = acquisition_range;
         state.champion_position = Some(position);
@@ -461,13 +468,24 @@ impl Movement {
                 return;
             }
             s.hover_actor = Some(actor);
-            s.hover_units = units.to_vec();
+            s.hover_units.clear();
+            s.hover_units.extend_from_slice(units);
             s.hover_updated = Some(Instant::now());
         }
     }
     pub fn camera_target(&self) -> Option<(PlayerIdentity, Option<(u64, u64)>)> {
         let s = self.state.lock().ok()?;
         Some((s.selection.selected()?.clone(), s.champion_position))
+    }
+    /// Scalar-only anchor for local effects; do not copy champion strings or
+    /// expose SDK/native entity pointers to the presentation code.
+    pub fn cosmetic_anchor(&self) -> Option<CosmeticAnchor> {
+        let s = self.state.lock().ok()?;
+        Some(CosmeticAnchor {
+            key: s.selection.match_key?,
+            player: s.selection.selected()?.player,
+            position: s.champion_position,
+        })
     }
     pub fn set_navigation(&self, grid: Option<crate::map_path::Grid>) {
         if let Ok(mut s) = self.state.lock() {
@@ -982,6 +1000,9 @@ impl Movement {
             s.pending_recall = None;
             return;
         }
+        if keys.emote_capture {
+            return;
+        }
         if stop || keys.escape {
             s.target = None;
             s.route.clear();
@@ -1146,6 +1167,43 @@ impl Movement {
 mod tests {
     use super::*;
     use crate::test_support::logger;
+    #[test]
+    fn emote_capture_keeps_world_order_and_drains_cancel_click_and_stop() {
+        let m = movement();
+        let log = logger("emote-order-retained");
+        start(&m, &log, 0);
+        let camera = recall_camera();
+        m.update_mouse(keys(0, 0), true, &camera, &log);
+        let order = Order::Move((600_000, 200_000));
+        m.state.lock().unwrap().target = Some(order);
+        let held = Keys {
+            right: true,
+            left: true,
+            stop: true,
+            attack_move: true,
+            recall: true,
+            escape: true,
+            emote_capture: true,
+            cursor: Some((1160., 537.)),
+            ..keys(0, 0)
+        };
+        m.update_mouse(held, true, &camera, &log);
+        assert_eq!(m.state.lock().unwrap().target, Some(order));
+        assert!(!m.attack_move_armed());
+        assert!(m.take_command_stamp().is_none());
+        m.update_mouse(
+            Keys {
+                emote_capture: false,
+                escape: false,
+                ..held
+            },
+            true,
+            &camera,
+            &log,
+        );
+        assert_eq!(m.state.lock().unwrap().target, Some(order));
+        assert!(m.take_command_stamp().is_none());
+    }
     #[test]
     fn attack_move_uses_acquisition_range_for_both_orders_and_target_highlight() {
         let m = movement();
@@ -2138,6 +2196,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
@@ -2247,6 +2306,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
@@ -2438,6 +2498,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
@@ -2562,6 +2623,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
@@ -2743,6 +2805,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
@@ -2885,6 +2948,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
@@ -2949,6 +3013,7 @@ mod tests {
             },
             center: (200., 200.),
             extent: (1024., 1024.),
+            zoom: 1.,
             minimap: crate::camera::Rect {
                 x: 1581.,
                 y: 740.,
