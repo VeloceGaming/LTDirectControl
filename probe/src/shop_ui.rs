@@ -3,6 +3,7 @@
 //! positions below are relative to the 1360x872 window at (180, 78).
 //! Buying only queues for crate::shop; the simulation performs purchases.
 use crate::stat_icons::{self, StatIcon};
+use crate::lang::{tr, trf};
 use crate::{camera::Rect, hud_motion, platform_input::Keys, player_hud::HudUi, shop, Logger};
 use mod_api_stable::{StableClient, UiEventKindV1};
 use std::{
@@ -153,7 +154,7 @@ const BAD: &str = "ff642eff";
 
 /// Stat filters, from the live item data's stat fields: works for vanilla,
 /// the Riot pack and any item mod. Ticked filters combine (AND).
-const STAT_FILTERS: [(&str, &[&str]); 12] = [
+pub(crate) const STAT_FILTERS: [(&str, &[&str]); 12] = [
     ("Attack Damage", &["attack"]),
     ("Ability Power", &["magic_power"]),
     ("Attack Speed", &["attack_speed_mult"]),
@@ -473,7 +474,7 @@ fn template() -> String {
         "rec_head",
         (GRID_X, 84, 592, 26),
         14,
-        "YOUR CHAMPION'S BUILD (FROM THE GAME)",
+        tr("YOUR CHAMPION'S BUILD (FROM THE GAME)"),
         true,
         "989694ff",
         "Left",
@@ -482,7 +483,7 @@ fn template() -> String {
     s.push_str(&button(
         "queue_build",
         (GRID_X + 392, 80, 200, 34),
-        "Queue whole build",
+        tr("Queue whole build"),
         15,
         1505,
         "",
@@ -550,7 +551,7 @@ fn template() -> String {
         "label",
         (38, 0, 200, 32),
         15,
-        "Pause while open",
+        tr("Pause while open"),
         true,
         "cbc9c7ff",
         "Left",
@@ -565,7 +566,7 @@ fn template() -> String {
         "label",
         (38, 0, 200, 32),
         15,
-        "Vanilla order",
+        tr("Vanilla order"),
         true,
         "cbc9c7ff",
         "Left",
@@ -608,8 +609,8 @@ fn template() -> String {
     s.push_str(&rect("rail_rule", (208, 69, 1, 711), "~4b4a49ff", 1521));
     s.push_str(&rect("tab_indicator", (12, 84, 184, 52), "eeececff", 1522));
     for (i, (name, text, icon)) in [
-        ("tab_rec", "Recommended", "ef_star"),
-        ("tab_all", "All items", "ef_grid"),
+        ("tab_rec", tr("Recommended"), "ef_star"),
+        ("tab_all", tr("All items"), "ef_grid"),
     ]
     .iter()
     .enumerate()
@@ -638,7 +639,7 @@ fn template() -> String {
         "filter_head",
         (18, 212, 170, 20),
         13,
-        "FILTER",
+        tr("FILTER"),
         true,
         "989694ff",
         "Left",
@@ -699,7 +700,7 @@ fn template() -> String {
         "into_head",
         (862, 82, 476, 20),
         13,
-        "BUILDS INTO",
+        tr("BUILDS INTO"),
         true,
         "989694ff",
         "Left",
@@ -709,7 +710,7 @@ fn template() -> String {
         "into_none",
         (862, 106, 476, 40),
         14,
-        "Final item",
+        tr("Final item"),
         false,
         "6f6d6bff",
         "Left",
@@ -744,7 +745,7 @@ fn template() -> String {
         "recipe_head",
         (862, 180, 220, 20),
         12,
-        "RECIPE",
+        tr("RECIPE"),
         true,
         "989694ff",
         "Left",
@@ -753,7 +754,7 @@ fn template() -> String {
     s.push_str(&recipe_choice_button(
         "recipe_auto",
         (862, RECIPE_Y as i32, 224, 40),
-        "Automatic (cheapest)",
+        tr("Automatic (cheapest)"),
     ));
     s.push_str(&label(
         "recipe_pages",
@@ -805,7 +806,7 @@ fn template() -> String {
                 160,
                 40,
             ),
-            "Use this path",
+            tr("Use this path"),
         ));
     }
     s.push_str(&label(
@@ -987,7 +988,7 @@ fn template() -> String {
         "items_head",
         (24, 796, 80, 18),
         13,
-        "ITEMS",
+        tr("ITEMS"),
         true,
         "989694ff",
         "Left",
@@ -1020,7 +1021,7 @@ fn template() -> String {
         "queue_head",
         (520, 796, 80, 18),
         13,
-        "QUEUED",
+        tr("QUEUED"),
         true,
         "989694ff",
         "Left",
@@ -1073,7 +1074,7 @@ fn template() -> String {
         "queue_empty",
         (610, 801, 300, 50),
         15,
-        "Nothing queued",
+        tr("Nothing queued"),
         false,
         "6f6d6bff",
         "Left",
@@ -1423,16 +1424,16 @@ impl ShopUi {
     fn buy(&mut self, view: &shop::View, item: usize, log: &Logger) {
         let name = view.cat[item].key.clone();
         if !view.manual {
-            self.say("Manual shopping is off: turn it on in Settings › Combat & casting");
+            self.say(tr("Manual shopping is off: turn it on in Settings › Combat & casting"));
             return;
         }
         match self.purchase_offer(view, item) {
             shop::Offer::Owned => {
-                self.say_tone("This item cannot be bought", BAD);
+                self.say_tone(tr("This item cannot be bought"), BAD);
                 return;
             }
             shop::Offer::Blocked => {
-                self.say_tone("No free slot: upgrade an item you own instead", BAD);
+                self.say_tone(tr("No free slot: upgrade an item you own instead"), BAD);
                 return;
             }
             shop::Offer::Plan(_) => {}
@@ -1451,13 +1452,13 @@ impl ShopUi {
             view.in_base, self.paused
         ));
         if !view.in_base {
-            self.say_tone("Queued · buys at your next base visit", INFO);
+            self.say_tone(tr("Queued · buys at your next base visit"), INFO);
         } else if !affordable {
-            self.say_tone("Queued · not enough gold yet", INFO);
+            self.say_tone(tr("Queued · not enough gold yet"), INFO);
         } else if self.paused {
-            self.say_tone("Bought · applies when the match resumes", GOOD);
+            self.say_tone(tr("Bought · applies when the match resumes"), GOOD);
         } else {
-            self.say_tone("Bought", GOOD);
+            self.say_tone(tr("Bought"), GOOD);
         }
     }
 
@@ -1656,7 +1657,7 @@ impl ShopUi {
                 Event::QueueBuild => {
                     if !view.manual {
                         self.say(
-                            "Manual shopping is off: turn it on in Settings › Combat & casting",
+                            tr("Manual shopping is off: turn it on in Settings › Combat & casting"),
                         );
                     } else {
                         let added = shop::SHOP.enqueue_back(&view.live.build, |item| {
@@ -1664,12 +1665,11 @@ impl ShopUi {
                         });
                         log.write(&format!("SHOP UI queue whole build added={added}"));
                         self.say(if added == 0 {
-                            "The whole build is already queued or owned".to_owned()
+                            tr("The whole build is already queued or owned").to_owned()
+                        } else if added == 1 {
+                            tr("Queued 1 item from the build").to_owned()
                         } else {
-                            format!(
-                                "Queued {added} item{} from the build",
-                                if added > 1 { "s" } else { "" }
-                            )
+                            trf("Queued {count} items from the build", &[("count", &added)])
                         });
                     }
                 }
@@ -1707,7 +1707,7 @@ impl ShopUi {
                         self.recipes.browsed.clear();
                         self.recipes.cached = None;
                         self.focus = Some(root);
-                        self.say("Automatic cheapest path · applies to new purchases");
+                        self.say(tr("Automatic cheapest path · applies to new purchases"));
                     }
                 }
                 Event::RecipeUse(row) => {
@@ -1717,7 +1717,7 @@ impl ShopUi {
                         if self.recipes.total() > 1 {
                             self.choices.insert(root, path);
                             self.focus = Some(root);
-                            self.say("Chosen path · applies to new purchases");
+                            self.say(tr("Chosen path · applies to new purchases"));
                         }
                     }
                 }
@@ -1813,34 +1813,44 @@ impl ShopUi {
 
     fn render_top(&mut self, ctx: &mut StableClient<'_>, view: &shop::View) {
         let steps = self.pending.len();
-        let plural = if steps > 1 { "s" } else { "" };
         let (text, color, icon) = if !view.manual {
             (
-                "Manual shopping off · the game auto-buys".to_owned(),
+                tr("Manual shopping off · the game auto-buys").to_owned(),
                 "ff642eff",
                 "ef_unavailable",
             )
         } else if view.in_base && steps > 0 && self.paused {
             (
-                format!("Paused · {steps} purchase{plural} apply when the match resumes"),
+                if steps == 1 {
+                    tr("Paused · 1 purchase applies when the match resumes").to_owned()
+                } else {
+                    trf(
+                        "Paused · {count} purchases apply when the match resumes",
+                        &[("count", &steps)],
+                    )
+                },
                 "fdee00ff",
                 "ef_clock",
             )
         } else if view.in_base && steps > 0 {
             (
-                format!("In base · buying {steps} step{plural}…"),
+                if steps == 1 {
+                    tr("In base · buying 1 step…").to_owned()
+                } else {
+                    trf("In base · buying {count} steps…", &[("count", &steps)])
+                },
                 "7fd36bff",
                 "ef_recall",
             )
         } else if view.in_base {
             (
-                "In base · purchases happen now".to_owned(),
+                tr("In base · purchases happen now").to_owned(),
                 "7fd36bff",
                 "ef_recall",
             )
         } else {
             (
-                "Away · purchases wait for your next base visit".to_owned(),
+                tr("Away · purchases wait for your next base visit").to_owned(),
                 "cbc9c7ff",
                 "ef_clock",
             )
@@ -1922,9 +1932,9 @@ impl ShopUi {
                 Some(f) => {
                     self.visible(ctx, &node, true);
                     let (label, count, on) = match f {
-                        None => ("All", matching(None, &[]), active.is_empty()),
+                        None => (tr("All"), matching(None, &[]), active.is_empty()),
                         Some(f) => (
-                            STAT_FILTERS[f].0,
+                            tr(STAT_FILTERS[f].0),
                             matching(Some(f), &active),
                             active.contains(&f),
                         ),
@@ -2013,8 +2023,8 @@ impl ShopUi {
                     let node = format!("head{h}");
                     self.props(ctx, &node, format!("visible: true; y: {y:.1}px;"));
                     let name = match tier {
-                        0 => "LEVEL 1 · BASE PARTS".to_owned(),
-                        t => format!("LEVEL {}", t + 1),
+                        0 => tr("LEVEL 1 · BASE PARTS").to_owned(),
+                        t => trf("LEVEL {level}", &[("level", &(t + 1))]),
                     };
                     self.text(ctx, &format!("{node}.text"), &name);
                     h += 1;
@@ -2104,7 +2114,7 @@ impl ShopUi {
     ) {
         self.visible(ctx, "rec_head", true);
         self.visible(ctx, "rec_note", true);
-        self.text(ctx, "rec_note", "The game's build list for your champion. Click a row for details; Buy or right-click to buy it, or queue the whole build in order.");
+        self.text(ctx, "rec_note", tr("The game's build list for your champion. Click a row for details; Buy or right-click to buy it, or queue the whole build in order."));
         // Light Endfield button: hover darkens over 100 ms, as in the lab.
         let hover = Self::hovered(ctx, "queue_build", cursor);
         let t = self.motion.tonal("queue_build", f32::from(hover), 0.1);
@@ -2137,28 +2147,39 @@ impl ShopUi {
             };
             let (sub, state) = match &plan {
                 None if view.live.owned.contains(&item) => {
-                    ("Complete".to_owned(), "Owned".to_owned())
+                    (tr("Complete").to_owned(), tr("Owned").to_owned())
                 }
-                None => ("No free slot".to_owned(), String::new()),
+                None => (tr("No free slot").to_owned(), String::new()),
                 Some(steps) => {
                     let total: usize = steps.iter().map(|s| view.cat[s.item()].price).sum();
                     let next = view.cat[steps[0].item()].key.clone();
                     let next_name = self.name(ctx, hud, &next);
                     (
-                        format!(
-                            "Need <#{}>{}<> · {} step{}",
-                            if view.live.gold >= total {
-                                "fdee00ff"
+                        {
+                            let gold = format!(
+                                "<#{}>{}<>",
+                                if view.live.gold >= total {
+                                    "fdee00ff"
+                                } else {
+                                    "ff642eff"
+                                },
+                                number(total)
+                            );
+                            if steps.len() == 1 {
+                                trf("Need {gold} · 1 step", &[("gold", &gold)])
                             } else {
-                                "ff642eff"
-                            },
-                            number(total),
-                            steps.len(),
-                            if steps.len() > 1 { "s" } else { "" },
-                        ),
-                        format!(
-                            "Next: {next_name} · {}",
-                            number(view.cat[steps[0].item()].price)
+                                trf(
+                                    "Need {gold} · {count} steps",
+                                    &[("gold", &gold), ("count", &steps.len())],
+                                )
+                            }
+                        },
+                        trf(
+                            "Next: {item} · {price}",
+                            &[
+                                ("item", &next_name),
+                                ("price", &number(view.cat[steps[0].item()].price)),
+                            ],
                         ),
                     )
                 }
@@ -2276,7 +2297,11 @@ impl ShopUi {
         self.text(
             ctx,
             "recipe_head",
-            if branched { "UPGRADE PATHS" } else { "RECIPE" },
+            if branched {
+                tr("UPGRADE PATHS")
+            } else {
+                tr("RECIPE")
+            },
         );
         let first = self.recipes.page * RECIPE_ROWS;
         self.text(
@@ -2309,7 +2334,7 @@ impl ShopUi {
         self.recipe_choice(
             ctx,
             "recipe_auto",
-            "Automatic (cheapest)",
+            tr("Automatic (cheapest)"),
             branched,
             chosen.is_none(),
             cursor,
@@ -2330,11 +2355,13 @@ impl ShopUi {
         self.text(
             ctx,
             "recipe_steps",
-            &format!(
-                "Steps {}–{} / {}",
-                column + 1,
-                (column + columns).min(max_len),
-                max_len
+            &trf(
+                "Steps {first}–{last} / {total}",
+                &[
+                    ("first", &(column + 1)),
+                    ("last", &(column + columns).min(max_len)),
+                    ("total", &max_len),
+                ],
             ),
         );
         self.visible(ctx, "recipe_steps", max_len > columns);
@@ -2360,23 +2387,25 @@ impl ShopUi {
             let browsed = path.is_some_and(|p| {
                 !self.recipes.browsed.is_empty() && p.ends_with(&self.recipes.browsed)
             });
-            let mut label = format!(
-                "{}Path {}",
-                if row == 0 { "" } else { "OR · " },
-                first + row + 1
-            );
+            let mut label = if row == 0 {
+                trf("Path {n}", &[("n", &(first + row + 1))])
+            } else {
+                trf("OR · Path {n}", &[("n", &(first + row + 1))])
+            };
             if let Some(path) = path {
                 let (cost, _) = recipe_cost(view, path);
-                label.push_str(&format!(" · Need {}", number(cost)));
+                label.push_str(" · ");
+                label.push_str(&trf("Need {gold}", &[("gold", &number(cost))]));
             }
-            if automatic {
-                label.push_str(" · Auto-buy");
-            }
-            if browsed && max_len <= columns {
-                label.push_str(" · Browsed");
-            }
-            if column >= path.map_or(0, Vec::len) {
-                label.push_str(" · Earlier steps");
+            for (on, note) in [
+                (automatic, tr("Auto-buy")),
+                (browsed && max_len <= columns, tr("Browsed")),
+                (column >= path.map_or(0, Vec::len), tr("Earlier steps")),
+            ] {
+                if on {
+                    label.push_str(" · ");
+                    label.push_str(note);
+                }
             }
             let selected = path.is_some_and(|p| chosen.as_ref() == Some(p));
             let show = branched && path.is_some();
@@ -2409,9 +2438,9 @@ impl ShopUi {
                 ctx,
                 &node,
                 if selected {
-                    "Selected path"
+                    tr("Selected path")
                 } else {
-                    "Use this path"
+                    tr("Use this path")
                 },
                 show,
                 selected,
@@ -2508,31 +2537,34 @@ impl ShopUi {
             && self.pending.contains(&focus);
         let (label, enabled, back, hint) = if !view.manual {
             (
-                "Manual shopping off".to_owned(),
+                tr("Manual shopping off").to_owned(),
                 false,
                 "~3a3837ff",
-                "The game is auto-buying for this champion.".to_owned(),
+                tr("The game is auto-buying for this champion.").to_owned(),
             )
         } else if buying {
             (
-                "Purchasing".to_owned(),
+                tr("Purchasing").to_owned(),
                 false,
                 "~3a3837ff",
                 if self.paused {
-                    "Applies when the match resumes.".to_owned()
+                    tr("Applies when the match resumes.").to_owned()
                 } else {
-                    "Arrives within a moment.".to_owned()
+                    tr("Arrives within a moment.").to_owned()
                 },
             )
         } else {
             match &offer {
-                shop::Offer::Owned => ("Unavailable".to_owned(), false, "~3a3837ff", String::new()),
+                shop::Offer::Owned => (tr("Unavailable").to_owned(), false, "~3a3837ff", String::new()),
                 shop::Offer::Blocked => (
-                    format!("No free slot · {}/{}", view.live.owned.len(), view.capacity),
+                    trf(
+                        "No free slot · {used}/{slots}",
+                        &[("used", &view.live.owned.len()), ("slots", &view.capacity)],
+                    ),
                     false,
                     "~3a3837ff",
                     if chosen.is_some() {
-                        "Chosen path needs a free slot; other components stay in your bag.".into()
+                        tr("Chosen path needs a free slot; other components stay in your bag.").into()
                     } else {
                         String::new()
                     },
@@ -2540,15 +2572,14 @@ impl ShopUi {
                 shop::Offer::Plan(steps) => {
                     let total: usize = steps.iter().map(|s| view.cat[s.item()].price).sum();
                     let first = view.cat[steps[0].item()].price;
-                    let again = if queued > 0 || view.live.owned.contains(&focus) {
-                        " another"
-                    } else {
-                        ""
-                    };
+                    let again = queued > 0 || view.live.owned.contains(&focus);
+                    let price = number(total);
                     let label = if view.in_base && view.live.gold >= first {
-                        format!("Purchase · {}", number(total))
+                        trf("Purchase · {price}", &[("price", &price)])
+                    } else if again {
+                        trf("Queue another · {price}", &[("price", &price)])
                     } else {
-                        format!("Queue{again} · {}", number(total))
+                        trf("Queue · {price}", &[("price", &price)])
                     };
                     let back = if view.in_base && view.live.gold >= first {
                         "fdee00ff"
@@ -2556,15 +2587,15 @@ impl ShopUi {
                         "eeececff"
                     };
                     let hint = if branched && queued > 0 {
-                        "Queued purchases keep their path. Remove and requeue to change it."
+                        tr("Queued purchases keep their path. Remove and requeue to change it.")
                     } else if chosen.is_some() && view.in_base {
-                        "Chosen path · purchases follow it through completion."
+                        tr("Chosen path · purchases follow it through completion.")
                     } else if chosen.is_some() {
-                        "Chosen path · completes at your next base visit."
+                        tr("Chosen path · completes at your next base visit.")
                     } else if view.in_base {
-                        "Right-click any item to buy it. Purchases are final."
+                        tr("Right-click any item to buy it. Purchases are final.")
                     } else {
-                        "Completes automatically at your next base visit."
+                        tr("Completes automatically at your next base visit.")
                     };
                     (label, true, back, hint.to_owned())
                 }
@@ -2594,19 +2625,30 @@ impl ShopUi {
         self.text(ctx, "d_name", &name);
         let cost = match self.remaining(view, focus) {
             Some(t) => format!(
-                "Need <#{}>{}<>    Step price {}",
-                if view.live.gold >= t {
-                    "fdee00ff"
-                } else {
-                    "ff642eff"
-                },
-                number(t),
-                number(view.cat[focus].price)
+                "{}    {}",
+                trf(
+                    "Need {gold}",
+                    &[(
+                        "gold",
+                        &format!(
+                            "<#{}>{}<>",
+                            if view.live.gold >= t {
+                                "fdee00ff"
+                            } else {
+                                "ff642eff"
+                            },
+                            number(t)
+                        )
+                    )]
+                ),
+                trf("Step price {price}", &[("price", &number(view.cat[focus].price))])
             ),
-            None if view.live.owned.contains(&focus) => {
-                format!("Owned    Step price {}", number(view.cat[focus].price))
-            }
-            None => format!("Step price {}", number(view.cat[focus].price)),
+            None if view.live.owned.contains(&focus) => format!(
+                "{}    {}",
+                tr("Owned"),
+                trf("Step price {price}", &[("price", &number(view.cat[focus].price))])
+            ),
+            None => trf("Step price {price}", &[("price", &number(view.cat[focus].price))]),
         };
         self.text(ctx, "d_cost", &cost);
         let tags = (0..STAT_FILTERS.len())
@@ -2616,12 +2658,12 @@ impl ShopUi {
                 format!(
                     "{} {}",
                     STAT_ICONS[f].inline(),
-                    STAT_FILTERS[f].0.to_uppercase()
+                    tr(STAT_FILTERS[f].0).to_uppercase()
                 )
             })
-            .chain(std::iter::once(format!(
-                "LEVEL {}",
-                view.cat[focus].tier + 1
+            .chain(std::iter::once(trf(
+                "LEVEL {level}",
+                &[("level", &(view.cat[focus].tier + 1))],
             )))
             .collect::<Vec<_>>()
             .join("  ·  ");
@@ -2810,7 +2852,7 @@ impl ShopUi {
                 },
                 number(t)
             ),
-            _ if view.live.owned.contains(&item) => "Owned".to_owned(),
+            _ if view.live.owned.contains(&item) => tr("Owned").to_owned(),
             _ => number(view.cat[item].price),
         };
         self.text(ctx, "tip.price", &price);
@@ -2884,9 +2926,9 @@ impl ShopUi {
             );
             // This order's remaining cost; 0 means it is being bought.
             let price = match costs.get(i).copied().flatten() {
-                Some(0) => "buying".to_owned(),
+                Some(0) => tr("buying").to_owned(),
                 Some(n) => number(n),
-                None => "no slot".to_owned(),
+                None => tr("no slot").to_owned(),
             };
             self.text(ctx, &format!("{node}.price"), &price);
         }

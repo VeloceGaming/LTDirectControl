@@ -249,6 +249,7 @@ mod tests {
         out.extend(crate::settings_ui::ADVANCED.map(str::to_owned));
         out.extend(crate::emote_library::SLOT_NAMES.map(str::to_owned));
         out.extend(["Off", "On"].map(str::to_owned));
+        out.extend(crate::shop_ui::STAT_FILTERS.map(|f| f.0.to_owned()));
         out.extend(
             [
                 crate::settings_ui::HINT_IDLE,
