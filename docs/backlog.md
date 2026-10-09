@@ -27,14 +27,19 @@ are listed at the end for reference.
    `tools/audit_tooltips.py`.
 4. **Emotes.** The last item of the post-shop investigation
    ([investigation-pass-65.md](investigation-pass-65.md)); not started.
-5. **Stats panel values from items.** Haste, lifesteal and penetration are
+5. **Whole build plan from the start (0.78.0, untested).** Manual shopping
+   skipped the game's buy-new decision, where the AI / Riot complete the plan
+   (slots 5-6). 0.78.0 runs that decision once, discarding its answer, and
+   opens the shop when done. Confirm `SHOP DRY RUN ... 4 -> 6` and no
+   unexpected purchase.
+6. **Stats panel values from items.** Haste, lifesteal and penetration are
    summed from buffs; check them against the game's own panel with items
    that grant them (`STATS own raw` lines, every 10 s).
-6. **UI refactor (later, when the user is motivated).** Option 1 of the
+7. **UI refactor (later, when the user is motivated).** Option 1 of the
    customisation discussion: let modders restyle the HUD without editing
    Rust templates. The background colour (0.76-0.77.2) is the built-in
    limited customisation meanwhile.
-7. **Public release.** Rename the mod ID and finish the Steam description.
+8. **Public release.** Rename the mod ID and finish the Steam description.
 
 ## Done
 

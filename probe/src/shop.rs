@@ -45,6 +45,11 @@ pub enum Answer {
     New {
         item: usize,
     },
+    /// Once per match (buy-new question only): let the game decide first
+    /// and discard its answer, then ask again. The game's decision is where
+    /// the AI (and the Riot item mod) completes the build plan, which Manual
+    /// shopping would otherwise skip for the controlled champion.
+    AskGameFirst,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -452,6 +457,8 @@ pub struct View {
     pub in_base: bool,
     /// Inventory capacity (native final-build length), 0 when unknown.
     pub capacity: usize,
+    /// The game completed the build plan this match (Answer::AskGameFirst).
+    pub planned: bool,
 }
 
 #[derive(Default)]
@@ -492,6 +499,10 @@ struct State {
     hold: Vec<usize>,
     /// "Vanilla order": finish the first order before buying for the next.
     vanilla_order: bool,
+    /// The game's own buy-new decision ran once this match (see
+    /// `Answer::AskGameFirst`); its log line waits for the next publish.
+    planned: bool,
+    planned_log: Option<String>,
 }
 
 /// Fields 2-3 mirror `State::player` and "holding anyone", so the buyer
@@ -545,6 +556,8 @@ impl Shop {
                 mode_log: None,
                 hold: Vec::new(),
                 vanilla_order: false,
+                planned: false,
+                planned_log: None,
             }),
             Mutex::new(None),
             AtomicUsize::new(0),
@@ -650,6 +663,7 @@ impl Shop {
             queue: s.queue.iter().map(|o| o.item).collect(),
             orders: s.queue.clone(),
             manual: s.player != 0,
+            planned: s.planned,
             in_base: s
                 .asked
                 .is_some_and(|t| t.elapsed() < Duration::from_millis(400)),
@@ -683,6 +697,9 @@ impl Shop {
             ),
             other => format!("{other:?}"),
         };
+        if let Some(line) = s.planned_log.take() {
+            write(&line);
+        }
         if s.mode_log.as_deref() != Some(described.as_str()) {
             write(&format!(
                 "SHOP MODE {} tick={:?}: {described} game_item_slots={:?} controlled_owned={:?}",
@@ -815,6 +832,11 @@ impl Shop {
             return Answer::Native;
         }
         s.asked = Some(Instant::now());
+        // After Start only: before it the player may still switch champion.
+        if !upgrade && !s.planned && s.hold.is_empty() {
+            s.planned = true;
+            return Answer::AskGameFirst;
+        }
         if upgrade {
             s.proof.upgrade_calls += 1;
         } else {
@@ -846,6 +868,22 @@ impl Shop {
     /// The simulation's "buy which new base item?" question.
     pub fn new_item_answer(&self, player: usize) -> Answer {
         self.answer(player, false)
+    }
+    /// After `Answer::AskGameFirst`: what the game wanted (discarded) and
+    /// the build plan's length before and after its decision.
+    pub fn game_decided(&self, wanted: Option<usize>, build: (Option<usize>, Option<usize>)) {
+        if let Ok(mut s) = self.0.lock() {
+            let wanted = wanted.map(|i| {
+                s.cat
+                    .as_ref()
+                    .and_then(|c| c.get(i))
+                    .map_or_else(|| i.to_string(), |item| item.key.clone())
+            });
+            s.planned_log = Some(format!(
+                "SHOP DRY RUN game decision ran once for the controlled champion; build {:?} -> {:?} items; game wanted {wanted:?} (discarded)",
+                build.0, build.1
+            ));
+        }
     }
     pub fn reset_session(&self) {
         if let Ok(mut s) = self.0.lock() {
@@ -885,6 +923,47 @@ mod tests {
             item("flare", 3, 700, &[]),
             item("boots", 0, 250, &[]),
         ])
+    }
+    /// Skip the once-per-match game decision (tested on its own below).
+    fn plan_done(shop: &Shop) {
+        shop.0.lock().unwrap().planned = true;
+    }
+    #[test]
+    fn the_game_decides_once_after_start_before_manual_answers() {
+        let shop = Shop::new();
+        shop.due((1, 1, 1), 1);
+        shop.publish(
+            Mode::Prestart {
+                controlled: Some(0xa),
+                hold: vec![0xa, 0xb],
+            },
+            Some(riot()),
+            live(&[], 500),
+            |_| {},
+        );
+        // Before Start: held, no game decision.
+        assert_eq!(shop.new_item_answer(0xa), Answer::Nothing);
+        shop.publish(Mode::Manual(0xa), Some(riot()), live(&[], 500), |_| {});
+        assert!(!shop.view().unwrap().planned);
+        // Upgrade questions never ask the game.
+        assert_eq!(shop.upgrade_answer(0xa), Answer::Nothing);
+        assert_eq!(shop.new_item_answer(0xa), Answer::AskGameFirst);
+        assert_eq!(shop.new_item_answer(0xa), Answer::Nothing);
+        assert!(shop.view().unwrap().planned);
+        shop.game_decided(Some(0), (Some(4), Some(6)));
+        let lines = std::sync::Mutex::new(Vec::new());
+        shop.publish(Mode::Manual(0xa), Some(riot()), live(&[], 500), |l| {
+            lines.lock().unwrap().push(l.to_owned())
+        });
+        assert!(lines
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|l| l.contains("SHOP DRY RUN") && l.contains("Some(4) -> Some(6)")));
+        // A new match asks again.
+        shop.due((2, 1, 1), 1);
+        shop.publish(Mode::Manual(0xa), Some(riot()), live(&[], 500), |_| {});
+        assert_eq!(shop.new_item_answer(0xa), Answer::AskGameFirst);
     }
     fn order(item: usize) -> Order {
         Order {
@@ -942,6 +1021,7 @@ mod tests {
         let w = |l: &str| lines.borrow_mut().push(l.to_owned());
         assert!(shop.due((1, 1, 1), 5));
         assert!(!shop.due((1, 1, 1), 5));
+        plan_done(&shop);
         // Manual on, rich, nothing queued: every answer is Nothing.
         shop.publish(Mode::Manual(0xabc), Some(riot()), live(&[1], 5000), w);
         assert_eq!(shop.upgrade_answer(0xabc), Answer::Nothing);
@@ -978,6 +1058,7 @@ mod tests {
     fn before_start_this_matchs_champions_wait_and_others_are_untouched() {
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         // Lane not final yet: no controlled champion, all ten held.
         shop.publish(
             Mode::Prestart {
@@ -1019,6 +1100,7 @@ mod tests {
         // Step by step through the real hooks gives the same purchases.
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         for t in &queue {
             shop.buy(order(*t));
         }
@@ -1058,6 +1140,7 @@ mod tests {
     fn lock_free_rejection_matches_the_locked_answers() {
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         // Manual shopping off: everyone is native.
         shop.publish(Mode::Native("off"), Some(riot()), live(&[], 900), |_| {});
         assert_eq!(shop.new_item_answer(0xabc), Answer::Native);
@@ -1081,6 +1164,7 @@ mod tests {
         assert_eq!(shop.new_item_answer(0x123), Answer::Native);
         // A new match clears the mirrored player and hold.
         shop.due((2, 1, 1), 1);
+        plan_done(&shop);
         assert_eq!(shop.new_item_answer(0xdef), Answer::Native);
     }
 
@@ -1090,6 +1174,7 @@ mod tests {
         let lines = std::cell::RefCell::new(Vec::new());
         let w = |l: &str| lines.borrow_mut().push(l.to_owned());
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         shop.publish(Mode::Manual(0xabc), Some(riot()), live(&[1], 900), w);
         shop.publish(Mode::Manual(0xabc), Some(riot()), live(&[3], 400), w);
         assert!(lines
@@ -1149,6 +1234,7 @@ mod tests {
     fn a_later_affordable_item_is_not_blocked_and_keeps_off_earlier_parts() {
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         shop.buy(order(6)); // flare: builds on the owned longsword (next step 500)
         shop.buy(order(7)); // boots
         shop.unqueue(1); // removes just the boots order
@@ -1249,6 +1335,7 @@ mod tests {
         // The actual decision hooks consume the identical order as projection.
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         shop.buy(order);
         for (owned, gold, expected) in [
             (1, 1550, Answer::Upgrade { slot: 0, item: 2 }),
@@ -1375,6 +1462,7 @@ mod tests {
         assert_eq!(new_order(&me, 4).path, None);
         let shop = Shop::new();
         shop.due((1, 1, 1), 1);
+        plan_done(&shop);
         shop.publish(Mode::Manual(0xabc), Some(cat), Some(me), |_| {});
         assert_eq!(shop.enqueue_back(&[4], |_| Some(vec![0, 1, 2, 4])), 1);
         let view = shop.view().unwrap();

@@ -128,7 +128,7 @@ pub(crate) unsafe extern "system" fn shop_upgrade_hook(
             return original(out, this, a3, player, a5, a6, a7);
         }
         Answer::Upgrade { slot, item } => [1, slot as u64, item as u64],
-        Answer::Nothing | Answer::New { .. } => [0, 0, 0],
+        Answer::Nothing | Answer::New { .. } | Answer::AskGameFirst => [0, 0, 0],
     };
     for (i, v) in fields.into_iter().enumerate() {
         std::ptr::write_unaligned((out + i * 8) as *mut u64, v);
@@ -136,23 +136,67 @@ pub(crate) unsafe extern "system" fn shop_upgrade_hook(
     out
 }
 
-/// 0 = answer natively; 1 = `out` holds {kind, item} for RAX/RDX.
+/// The build plan's length (+0x360 of the player object, as in
+/// `player_build`), when it looks sane.
+unsafe fn build_len(player: usize) -> Option<usize> {
+    let len = std::ptr::read_unaligned((player + 0x360) as *const usize);
+    (player != 0 && len <= 64).then_some(len)
+}
+std::thread_local! {
+    /// Build length before the game's one-time decision (same worker thread).
+    static BUILD_BEFORE: std::cell::Cell<Option<usize>> = const { std::cell::Cell::new(None) };
+}
+/// 0 = answer natively; 1 = `out` holds {kind, item} for RAX/RDX; 2 = call
+/// the game's decision once with the same arguments, discard its answer and
+/// ask again (`shop_new_after`).
 pub(crate) unsafe extern "system" fn shop_new_decide(player: usize, out: *mut [u64; 2]) -> u32 {
     use crate::shop::Answer;
     let answer =
         catch_unwind(|| crate::shop::SHOP.new_item_answer(player)).unwrap_or(Answer::Native);
     let fields = match answer {
         Answer::Native => return 0,
+        Answer::AskGameFirst => {
+            BUILD_BEFORE.with(|b| b.set(build_len(player)));
+            return 2;
+        }
         Answer::New { item } => [1, item as u64],
         Answer::Nothing | Answer::Upgrade { .. } => [0, 0],
     };
     std::ptr::write_unaligned(out, fields);
     1
 }
+/// After the game's one-time decision: record it, then answer as usual.
+pub(crate) unsafe extern "system" fn shop_new_after(
+    player: usize,
+    kind: u64,
+    item: u64,
+    out: *mut [u64; 2],
+) -> u32 {
+    let before = BUILD_BEFORE.with(|b| b.take());
+    let after = build_len(player);
+    let wanted = (kind == 1).then_some(item as usize);
+    let _ = catch_unwind(|| crate::shop::SHOP.game_decided(wanted, (before, after)));
+    match shop_new_decide(player, out) {
+        1 => 1,
+        // Never a second pass-through: "native" now means the answer the
+        // game already gave; another one-time request declines.
+        0 => {
+            std::ptr::write_unaligned(out, [kind, item]);
+            1
+        }
+        _ => {
+            std::ptr::write_unaligned(out, [0, 0]);
+            1
+        }
+    }
+}
 
-// Native ABI: RCX this, RDX, R8 player, R9, stack args; returns a pair in
+// Native ABI: RCX this, RDX, R8 player, R9, two stack args (call site
+// 0x146b959 stores them at [rsp+0x20]/[rsp+0x28]); returns a pair in
 // RAX:RDX. The shim keeps all argument registers and stack arguments for
-// the pass-through jump, so the original runs exactly as if called.
+// the pass-through jump, so the original runs exactly as if called. Stack:
+// rcx/rdx/r8/r9 saved at +0x50/+0x48/+0x40/+0x38, the caller's stack
+// arguments at +0x80/+0x88; `out` at +0x20; rsp is 16-aligned at each call.
 #[unsafe(naked)]
 pub(crate) unsafe extern "system" fn shop_new_hook() {
     std::arch::naked_asm!(
@@ -164,6 +208,25 @@ pub(crate) unsafe extern "system" fn shop_new_hook() {
         "mov rcx, r8",
         "lea rdx, [rsp + 0x20]",
         "call {decide}",
+        "cmp eax, 2",
+        "jne 3f",
+        // The game's decision with the caller's six arguments: four saved
+        // registers and the two stack arguments above the return address.
+        "mov rax, qword ptr [rsp + 0x80]",
+        "mov qword ptr [rsp + 0x20], rax",
+        "mov rax, qword ptr [rsp + 0x88]",
+        "mov qword ptr [rsp + 0x28], rax",
+        "mov rcx, qword ptr [rsp + 0x50]",
+        "mov rdx, qword ptr [rsp + 0x48]",
+        "mov r8, qword ptr [rsp + 0x40]",
+        "mov r9, qword ptr [rsp + 0x38]",
+        "call qword ptr [rip + {original}]",
+        "mov rcx, qword ptr [rsp + 0x40]",
+        "mov r8, rdx",
+        "mov rdx, rax",
+        "lea r9, [rsp + 0x20]",
+        "call {after}",
+        "3:",
         "test eax, eax",
         "jz 2f",
         "mov rax, qword ptr [rsp + 0x20]",
@@ -178,6 +241,7 @@ pub(crate) unsafe extern "system" fn shop_new_hook() {
         "pop rcx",
         "jmp qword ptr [rip + {original}]",
         decide = sym shop_new_decide,
+        after = sym shop_new_after,
         original = sym ORIGINAL_SHOP_NEW,
     );
 }

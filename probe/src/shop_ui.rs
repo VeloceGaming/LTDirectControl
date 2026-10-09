@@ -1285,6 +1285,8 @@ pub struct ShopUi {
     toast: Option<(String, Instant, &'static str)>,
     motion: hud_motion::Motion,
     match_key: Option<crate::native_timing::MatchKey>,
+    /// The match whose shop already opened by itself.
+    auto_opened: Option<crate::native_timing::MatchKey>,
 }
 
 impl ShopUi {
@@ -1533,6 +1535,19 @@ impl ShopUi {
             self.open = false;
         }
         let mut view = shop::SHOP.view();
+        // Manual shopping: open once per match when the game has completed
+        // the build plan (Recommended is then whole); "Pause while open"
+        // applies as for any opening.
+        if active
+            && match_key.is_some()
+            && self.auto_opened != match_key
+            && view.as_ref().is_some_and(|v| v.manual && v.planned)
+        {
+            self.auto_opened = match_key;
+            self.open = true;
+            self.recommended = true;
+            log.write("SHOP UI opened by itself: build plan complete");
+        }
         let shown = self.open && !modal && view.is_some();
         self.update_pause(
             timing,
@@ -3066,6 +3081,7 @@ mod tests {
             manual: true,
             in_base: true,
             capacity: 4,
+            planned: true,
         };
         assert_eq!(ShopUi::default().remaining(&view(vec![]), 4), Some(3375));
         assert_eq!(ShopUi::default().remaining(&view(vec![1]), 4), Some(2625));
@@ -3103,6 +3119,7 @@ mod tests {
             manual: true,
             in_base: true,
             capacity: 4,
+            planned: true,
         }
     }
 

@@ -9,7 +9,10 @@ Side note (accepted as harmless, no change): the game's build plan for a
 champion starts at four items and grows to six at that player's first purchase
 (log: player 2 had 4 at tick 6, 6 at tick 400 right after buying a Dagger; AI
 players already had 6 at their tick-3 purchase). Recommended therefore shows
-four items until the first manual purchase.
+four items until the first manual purchase. Revisited in 0.78.0 (the user
+wants the whole plan from the start): the game's buy-new decision now runs
+once, its answer discarded, for the controlled champion after Start; whether
+that is where the plan grows is checked by the `SHOP DRY RUN` log line.
 
 ## 1. Cursor flicker
 
