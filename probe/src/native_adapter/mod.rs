@@ -102,6 +102,21 @@ pub fn set_outline_targets(
     let _ = (hover, attack, click);
 }
 
+/// Current AA range, copied only during the controlled worker's SDK borrow.
+pub fn attack_range(sim: &mod_api_stable::StableSim<'_>, actor: usize) -> Option<u64> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    unsafe {
+        sim.with_native_context(|state, table| {
+            windows::attack_range(state as usize, table as usize, actor)
+        })
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        let _ = (sim, actor);
+        None
+    }
+}
+
 /// Copy the final native build, after all item-build overrides have run.
 /// Borrowed SDK/game pointers are consumed here and never retained.
 pub fn player_build(sim: &mod_api_stable::StableSim<'_>, id: usize) -> Option<Vec<usize>> {
@@ -257,6 +272,20 @@ pub fn sample_status(logger: &Logger) -> bool {
     #[cfg(all(windows, target_arch = "x86_64"))]
     windows::outline_status(logger);
     patches != Some(false)
+}
+/// A unit's drawn centre and body sprites from the last 250 ms (selection).
+pub fn sprite_draw(id: usize) -> Option<((f32, f32), Vec<crate::sprite_art::Drawn>)> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        let draws = windows::SPRITE_DRAWS.lock().ok()?;
+        let (_, center, sprites, at) = draws.iter().find(|d| d.0 == id)?;
+        (at.elapsed() < std::time::Duration::from_millis(250)).then(|| (*center, sprites.clone()))
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        let _ = id;
+        None
+    }
 }
 pub fn install() -> Result<(), String> {
     #[cfg(all(windows, target_arch = "x86_64"))]

@@ -61,6 +61,8 @@ struct State {
     champion_only: bool,
     clicks: std::collections::VecDeque<ClickFeedback>,
 }
+/// The unit hovered last frame (usize::MAX: none), for hover stickiness.
+static LAST_HOVER: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(usize::MAX);
 pub struct Movement {
     enabled: bool,
     state: Mutex<State>,
@@ -419,6 +421,13 @@ impl Movement {
             }
         }
     }
+    /// The units the picker currently uses (selection markers).
+    pub fn hover_units(&self) -> Vec<Unit> {
+        self.state
+            .lock()
+            .map(|s| s.hover_units.clone())
+            .unwrap_or_default()
+    }
     pub fn observe_hover_units(&self, key: MatchKey, player: usize, actor: usize, units: &[Unit]) {
         if !self.enabled {
             return;
@@ -625,16 +634,29 @@ impl Movement {
             None if enemies_fresh => &s.units[..],
             _ => &[],
         };
+        // The previously hovered unit keeps the hover within its tier, so
+        // stacked units do not flicker between frames.
+        let previous = LAST_HOVER.load(std::sync::atomic::Ordering::Relaxed);
         let hover = keys
             .cursor
             .filter(|p| !camera.command_blocked(*p))
             .and_then(|p| {
-                crate::combat::clicked_units(frame, p, hover_units, keys.champion_only)
-                    .into_iter()
-                    .find(|id| Some(*id) != s.hover_actor)
+                crate::combat::picked(
+                    frame,
+                    p,
+                    hover_units,
+                    keys.champion_only,
+                    (previous != usize::MAX).then_some(previous),
+                )
+                .into_iter()
+                .find(|id| Some(*id) != s.hover_actor)
             })
             .and_then(|id| hover_units.iter().find(|u| u.id == id))
             .copied();
+        LAST_HOVER.store(
+            hover.map_or(usize::MAX, |u| u.id),
+            std::sync::atomic::Ordering::Relaxed,
+        );
         let attack = s
             .target
             .filter(|_| enemies_fresh)
@@ -925,6 +947,23 @@ impl Movement {
                 } else {
                     Order::Move(target)
                 };
+                // A unit click already has sprite feedback. Use the same body
+                // picker at click time, including allies, rather than the next
+                // frame's hover (which may have moved away by then).
+                let clicked_body = hit.is_some()
+                    || (minimap_target.is_none()
+                        && s.hover_updated
+                            .is_some_and(|t| t.elapsed() <= Duration::from_millis(250))
+                        && frame.zip(keys.cursor).is_some_and(|(f, cursor)| {
+                            crate::combat::clicked_units(
+                                f,
+                                cursor,
+                                &s.hover_units,
+                                keys.champion_only,
+                            )
+                            .into_iter()
+                            .any(|id| Some(id) != s.hover_actor)
+                        }));
                 s.target = Some(order);
                 s.attack_click = match order {
                     Order::Attack(id) => Some((id, Instant::now())),
@@ -957,8 +996,8 @@ impl Movement {
                     Order::Move(p) => p,
                     _ => target,
                 });
-                if let Some(position) = s.marker {
-                    s.clicks.clear();
+                s.clicks.clear();
+                if let Some(position) = s.marker.filter(|_| !clicked_body) {
                     s.clicks.push_back(ClickFeedback {
                         position,
                         attack: !matches!(order, Order::Move(_)),
@@ -1165,13 +1204,9 @@ mod tests {
             &camera,
             &log,
         );
-        assert!(m.click_feedback()[0].attack);
-        {
-            let mut s = m.state.lock().unwrap();
-            s.clicks[0].at = Instant::now() - Duration::from_millis(251);
-        }
         assert!(m.click_feedback().is_empty());
         assert_eq!(m.state.lock().unwrap().target, Some(Order::Attack(29)));
+        assert_eq!(m.state.lock().unwrap().attack_click.map(|v| v.0), Some(29));
         camera.set_command_blocked(vec![crate::camera::Rect {
             x: 1140.,
             y: 520.,
@@ -1180,6 +1215,107 @@ mod tests {
         }]);
         m.refresh_hover(&camera, true, None);
         assert!(m.cursor_enemy().is_none());
+    }
+    #[test]
+    fn unit_clicks_suppress_ground_animation_but_keep_attack_and_outline_pulse() {
+        for (champion, tower, friendly) in [
+            (true, false, false),
+            (false, false, false),
+            (false, true, false),
+            (true, false, true),
+        ] {
+            let m = movement();
+            let log = logger("unit-click-feedback");
+            start(&m, &log, 0);
+            let camera = recall_camera();
+            let hover = Keys {
+                cursor: Some((1160., 537.)),
+                ..keys(0, 0)
+            };
+            m.update_mouse(hover, true, &camera, &log);
+            let unit = Unit {
+                id: 29,
+                is_champion: champion,
+                is_tower: tower,
+                is_minion: !champion && !tower,
+                friendly,
+                ..hover_ally()
+            };
+            m.combat_input(
+                5,
+                (200_000, 200_000),
+                if friendly { vec![] } else { vec![unit] },
+            );
+            m.observe_hover_units((1, 33, 1), 5, 100, &[unit]);
+            // A previous ground animation is also cleared by a target click.
+            m.state.lock().unwrap().clicks.push_back(ClickFeedback {
+                position: (200_000, 200_000),
+                attack: false,
+                minimap: false,
+                at: Instant::now(),
+            });
+            m.update_mouse(
+                Keys {
+                    right: true,
+                    ..hover
+                },
+                true,
+                &camera,
+                &log,
+            );
+            assert!(m.click_feedback().is_empty());
+            let state = m.state.lock().unwrap();
+            if friendly {
+                assert!(matches!(state.target, Some(Order::Move(_))));
+            } else {
+                assert_eq!(state.target, Some(Order::Attack(29)));
+                assert_eq!(state.attack_click.map(|v| v.0), Some(29));
+            }
+            drop(state);
+            m.update_mouse(hover, true, &camera, &log);
+            m.update_mouse(
+                Keys {
+                    attack_click: true,
+                    ..hover
+                },
+                true,
+                &camera,
+                &log,
+            );
+            assert!(m.click_feedback().is_empty());
+            assert!(matches!(
+                m.state.lock().unwrap().target,
+                Some(Order::AttackMove(_))
+            ));
+        }
+    }
+    #[test]
+    fn ground_and_minimap_animation_still_expires_without_changing_orders() {
+        let m = movement();
+        let log = logger("ground-click-expiry");
+        start(&m, &log, 0);
+        let camera = recall_camera();
+        m.update_mouse(keys(0, 0), true, &camera, &log);
+        m.combat_input(5, (200_000, 200_000), vec![]);
+        for (point, minimap) in [((1160., 537.), false), ((1700., 850.), true)] {
+            m.update_mouse(keys(0, 0), true, &camera, &log);
+            m.update_mouse(
+                Keys {
+                    right: true,
+                    cursor: Some(point),
+                    ..keys(0, 0)
+                },
+                true,
+                &camera,
+                &log,
+            );
+            assert_eq!(m.click_feedback().len(), 1);
+            assert_eq!(m.click_feedback()[0].minimap, minimap);
+            let order = m.state.lock().unwrap().target;
+            m.state.lock().unwrap().clicks[0].at = Instant::now() - Duration::from_millis(251);
+            assert!(m.click_feedback().is_empty());
+            assert_eq!(m.state.lock().unwrap().target, order);
+        }
     }
     #[test]
     fn direct_steering_requires_current_actor_clear_map_and_in_bounds_goal() {
@@ -2280,7 +2416,7 @@ mod tests {
                 .0
                 .target
                 .target_id,
-            9 // Champion wins the overlapping minion even in normal mode.
+            2 // No champion-first rule: the more central body (the minion) wins.
         );
         // With no champion at the cursor, the new direct click moves to ground.
         movement.combat_input(5, pos, units[..1].to_vec());

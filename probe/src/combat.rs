@@ -26,6 +26,19 @@ fn distance(a: (u64, u64), b: (u64, u64)) -> u128 {
     let y = u128::from(a.1.abs_diff(b.1));
     (x * x).saturating_add(y * y)
 }
+/// Native 0.6.3 compares floor(sqrt(centre distance²)) with the current AA
+/// effect range (16f6edd..16f6faf). Sprite picking bounds are unrelated.
+pub fn attack_in_range(position: (u64, u64), target: (u64, u64), range: u64) -> bool {
+    distance(position, target) < (u128::from(range) + 1).saturating_pow(2)
+}
+pub fn rejected_attack(
+    position: (u64, u64),
+    chase: Option<(u64, u64)>,
+    in_range: Option<bool>,
+) -> InputV1 {
+    let p = chase.filter(|_| in_range != Some(true)).unwrap_or(position);
+    InputV1::move_to(p.0, p.1)
+}
 impl Order {
     #[cfg(test)]
     pub fn resolve(self, position: (u64, u64), units: &[Unit]) -> (InputV1, Option<(u64, u64)>) {
@@ -178,6 +191,21 @@ pub fn clicked_units(
     units: &[Unit],
     champion_only: bool,
 ) -> Vec<usize> {
+    picked(frame, cursor, units, champion_only, None)
+}
+/// Units under the cursor, best first, in the agreed League-style order
+/// (docs/investigation-pass-65.md): enemies before allies, structures last,
+/// a body hit before an edge hit, the `sticky` (previously hovered) unit
+/// within its tier, then how central the cursor is on each body relative
+/// to its size, then the unit drawn in front, then a stable id. There is
+/// no blanket champion-first rule: the champion-only key covers fights.
+pub fn picked(
+    frame: crate::camera::CameraFrame,
+    cursor: (f32, f32),
+    units: &[Unit],
+    champion_only: bool,
+    sticky: Option<usize>,
+) -> Vec<usize> {
     if !frame.valid() || !frame.viewport.contains(cursor) || frame.minimap.contains(cursor) {
         return Vec::new();
     }
@@ -185,43 +213,66 @@ pub fn clicked_units(
         .iter()
         .filter(|u| !champion_only || u.is_champion)
         .filter_map(|u| {
-            let p =
-                frame.project_unclipped(u.position.0 as f32 / 1000., u.position.1 as f32 / 1000.);
-            // Body picking is independent of combat collision/attack range.
-            // Hostile hits win over allies, then champions win within a side.
-            // Within a class prefer the body, then its center, then stable ID.
-            if u.is_champion || u.is_tower || u.body.is_some() {
-                let (half, height, bottom, margin) = selection_envelope(frame, u);
-                let dx = cursor.0 - p.0;
-                let dy = cursor.1 - p.1;
-                if dx.abs() > half + margin || dy < -height - margin || dy > bottom + margin {
-                    return None;
-                }
-                let core = dx.abs() <= half && dy >= -height && dy <= bottom;
-                let center_y = dy + (height - bottom) * 0.5;
-                return Some((
-                    u8::from(u.friendly),
-                    u8::from(!u.is_champion),
-                    u8::from(!core),
-                    (dx * dx + center_y * center_y) as u64,
-                    u.id,
-                ));
+            let (x0, y0, x1, y1, margin) = screen_area(frame, u);
+            if cursor.0 < x0 - margin
+                || cursor.0 > x1 + margin
+                || cursor.1 < y0 - margin
+                || cursor.1 > y1 + margin
+            {
+                return None;
             }
-            // Compatibility fallback for structures without an art profile.
-            let radius = (u.radius as f32 / 1000. * 2048. / frame.extent.0).max(10.);
-            let dx = cursor.0 - p.0;
-            let dy = cursor.1 - p.1;
-            (dx.abs() <= radius && dy >= -radius - 18. && dy <= radius).then_some((
+            let core = cursor.0 >= x0 && cursor.0 <= x1 && cursor.1 >= y0 && cursor.1 <= y1;
+            let (hw, hh) = (((x1 - x0) / 2.).max(1.), ((y1 - y0) / 2.).max(1.));
+            let (cx, cy) = ((x0 + x1) / 2., (y0 + y1) / 2.);
+            let depth = ((cursor.0 - cx) / hw).powi(2) + ((cursor.1 - cy) / hh).powi(2);
+            Some((
                 u8::from(u.friendly),
-                1,
-                0,
-                (dx * dx + (dy + 9.).powi(2)) as u64,
+                u8::from(u.is_tower),
+                u8::from(!core),
+                u8::from(sticky != Some(u.id)),
+                (depth * 1000.) as u64,
+                -(y1 * 10.) as i64, // lower on screen is drawn in front
                 u.id,
             ))
         })
         .collect::<Vec<_>>();
     hits.sort_unstable();
-    hits.into_iter().map(|(_, _, _, _, id)| id).collect()
+    hits.into_iter().map(|h| h.6).collect()
+}
+/// A unit's measured body in world units (x0, y0, x1, y1), placed with the
+/// game's own draw data, with click padding: champions are 3 units wider on
+/// each side, and every body reaches 2 units below the feet. None without
+/// loaded art or a recent draw.
+pub fn body_world_rect(unit: &Unit) -> Option<[f32; 4]> {
+    let set = crate::sprite_art::set(unit.body?.art?)?;
+    let (center, sprites) = crate::native_adapter::sprite_draw(unit.id)?;
+    let [x0, y0, x1, y1] = crate::sprite_art::placed(set, center, &sprites)?;
+    let side = if unit.is_champion { 3. } else { 0. };
+    Some([x0 - side, y0, x1 + side, y1 + 2.])
+}
+/// Screen rectangle (x0, y0, x1, y1) of a unit's selection area and its
+/// edge forgiveness: the measured body when available, otherwise the
+/// bounded envelope.
+pub fn screen_area(frame: crate::camera::CameraFrame, u: &Unit) -> (f32, f32, f32, f32, f32) {
+    if let Some([x0, y0, x1, y1]) = body_world_rect(u) {
+        let a = frame.project_unclipped(x0, y0);
+        let b = frame.project_unclipped(x1, y1);
+        return (a.0, a.1, b.0, b.1, 3.);
+    }
+    let p = frame.project_unclipped(u.position.0 as f32 / 1000., u.position.1 as f32 / 1000.);
+    if u.is_champion || u.is_tower || u.body.is_some() {
+        let (half, height, bottom, margin) = selection_envelope(frame, u);
+        return (p.0 - half, p.1 - height, p.0 + half, p.1 + bottom, margin);
+    }
+    // Compatibility fallback for structures without an art profile.
+    let radius = (u.radius as f32 / 1000. * 2048. / frame.extent.0).max(10.);
+    (
+        p.0 - radius,
+        p.1 - radius - 18.,
+        p.0 + radius,
+        p.1 + radius,
+        0.,
+    )
 }
 pub fn hover_color(unit: Unit) -> u32 {
     if unit.friendly {
@@ -233,6 +284,49 @@ pub fn hover_color(unit: Unit) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn cooldown_wait_holds_in_range_but_keeps_target_for_later_attack() {
+        let position = (300_000, 200_000);
+        let target = Unit {
+            position: (350_000, 200_000),
+            ..units()[1]
+        };
+        let order = Order::Attack(target.id);
+        for _ in 0..4 {
+            let (attack, chase) = order.resolve(position, &[target]);
+            assert_eq!(attack.target.target_id, target.id);
+            let waiting = rejected_attack(
+                position,
+                chase,
+                Some(attack_in_range(position, target.position, 50_000)),
+            );
+            assert_eq!((waiting.x, waiting.y), position);
+        }
+        let outside = Unit {
+            position: (350_001, 200_000),
+            ..target
+        };
+        let (_, chase) = order.resolve(position, &[outside]);
+        let approach = rejected_attack(
+            position,
+            chase,
+            Some(attack_in_range(position, outside.position, 50_000)),
+        );
+        assert_eq!((approach.x, approach.y), outside.position);
+        let unknown = rejected_attack(position, chase, None);
+        assert_eq!((unknown.x, unknown.y), outside.position);
+        let (ready, _) = order.resolve(position, &[target]);
+        assert_eq!(ready.kind, InputKindV1::Attack.code());
+        assert_eq!(ready.target.target_id, target.id);
+    }
+    #[test]
+    fn attack_range_uses_native_floor_distance_and_not_sprite_size() {
+        assert!(attack_in_range((0, 0), (3, 4), 5));
+        assert!(attack_in_range((0, 0), (5, 3), 5)); // floor(sqrt(34)) = 5.
+        assert!(!attack_in_range((0, 0), (6, 0), 5));
+        assert!(attack_in_range((u64::MAX, 10), (u64::MAX - 5, 10), 5));
+        assert!(!attack_in_range((0, 0), (u64::MAX, u64::MAX), 10_000_000));
+    }
     #[test]
     fn minion_vertical_extension_keeps_width_and_structure_top_is_pickable() {
         let minion = Unit {
@@ -282,6 +376,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 24.,
                 height: 40.,
+                art: None,
             }),
             ..units()[1]
         };
@@ -290,6 +385,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 80.,
                 height: 100.,
+                art: None,
             }),
             ..small
         };
@@ -316,6 +412,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 29.5,
                 height: 39.5,
+                art: None,
             }),
             ..units()[1]
         };
@@ -327,6 +424,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 18.5,
                 height: 20.5,
+                art: None,
             }),
             ..monster
         };
@@ -429,6 +527,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 24.,
                 height: 40.,
+                art: None,
             }),
             ..units()[1]
         };
@@ -461,6 +560,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 24.,
                 height: 40.,
+                art: None,
             }),
             ..units()[1]
         };
@@ -495,6 +595,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 60.,
                 height: 70.,
+                art: None,
             }),
             ..minion
         };
@@ -513,7 +614,7 @@ mod tests {
         }
     }
     #[test]
-    fn hostile_minion_beats_ally_champion_and_enemy_champion_wins_within_hostiles() {
+    fn hostile_units_beat_allies_and_identical_overlaps_fall_back_to_stable_ids() {
         let f = frame(1024.);
         let enemy = units()[1];
         let ally = Unit {
@@ -533,9 +634,11 @@ mod tests {
             [enemy, minion, ally],
             [minion, ally, enemy],
         ] {
+            // No champion-first rule (investigation-pass-65): the minion and
+            // champion overlap exactly, so the stable id decides.
             assert_eq!(
                 clicked_units(f, cursor, &list, false),
-                vec![enemy.id, minion.id, ally.id]
+                vec![minion.id, enemy.id, ally.id]
             );
             assert_eq!(
                 clicked_units(f, cursor, &list, true),
@@ -550,6 +653,25 @@ mod tests {
         assert_eq!(hover_color(minion), 0xff5b63ff);
     }
     #[test]
+    fn hover_stickiness_and_structures_ranking_last() {
+        let f = frame(1024.);
+        let a = units()[1];
+        let b = Unit { id: 12, ..a };
+        let cursor = f.project_unclipped(300., 200.);
+        // Identical overlap: the stable id first, unless the other is sticky.
+        assert_eq!(picked(f, cursor, &[a, b], false, None), vec![9, 12]);
+        assert_eq!(picked(f, cursor, &[a, b], false, Some(12)), vec![12, 9]);
+        // A unit in front of a tower beats the tower, even off its centre.
+        let tower = Unit {
+            id: 3,
+            is_champion: false,
+            is_tower: true,
+            ..a
+        };
+        let off = f.project_unclipped(305., 205.);
+        assert_eq!(picked(f, off, &[tower, a], false, None)[0], 9);
+    }
+    #[test]
     fn friendly_champions_use_same_legs_box_and_class_priority_as_enemies() {
         let enemy = units()[1];
         let ally = Unit {
@@ -562,12 +684,13 @@ mod tests {
         assert_eq!(clicked_unit(f, cursor, &[ally], false), Some(9));
     }
     #[test]
-    fn champion_bodies_and_padded_edges_win_over_minion_core_hits() {
+    fn the_more_central_body_wins_and_a_body_hit_beats_an_edge_hit() {
         let champion = Unit {
             id: 9,
             body: Some(crate::sprite_picking::Body {
                 width: 24.,
                 height: 40.,
+                art: None,
             }),
             ..units()[1]
         };
@@ -583,6 +706,8 @@ mod tests {
             ..units()[0]
         };
         let f = frame(1024.);
+        // Both bodies are hit; the champion's body centre is nearer the
+        // cursor than the small unit's, so it ranks first in either order.
         let cursor = f.project_unclipped(300., 180.);
         assert_eq!(
             clicked_units(f, cursor, &[minion, champion], false),
@@ -593,14 +718,19 @@ mod tests {
             vec![9, 2]
         );
         let cursor = f.project_unclipped(300., 175.5);
-        assert_eq!(clicked_unit(f, cursor, &[champion, minion], false), Some(9));
+        // Here the cursor is at the small unit's centre: it wins; the
+        // champion-only key still picks the champion.
+        assert_eq!(clicked_unit(f, cursor, &[champion, minion], false), Some(2));
         assert_eq!(clicked_unit(f, cursor, &[champion, minion], true), Some(9));
-        let edge = f.project_unclipped(315.5, 180.); // Only padded champion edge.
+        // Only the champion's forgiveness edge, but the minion's body: the body hit wins.
+        let edge = f.project_unclipped(315.5, 180.);
         let nearby = Unit {
             position: (315_500, 184_500),
             ..minion
         };
-        assert_eq!(clicked_unit(f, edge, &[champion, nearby], false), Some(9));
+        assert_eq!(clicked_unit(f, edge, &[champion, nearby], false), Some(2));
+        // The champion-only key still picks the champion.
+        assert_eq!(clicked_unit(f, edge, &[champion, nearby], true), Some(9));
     }
     #[test]
     fn visible_body_can_be_picked_with_offscreen_feet_but_cursor_must_be_in_battlefield() {
@@ -610,6 +740,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 24.,
                 height: 40.,
+                art: None,
             }),
             ..units()[1]
         };

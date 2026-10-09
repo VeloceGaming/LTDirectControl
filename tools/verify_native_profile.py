@@ -90,6 +90,25 @@ def verify_sources(profile, root=ROOT):
         if 'pointer_target' in a:
             at = pointers.index(int(a['rva'],16))
             assert pointers[at+1] == int(a['pointer_target'],16)
+    if 'tooltip_anchors' in profile:
+        tooltip_bytes = byte_pairs(declaration(adapter, 'TOOLTIP_BYTES'))
+        tooltip_pointers = numbers(declaration(adapter, 'TOOLTIP_POINTERS'))
+        for name, a in profile['tooltip_anchors'].items():
+            rva = int(a['rva'], 16)
+            if 'bytes' in a:
+                assert tooltip_bytes[rva].hex() == a['bytes'], name
+            else:
+                at = tooltip_pointers.index(rva)
+                assert tooltip_pointers[at+1] == int(a['pointer_target'],16), name
+        for constant, anchor in [('TOOLTIP_SHEET_GETTER','TOOLTIP_SHEET_GETTER_ENTRY'),
+                                 ('TOOLTIP_INFO_LOOKUP','TOOLTIP_INFO_LOOKUP_ENTRY'),
+                                 ('TOOLTIP_ARC_DROP','TOOLTIP_ARC_DROP_ENTRY')]:
+            assert numbers(declaration(adapter,constant)) == [int(profile['tooltip_anchors'][anchor]['rva'],16)]
+        assert numbers(declaration(adapter,'TOOLTIP_DESCRIPTION_SLOTS')) == [0xe0,0xe8,0xf0]
+        layouts = numbers(declaration(adapter,'TOOLTIP_TABLE_LAYOUTS'))
+        for n in range(0,len(layouts),3):
+            table,size,alignment = layouts[n:n+3]
+            assert tooltip_bytes[table+8] == struct.pack('<QQ',size,alignment)
     for name, anchor in [('COMBINE','PREVIEW_COMBINE_APPLY'),('RANGE','PREVIEW_RANGE_APPLY'),
                          ('LINEAR','PREVIEW_LINEAR_APPLY'),('WHIP_LINE','PREVIEW_CHANNEL_LINE_APPLY')]:
         assert numbers(declaration(preview,name)) == [int(anchors[anchor]['rva'],16)]
@@ -104,7 +123,7 @@ def verify(profile_path, executable=DEFAULT_EXE, check_sources=True):
     image = Image(Path(executable))
     assert image.identity()['timestamp'] == profile['timestamp']
     assert image.identity()['size_of_image'] == profile['size_of_image']
-    for name, a in (profile['anchors'] | profile['layout_anchors']).items():
+    for name, a in (profile['anchors'] | profile['layout_anchors'] | profile.get('tooltip_anchors', {})).items():
         rva = int(a['rva'], 16)
         if 'bytes' in a:
             value = bytes.fromhex(a['bytes'])
@@ -158,4 +177,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     p = verify(args.profile, args.executable)
     print(f"Verified game {p['game_version']}: exact identity, {len(p['anchors'])} anchors, "
-          f"{len(p['layout_anchors'])} layout guards, call targets, pointers and Rust constants.")
+          f"{len(p['layout_anchors'])} layout guards, {len(p.get('tooltip_anchors', {}))} tooltip guards, "
+          "call targets, pointers and Rust constants.")

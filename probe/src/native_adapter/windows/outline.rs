@@ -280,6 +280,9 @@ pub(crate) unsafe extern "system" fn outline_hook(
     let original: OutlineRenderFn = std::mem::transmute(ORIGINAL_OUTLINE.load(Ordering::Acquire));
     let result = original(out, view, a3, a4, a5, a6, a7, a8);
     crate::perf::hook(crate::perf::Hook::Outline);
+    if OUTLINE_READY.load(Ordering::Acquire) {
+        let _ = catch_unwind(AssertUnwindSafe(|| record_draw(out, view)));
+    }
     if !OUTLINE_READY.load(Ordering::Acquire) || view < 0x10000 {
         return result;
     }
@@ -422,5 +425,60 @@ pub(crate) unsafe extern "system" fn shader_hook(
         original(out, command, grey.as_ptr(), grey.len())
     } else {
         original(out, command, name, len)
+    }
+}
+
+/// Each unit's latest drawn placement for selection (crate::sprite_art):
+/// drawn centre and up to four body sprites. Written on the render thread.
+pub(crate) type DrawRecord = (
+    usize,
+    (f32, f32),
+    Vec<crate::sprite_art::Drawn>,
+    std::time::Instant,
+);
+pub(crate) static SPRITE_DRAWS: std::sync::Mutex<Vec<DrawRecord>> =
+    std::sync::Mutex::new(Vec::new());
+unsafe fn record_draw(out: usize, view: usize) {
+    if view < 0x10000 {
+        return;
+    }
+    let commands = std::ptr::read_unaligned(out as *const NativeCommandVec);
+    if !valid_command_vec(commands) {
+        return;
+    }
+    let f32_at = |a: usize| std::ptr::read_unaligned(a as *const f32);
+    let sprites: Vec<crate::sprite_art::Drawn> = (0..commands.length)
+        .map(|i| commands.pointer + i * COMMAND_SIZE)
+        .filter(|c| command_tag(*c as *const u8) == 3)
+        .take(4)
+        .map(|c| crate::sprite_art::Drawn {
+            uv: [
+                f32_at(c + 0x68),
+                f32_at(c + 0x6c),
+                f32_at(c + 0x70),
+                f32_at(c + 0x74),
+            ],
+            corner: (f32_at(c + 0x78), f32_at(c + 0x7c)),
+        })
+        .filter(|d| {
+            d.uv.iter()
+                .chain([d.corner.0, d.corner.1].iter())
+                .all(|v| v.is_finite())
+        })
+        .collect();
+    let id = std::ptr::read_unaligned((view + 0x100) as *const usize);
+    let center = (f32_at(view + 0x17c), f32_at(view + 0x180));
+    if sprites.is_empty() || !center.0.is_finite() || !center.1.is_finite() {
+        return;
+    }
+    if let Ok(mut draws) = SPRITE_DRAWS.lock() {
+        let entry = (id, center, sprites, std::time::Instant::now());
+        if let Some(slot) = draws.iter_mut().find(|d| d.0 == id) {
+            *slot = entry;
+        } else if draws.len() < 512 {
+            draws.push(entry);
+        } else if let Some(oldest) = draws.iter_mut().min_by_key(|d| d.3) {
+            *oldest = entry;
+        }
     }
 }

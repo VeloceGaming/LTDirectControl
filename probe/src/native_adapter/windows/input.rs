@@ -24,7 +24,7 @@ pub(crate) unsafe extern "system" fn input_hook(
     };
     let owned = catch_unwind(AssertUnwindSafe(|| {
         let keys = crate::platform_input::poll();
-        if !shared.timing.client_controls(Some(view)) || !keys.focused {
+        if !shared.timing.client_session(Some(view)) || !keys.focused {
             return false;
         }
         let tag = std::ptr::read_unaligned(event as *const u64);
@@ -32,6 +32,9 @@ pub(crate) unsafe extern "system" fn input_hook(
             return false;
         }
         let key = std::ptr::read((event + 8) as *const u8);
+        if !shared.timing.client_controls(Some(view)) {
+            return keys.start || keys.release;
+        }
         if crate::ui_state::SETTINGS_OPEN.load(Ordering::Relaxed)
             || spectator_key_is_owned(tag, key)
             || keys.start

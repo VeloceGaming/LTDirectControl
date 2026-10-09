@@ -10,6 +10,32 @@ pub(crate) static ORIGINAL_SKILLS: [AtomicUsize; 3] = [const { AtomicUsize::new(
 pub(crate) type AttackFn = unsafe extern "system" fn(usize, usize, usize);
 pub(crate) type AimFn = unsafe extern "system" fn(usize, usize, usize, usize, usize, usize, usize);
 pub(crate) static PRESERVED_AIMS: AtomicUsize = AtomicUsize::new(0);
+/// Read from the current SDK simulation borrow, not the previous consumer hook.
+/// SDK entity_pos (2e16650) uses this shared-borrow +208 getter and these fields.
+pub(crate) unsafe fn attack_range(state: usize, table: usize, actor: usize) -> Option<u64> {
+    let shared = SHARED.get()?;
+    let base = verified_base()?;
+    owned_key(shared, actor)?;
+    if state == 0
+        || table == 0
+        || std::ptr::read_unaligned(table as *const usize) < 0x50
+        || std::ptr::read_unaligned((table + 0x48) as *const usize) != base + 0x2e16650
+    {
+        return None;
+    }
+    let object = std::ptr::read_unaligned(state as *const usize);
+    let vtable = std::ptr::read_unaligned((state + 8) as *const usize);
+    if object == 0 || vtable == 0 {
+        return None;
+    }
+    let get: unsafe extern "system" fn(usize, usize) -> usize =
+        std::mem::transmute(std::ptr::read_unaligned((vtable + 0x208) as *const usize));
+    let entity = get(object, actor);
+    if entity == 0 || owned_entity(shared, entity).map(|(_, id)| id) != Some(actor) {
+        return None;
+    }
+    read_effect_metadata(entity, 0x488).map(|d| d.range)
+}
 pub(crate) unsafe fn manual_aim_words(
     shared: &Shared,
     actor: usize,
@@ -226,6 +252,9 @@ pub(crate) unsafe extern "system" fn auto_attack_hook(entity: usize, input: usiz
 }
 pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize, events: usize) {
     crate::perf::hook(crate::perf::Hook::Attack);
+    if let Some(shared) = SHARED.get() {
+        let _ = catch_unwind(AssertUnwindSafe(|| inventory(shared, entity)));
+    }
     let original: AttackFn = std::mem::transmute(ORIGINAL_ATTACK.load(Ordering::Acquire));
     let selected = SHARED.get().and_then(|shared| {
         catch_unwind(AssertUnwindSafe(|| {
@@ -438,4 +467,88 @@ pub(crate) unsafe fn finish_attack_backswing(
     std::ptr::write_unaligned((entity + 0x70) as *mut usize, 0);
     shared.logger.write(&format!("ATTACK COMMITTED_INTERRUPT actor={actor} reason={reason} elapsed={elapsed} cooldown={cooldown}; hit tick passed, empty pending queue, animation released, cooldown retained"));
     true
+}
+
+// 0.70 diagnostic: an inventory of skill effect trees, so the remaining
+// effect types can be decoded. The viewed match's champions have their own
+// budget (every champion, once per match: the roster names them); background
+// matches add new tree shapes only.
+const VIEWED_LIMIT: usize = 240;
+const BACKGROUND_LIMIT: usize = 200;
+const BACKGROUND_PER_SHAPE: usize = 2;
+static VIEWED_LINES: AtomicUsize = AtomicUsize::new(0);
+static BACKGROUND_LINES: AtomicUsize = AtomicUsize::new(0);
+static INVENTORY_SHAPES: std::sync::Mutex<Vec<(u64, usize)>> = std::sync::Mutex::new(Vec::new());
+thread_local! {
+    static INVENTORIED: std::cell::RefCell<std::collections::HashSet<usize>> =
+        std::cell::RefCell::new(std::collections::HashSet::new());
+}
+unsafe fn inventory(shared: &Shared, entity: usize) {
+    let viewed = crate::perf::on_worker_thread();
+    let (lines, limit) = if viewed {
+        (&VIEWED_LINES, VIEWED_LIMIT)
+    } else {
+        (&BACKGROUND_LINES, BACKGROUND_LIMIT)
+    };
+    if lines.load(Ordering::Relaxed) >= limit {
+        return;
+    }
+    let fresh = INVENTORIED.with(|seen| {
+        let mut seen = seen.borrow_mut();
+        if seen.len() >= 4096 {
+            seen.clear();
+        }
+        seen.insert(entity)
+    });
+    let Some(base) = verified_base().filter(|_| fresh) else {
+        return;
+    };
+    let actor = std::ptr::read_unaligned((entity + 0x5b8) as *const usize);
+    for (slot, offset) in [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)] {
+        let Some(tree) = crate::native_preview::dump(base, entity, offset, &|a, n| {
+            super::tooltips::accessible(a, n, false)
+        }) else {
+            continue;
+        };
+        if !viewed && !new_background_shape(&tree) {
+            continue;
+        }
+        if lines.fetch_add(1, Ordering::Relaxed) < limit {
+            shared.logger.write(&format!(
+                "PREVIEW TREE viewed={viewed} actor={actor} slot={slot} {tree}"
+            ));
+        }
+    }
+}
+/// Background trees: each shape (the tree without payload words) twice.
+fn new_background_shape(tree: &str) -> bool {
+    let mut shape = String::new();
+    let mut inside = false;
+    for c in tree.chars() {
+        match c {
+            '[' => inside = true,
+            ']' => inside = false,
+            _ if !inside => shape.push(c),
+            _ => {}
+        }
+    }
+    let hash = {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        shape.hash(&mut h);
+        h.finish()
+    };
+    INVENTORY_SHAPES.lock().is_ok_and(|mut shapes| {
+        match shapes.iter_mut().find(|(h, _)| *h == hash) {
+            Some((_, n)) if *n >= BACKGROUND_PER_SHAPE => false,
+            Some((_, n)) => {
+                *n += 1;
+                true
+            }
+            None => {
+                shapes.push((hash, 1));
+                true
+            }
+        }
+    })
 }

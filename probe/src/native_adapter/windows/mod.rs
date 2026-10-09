@@ -16,7 +16,9 @@ mod outline;
 mod shop;
 #[cfg(test)]
 mod tests;
+mod tooltips;
 mod view;
+pub(super) use combat::attack_range;
 use combat::*;
 use input::*;
 use layout::*;
@@ -24,6 +26,7 @@ use movement::*;
 use outline::*;
 // Used by the public layer above; explicit, so they win over its own
 // same-named wrappers that `use super::*` brings in.
+pub(super) use outline::SPRITE_DRAWS;
 pub(super) use outline::{clear_outline_targets, outline_status, set_outline_targets};
 use shop::*;
 pub(super) use shop::{

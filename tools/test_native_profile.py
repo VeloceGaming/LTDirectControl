@@ -77,6 +77,12 @@ class ProfileTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.verify(p)
 
+    def test_changed_optional_tooltip_guard_is_rejected(self):
+        p=copy.deepcopy(self.profile)
+        p['tooltip_anchors']={'DESCRIPTION_CALL':{'rva':'0x10','bytes':'e80c000000'}}
+        with self.assertRaises(AssertionError):
+            self.verify(p)
+
     def test_matching_table_header_does_not_authorize_different_apply_function(self):
         p=copy.deepcopy(self.profile);p['layout_anchors']['TABLE']['pointer_target']='0x21'
         with self.assertRaises(AssertionError):
@@ -90,7 +96,12 @@ class ProfileTest(unittest.TestCase):
         shutil.copytree(verifier.ROOT/'probe/src/native_adapter',self.root/'probe/src/native_adapter')
         verifier.verify_sources(profile,self.root)
         path=self.root/'probe/src/native_adapter/windows/layout.rs'
-        path.write_text(path.read_text().replace('WORKER_SITE: usize = 0xbfc77a','WORKER_SITE: usize = 0xbe470a'))
+        original=path.read_text()
+        path.write_text(original.replace('WORKER_SITE: usize = 0xbfc77a','WORKER_SITE: usize = 0xbe470a'))
+        with self.assertRaises(AssertionError):
+            verifier.verify_sources(profile,self.root)
+        path.write_text(original.replace('TOOLTIP_INFO_LOOKUP: usize = 0x19d1bf0',
+                                         'TOOLTIP_INFO_LOOKUP: usize = 0x19d1bf1'))
         with self.assertRaises(AssertionError):
             verifier.verify_sources(profile,self.root)
 

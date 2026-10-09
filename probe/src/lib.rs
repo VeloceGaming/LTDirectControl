@@ -32,6 +32,7 @@ mod native_preview;
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod native_profile;
 mod native_timing;
+mod native_tooltips;
 mod own_selection;
 mod perf;
 mod platform_input;
@@ -44,15 +45,19 @@ mod session_ui;
 mod settings;
 mod settings_ui;
 mod shop;
+mod shop_recipe;
 mod shop_trace;
 mod shop_ui;
 mod simulation;
 mod skill_preview;
+mod sprite_art;
 mod sprite_picking;
 mod team_info;
 mod team_status;
+mod test_cheats;
 #[cfg(test)]
 mod test_support;
+mod tooltip_layout;
 mod tooltips;
 mod ui_graphics;
 mod ui_state;
@@ -232,6 +237,12 @@ fn init(host: &StableHost) -> StableMod {
         install_attempted: AtomicBool::new(false),
         management_seen: AtomicBool::new(false),
         session_gate: session_gate.clone(),
+    });
+    declaration.set_match_hook(test_cheats::CooldownHook {
+        movement: movement.clone(),
+        logger: logger.clone(),
+        applied: Mutex::default(),
+        cooldowns: Mutex::default(),
     });
     declaration.add_item_build_hook(purchase_tracker::BuildObserver(hud.clone()));
     declaration.set_map_customizer(map_path::MapObserver(movement.clone(), logger.clone()));

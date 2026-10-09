@@ -45,6 +45,7 @@ args.native_profile = args.native_profile.resolve()
 profile = verify(args.native_profile, GAME_EXE)
 expected = profile['executable_sha256']
 anchors = dict(profile['anchors'])
+anchors.update(profile.get('tooltip_anchors', {}))
 # Include the render/input operands and source data in future migration audits.
 for op in profile['minimap']['operands']:
     anchors['MINIMAP_' + op['name']] = {'rva': op['rva'], 'bytes': op['bytes']}
@@ -106,7 +107,7 @@ dll.tfm2_mod_entry_stable.argtypes = [ctypes.c_void_p]
 dll.tfm2_mod_entry_stable.restype = ctypes.c_void_p
 assert dll.tfm2_mod_entry_stable(None) is None
 
-sources = sorted(p for p in (root / 'probe/src').glob('*') if p.suffix in {'.rs', '.json'})
+sources = sorted(p for p in (root / 'probe/src').rglob('*') if p.suffix in {'.rs', '.json'})
 record = {
     'version': version,
     'built_at': datetime.now(timezone(timedelta(hours=8))).isoformat(),

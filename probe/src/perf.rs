@@ -167,6 +167,10 @@ pub fn worker_thread() {
         WORKER_THREAD.store(id, Relaxed);
     }
 }
+/// True on the viewed match's simulation worker.
+pub fn on_worker_thread() -> bool {
+    crate::platform_input::thread_id() == WORKER_THREAD.load(Relaxed)
+}
 pub fn hook(hook: Hook) {
     let other = usize::from(crate::platform_input::thread_id() != WORKER_THREAD.load(Relaxed));
     let _ = LOCAL_COUNTS.try_with(|counts| {

@@ -93,6 +93,7 @@ fn template() -> String {
             &format!("#{node}:color_icon_button {{ #hover:color {{ x: 2px; y: 2px; width: 40px; height: 40px; z: 1103; color: #00000000; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }}"),
         );
     }
+    s = s.replace("#tab_key:color", "#take_label:label { @\"asset/base/style/main#bold_label\"; x: 52px; y: 6px; width: 204px; height: 44px; size: 18; align_y: Center; color: #eeececff; text: \"Take control · F11\"; visible: false; ignore_event: true; z: 1106; } #tab_key:color");
     crate::hud_style::fonts(s)
 }
 #[derive(Default)]
@@ -241,8 +242,9 @@ impl SessionUi {
         pressed: bool,
         log: &Logger,
     ) -> Vec<Rect> {
-        let Some(phase @ (Phase::Loading | Phase::Ready | Phase::Running | Phase::Paused)) =
-            timing.ui_phase()
+        let Some(
+            phase @ (Phase::Loading | Phase::Ready | Phase::Running | Phase::Paused | Phase::Ai),
+        ) = timing.ui_phase()
         else {
             if ctx.ui_exists(PATH) {
                 ctx.ui_set_visible(PATH, false);
@@ -376,12 +378,15 @@ impl SessionUi {
                 self.portrait(ctx, &format!("lane{lane}.portrait"), &p.champion, 56.);
             }
         }
-        if preparing {
+        let ai = phase == Phase::Ai;
+        if preparing || ai {
             if let Ok(mut e) = self.events.lock() {
                 e.team = false;
+                e.settings_open = false;
             }
         }
-        let strip = !preparing;
+        let strip = !preparing && !ai;
+        self.props(ctx, "take_label", format!("visible: {ai};"));
         if let Some(vision) = self
             .events
             .lock()
@@ -457,10 +462,16 @@ impl SessionUi {
                 "primary",
                 if preparing { 408. } else { 0. },
                 if preparing { 16. } else { 6. },
-                if preparing { 48. } else { 44. },
+                if preparing {
+                    48.
+                } else if ai {
+                    260.
+                } else {
+                    44.
+                },
                 if preparing { 48. } else { 44. },
                 phase != Phase::Loading,
-                preparing,
+                preparing || ai,
                 glyph,
                 26.,
             ),
@@ -502,7 +513,10 @@ impl SessionUi {
                 gsize,
             );
         }
-        self.props(ctx, "tab_key", format!("visible: {};", !preparing));
+        self.props(ctx, "tab_key", format!("visible: {strip};"));
+        if ai {
+            self.props(ctx, "primary.glyph", "x: 9px;".into());
+        }
         self.props(
             ctx,
             "primary.glyph",
@@ -551,6 +565,8 @@ impl SessionUi {
                     "primary",
                     if preparing {
                         "Start · F11"
+                    } else if ai {
+                        "Take control · F11"
                     } else {
                         if phase == Phase::Paused {
                             "Resume · F11"
@@ -627,7 +643,12 @@ impl SessionUi {
         }
         let mut bounds = Vec::new();
         if let Some((x, y, w, h)) = ctx.ui_node_rect(PATH) {
-            bounds.push(Rect { x, y, w, h });
+            bounds.push(Rect {
+                x,
+                y,
+                w: if ai { w * 260. / STRIP_W } else { w },
+                h,
+            });
         }
         bounds
     }

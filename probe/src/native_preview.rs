@@ -6,6 +6,22 @@ const COMBINE: usize = 0x1adaf00;
 const RANGE: usize = 0x16974f0;
 const LINEAR: usize = 0x18bf7a0;
 const WHIP_LINE: usize = 0x1611090;
+// 0.71, identified from the 0.70 effect-tree inventory (layouts checked
+// against every logged instance; see docs/investigation-preview-selection.md).
+const DELAYED: usize = 0x1adb160;
+const RANGE_PERIOD: usize = 0x14294c0;
+const RUSH: usize = 0x1698550;
+const MOVE: usize = 0x1adb2f0;
+// 0.73, named by pairing logged trees with Workshop and data-driven champion
+// JSON (field values checked against those files).
+const RANGE_PROJECTILE: usize = 0x1489140;
+const PARABOLIC: usize = 0x1612510;
+const RUSH_TIME: usize = 0x15b28f0;
+const SWITCH_BY_BUFF: usize = 0x18bf2d0;
+const MOVE_TO_TARGET: usize = 0x1af4470;
+/// A champion's body radius (game setting `champion_radius`, 10000): the
+/// sweep of a timed dash, whose own hit width is not in its payload.
+const CHAMPION_RADIUS: f32 = 10.;
 const RDATA_TABLE_BOUNDS: std::ops::RangeInclusive<usize> = 0x39ca000..=0x4fe8652;
 
 fn distance(value: u64) -> Option<f32> {
@@ -54,6 +70,7 @@ unsafe fn effect(
     base: usize,
     arc: usize,
     table: usize,
+    inherited: Placement,
     out: &mut Geometry,
     nodes: &mut usize,
     depth: usize,
@@ -80,13 +97,140 @@ unsafe fn effect(
         return;
     }
     let object = arc + 16; // Current Combine apply computes this Arc payload offset.
-    payload(base, object, apply, size, out, nodes, depth);
+    payload(base, object, apply, size, inherited, out, nodes, depth);
 }
+/// (payload, apply rva, size) of a game-owned effect, without recording
+/// anything; None where `effect` would refuse it.
+unsafe fn peek(base: usize, arc: usize, table: usize) -> Option<(usize, usize, usize)> {
+    let rva = table.checked_sub(base)?;
+    (RDATA_TABLE_BOUNDS.contains(&rva)
+        && table.is_multiple_of(8)
+        && arc != 0
+        && word(table + 16) == 8)
+        .then(|| {
+            Some((
+                arc + 16,
+                word(table + 0x20).checked_sub(base)?,
+                word(table + 8),
+            ))
+        })
+        .flatten()
+}
+/// A timed dash among a Combine's direct effects, directly or inside a
+/// Delayed: (tick it ends, length).
+unsafe fn timed_dash(base: usize, arc: usize, table: usize) -> Option<(usize, f32)> {
+    let dash = |object: usize| {
+        let ticks = word(object + 32);
+        distance((word(object + 24) as u64).saturating_mul(ticks as u64)).map(|l| (ticks, l))
+    };
+    match peek(base, arc, table)? {
+        (object, RUSH_TIME, 56) => dash(object),
+        (object, DELAYED, 32) => {
+            let (cap, ptr, len) = (word(object), word(object + 8), word(object + 16));
+            if len > 32 || len > cap || (len > 0 && (ptr == 0 || !ptr.is_multiple_of(8))) {
+                return None;
+            }
+            let delay = word(object + 24);
+            (0..len).find_map(
+                |i| match peek(base, word(ptr + i * 16), word(ptr + i * 16 + 8))? {
+                    (child, RUSH_TIME, 56) => {
+                        dash(child).map(|(t, l)| (delay.saturating_add(t), l))
+                    }
+                    _ => None,
+                },
+            )
+        }
+        _ => None,
+    }
+}
+/// Where a footprint lands when its effect runs after the caster dashed
+/// `length` toward the aim: caster-relative places move to the dash end.
+fn after_dash(p: Placement, length: f32) -> Placement {
+    match p {
+        Placement::Caster => Placement::End { length },
+        Placement::End { length: l } => Placement::End { length: length + l },
+        // Dropped at the caster's feet (Candygel R's pools: range 1).
+        Placement::Landing { length: l } if l < 2. => Placement::End { length },
+        other => other,
+    }
+}
+/// A Combine's effects. Effects delayed until a timed dash among them has
+/// finished happen where the dash ends (Candygel R: a pool at each end).
+unsafe fn combine(
+    base: usize,
+    at: usize,
+    inherited: Placement,
+    out: &mut Geometry,
+    nodes: &mut usize,
+    depth: usize,
+) {
+    let (cap, ptr, len) = (word(at), word(at + 8), word(at + 16));
+    if len > 32 || len > cap || (len > 0 && (ptr == 0 || !ptr.is_multiple_of(8))) {
+        out.issue("invalid native effect vector");
+        return;
+    }
+    let items: Vec<(usize, usize)> = (0..len)
+        .map(|i| (word(ptr + i * 16), word(ptr + i * 16 + 8)))
+        .collect();
+    let dash = items
+        .iter()
+        .find_map(|&(arc, table)| timed_dash(base, arc, table));
+    for &(arc, table) in &items {
+        let delay = match peek(base, arc, table) {
+            Some((object, DELAYED, 32)) => Some(word(object + 24)),
+            _ => None,
+        };
+        match (dash, delay) {
+            (Some((end, length)), Some(delay)) if delay >= end => {
+                let mut moved = Geometry::default();
+                effect(base, arc, table, inherited, &mut moved, nodes, depth + 1);
+                for f in moved.footprints {
+                    out.add(f.shape, after_dash(f.placement, length));
+                }
+                for issue in moved.issues {
+                    out.issue(issue);
+                }
+                for family in moved.families {
+                    out.family(family);
+                }
+            }
+            _ => effect(base, arc, table, inherited, out, nodes, depth + 1),
+        }
+    }
+}
+/// The effects of a native `Vec<Arc<dyn EffectType>>` at `at` (cap, ptr, len).
+unsafe fn children(
+    base: usize,
+    at: usize,
+    inherited: Placement,
+    out: &mut Geometry,
+    nodes: &mut usize,
+    depth: usize,
+) {
+    let (cap, ptr, len) = (word(at), word(at + 8), word(at + 16));
+    if len > 32 || len > cap || (len > 0 && (ptr == 0 || !ptr.is_multiple_of(8))) {
+        out.issue("invalid native effect vector");
+        return;
+    }
+    for i in 0..len {
+        effect(
+            base,
+            word(ptr + i * 16),
+            word(ptr + i * 16 + 8),
+            inherited,
+            out,
+            nodes,
+            depth + 1,
+        );
+    }
+}
+#[allow(clippy::too_many_arguments)]
 unsafe fn payload(
     base: usize,
     object: usize,
     apply: Option<usize>,
     size: usize,
+    inherited: Placement,
     out: &mut Geometry,
     nodes: &mut usize,
     depth: usize,
@@ -94,21 +238,100 @@ unsafe fn payload(
     match (apply, size) {
         (Some(COMBINE), 24) => {
             out.family("native Combine");
-            let (cap, ptr, len) = (word(object), word(object + 8), word(object + 16));
-            if len > 32 || len > cap || (len > 0 && (ptr == 0 || !ptr.is_multiple_of(8))) {
-                out.issue("invalid native Combine vector");
-                return;
+            combine(base, object, inherited, out, nodes, depth);
+        }
+        (Some(DELAYED), 32) => {
+            // Delayed { effects, delay }: the delayed effects keep the placement.
+            out.family("native Delayed");
+            children(base, object, inherited, out, nodes, depth);
+        }
+        (Some(RANGE_PERIOD), 152) => {
+            // A lingering area: the same shape words as a projectile.
+            out.family("native RangePeriodProjectile");
+            let words = std::array::from_fn(|i| word(object + i * 8) as u64);
+            if let Some(shape) = shape(words) {
+                out.add(shape, inherited);
+            } else {
+                out.issue("native period area shape unresolved");
             }
-            for i in 0..len {
-                effect(
-                    base,
-                    word(ptr + i * 16),
-                    word(ptr + i * 16 + 8),
-                    out,
-                    nodes,
-                    depth + 1,
-                );
+        }
+        (Some(RUSH), 56) => {
+            // Dash toward the aim that stops at the first unit it hits:
+            // { applied effects, radius, _, speed }. Its length is the cast range.
+            out.family("native Rush");
+            match distance(word(object + 24) as u64) {
+                Some(radius) => out.add(Shape::Corridor { radius, length: 0. }, Placement::Caster),
+                None => out.issue("invalid native dash width"),
             }
+        }
+        (Some(MOVE), 40) => {
+            // Movement to the aimed point: { effects, speed, maximum distance }.
+            out.family("native MoveTo");
+            out.add(Shape::Movement { blink: false }, Placement::Aim);
+        }
+        (Some(RANGE_PROJECTILE), 120) => {
+            // An area at its placement after a delay: { shape (words 0-5),
+            // name, hit effects (words 9-11), delay, apply, target }. The hit
+            // effects apply to units already hit, so they are not followed.
+            out.family("native RangeProjectile");
+            let words = std::array::from_fn(|i| word(object + i * 8) as u64);
+            match shape(words) {
+                Some(shape) => out.add(shape, inherited),
+                None => out.issue("native range projectile shape unresolved"),
+            }
+        }
+        (Some(PARABOLIC), 168) => {
+            // A lobbed shot landing at its placement: { shape (words 0-5),
+            // name, range-effect name, applied effects, landing effects
+            // (words 15-17), travel time, range, target }. It passes over
+            // units on the way, so only the landing area is drawn.
+            out.family("native ParabolicProjectile");
+            let words = std::array::from_fn(|i| word(object + i * 8) as u64);
+            match shape(words) {
+                Some(shape) => out.add(shape, inherited),
+                None => out.issue("native parabolic shape unresolved"),
+            }
+            children(base, object + 120, inherited, out, nodes, depth);
+        }
+        (Some(RUSH_TIME), 56) => {
+            // A dash for a fixed time: { applied effects, speed, ticks, range,
+            // flags }. Its length is speed x ticks. With effects on units it
+            // hits it sweeps the body (a corridor); without any it hits
+            // nothing (Candygel R's slide) and is drawn as movement.
+            out.family("native RushTime");
+            let length = (word(object + 24) as u64).saturating_mul(word(object + 32) as u64);
+            match distance(length) {
+                Some(length) if word(object + 16) > 0 => out.add(
+                    Shape::Corridor {
+                        radius: CHAMPION_RADIUS,
+                        length,
+                    },
+                    Placement::Caster,
+                ),
+                Some(length) => {
+                    out.add(Shape::Movement { blink: false }, Placement::End { length })
+                }
+                None => out.issue("invalid native timed dash"),
+            }
+        }
+        (Some(SWITCH_BY_BUFF), 56) => {
+            // { buff name, effect without the buff, effect with it }. The
+            // caster's buffs are not read here: preview the usual branch.
+            out.family("native SwitchByBuff");
+            effect(
+                base,
+                word(object + 24),
+                word(object + 32),
+                inherited,
+                out,
+                nodes,
+                depth + 1,
+            );
+        }
+        (Some(MOVE_TO_TARGET), 40) => {
+            // Movement onto the target unit: { applied effects, speed, _ }.
+            out.family("native MoveToTarget");
+            out.add(Shape::Movement { blink: false }, Placement::Aim);
         }
         (Some(RANGE), 96) => {
             out.family("native RangeEffect");
@@ -149,13 +372,34 @@ unsafe fn payload(
                 out.issue("noncircle projectile sweep unresolved");
                 return;
             }
-            if let (Some(radius), Some(length)) = (
-                distance(word(object + 8) as u64),
-                distance(word(object + 128) as u64),
-            ) {
-                out.add(Shape::Corridor { radius, length }, Placement::Caster);
-            } else {
-                out.issue("invalid native projectile dimensions");
+            let radius = word(object + 8);
+            match distance(word(object + 128) as u64).filter(|_| radius <= 1_000_000) {
+                Some(length) => {
+                    // Effects on each unit hit on the way (words 9-11). Without
+                    // any, nothing stops or is hit in flight (Bomber Q/W, Poison
+                    // Dart Hunter Q): no corridor, and the end effects land
+                    // where the cast is aimed. Otherwise the path is a corridor
+                    // (radius 0 is still drawn as a line) and the end effects
+                    // happen at its end.
+                    let hits_in_flight = word(object + 88) > 0;
+                    if hits_in_flight {
+                        out.add(
+                            Shape::Corridor {
+                                radius: radius as f32 / 1000.,
+                                length,
+                            },
+                            Placement::Caster,
+                        );
+                    }
+                    let end = if hits_in_flight {
+                        Placement::End { length }
+                    } else {
+                        Placement::Landing { length }
+                    };
+                    // End effects (words 12-14).
+                    children(base, object + 96, end, out, nodes, depth);
+                }
+                None => out.issue("invalid native projectile dimensions"),
             }
         }
         (Some(WHIP_LINE), 88) => {
@@ -191,6 +435,7 @@ pub unsafe fn read(base: usize, entity: usize, offset: usize) -> Geometry {
         base,
         word(entity + offset),
         word(entity + offset + 8),
+        Placement::Aim,
         &mut result,
         &mut nodes,
         0,
@@ -198,9 +443,369 @@ pub unsafe fn read(base: usize, entity: usize, offset: usize) -> Geometry {
     result
 }
 
+/// 0.70 diagnostic inventory: one skill's effect tree as text, with every
+/// node's apply function, size and raw payload words, so unknown effect
+/// layouts can be matched against known values offline. A child is followed
+/// only where a game-owned effect table sits beside its pointer (an
+/// `Arc<dyn EffectType>`), and only into memory `readable` confirms.
+pub unsafe fn dump(
+    base: usize,
+    entity: usize,
+    offset: usize,
+    readable: &dyn Fn(usize, usize) -> bool,
+) -> Option<String> {
+    let mut out = String::new();
+    let mut nodes = 0;
+    let arc = word(entity + offset);
+    let table = word(entity + offset + 8);
+    effect_table(base, table)?;
+    dump_node(base, arc, table, readable, &mut out, &mut nodes, 0);
+    Some(out)
+}
+/// (size, apply rva) of a plausible game-owned effect vtable.
+unsafe fn effect_table(base: usize, table: usize) -> Option<(usize, usize)> {
+    let rva = table.checked_sub(base)?;
+    if !RDATA_TABLE_BOUNDS.contains(&rva) || !table.is_multiple_of(8) {
+        return None;
+    }
+    let size = word(table + 8);
+    let align = word(table + 16);
+    let apply = word(table + 0x20).checked_sub(base)?;
+    (align == 8 && size <= 1024 && size.is_multiple_of(8) && (0x1000..0x39ca000).contains(&apply))
+        .then_some((size, apply))
+}
+unsafe fn dump_node(
+    base: usize,
+    arc: usize,
+    table: usize,
+    readable: &dyn Fn(usize, usize) -> bool,
+    out: &mut String,
+    nodes: &mut usize,
+    depth: usize,
+) {
+    use std::fmt::Write;
+    let Some((size, apply)) = effect_table(base, table) else {
+        out.push('?');
+        return;
+    };
+    if depth > 6 || *nodes >= 64 || arc == 0 || !readable(arc, 16 + size) {
+        let _ = write!(out, "<{apply:x}/{size} unread>");
+        return;
+    }
+    *nodes += 1;
+    let object = arc + 16;
+    let words: Vec<usize> = (0..size / 8).map(|i| word(object + i * 8)).collect();
+    let _ = write!(out, "<{apply:x}/{size} [");
+    for (i, w) in words.iter().enumerate() {
+        let _ = write!(out, "{}{w:x}", if i > 0 { " " } else { "" });
+    }
+    out.push(']');
+    // Direct children: (arc, table) word pairs.
+    for i in 0..words.len().saturating_sub(1) {
+        if effect_table(base, words[i + 1]).is_some() && words[i] != 0 {
+            let _ = write!(out, " @{}:", i * 8);
+            dump_node(
+                base,
+                words[i],
+                words[i + 1],
+                readable,
+                out,
+                nodes,
+                depth + 1,
+            );
+        }
+    }
+    // Vec<Arc<dyn EffectType>> children: (capacity, pointer, length).
+    for i in 0..words.len().saturating_sub(2) {
+        let (cap, ptr, len) = (words[i], words[i + 1], words[i + 2]);
+        if len == 0 || len > 32 || len > cap || cap > 64 || !ptr.is_multiple_of(8) {
+            continue;
+        }
+        if !readable(ptr, len * 16) || effect_table(base, word(ptr + 8)).is_none() {
+            continue;
+        }
+        let _ = write!(out, " @{}*{len}:", i * 8);
+        for e in 0..len {
+            dump_node(
+                base,
+                word(ptr + e * 16),
+                word(ptr + e * 16 + 8),
+                readable,
+                out,
+                nodes,
+                depth + 1,
+            );
+        }
+    }
+    out.push('>');
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn inventory_identified_types_decode_from_logged_payloads() {
+        let decode = |apply: usize, size: usize, words: &[usize], inherited: Placement| {
+            let mut g = Geometry::default();
+            unsafe {
+                payload(
+                    0,
+                    words.as_ptr() as usize,
+                    Some(apply),
+                    size,
+                    inherited,
+                    &mut g,
+                    &mut 0,
+                    0,
+                )
+            };
+            g
+        };
+        // Ghost W dash: {applied, radius 5000, _, speed 12000, flags}.
+        let g = decode(RUSH, 56, &[0, 8, 0, 0x1388, 0, 0x2ee0, 7], Placement::Aim);
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: 5.,
+                length: 0.
+            }
+        );
+        assert_eq!(g.footprints[0].placement, Placement::Caster);
+        // Ghost Q movement: {effects, speed 4500, maximum 80000}.
+        let g = decode(MOVE, 40, &[0, 8, 0, 0x1194, 0x13880], Placement::Aim);
+        assert_eq!(g.footprints[0].shape, Shape::Movement { blink: false });
+        // Poison Dart Hunter's poison area, radius 48000, keeps its placement.
+        let mut area = [0usize; 19];
+        area[1] = 0xbb80;
+        let g = decode(RANGE_PERIOD, 152, &area, Placement::End { length: 50. });
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 48. });
+        assert_eq!(g.footprints[0].placement, Placement::End { length: 50. });
+        // A shot that hits units on the way: radius 0 (a line), length 50000.
+        let mut shot = [0usize; 19];
+        shot[9] = 1; // one applied effect (capacity, pointer, length)
+        shot[10] = 8;
+        shot[11] = 1;
+        shot[13] = 8; // empty end-effects vector
+        shot[16] = 0xc350;
+        let g = decode(LINEAR, 152, &shot, Placement::Aim);
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: 0.,
+                length: 50.
+            }
+        );
+        // Poison Dart Hunter's dart hits nothing in flight (no applied
+        // effects): no corridor; its splash lands at the aim (not followed here).
+        let mut dart = shot;
+        (dart[9], dart[11]) = (0, 0);
+        let g = decode(LINEAR, 152, &dart, Placement::Aim);
+        assert!(g.footprints.is_empty() && g.issues.is_empty());
+        // Bomber W (base, logged): a 40000 circle after 61 ticks at the aim.
+        let bomb = [
+            0, 0x9c40, 0x64, 0x1770, 0x10, 0, 0x13, 0, 0x13, 2, 0, 2, 0x3d, 0x3c, 6,
+        ];
+        let g = decode(RANGE_PROJECTILE, 120, &bomb, Placement::Aim);
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 40. });
+        assert_eq!(g.footprints[0].placement, Placement::Aim);
+        // Alchemist Q (JSON: Circle 9000, travel 28, range 70000), no
+        // landing effects here.
+        let mut flask = [0usize; 21];
+        flask[1] = 0x2328;
+        flask[13] = 8; // empty applied effects
+        flask[16] = 8; // empty landing effects
+        flask[18] = 0x1c;
+        flask[19] = 0x11170;
+        let g = decode(PARABOLIC, 168, &flask, Placement::Aim);
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 9. });
+        assert_eq!(g.footprints[0].placement, Placement::Aim);
+        // Harpy R (JSON: speed 2500, 70 ticks, four effects on units hit):
+        // a 175-unit body-wide dash.
+        let g = decode(
+            RUSH_TIME,
+            56,
+            &[4, 8, 4, 0x9c4, 0x46, 0x2710, 7],
+            Placement::Aim,
+        );
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: CHAMPION_RADIUS,
+                length: 175.
+            }
+        );
+        assert_eq!(g.footprints[0].placement, Placement::Caster);
+        // Candygel W (JSON: MoveToTarget speed 4000).
+        let g = decode(MOVE_TO_TARGET, 40, &[0, 8, 0, 0xfa0, 0], Placement::Aim);
+        assert_eq!(g.footprints[0].shape, Shape::Movement { blink: false });
+        // An empty Delayed wrapper is traversed without inventing a footprint.
+        let g = decode(DELAYED, 32, &[0, 8, 0, 0x24], Placement::Aim);
+        assert!(g.footprints.is_empty() && g.issues.is_empty());
+        assert_eq!(g.families, ["native Delayed"]);
+    }
+    #[test]
+    fn effects_after_a_timed_dash_happen_where_it_ends() {
+        // Candygel R's shape: Delayed 10 { slide 2700 x 44, hits nothing },
+        // Delayed 10 { drop: range-1 projectile ending in a 42-unit pool },
+        // Delayed 54 { the same drop }.
+        // Fake vtables [_, size, align, _, apply]: Delayed, RushTime,
+        // LinearProjectile, area.
+        let mut tables = [0usize; 20];
+        let base = tables.as_ptr() as usize - 0x39ca000;
+        for (i, (size, apply)) in [
+            (32, DELAYED),
+            (56, RUSH_TIME),
+            (152, LINEAR),
+            (152, RANGE_PERIOD),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            tables[i * 5 + 1] = size;
+            tables[i * 5 + 2] = 8;
+            tables[i * 5 + 4] = base + apply;
+        }
+        let table = |i: usize| tables.as_ptr() as usize + i * 5 * 8;
+        // Arc allocations: strong, weak, then the payload.
+        let slide = [1usize, 1, 0, 8, 0, 2700, 44, 70000, 7];
+        let mut pool = [0usize; 21];
+        pool[3] = 42000; // circle radius
+        let pool_list = [pool.as_ptr() as usize, table(3)];
+        let mut drop = [0usize; 21];
+        drop[2 + 10] = 8; // no effects on units hit in flight
+        (drop[2 + 12], drop[2 + 13], drop[2 + 14]) = (1, pool_list.as_ptr() as usize, 1);
+        drop[2 + 16] = 1; // range 1
+        let slide_list = [slide.as_ptr() as usize, table(1)];
+        let drop_list = [drop.as_ptr() as usize, table(2)];
+        let delayed =
+            |list: &[usize; 2], tick: usize| [1usize, 1, 1, list.as_ptr() as usize, 1, tick];
+        let start = delayed(&slide_list, 10);
+        let first = delayed(&drop_list, 10);
+        let last = delayed(&drop_list, 54);
+        let effects = [
+            start.as_ptr() as usize,
+            table(0),
+            first.as_ptr() as usize,
+            table(0),
+            last.as_ptr() as usize,
+            table(0),
+        ];
+        let combine = [3usize, effects.as_ptr() as usize, 3];
+        let mut g = Geometry::default();
+        unsafe {
+            payload(
+                base,
+                combine.as_ptr() as usize,
+                Some(COMBINE),
+                24,
+                Placement::Aim,
+                &mut g,
+                &mut 0,
+                0,
+            )
+        };
+        let slide_end = Placement::End {
+            length: distance(118_800).unwrap(),
+        };
+        let at_feet = Placement::Landing {
+            length: distance(1).unwrap(),
+        };
+        let circle = Shape::Circle { radius: 42. };
+        let found: Vec<_> = g
+            .footprints
+            .iter()
+            .map(|f| (f.shape, f.placement))
+            .collect();
+        assert_eq!(
+            found,
+            [
+                (Shape::Movement { blink: false }, slide_end),
+                (circle, at_feet),
+                (circle, slide_end),
+            ],
+            "{g:?}"
+        );
+        assert_eq!(
+            after_dash(Placement::End { length: 20. }, 100.),
+            Placement::End { length: 120. }
+        );
+        assert_eq!(after_dash(Placement::Aim, 100.), Placement::Aim);
+    }
+    #[test]
+    fn switch_by_buff_previews_the_branch_without_the_buff() {
+        // Fake vtables [_, size, align, _, apply] for two RangeEffect-free
+        // branches: a RangeProjectile (none) and a MoveTo (buff).
+        let mut tables = [0usize; 10];
+        let base = tables.as_ptr() as usize - 0x39ca000;
+        tables[1] = 120;
+        tables[2] = 8;
+        tables[4] = base + RANGE_PROJECTILE;
+        tables[6] = 40;
+        tables[7] = 8;
+        tables[9] = base + MOVE;
+        let (none_table, buff_table) = (tables.as_ptr() as usize, tables.as_ptr() as usize + 5 * 8);
+        // Arc allocations: strong, weak, then the payload.
+        let mut none = [0usize; 17];
+        none[3] = 0x9c40; // circle radius 40000
+        let buff = [1usize, 1, 0, 8, 0, 0x1194, 0];
+        let switch = [
+            0,
+            1,
+            0,
+            none.as_ptr() as usize,
+            none_table,
+            buff.as_ptr() as usize,
+            buff_table,
+        ];
+        let mut g = Geometry::default();
+        unsafe {
+            payload(
+                base,
+                switch.as_ptr() as usize,
+                Some(SWITCH_BY_BUFF),
+                56,
+                Placement::Aim,
+                &mut g,
+                &mut 0,
+                0,
+            )
+        };
+        assert_eq!(g.footprints.len(), 1);
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 40. });
+        assert!(g.families.iter().all(|f| f != "native MoveTo"));
+    }
+    #[test]
+    fn inventory_dump_follows_only_effect_pointers_into_readable_memory() {
+        // Two fake vtables side by side: [_, size, align, _, apply].
+        let mut tables = [0usize; 10];
+        let base = tables.as_ptr() as usize - 0x39ca000;
+        tables[1] = 32;
+        tables[2] = 8;
+        tables[4] = base + 0x2000;
+        tables[6] = 16;
+        tables[7] = 8;
+        tables[9] = base + 0x3000;
+        let (table_a, table_b) = (tables.as_ptr() as usize, tables.as_ptr() as usize + 5 * 8);
+        // Arc allocations: strong, weak, then the payload.
+        let child = [1usize, 1, 0x1f4, 0x2a];
+        let child_arc = child.as_ptr() as usize;
+        let parent = [1usize, 1, 7, child_arc, table_b, 9];
+        let slot = [parent.as_ptr() as usize, table_a];
+        let entity = slot.as_ptr() as usize - 0x4c0;
+        let text = unsafe { dump(base, entity, 0x4c0, &|_, _| true) }.unwrap();
+        assert_eq!(
+            text,
+            format!("<2000/32 [7 {child_arc:x} {table_b:x} 9] @8:<3000/16 [1f4 2a]>>")
+        );
+        // Nothing is read where memory is not confirmed readable.
+        let text = unsafe { dump(base, entity, 0x4c0, &|_, _| false) }.unwrap();
+        assert_eq!(text, "<2000/32 unread>");
+        // No effect table: no dump at all.
+        let empty = [0usize, 0];
+        assert!(
+            unsafe { dump(base, empty.as_ptr() as usize - 0x4c0, 0x4c0, &|_, _| true) }.is_none()
+        );
+    }
     #[test]
     fn borrowed_payloads_keep_live_dimensions_and_do_not_traverse_hit_children() {
         let mut bytes = [0usize; 19];
@@ -218,6 +823,7 @@ mod tests {
                 bytes.as_ptr() as usize,
                 Some(RANGE),
                 96,
+                Placement::Aim,
                 &mut g,
                 &mut 0,
                 0,
@@ -232,6 +838,7 @@ mod tests {
         );
         let mut projectile = [0usize; 19];
         projectile[1] = 6000;
+        (projectile[9], projectile[10], projectile[11]) = (1, 8, 1); // hits in flight
         projectile[16] = 75000;
         let mut g = Geometry::default();
         unsafe {
@@ -240,6 +847,7 @@ mod tests {
                 projectile.as_ptr() as usize,
                 Some(LINEAR),
                 152,
+                Placement::Aim,
                 &mut g,
                 &mut 0,
                 0,
@@ -262,6 +870,7 @@ mod tests {
                 channel.as_ptr() as usize,
                 Some(WHIP_LINE),
                 88,
+                Placement::Aim,
                 &mut g,
                 &mut 0,
                 0,
@@ -279,7 +888,7 @@ mod tests {
     fn opaque_payloads_and_invalid_vectors_are_not_dereferenced() {
         let mut g = Geometry::default();
         unsafe {
-            payload(0, 1, Some(123), 152, &mut g, &mut 0, 0);
+            payload(0, 1, Some(123), 152, Placement::Aim, &mut g, &mut 0, 0);
         }
         assert!(g.footprints.is_empty());
         assert_eq!(g.issues, ["unsupported native apply=7b size=152"]);
@@ -290,17 +899,15 @@ mod tests {
                 bad.as_ptr() as usize,
                 Some(COMBINE),
                 24,
+                Placement::Aim,
                 &mut g,
                 &mut 0,
                 0,
             );
         }
-        assert!(g
-            .issues
-            .iter()
-            .any(|s| s == "invalid native Combine vector"));
+        assert!(g.issues.iter().any(|s| s == "invalid native effect vector"));
         unsafe {
-            effect(0, 1, 1, &mut g, &mut 0, 0);
+            effect(0, 1, 1, Placement::Aim, &mut g, &mut 0, 0);
         }
         assert!(g.issues.iter().any(|s| s == "unrecognized effect table"));
     }

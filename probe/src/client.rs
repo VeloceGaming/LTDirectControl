@@ -149,6 +149,7 @@ impl Client {
             );
         }
         self.choose_prepared_athlete(keys);
+        test_cheats::update(keys.home_end && battlefield, &self.logger);
         self.timing.heartbeat(
             battlefield,
             self.movement.selected().is_some(),
@@ -158,9 +159,20 @@ impl Client {
         self.rearm_if_needed(ctx, keys, pre_match, save_exit);
         let session_action = self.timing.take_action();
         if let Some(action) = session_action {
-            self.movement.clear_commands();
-            self.abilities.clear_commands();
-            self.timing.apply_action(action, &self.logger);
+            // Exclude an in-flight SDK think while changing input ownership.
+            // Publication waits happen outside this gate.
+            if let Ok(_gate) = self.session_gate.write() {
+                self.movement.clear_commands();
+                self.abilities.clear_commands();
+                if matches!(
+                    action,
+                    native_timing::SessionAction::ReturnAi
+                        | native_timing::SessionAction::TakeControl
+                ) {
+                    self.camera.suspend(keys);
+                }
+                self.timing.apply_action(action, &self.logger);
+            }
         }
         wheel::update(
             self.timing.client_controls(None),
@@ -172,6 +184,7 @@ impl Client {
         let gameplay_active =
             running && session_action.is_none() && !ui_state::SETTINGS_OPEN.load(Ordering::Relaxed);
         let controls = self.timing.client_controls(None);
+        native_tooltips::observe(self.timing.generation(), controls && battlefield);
         if early.is_none() || !gameplay_active {
             self.resolve_targeting(&mut keys, controls);
         }
@@ -240,10 +253,28 @@ impl Client {
                 &self.camera,
                 self.settings.number("selection_debug") == 1.,
             );
+            if self.settings.number("selection_debug") == 1. {
+                self.draw_selection_areas(ctx);
+            }
             if self.settings.number("map_path") == 1. {
                 self.movement.draw_minimap_path(ctx, &self.camera);
             }
             cursor::draw_clicks(ctx, &self.camera, &self.movement.click_feedback());
+        }
+        // The no-cooldown test option changes the real match: always shown.
+        if test_cheats::active() {
+            ctx.draw_rect("UI", 18., 150., 260., 32., 1000, 6., 0x8a1c1cff);
+            ctx.draw_text(
+                "UI",
+                "TEST: no cooldowns (Home+End)",
+                "asset/base/font/set/regular",
+                (28., 154., 240., 24.),
+                1001,
+                16.,
+                0xffffffff,
+                mod_api_stable::TextAlignXV1::Left,
+                mod_api_stable::TextAlignYV1::Center,
+            );
         }
         // Normal status is conveyed by icons. Only exceptional release reasons
         // require text; routine Start/Pause/AI transitions stay silent.
@@ -743,5 +774,32 @@ impl Client {
                 native_adapter::capture_trace("SDK client scene transition", &self.logger);
             }
         }
+    }
+}
+
+impl Client {
+    /// Show selection markers: each unit's selection area. Green: the body
+    /// measured from its art and placed from the game's draw data; grey:
+    /// the fallback envelope.
+    fn draw_selection_areas(&self, ctx: &mut StableClient<'_>) {
+        let Some(frame) = self.camera.frame() else {
+            return;
+        };
+        let mut drawing = skill_preview::Drawing::default();
+        for unit in self.movement.hover_units() {
+            let (x0, y0, x1, y1, _) = combat::screen_area(frame, &unit);
+            let color = if combat::body_world_rect(&unit).is_some() {
+                0x5cff7aff
+            } else {
+                0x999999cc
+            };
+            let corners = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)];
+            for i in 0..4 {
+                drawing.line(corners[i], corners[(i + 1) % 4], 1.5, color, 1005);
+            }
+        }
+        let mut blockers = self.camera.overlay_blockers();
+        blockers.push(frame.minimap);
+        drawing.render(ctx, frame, &blockers);
     }
 }

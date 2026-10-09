@@ -75,7 +75,16 @@ impl StablePlayerAi for Simulation {
             lane,
             side,
         };
-        let (selected, proposal, position, actor, match_key, skill_units, live_worker) = {
+        let (
+            selected,
+            proposal,
+            position,
+            actor,
+            match_key,
+            skill_units,
+            live_worker,
+            attack_in_range,
+        ) = {
             let sim = ctx.sim()?;
             let Some(origin) = sim.sim_origin() else {
                 if self.last_sample.is_none() {
@@ -185,6 +194,14 @@ impl StablePlayerAi for Simulation {
                 None
             };
             let position = current_champion.as_ref().map(|champion| champion.pos());
+            let attack_in_range = current_champion
+                .as_ref()
+                .zip(candidate.as_ref())
+                .filter(|(_, (input, _))| input.kind == mod_api_stable::InputKindV1::Attack.code())
+                .and_then(|(champion, (_, chase))| {
+                    let range = native_adapter::attack_range(&sim, champion.id())?;
+                    Some(combat::attack_in_range(champion.pos(), (*chase)?, range))
+                });
             self.log_sample(&sim, &origin, call);
             let actor = current_champion
                 .as_ref()
@@ -198,6 +215,7 @@ impl StablePlayerAi for Simulation {
                 key,
                 skill_units,
                 origin.kind == 2 && self.timing.owns_worker(key),
+                attack_in_range,
             )
         };
         if live_worker {
@@ -216,9 +234,8 @@ impl StablePlayerAi for Simulation {
                     &self.logger,
                 )
             });
-        // Rejected attacks normally mean this target needs approaching or an
-        // action cannot start yet. Keep manual ownership and use a native move
-        // request. Never deliver an invalid attack to the host or fake damage.
+        // Keep the attack order while waiting in range. Outside range (or if
+        // the guarded range read is unavailable), preserve native approach.
         let candidate = skill.or_else(|| {
             proposal.map(|(request, chase)| {
                 if request.kind == mod_api_stable::InputKindV1::Return.code()
@@ -230,12 +247,7 @@ impl StablePlayerAi for Simulation {
                 } else if request.kind == mod_api_stable::InputKindV1::Attack.code()
                     && !ctx.is_valid_input(&request)
                 {
-                    chase
-                        .map(|p| InputV1::move_to(p.0, p.1))
-                        .unwrap_or_else(|| {
-                            let p = position.unwrap_or_default();
-                            InputV1::move_to(p.0, p.1)
-                        })
+                    combat::rejected_attack(position.unwrap_or_default(), chase, attack_in_range)
                 } else {
                     request
                 }
@@ -373,6 +385,25 @@ impl Simulation {
                         build: self.hud.build(sim, p.id()),
                     });
                 }
+            }
+            // 0.70 diagnostic: which actor id is which champion, for the
+            // PREVIEW TREE inventory lines of this match.
+            let actors = (0..sim.player_count())
+                .filter_map(|i| {
+                    let c = sim.player_at(i)?.champion()?;
+                    Some(format!("{}={}", c.id(), c.name().unwrap_or_default()))
+                })
+                .collect::<Vec<_>>();
+            // Once per match: every player's think runs this tick.
+            static LAST: std::sync::Mutex<Option<MatchKey>> = std::sync::Mutex::new(None);
+            if LAST
+                .lock()
+                .is_ok_and(|mut last| last.replace(key) != Some(key))
+            {
+                self.logger.write(&format!(
+                    "PREVIEW ROSTER key={key:?} actors=[{}]",
+                    actors.join(", ")
+                ));
             }
         }
     }

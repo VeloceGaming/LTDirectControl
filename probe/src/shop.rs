@@ -100,15 +100,75 @@ pub fn catalogue(keys: &[String], meta: &crate::native_items::Catalogue) -> Opti
 pub struct Order {
     pub item: usize,
     pub excluded: Vec<usize>,
+    /// Explicit base-to-target chain; None keeps automatic cheapest planning.
+    /// Stored on the order so preview, HUD and buyer never silently diverge.
+    pub path: Option<Vec<usize>>,
 }
 /// A new order for `target` against the inventory the shop shows.
 pub fn new_order(live: &Live, target: usize) -> Order {
     Order {
         item: target,
+        path: None,
         excluded: (0..live.owned.len())
             .filter(|i| live.owned[*i] == target)
             .collect(),
     }
+}
+
+/// A chosen chain must be a real, acyclic route from a base to its target.
+fn valid_path(cat: &[Item], path: &[usize], target: usize) -> bool {
+    path.last() == Some(&target)
+        && path
+            .first()
+            .is_some_and(|i| cat.get(*i).is_some_and(|p| p.tier == 0))
+        && path
+            .iter()
+            .enumerate()
+            .all(|(n, i)| *i < cat.len() && !path[..n].contains(i))
+        && path
+            .windows(2)
+            .all(|edge| cat[edge[0]].next.contains(&edge[1]))
+}
+
+/// Plan strictly along the player's chosen chain. Other owned branches cannot
+/// substitute for it, even if they are cheaper. A full bag therefore waits.
+fn plan_on_path(
+    cat: &[Item],
+    owned: &[usize],
+    avail: &dyn Fn(usize) -> bool,
+    target: usize,
+    path: &[usize],
+    full: bool,
+) -> Option<Vec<Step>> {
+    if !valid_path(cat, path, target) {
+        return None;
+    }
+    let mut best = None;
+    for (slot, item) in owned.iter().enumerate().filter(|(i, _)| avail(*i)) {
+        if let Some(at) = path[..path.len() - 1].iter().position(|p| p == item) {
+            if best.is_none_or(|(_, previous)| at > previous) {
+                best = Some((slot, at));
+            }
+        }
+    }
+    let (mut slot, start) = match best {
+        Some((slot, at)) => (Some(slot), at + 1),
+        None if full => return None,
+        None => (None, 0),
+    };
+    Some(
+        path[start..]
+            .iter()
+            .map(|&item| {
+                let step = match slot {
+                    Some(slot) => Step::Upgrade { slot, item },
+                    None => Step::New { item },
+                };
+                slot = Some(slot.unwrap_or(owned.len()));
+                step
+            })
+            .collect(),
+    )
 }
 
 /// Cheapest route to `target` starting from owned slots that `avail` allows,
@@ -202,13 +262,11 @@ pub fn assign(cat: &[Item], owned: &[usize], orders: &[Order], full: bool) -> Ve
                 return Assigned::Done(i);
             }
             let free = claimed.clone();
-            let steps = plan_from(
-                cat,
-                owned,
-                &|i| !free[i] && owned[i] != o.item,
-                o.item,
-                full,
-            );
+            let avail = |i: usize| !free[i] && owned[i] != o.item;
+            let steps = match &o.path {
+                Some(path) => plan_on_path(cat, owned, &avail, o.item, path, full),
+                None => plan_from(cat, owned, &avail, o.item, full),
+            };
             if let Some(Step::Upgrade { slot, .. }) = steps.as_ref().and_then(|s| s.first()) {
                 if *slot < claimed.len() {
                     claimed[*slot] = true;
@@ -298,13 +356,26 @@ pub enum Offer {
     Plan(Vec<Step>),
 }
 pub fn offer(cat: &[Item], live: &Live, orders: &[Order], target: usize) -> Offer {
+    offer_with_path(cat, live, orders, target, None)
+}
+
+/// Preview the same order the buyer receives, including an optional path.
+pub fn offer_with_path(
+    cat: &[Item],
+    live: &Live,
+    orders: &[Order],
+    target: usize,
+    path: Option<&[usize]>,
+) -> Offer {
     if target >= cat.len() {
         return Offer::Blocked;
     }
     // No purchase is blocked: any item can be bought again (user's rule).
     // Only a new chain needs a free slot, which the game itself enforces.
     let mut all = orders.to_vec();
-    all.push(new_order(live, target));
+    let mut order = new_order(live, target);
+    order.path = path.map(<[usize]>::to_vec);
+    all.push(order);
     match assign(cat, &live.owned, &all, slots_full(live)).pop() {
         Some(Assigned::Open(Some(steps))) => Offer::Plan(steps),
         Some(Assigned::Open(None)) => Offer::Blocked,
@@ -542,14 +613,19 @@ impl Shop {
     /// Shop window: queue items after the ones already queued, in order
     /// (Recommended's "Queue whole build"); items already owned or queued are
     /// skipped. Returns how many were added.
-    pub fn enqueue_back(&self, items: &[usize]) -> usize {
+    pub fn enqueue_back(
+        &self,
+        items: &[usize],
+        path: impl Fn(usize) -> Option<Vec<usize>>,
+    ) -> usize {
         let Ok(mut s) = self.0.lock() else {
             return 0;
         };
         let mut added = 0;
         for item in items {
             if !s.queue.iter().any(|o| o.item == *item) && !s.live.owned.contains(item) {
-                let order = new_order(&s.live, *item);
+                let mut order = new_order(&s.live, *item);
+                order.path = path(*item);
                 s.queue.push(order);
                 added += 1;
             }
@@ -814,6 +890,7 @@ mod tests {
         Order {
             item,
             excluded: Vec::new(),
+            path: None,
         }
     }
     fn live(owned: &[usize], gold: usize) -> Option<Live> {
@@ -973,7 +1050,7 @@ mod tests {
         }
         assert_eq!(live_now, projected);
         // Dirk is owned now and left the queue; boots join after the flare.
-        assert_eq!(shop.enqueue_back(&[2, 7, 6]), 1);
+        assert_eq!(shop.enqueue_back(&[2, 7, 6], |_| None), 1);
         assert_eq!(shop.view().unwrap().queue, vec![6, 7]);
     }
 
@@ -1121,5 +1198,190 @@ mod tests {
             offer(&cat, &me, &[new_order(&me, 6)], 6),
             Offer::Plan(_)
         ));
+    }
+
+    fn branch_catalogue() -> Arc<Vec<Item>> {
+        Arc::new(vec![
+            item("sword", 0, 250, &[1]),
+            item("pickaxe", 1, 500, &[2, 3]),
+            item("scepter", 2, 800, &[4]),
+            item("axe", 2, 500, &[4]),
+            item("blade", 3, 750, &[]),
+        ])
+    }
+
+    fn pinned_order(live: &Live, path: &[usize]) -> Order {
+        let mut order = new_order(live, *path.last().unwrap());
+        order.path = Some(path.to_vec());
+        order
+    }
+
+    #[test]
+    fn chosen_expensive_path_drives_preview_projection_hud_and_buyer() {
+        let cat = branch_catalogue();
+        let mut me = Live {
+            owned: vec![1],
+            gold: 1550,
+            capacity: 4,
+            ..Live::default()
+        };
+        let path = [0, 1, 2, 4];
+        let order = pinned_order(&me, &path);
+        assert_eq!(
+            offer_with_path(&cat, &me, &[], 4, Some(&path)),
+            Offer::Plan(vec![
+                Step::Upgrade { slot: 0, item: 2 },
+                Step::Upgrade { slot: 0, item: 4 },
+            ])
+        );
+        assert_eq!(
+            order_costs(&cat, &me, std::slice::from_ref(&order)),
+            vec![Some(1550)]
+        );
+        assert_eq!(
+            upcoming(&cat, &me, std::slice::from_ref(&order), true),
+            Some((4, Step::Upgrade { slot: 0, item: 2 }))
+        );
+        let (after, bought) = project(&cat, &me, std::slice::from_ref(&order), true);
+        assert_eq!(after.owned, vec![4]);
+        assert_eq!(after.gold, 0);
+        assert_eq!(bought, vec![2, 4]);
+        // The actual decision hooks consume the identical order as projection.
+        let shop = Shop::new();
+        shop.due((1, 1, 1), 1);
+        shop.buy(order);
+        for (owned, gold, expected) in [
+            (1, 1550, Answer::Upgrade { slot: 0, item: 2 }),
+            (2, 750, Answer::Upgrade { slot: 0, item: 4 }),
+            (4, 0, Answer::Nothing),
+        ] {
+            me.owned = vec![owned];
+            me.gold = gold;
+            shop.publish(
+                Mode::Manual(0xabc),
+                Some(cat.clone()),
+                Some(me.clone()),
+                |_| {},
+            );
+            assert_eq!(shop.upgrade_answer(0xabc), expected);
+        }
+        assert!(shop.view().unwrap().queue.is_empty());
+    }
+
+    #[test]
+    fn selected_branch_never_substitutes_an_owned_alternative_when_full() {
+        let cat = branch_catalogue();
+        let full = Live {
+            owned: vec![3],
+            gold: 5000,
+            capacity: 1,
+            ..Live::default()
+        };
+        let path = [0, 1, 2, 4];
+        assert_eq!(
+            offer(&cat, &full, &[], 4),
+            Offer::Plan(vec![Step::Upgrade { slot: 0, item: 4 }])
+        );
+        assert_eq!(
+            offer_with_path(&cat, &full, &[], 4, Some(&path)),
+            Offer::Blocked
+        );
+        let order = pinned_order(&full, &path);
+        assert_eq!(
+            next_step(&cat, &full, std::slice::from_ref(&order), false),
+            None
+        );
+        assert_eq!(
+            project(&cat, &full, std::slice::from_ref(&order), false),
+            (full.clone(), vec![])
+        );
+        let room = Live {
+            capacity: 2,
+            ..full
+        };
+        assert_eq!(
+            next_step(&cat, &room, &[order], false),
+            Some((0, Step::New { item: 0 }))
+        );
+    }
+
+    #[test]
+    fn chosen_duplicate_orders_claim_components_once_and_keep_independent_paths() {
+        let cat = branch_catalogue();
+        let me = Live {
+            owned: vec![1],
+            gold: 5000,
+            capacity: 4,
+            ..Live::default()
+        };
+        let orders = [
+            pinned_order(&me, &[0, 1, 2, 4]),
+            pinned_order(&me, &[0, 1, 3, 4]),
+        ];
+        assert_eq!(
+            order_costs(&cat, &me, &orders),
+            vec![Some(1550), Some(2000)]
+        );
+        for vanilla in [false, true] {
+            let (after, bought) = project(&cat, &me, &orders, vanilla);
+            assert_eq!(after.owned, vec![4, 4]);
+            assert_eq!(after.gold, 1450);
+            assert_eq!(bought, vec![2, 4, 0, 1, 3, 4]);
+            assert_eq!(
+                assign(&cat, &after.owned, &orders, false),
+                vec![Assigned::Done(0), Assigned::Done(1)]
+            );
+        }
+    }
+
+    #[test]
+    fn invalid_chosen_paths_fail_closed_without_reverting_to_automatic() {
+        let cat = branch_catalogue();
+        let me = Live {
+            gold: 5000,
+            capacity: 4,
+            ..Live::default()
+        };
+        for bad in [
+            vec![],
+            vec![4],
+            vec![0, 4],
+            vec![999, 4],
+            vec![0, 1, 2, 1, 4],
+            vec![0, 1, 2],
+        ] {
+            assert_eq!(
+                offer_with_path(&cat, &me, &[], 4, Some(&bad)),
+                Offer::Blocked,
+                "{bad:?}"
+            );
+        }
+        let mut owned = me.clone();
+        owned.owned = vec![1, 2];
+        assert_eq!(
+            offer_with_path(&cat, &owned, &[], 4, Some(&[0, 1, 2, 4])),
+            Offer::Plan(vec![Step::Upgrade { slot: 1, item: 4 }])
+        );
+    }
+
+    #[test]
+    fn whole_build_queue_copies_preferences_and_automatic_orders_stay_unpinned() {
+        let cat = branch_catalogue();
+        let me = Live {
+            gold: 5000,
+            capacity: 4,
+            ..Live::default()
+        };
+        assert_eq!(new_order(&me, 4).path, None);
+        let shop = Shop::new();
+        shop.due((1, 1, 1), 1);
+        shop.publish(Mode::Manual(0xabc), Some(cat), Some(me), |_| {});
+        assert_eq!(shop.enqueue_back(&[4], |_| Some(vec![0, 1, 2, 4])), 1);
+        let view = shop.view().unwrap();
+        assert_eq!(view.orders[0].path, Some(vec![0, 1, 2, 4]));
+        assert_eq!(
+            order_costs(&view.cat, &view.live, &view.orders),
+            vec![Some(2300)]
+        );
     }
 }

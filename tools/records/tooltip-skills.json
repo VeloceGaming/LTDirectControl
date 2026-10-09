@@ -1,0 +1,2366 @@
+{
+  "schema": 1,
+  "game_version": "0.6.3",
+  "language": "en",
+  "executable_sha256": "f21cf691799a83d9afa0ccae3e2b95862f5780446a501ee97860b91b752dbe2f",
+  "source": "asset/base/text/champion",
+  "source_sha256": "6b25a2de2ee8495a8a3f1c6e0d51389129c71a8df17da8852c158879db137f86",
+  "champion_count": 68,
+  "skill_count": 204,
+  "skills": [
+    {
+      "champion": "alchemist",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "DotTick",
+        "DotTime",
+        "HealReduce",
+        "Time"
+      ]
+    },
+    {
+      "champion": "alchemist",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "Time"
+      ]
+    },
+    {
+      "champion": "alchemist",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "CloudRadius",
+        "CloudTime",
+        "Coef",
+        "Damage",
+        "DefenceCoef",
+        "DefenceReduce",
+        "DotTick",
+        "DotTime",
+        "MagicResistanceCoef",
+        "MagicResistanceReduce"
+      ]
+    },
+    {
+      "champion": "android",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "Time"
+      ]
+    },
+    {
+      "champion": "android",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Range",
+        "Shield",
+        "StunTime",
+        "Time"
+      ]
+    },
+    {
+      "champion": "android",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Range",
+        "Shield",
+        "Time"
+      ]
+    },
+    {
+      "champion": "archer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "archer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "archer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Count",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "astrologer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Delay",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "astrologer",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "LinkDamage",
+        "MarkTime"
+      ]
+    },
+    {
+      "champion": "astrologer",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "Amplify",
+        "Coef",
+        "Damage",
+        "Delay",
+        "MarkCoef"
+      ]
+    },
+    {
+      "champion": "bard",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "Coef",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "bard",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "CoolReduce",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "bard",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackRatio",
+        "AttackSpeed",
+        "CoolReduce",
+        "DefenceReduce",
+        "Duration",
+        "MagicPower",
+        "MagicResistanceReduce",
+        "Range"
+      ]
+    },
+    {
+      "champion": "barrier_magician",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeedReduce",
+        "Duration",
+        "Shield",
+        "ShieldCoef"
+      ]
+    },
+    {
+      "champion": "barrier_magician",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration"
+      ]
+    },
+    {
+      "champion": "barrier_magician",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "berserker",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "Duration",
+        "Vamp"
+      ]
+    },
+    {
+      "champion": "berserker",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "berserker",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "bomber",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "bomber",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "bomber",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "boomerang_hunter",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "DotCoef",
+        "DotDamage"
+      ]
+    },
+    {
+      "champion": "boomerang_hunter",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "boomerang_hunter",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Increase",
+        "MaxBounce"
+      ]
+    },
+    {
+      "champion": "cavalry_knight",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "cavalry_knight",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "BurnCoef",
+        "BurnDamage",
+        "BurnTime",
+        "Speed",
+        "Time"
+      ]
+    },
+    {
+      "champion": "cavalry_knight",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Buff",
+        "Speed",
+        "SpeedCoef",
+        "Time"
+      ]
+    },
+    {
+      "champion": "chef",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "chef",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Heal",
+        "HealCoef",
+        "SelfHeal",
+        "SelfHealCoef"
+      ]
+    },
+    {
+      "champion": "chef",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "HpRatio",
+        "SpreadRatio"
+      ]
+    },
+    {
+      "champion": "circus_blade",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "ChargeCount",
+        "Coef",
+        "Damage",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "circus_blade",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "Duration",
+        "MoveSpeed"
+      ]
+    },
+    {
+      "champion": "circus_blade",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "SplashCoef",
+        "SplashDamage"
+      ]
+    },
+    {
+      "champion": "clown",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "MoveSpeed"
+      ]
+    },
+    {
+      "champion": "clown",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "clown",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Time"
+      ]
+    },
+    {
+      "champion": "crossbowman",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "MarkCoef"
+      ]
+    },
+    {
+      "champion": "crossbowman",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "BackstepTime",
+        "Coef",
+        "MarkCoef"
+      ]
+    },
+    {
+      "champion": "crossbowman",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "CoolReduce",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "dancer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "StackCoef"
+      ]
+    },
+    {
+      "champion": "dancer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "MaxCount",
+        "Reduce"
+      ]
+    },
+    {
+      "champion": "dancer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Count",
+        "Damage",
+        "MaxCount",
+        "ReturnCoef",
+        "ReturnDamage"
+      ]
+    },
+    {
+      "champion": "dark_mage",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "dark_mage",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "dark_mage",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "Range",
+        "ShareRatio"
+      ]
+    },
+    {
+      "champion": "demon",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "demon",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackSpeed",
+        "Defense",
+        "MoveSpeed",
+        "Time"
+      ]
+    },
+    {
+      "champion": "demon",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "dokkaebi",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "dokkaebi",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "DamageReduction",
+        "Duration",
+        "Shield"
+      ]
+    },
+    {
+      "champion": "dokkaebi",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "BindTime",
+        "Coef",
+        "Damage",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "druid",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "DeathCoef",
+        "DeathDamage",
+        "Heal",
+        "HealCoef"
+      ]
+    },
+    {
+      "champion": "druid",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Lifesteal"
+      ]
+    },
+    {
+      "champion": "druid",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Count",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "dual_blader",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "dual_blader",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "dual_blader",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Count",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "enchanter",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "Increase"
+      ]
+    },
+    {
+      "champion": "enchanter",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "Percent"
+      ]
+    },
+    {
+      "champion": "enchanter",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackRatio",
+        "AttackSpeed",
+        "Duration",
+        "MoveSpeed"
+      ]
+    },
+    {
+      "champion": "executioner",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "executioner",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Debuff",
+        "Duration",
+        "Tick",
+        "TickCoef",
+        "TickDamage"
+      ]
+    },
+    {
+      "champion": "executioner",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "exorcist",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Heal"
+      ]
+    },
+    {
+      "champion": "exorcist",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackSpeed",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "exorcist",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "BonusCoef",
+        "BonusDamage",
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "fighter",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Speed",
+        "Stun"
+      ]
+    },
+    {
+      "champion": "fighter",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "fighter",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "gambler",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "gambler",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackRange",
+        "Coef",
+        "Damage",
+        "Range",
+        "Slow",
+        "Time"
+      ]
+    },
+    {
+      "champion": "gambler",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "ghost",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackSpeed",
+        "Heal"
+      ]
+    },
+    {
+      "champion": "ghost",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "ghost",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Time"
+      ]
+    },
+    {
+      "champion": "guardian_spirit",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Value"
+      ]
+    },
+    {
+      "champion": "guardian_spirit",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "MoveSpeed",
+        "Shield",
+        "ShieldCoef"
+      ]
+    },
+    {
+      "champion": "guardian_spirit",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "HealCoef",
+        "HealValue"
+      ]
+    },
+    {
+      "champion": "gunner",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Time",
+        "Value"
+      ]
+    },
+    {
+      "champion": "gunner",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "Slow",
+        "SlowTime",
+        "Time"
+      ]
+    },
+    {
+      "champion": "gunner",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "hammerer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "hammerer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Move",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "hammerer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Airborne",
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "harpooner",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "RecastDuration"
+      ]
+    },
+    {
+      "champion": "harpooner",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "HpCoef"
+      ]
+    },
+    {
+      "champion": "harpooner",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "LinkDuration",
+        "LinkRange",
+        "ProjectileCount",
+        "Slow",
+        "TensionSlow"
+      ]
+    },
+    {
+      "champion": "hitman",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "StunTime"
+      ]
+    },
+    {
+      "champion": "hitman",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Range"
+      ]
+    },
+    {
+      "champion": "hitman",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "InvisibleDuration"
+      ]
+    },
+    {
+      "champion": "hunter",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "RangeIncrease"
+      ]
+    },
+    {
+      "champion": "hunter",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "SilenceTime"
+      ]
+    },
+    {
+      "champion": "hunter",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "ice_mage",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "ice_mage",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "MoveSpeed",
+        "Range",
+        "Stun",
+        "Tick"
+      ]
+    },
+    {
+      "champion": "ice_mage",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "BlockDuration",
+        "Coef",
+        "Damage",
+        "Slow",
+        "SlowDuration"
+      ]
+    },
+    {
+      "champion": "illusionist",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "illusionist",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "illusionist",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration"
+      ]
+    },
+    {
+      "champion": "inquisitor",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "inquisitor",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "inquisitor",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "FearTime",
+        "Threshold"
+      ]
+    },
+    {
+      "champion": "jiangshi",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "jiangshi",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Heal",
+        "Time"
+      ]
+    },
+    {
+      "champion": "jiangshi",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Damage",
+        "DamageCoef",
+        "Duration",
+        "Heal",
+        "HealCoef",
+        "Range"
+      ]
+    },
+    {
+      "champion": "knight",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Time"
+      ]
+    },
+    {
+      "champion": "knight",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Amount",
+        "Coef",
+        "Reflect",
+        "Time"
+      ]
+    },
+    {
+      "champion": "knight",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "HpCoef",
+        "MoveSpeedReduce",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "lancer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "lancer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Damage",
+        "Value"
+      ]
+    },
+    {
+      "champion": "lancer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "lightning_mage",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "lightning_mage",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "lightning_mage",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "magic_knight",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "magic_knight",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "Range",
+        "Tick"
+      ]
+    },
+    {
+      "champion": "magic_knight",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "AttackSpeedCoef",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "monk",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Range",
+        "SingleValue",
+        "Value"
+      ]
+    },
+    {
+      "champion": "monk",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "monk",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "MoveSpeed",
+        "Range",
+        "Shield"
+      ]
+    },
+    {
+      "champion": "necromancer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "DurationCoef",
+        "DurationPerLevel"
+      ]
+    },
+    {
+      "champion": "necromancer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "AttackSpeedCoef",
+        "MoveSpeed",
+        "MoveSpeedCoef",
+        "Time"
+      ]
+    },
+    {
+      "champion": "necromancer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "HpDrain"
+      ]
+    },
+    {
+      "champion": "nightmare",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "UseCount"
+      ]
+    },
+    {
+      "champion": "nightmare",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Radius",
+        "Range",
+        "StealthTime"
+      ]
+    },
+    {
+      "champion": "nightmare",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "ninja",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "ninja",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "ninja",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "ogre",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Value"
+      ]
+    },
+    {
+      "champion": "ogre",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "HpCoef",
+        "Time"
+      ]
+    },
+    {
+      "champion": "ogre",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Buff",
+        "HpCoef",
+        "Time"
+      ]
+    },
+    {
+      "champion": "plague_doctor",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "AttackSpeedCoef",
+        "Duration",
+        "MoveSpeed"
+      ]
+    },
+    {
+      "champion": "plague_doctor",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "Range",
+        "RangeCoef"
+      ]
+    },
+    {
+      "champion": "plague_doctor",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackSpeed",
+        "AttackSpeedCoef",
+        "Duration",
+        "HpReduceRatio",
+        "MoveSpeed"
+      ]
+    },
+    {
+      "champion": "poison_dart_hunter",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "Slow"
+      ]
+    },
+    {
+      "champion": "poison_dart_hunter",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Range",
+        "Speed"
+      ]
+    },
+    {
+      "champion": "poison_dart_hunter",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "PoisonDuration"
+      ]
+    },
+    {
+      "champion": "pole_warrior",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "pole_warrior",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "pole_warrior",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range",
+        "Time"
+      ]
+    },
+    {
+      "champion": "priest",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Duration",
+        "Range",
+        "Tick",
+        "Value"
+      ]
+    },
+    {
+      "champion": "priest",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "Coef",
+        "Time",
+        "Value"
+      ]
+    },
+    {
+      "champion": "priest",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Tick",
+        "Time",
+        "Value"
+      ]
+    },
+    {
+      "champion": "prisoner",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "prisoner",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Shield",
+        "Time"
+      ]
+    },
+    {
+      "champion": "prisoner",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "pyromancer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "pyromancer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "Range",
+        "Tick"
+      ]
+    },
+    {
+      "champion": "pyromancer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "pythoness",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Value"
+      ]
+    },
+    {
+      "champion": "pythoness",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "DamageCoef",
+        "Range",
+        "Value"
+      ]
+    },
+    {
+      "champion": "pythoness",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "DamageCoef",
+        "Range",
+        "Value"
+      ]
+    },
+    {
+      "champion": "sand_mage",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "PassiveCoef",
+        "PassiveDamage"
+      ]
+    },
+    {
+      "champion": "sand_mage",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Heal",
+        "HealCoef",
+        "Speed",
+        "SpeedCoef",
+        "Time"
+      ]
+    },
+    {
+      "champion": "sand_mage",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "Tick"
+      ]
+    },
+    {
+      "champion": "shadowmancer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "shadowmancer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "shadowmancer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "BanishTime",
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "shield_bearer",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Duration",
+        "Shield"
+      ]
+    },
+    {
+      "champion": "shield_bearer",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "DefCoef",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "shield_bearer",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "DamageReduce",
+        "Duration",
+        "MrCoef",
+        "TauntDuration"
+      ]
+    },
+    {
+      "champion": "siege_breaker",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Bonus",
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "siege_breaker",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "siege_breaker",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Attack",
+        "AttackSpeed",
+        "MoveSpeed",
+        "Time"
+      ]
+    },
+    {
+      "champion": "soldier",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "GrowthRange"
+      ]
+    },
+    {
+      "champion": "soldier",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "soldier",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Decay",
+        "Range"
+      ]
+    },
+    {
+      "champion": "spellbreaker",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "Time"
+      ]
+    },
+    {
+      "champion": "spellbreaker",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Reduce",
+        "Time"
+      ]
+    },
+    {
+      "champion": "spellbreaker",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "BlockTime",
+        "BonusDamage",
+        "Coef",
+        "Damage",
+        "Range",
+        "Stun"
+      ]
+    },
+    {
+      "champion": "spirit_caller",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Duration",
+        "Heal",
+        "HealRatio",
+        "SpeedUp"
+      ]
+    },
+    {
+      "champion": "spirit_caller",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "DefCoef",
+        "DefDown",
+        "Duration",
+        "MrCoef",
+        "MrDown",
+        "Slow"
+      ]
+    },
+    {
+      "champion": "spirit_caller",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "AttackSpeed",
+        "Damage",
+        "DamageCoef",
+        "Shield",
+        "ShieldCoef",
+        "StunTime"
+      ]
+    },
+    {
+      "champion": "strongman",
+      "slot": 0,
+      "key": "Q",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Stun"
+      ]
+    },
+    {
+      "champion": "strongman",
+      "slot": 1,
+      "key": "W",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "strongman",
+      "slot": 2,
+      "key": "R",
+      "definition": "data",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Radius",
+        "SelfStun",
+        "Shield",
+        "ShieldTime",
+        "Stun"
+      ]
+    },
+    {
+      "champion": "swordman",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "swordman",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "swordman",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Range"
+      ]
+    },
+    {
+      "champion": "taoist",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time",
+        "TimeCoef"
+      ]
+    },
+    {
+      "champion": "taoist",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time",
+        "TimeCoef"
+      ]
+    },
+    {
+      "champion": "taoist",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "vampire",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Heal",
+        "Stack"
+      ]
+    },
+    {
+      "champion": "vampire",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Stack",
+        "Value"
+      ]
+    },
+    {
+      "champion": "vampire",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "DamageCoef",
+        "Heal",
+        "Range"
+      ]
+    },
+    {
+      "champion": "voodoo_shaman",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "AtkSpd",
+        "AtkSpdTime",
+        "Coef",
+        "Damage",
+        "Slow",
+        "Time"
+      ]
+    },
+    {
+      "champion": "voodoo_shaman",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "HitCoef",
+        "HitDmg",
+        "Max",
+        "Time"
+      ]
+    },
+    {
+      "champion": "voodoo_shaman",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Duration",
+        "HpRatio"
+      ]
+    },
+    {
+      "champion": "werewolf",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "HealRatio"
+      ]
+    },
+    {
+      "champion": "werewolf",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "werewolf",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "BleedCoef",
+        "BleedDamage",
+        "BleedTime",
+        "Coef",
+        "Damage",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "whip_master",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "HpRatio"
+      ]
+    },
+    {
+      "champion": "whip_master",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "whip_master",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration"
+      ]
+    },
+    {
+      "champion": "white_mage",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "white_mage",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Slow",
+        "SlowTime"
+      ]
+    },
+    {
+      "champion": "white_mage",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Time"
+      ]
+    },
+    {
+      "champion": "wind_mage",
+      "slot": 0,
+      "key": "Q",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage",
+        "Duration",
+        "MoveSpeed",
+        "Range",
+        "Tick"
+      ]
+    },
+    {
+      "champion": "wind_mage",
+      "slot": 1,
+      "key": "W",
+      "definition": "builtin",
+      "template_parameters": [
+        "Coef",
+        "Damage"
+      ]
+    },
+    {
+      "champion": "wind_mage",
+      "slot": 2,
+      "key": "R",
+      "definition": "builtin",
+      "template_parameters": [
+        "AirborneTime",
+        "Coef",
+        "Damage"
+      ]
+    }
+  ]
+}

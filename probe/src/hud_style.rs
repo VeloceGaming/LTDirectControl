@@ -20,10 +20,25 @@ fn advance(c: char, size: f32) -> f32 {
     f32::from(*metrics.get(&(c as u32).to_string()).unwrap_or(&1000)) * size / 1000.
 }
 pub fn width(text: &str, size: f32) -> f32 {
-    crate::tooltips::plain(text)
-        .chars()
-        .map(|c| advance(c, size))
-        .sum()
+    let mut remaining = text;
+    let mut width = 0.;
+    while !remaining.is_empty() {
+        if remaining.starts_with('<') {
+            if let Some(end) = remaining.find('>') {
+                // Inline images occupy a glyph box in the native label. Leave
+                // a shaping margin rather than treating them as zero width.
+                if remaining.starts_with("<i#asset/") {
+                    width += size * 1.2;
+                }
+                remaining = &remaining[end + 1..];
+                continue;
+            }
+        }
+        let c = remaining.chars().next().expect("nonempty text");
+        width += advance(c, size);
+        remaining = &remaining[c.len_utf8()..];
+    }
+    width
 }
 /// Break Latin at word boundaries and CJK between glyphs, retaining color tags.
 /// A small margin accommodates native shaping/kerning differences.
@@ -46,6 +61,9 @@ pub fn wrap(text: &str, size: f32, available: f32) -> (String, usize) {
     let mut tag = false;
     for c in text.chars() {
         if c == '<' {
+            // Separate tags from words: an image is a real wrapping token,
+            // while color/reset tags have zero advance.
+            flush(&mut token, &mut out, &mut line, &mut lines);
             tag = true;
             token.push(c);
             continue;
@@ -54,6 +72,7 @@ pub fn wrap(text: &str, size: f32, available: f32) -> (String, usize) {
             token.push(c);
             if c == '>' {
                 tag = false;
+                flush(&mut token, &mut out, &mut line, &mut lines);
             }
             continue;
         }

@@ -10,7 +10,10 @@ use crate::{
 use mod_api_stable::{SettingTargetV1, StableClient};
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{
+        atomic::{AtomicI32, Ordering},
+        Arc, Mutex, OnceLock,
+    },
     time::{Duration, Instant},
 };
 
@@ -26,6 +29,9 @@ const SKILL_STEP: usize = 88;
 const SKILL_SIZE: usize = 80;
 const ITEM_Y: usize = 100;
 const ITEM_SIZE: usize = 36;
+pub static TOOLTIP_SCROLL: AtomicI32 = AtomicI32::new(0);
+/// Overflow panel and its source tile, in screen coordinates, for wheel routing.
+pub static TOOLTIP_SCROLL_AREA: Mutex<Option<(Rect, Rect)>> = Mutex::new(None);
 
 fn death_countdown(alive: bool, ticks: usize) -> String {
     if alive {
@@ -456,7 +462,7 @@ fn template() -> String {
     s.push_str("#feedback:color { x: 700px; y: -42px; width: 520px; height: 30px; z: 1112; color: #1e1e1df0; visible: false; ignore_event: true; #text:label { @\"asset/base/style/main#label\"; x: 10px; width: 500px; height: 30px; z: 1113; size: 16; color: #cbc9c7ff; ignore_event: true; } }\n");
     s.push_str(r##"#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #1e1e1dd9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
         #art:color { x: 16px; y: 24px; width: 48px; height: 48px; z: 1111; color: #00000000; ignore_event: true; #icon:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } #png:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } }
-        #title:label { @"asset/base/style/main#label"; x: 76px; y: 23px; width: 419px; height: 32px; z: 1112; size: 27; color: #ffffffff; ignore_event: true; }
+        #title:label { @"asset/base/style/main#label"; x: 76px; y: 23px; width: 419px; height: 32px; z: 1112; size: 27; line_height: 32; align_y: Top; color: #ffffffff; ignore_event: true; }
         #meta:label { @"asset/base/style/main#label"; x: 100px; y: 61px; width: 150px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
         #range:label { @"asset/base/style/main#label"; x: 208px; y: 61px; width: 100px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
         #key:label { @"asset/base/style/main#label"; x: 487px; y: 8px; width: 26px; height: 26px; z: 1112; size: 21; color: #d6d6d66b; ignore_event: true; }
@@ -464,7 +470,9 @@ fn template() -> String {
         #meta_range:image { x: 180px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control_probe/ui/ef_range"; color: #d6d6d675; z: 1112; ignore_event: true; }
         #status:image { x: 16px; y: 16px; width: 24px; height: 24px; source: "asset/lt_direct_control_probe/ui/ef_unavailable"; z: 1112; visible: false; ignore_event: true; }
         #rule:color { x: 16px; y: 98px; width: 501px; height: 1px; z: 1111; color: #ffffff3b; ignore_event: true; }
-        #text:label { @"asset/base/style/main#label"; x: 16px; y: 106px; width: 501px; height: 100px; z: 1111; size: 20; color: #d6d6d6ff; ignore_event: true; }
+        #text:label { @"asset/base/style/main#label"; x: 16px; y: 106px; width: 501px; height: 100px; z: 1111; size: 20; line_height: 28; align_y: Top; color: #d6d6d6ff; ignore_event: true; }
+        #scroll_track:color { width: 3px; z: 1112; color: #ffffff30; visible: false; ignore_event: true; }
+        #scroll_thumb:color { width: 3px; z: 1113; color: #d6d6d6aa; visible: false; ignore_event: true; }
     } }"##);
     crate::hud_style::fonts(s)
 }
@@ -501,6 +509,8 @@ pub struct HudUi {
     item_read: Option<Instant>,
     hover: Option<(String, Instant)>,
     tooltip_text: HashMap<String, String>,
+    tooltip_source: Option<(bool, usize)>,
+    tooltip_layout: crate::tooltip_layout::Layout,
     motion: crate::hud_motion::Motion,
     cooldown_peak: [usize; 3],
     motion_identity: Option<(MatchKey, usize)>,
@@ -1012,8 +1022,33 @@ impl HudUi {
                     self.tile_hover(ctx, &node, Some(cursor))
                 })
         });
+        // Keep the card open when entering it to read or scroll. The small
+        // bridge below it covers the gap from the originating HUD tile.
+        let hovered = hovered.or_else(|| {
+            let (skill, i) = self.tooltip_source?;
+            if !skill
+                && i != crate::inventory::PURCHASE
+                && i >= s.items.len().min(self.allocated_slots)
+            {
+                return None;
+            }
+            let (x, y, w, h) = ctx.ui_node_rect(&format!("{PATH}.tooltip"))?;
+            (ctx.ui_visible(&format!("{PATH}.tooltip")) == Some(true)
+                && cursor.is_some_and(|p| {
+                    Rect {
+                        x,
+                        y,
+                        w,
+                        h: h + 24.,
+                    }
+                    .contains(p)
+                }))
+            .then_some((skill, i))
+        });
+        let mut notches = TOOLTIP_SCROLL.swap(0, Ordering::Relaxed);
         let Some((skill, i)) = hovered else {
             self.hover = None;
+            self.tooltip_source = None;
             self.props(ctx, "tooltip", "visible: false;".into(), log);
             return;
         };
@@ -1026,12 +1061,19 @@ impl HudUi {
         };
         if self.hover.as_ref().is_none_or(|(old, _)| old != &key) {
             self.hover = Some((key.clone(), Instant::now()));
+            self.tooltip_layout.reset_scroll();
+            notches = 0;
         }
+        self.tooltip_source = Some((skill, i));
         if key == "purchase" {
             self.tooltip_text
                 .insert(key.clone(), self.purchase_tooltip.clone());
         }
-        if !self.tooltip_text.contains_key(&key) {
+        // Native results arrive on the next viewer callback. Refresh eligible
+        // skill text even while hovered; item and other champion caches stay put.
+        if !self.tooltip_text.contains_key(&key)
+            || (skill && crate::native_tooltips::enabled_for(&s.champion))
+        {
             let text = if skill {
                 let spec = self
                     .custom_icons
@@ -1042,11 +1084,13 @@ impl HudUi {
             } else {
                 crate::tooltips::item(ctx, &s.items[i], self.item_spec(&s.items[i]))
             };
-            log.write(&format!(
-                "HUD TOOLTIP key={key} chars={}",
-                text.chars().count()
-            ));
-            self.tooltip_text.insert(key.clone(), text);
+            if self.tooltip_text.get(&key) != Some(&text) {
+                log.write(&format!(
+                    "HUD TOOLTIP key={key} chars={}",
+                    text.chars().count()
+                ));
+                self.tooltip_text.insert(key.clone(), text);
+            }
         }
         let full = self.tooltip_text[&key].clone();
         let (raw_title, body) = full.split_once('\n').unwrap_or((&full, ""));
@@ -1090,6 +1134,8 @@ impl HudUi {
             "tooltip.range",
             "tooltip.text",
             "tooltip.key",
+            "tooltip.scroll_track",
+            "tooltip.scroll_thumb",
         ] {
             self.props(ctx, node, format!("visible: {};", !compact), log);
         }
@@ -1105,18 +1151,91 @@ impl HudUi {
             let (title, lines) = crate::hud_style::wrap(title, 20., width - 64.);
             let height = lines * 26 + 32;
             self.props(ctx,"tooltip",format!("visible: true; x: {}px; y: {}px; width: {width:.2}px; height: {height}px; color: #1e1e1d{alpha:02x};",1556.-width,78.-height as f32),log);
-            self.props(ctx,"tooltip.title",format!("x: 52px; y: 16px; width: {}px; height: {}px; size: 20; color: #ffffff{ink:02x};",width-64.,height-32),log);
+            self.props(ctx,"tooltip.title",format!("x: 52px; y: 16px; width: {}px; height: {}px; size: 20; line_height: 26; color: #ffffff{ink:02x};",width-64.,height-32),log);
             self.text(ctx, "tooltip.title", title, log);
             return;
         }
         let left = if has_art { 76. } else { 16. };
-        let (title, title_lines) = crate::hud_style::wrap(title, 27., 495. - left);
-        let extra = (title_lines.saturating_sub(1) * 32) as f32;
-        let (body, lines) = crate::hud_style::wrap(body, 20., 501.);
-        let height = (lines * 28 + 122 + extra as usize).clamp(167, 880);
-        self.props(ctx,"tooltip",format!("visible: true; x: {}px; y: {}px; width: 529px; height: {height}px; color: #1e1e1d{alpha:02x};",if skill{730}else{1027},if skill{-8-height as i32}else{78-height as i32}),log);
-        self.props(ctx,"tooltip.title",format!("x: {left}px; y: 23px; width: {}px; height: {}px; size: 27; color: #ffffff{ink:02x};",495.-left,32.*title_lines as f32),log);
+        let bottom = (1080 - HEIGHT) as f32 + if skill { -8. } else { 78. };
+        self.tooltip_layout.prepare(
+            title,
+            body,
+            has_art,
+            (bottom - crate::tooltip_layout::TOP) as usize,
+        );
+        self.tooltip_layout.scroll(notches);
+        let width = self.tooltip_layout.width;
+        let height = self.tooltip_layout.height;
+        let title_lines = self.tooltip_layout.title_lines;
+        let title = self.tooltip_layout.title.clone();
+        let body = self.tooltip_layout.text();
+        let extra = self.tooltip_layout.extra as f32;
+        let max_scroll = self.tooltip_layout.max();
+        let x = if skill { 730 } else { 1556 - width };
+        let y = if skill {
+            -8 - height as i32
+        } else {
+            78 - height as i32
+        };
+        self.props(ctx,"tooltip",format!("visible: true; x: {x}px; y: {y}px; width: {width}px; height: {height}px; color: #1e1e1d{alpha:02x};"),log);
+        self.props(ctx,"tooltip.title",format!("x: {left}px; y: 23px; width: {}px; height: {}px; size: 27; line_height: 32; color: #ffffff{ink:02x};",width as f32-34.-left,32.*title_lines as f32),log);
         self.text(ctx, "tooltip.title", title, log);
+        self.props(
+            ctx,
+            "tooltip.rule",
+            format!("width: {}px;", width - 32),
+            log,
+        );
+        self.props(ctx, "tooltip.key", format!("x: {}px;", width - 42), log);
+        for node in ["tooltip.scroll_track", "tooltip.scroll_thumb"] {
+            self.props(ctx, node, format!("visible: {};", max_scroll > 0), log);
+        }
+        if max_scroll > 0 {
+            let view = (self.tooltip_layout.page * crate::tooltip_layout::LINE) as f32;
+            let thumb = (view * self.tooltip_layout.page as f32
+                / (self.tooltip_layout.page + max_scroll) as f32)
+                .max(24.);
+            let top = 106. + extra;
+            let thumb_y =
+                top + (view - thumb) * self.tooltip_layout.first as f32 / max_scroll as f32;
+            self.props(
+                ctx,
+                "tooltip.scroll_track",
+                format!("x: {}px; y: {top}px; height: {view}px;", width - 10),
+                log,
+            );
+            self.props(
+                ctx,
+                "tooltip.scroll_thumb",
+                format!("x: {}px; y: {thumb_y}px; height: {thumb}px;", width - 10),
+                log,
+            );
+            let tile = if skill {
+                format!("skill{i}")
+            } else if i == crate::inventory::PURCHASE {
+                "next".into()
+            } else {
+                format!("item{i}")
+            };
+            if let Some((tx, ty, tw, th)) = ctx.ui_node_rect(&format!("{PATH}.{tile}")) {
+                if let Ok(mut area) = TOOLTIP_SCROLL_AREA.lock() {
+                    *area = Some((
+                        Rect {
+                            x: x as f32,
+                            y: bottom - height as f32,
+                            w: width as f32,
+                            h: height as f32,
+                        },
+                        Rect {
+                            x: tx,
+                            y: ty,
+                            w: tw,
+                            h: th,
+                        },
+                    ));
+                }
+            }
+        }
         self.props(
             ctx,
             "tooltip.rule",
@@ -1131,9 +1250,10 @@ impl HudUi {
             ctx,
             "tooltip.text",
             format!(
-                "y: {}px; height: {}px; color: #d6d6d6{ink:02x};",
+                "y: {}px; width: {}px; height: {}px; color: #d6d6d6{ink:02x};",
                 106. + extra,
-                height - 122 - extra as usize
+                width - 36,
+                height.saturating_sub(122 + extra as usize)
             ),
             log,
         );
@@ -1296,7 +1416,13 @@ impl HudUi {
         hud: &PlayerHud,
         log: &Logger,
     ) {
+        if let Ok(mut area) = TOOLTIP_SCROLL_AREA.lock() {
+            *area = None;
+        }
         if !active {
+            self.hover = None;
+            self.tooltip_source = None;
+            TOOLTIP_SCROLL.store(0, Ordering::Relaxed);
             self.motion.reset();
             self.motion_identity = None;
             self.spawn_attempted = None;
@@ -1372,6 +1498,9 @@ impl HudUi {
         let back = crate::hud_motion::color(0x3a38_3700, 0x3a38_37ff, tint);
         self.props(ctx, "shop_hit", format!("color: #{back};"), log);
         if !playing {
+            self.hover = None;
+            self.tooltip_source = None;
+            TOOLTIP_SCROLL.store(0, Ordering::Relaxed);
             for i in 0..self.allocated_slots {
                 self.props(ctx, &format!("item{i}"), "visible: false;".into(), log);
             }

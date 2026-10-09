@@ -3,6 +3,123 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 0.74.4 — 2026-10-09
+
+- Tidy-up, no behaviour change: the 0.70 SPRITE CALIBRATION / SPRITE SAMPLE diagnostics are removed (the selection work they served is done). PREVIEW TREE / PREVIEW ROSTER stay until the previews are finished.
+- docs/modding.md covers the match hook (`CooldownHook`), skill-preview decoding and art-measured selection; docs/backlog.md lists what is left.
+
+## 0.74.3 — 2026-10-09
+
+- Skill previews: a timed dash with no effects on units it hits (Candygel R's slide, Nullifier Q) is drawn as cyan movement of its exact length instead of a body-wide corridor; dashes that hit (Harpy R) keep the corridor.
+- Effects scheduled at or after the end of a timed dash in the same skill happen where the dash ends: caster-centred areas and drops at the caster's feet move to the dash end. Candygel R now shows a 42-unit pool at both ends of the slide (dropped at tick 10 and at tick 54 = 10 + 44). Dashes that stop at the first unit (Rush) have no fixed end and are not used.
+- No-cooldown test option: the game's formula is haste-style (0.74.2 test: +99 halved cooldowns), so the buff now uses +900, leaving a tenth of each cooldown.
+
+## 0.74.2 — 2026-10-09
+
+- No-cooldown test option fixed: 0.74.1's -100 cooldown multiplier gave Bomber Q a 300 s cooldown and froze the cast mid-animation. The game's own items reduce cooldowns with positive values (Staff of Rapture and Angel's Fang +10, Prophet of the Abyss +15), so the buff now uses +99 for skill and ultimate, which is safe under either plausible formula (about 1% of the cooldown if linear, about half if haste-style).
+- While the option is on, each cast's remaining cooldown is logged (`TEST no cooldowns cast slot=… remaining_ticks=…`), read from the game, to settle the formula.
+
+## 0.74.1 — 2026-10-09
+
+- Skill previews: a projectile with no effects on units hit in flight (Bomber Q and W, Poison Dart Hunter Q and W, Bard W) draws no corridor, and its end effects land where the cast is aimed (new placement Landing: the target for unit casts, the aimed point within the flight length for location casts, the full length for direction casts). Bomber Q is now a 20-unit and W a 40-unit circle at the cursor, matching `explosion_range` / `attack_range` in the champion data.
+- Bomber R stays one 25-unit circle (`explosion_range` 25000): in game, the edge of the game's own landing marker (about 50 units, drawn at twice the damage size) takes no damage while the halfway point does.
+- Testing aid: Home+End toggles "no cooldowns" for your own champion in the viewed match (new test_cheats.rs). Off at every start and never saved; while on, a match hook keeps one permanent `lt_test_no_cooldowns` buff (skill and ultimate cooldown -100%) on the champion, re-applied after respawn, and removes it when turned off. Background matches are never touched. A red "TEST: no cooldowns" tag is drawn and each toggle is logged. It changes the real match.
+
+## 0.74.0 — 2026-10-09
+
+- Rejected basic attacks now hold position when their target is already within the current native AA range, retaining the target until the attack becomes ready. Out-of-range targets are still approached; range uses the current effect's base, level growth and bonus rather than sprite selection bounds. Native cooldown, windup and damage remain authoritative.
+- F12 hands control to AI without releasing the match coordinator. F11 or the Take control button reclaims the same champion. AI remains paced at 1x with one-frame lead; handoffs clear pending movement/casts and camera gestures, retain the full-screen layout and preserve manual camera/vision choices. Startup cancellation and adapter failures still release permanently for that match. AI spectator pause is respected; reclaim uses the manual pause coordinator.
+- Shop: Everything is now All; the header uses the existing shop bag icon. Purchase controls show only Purchase, Queue or Queue another plus the remaining price, keeping long item names out of the button.
+
+## 0.73.0 — 2026-10-09
+
+- Skill previews decode five more native effect types, named by pairing the logged effect trees with Workshop and data-driven champion JSON (field values checked against those files): RangeProjectile (an area at its placement after a delay), ParabolicProjectile (the landing area at the aim, plus its landing effects), RushTime (a timed dash, speed x ticks long, body wide), SwitchByBuff (the branch without the buff is previewed; the caster's buffs are not read) and MoveToTarget (movement onto the target). No new drawing: each maps onto an existing preview piece.
+- Replaying the 57 logged skill trees: 33 now have a footprint, up from 23 (Alchemist Q, Bomber R, Pyromancer Q and R, Harpy R, Nullifier Q, Candygel W, Squirrel W, Spirit Latcher R, Cavalry Knight Q; Bomber Q and W gain their explosion areas).
+- New docs/preview-drawing.md: what the game's drawing calls can and cannot do, for designing previews; docs/investigation-preview-selection.md lists the named effect types.
+
+## 0.72.3 — 2026-10-09
+
+- Monster names fixed: the game names them `<sheet>_monster` (bee_monster, mushroom_monster, rhino_monster, stump_monster, as logged by 0.72.2), not `_jungle`; the wrong 0.72.2 mapping is removed.
+- Mod champions shipped only as `.aseprite` files (Leef's Variety: Harpy, Nullifier, Candygel and the rest) get measured bodies: the idle frames' pixels are read from the Aseprite file (layer and cel opacity applied; `miniz_oxide` 0.8.9, already built as part of `png`, is now a direct dependency) and the body is placed around the drawn centre with the drawn facing, since the game packs these sheets itself and their atlas positions are unknown. One body per champion (no form switching for these).
+
+## 0.72.2 — 2026-10-09
+
+- Monsters get their measured bodies: native names are `<sheet>_jungle` (as in the game settings), so `bee_jungle` now maps to the `bee` sheet, `tree_jungle` to `stump`, and so on, for both the measured body and the old fallback size table (one shared `sheet_name`). Before this, every monster used the large radius-based fallback box.
+- `SPRITE ART unmatched name=…` is logged once per name for any unit still on the fallback after the art has loaded.
+- 0.72.1 Verbose log: hover picking costs about 25 µs per frame on average, 104 µs at most.
+
+## 0.72.1 — 2026-10-09
+
+- Minions get measured bodies: their shared sheet (UI_aseprite/minion) is loaded as `ui/minion`, and the drawn frame picks the kind. One sheet can now hold several kinds: animations named `<kind>_<tag>` form a kind when a `<kind>_idle`/`_run`/`_walk` exists, and each frame uses its kind's standing body. Minions get 8 bodies (melee/ranged, each side, Morgard); champion forms get their own too (Druid bear/eagle, Demon Archfiend, Berserker, Ghoul berserk, Bombardier deployed, Dokkaebi, Cavalry Knight fire, Gunner forward/backward run).
+- Click padding on measured bodies: champions 3 units wider on each side, every body 2 units below the feet.
+
+## 0.72.0 — 2026-10-09
+
+- Selection bodies measured from the installed art on a background thread at start-up (new sprite_art.rs, `png` 0.17.16): the opaque pixels of each unit type's standing frames, with sideways protrusions trimmed (columns under a quarter of the tallest: guns, spears), keeping heads, hats and raised staffs. Base sheets come from the game bundle, mod champions from their own `#anim.fanim` / `#sheet.png`; towers and the nexus add their orb sheet. Nothing is copied.
+- Placement from the game's own draw data: the outline hook records each unit's drawn centre and body sprites; the drawn frame is found by its atlas position, giving the true anchor and facing (mirrored when flipped). Units without loaded art or a recent draw keep the previous envelope.
+- Hover and click ranking follows the agreed order: enemies before allies, structures last, body hit before edge hit, the previously hovered unit within its tier (stickiness), then the body the cursor is most central on relative to its size, then the unit drawn in front, then a stable id. The blanket champion-first rule is gone; the champion-only key covers fights. Skill target brackets use the same area.
+- Show selection markers now draws each unit's selection area: green for a measured body, grey for the fallback. The 0.70 magenta/cyan overlay is removed; the 0.70 inventory logging remains.
+
+## 0.71.0 — 2026-10-09
+
+- Skill previews decode four more native effect types, identified from the 0.70 effect-tree inventory with layouts checked against every logged instance: Delayed (its effects keep their placement), lingering area projectiles (circle/rectangle at their placement), Rush dashes (a corridor from the caster to the cast range, its hit width from the effect) and MoveTo movement (a line to the aimed point).
+- Linear projectiles with hit radius 0 (they stop at the first unit) are drawn as thin lines instead of being rejected, and their end effects are now read and drawn where the projectile ends: on the target for unit-targeted skills, otherwise at its full flight length (new placement End).
+- Replaying the 60 named skill trees of the two 0.70.1 test matches: 22 now have a footprint, up from 9, including Illusionist W (60-unit fear circle around the caster), Poison Dart Hunter Q (dart and 48-unit poison splash), Ghost Q (movement) and Ghost W (dash).
+
+## 0.70.1 — 2026-10-09
+
+- Diagnostics, no behaviour change. PREVIEW TREE: the viewed match's champions get their own budget (240 lines; each champion's Q/W/R once per match) so background matches (200 lines, each tree shape twice) cannot crowd them out; PREVIEW ROSTER is written once per match instead of once per player.
+- Show selection markers also draws each unit's body sprite placement from the game's draw commands: magenta = full-size sprite centred on the unit, cyan = half-size from its corner to the unit, beside the existing hover markers, to settle which matches the art.
+
+## 0.70.0 — 2026-10-09
+
+- Diagnostic build for the skill-preview and selection work (no behaviour change). PREVIEW TREE: the Q/W/R effect trees of champions in the viewed match and in background matches, with each node's apply function, size and raw payload words, children followed only beside game-owned effect tables and into memory confirmed readable; each entity once per thread, each tree shape at most three times, at most 300 lines. PREVIEW ROSTER: actor id to champion for the viewed match.
+- SPRITE CALIBRATION / SPRITE SAMPLE: once a minute on the battlefield (at most 10 times) the camera frame and each unit's simulation position and projected screen point, and the next 40 unit draws from the outline hook (view id, drawn position, raw sprite command words).
+
+## 0.69.2 — 2026-10-09
+
+- HUD tooltips grow upward to the available battlefield height, then widen from 529 to 640 or 760 pixels when needed. Descriptions exceeding the largest card scroll in whole lines, with a slim scrollbar; wheel input works over the card or its originating HUD tile without zooming the camera. Moving into the card keeps it open. Font size and weight are unchanged.
+- Explicit native line spacing now matches measured body/title heights. Shared text measurement counts inline stat icons, preserves their source spacing, and wraps adjacent icons; scrolling retains color runs, icons and the final description line. Layout is cached until content or available space changes, including when a native description replaces fallback text.
+- Accepted clicks on unit/structure bodies no longer create the ground cursor animation. The decision uses the click-time picker, including allies, and clears any earlier ground animation. Direct attack orders retain their sprite outline pulse; ground move/attack-move and minimap destination feedback remain available.
+- User confirmed 0.69.1 Ghost and Harpy (mod champion) tooltips worked. Regression checks cover card growth/widening, long multilingual/icon descriptions, scroll clamping/reset/color continuity, target click suppression, retained attack orders/pulses, and ground/minimap marker expiry. Native layout and click feedback await user testing.
+
+## 0.69.1 — 2026-10-09
+
+- Enable native skill descriptions for all champions, retaining the ordinary resolver when native text is unavailable. Expand the checked ChampionInfo implementations from six to 65 by tracing the built-in lookup's return branches; 407 tooltip code/table guards now cover built-in, data-defined and registered mod wrappers. No new hooks, and the tested register/ownership bridge is unchanged.
+- Workshop descriptions can be requested even when the SDK cannot provide a localized template. Open skill tooltips refresh with cached native results; the bounded session/language cache accommodates the complete base skill inventory without clearing pending results after 24 entries.
+- Add structured per-skill coverage diagnostics and tools/audit_tooltips.py. Unresolved parameter names are counted separately from ellipsis punctuation; failed lookups and unobserved skills remain explicit. The refreshed installed bundle contains 204 English Q/W/R description entries across 68 champions. Existing 0.69.0 logs confirm six native results with zero unresolved placeholders; the remaining 198 entries await runtime observation.
+- Regression checks cover all base champion IDs, Workshop text without SDK translation, missing optional skills, cache deduplication, unresolved-parameter parsing, and structured/legacy coverage reports. User confirmed the 0.69.0 Illusionist/Alchemist prototype worked perfectly; broader native rendering/gameplay remains pending user testing.
+
+## 0.69.0 — 2026-10-09
+
+- Guarded native skill-description prototype for Illusionist and Alchemist only. Hovering Q/W/R requests the same localized, parameter-filled description interface used by the game's champion-info screen. Other champions and unavailable native results retain the existing resolver; tooltip typography, metadata and layout stay unchanged.
+- Native access runs after the existing viewer update, on the bound client thread with its borrowed Assets. The register-pair lookup bridge, ChampionInfo Arc release and native String allocation are isolated in the Windows adapter. No new hooks or function patches. Fifty-two additional code/table guards are verified against the reviewed 0.6.3 executable.
+- Owned descriptions are cached per skill, localized template and control-session generation. Pending/failed requests are deduplicated, an already-open tooltip refreshes when its result arrives, and release/new-session transitions discard cached results. Normal logs identify native/fallback results; Verbose logs include returned text for comparison. Native game calls and rendering still require the user's test.
+- Regression checks cover native register returns, stack alignment/shadow space, heap text copies, last-owner Arc cleanup, cache invalidation and stale responses, optional-skill fallback, and refusal of changed tooltip profile guards.
+
+## 0.68.2 — 2026-10-09
+
+- Item descriptions scroll independently beneath the fixed item heading, with a slim scrollbar only when the text overflows. The entire description is reachable without ellipsis truncation; wheel input affects the description or item grid under the pointer. The description resets for a different item, preserves color runs and inline icons across scrolling, and clamps when the available height changes.
+- Regression checks cover reaching the final line, extreme wheel input, item/source changes, viewport resizing, multilingual wrapping, blank lines and color/icon continuity.
+
+## 0.68.1 — 2026-10-09
+
+- Shop path selectors use larger plates with 16px bold text, visible borders and layered contact shadows. Automatic (cheapest) has its own row; Use this path occupies the empty space beside each chain. The selected mode/path has a yellow fill and dark text, without a checkmark, and hover darkens the actual hovered button.
+- Branching chains show five components per page to leave room for the path button; paging retains every component and the fixed event slots. Single-path and vanilla items keep their compact six-column layout and existing purchase behavior.
+
+## 0.68.0 — 2026-10-09
+
+- Recipe prices again show the gold still needed from current inventory, cumulatively along the displayed path (250 → 900 → 1,650), rather than individual upgrade charges. Competing branches use their own costs; a full inventory does not reduce a displayed price to the last upgrade charge.
+- Alternative paths gain Use this path and Automatic (cheapest). A choice is remembered per item for the current match and copied into each new purchase order, including Queue whole build. Buyer decisions, projected purchases, queue prices and the HUD's next purchase all use that order's path. Existing queued orders keep their choice; remove and requeue to change one.
+- A chosen chain reuses the most advanced available owned component on that chain; it never substitutes a different branch. Invalid paths fail closed, and full inventory blocks a new chain. Automatic planning and queue-order rules are unchanged.
+- Vanilla and every single-path item retain the compact linear recipe with no alternate rows, path labels, automatic-route markers or choice controls. Branching is detected from registered item data. Checks cover all 30 vanilla items and six linear chains, cumulative prices, pinned expensive routes through the real buyer interface, projection/HUD consistency, duplicate orders and blocked/invalid paths.
+
+## 0.67.2 — 2026-10-09
+
+- Shop recipes now use a structural upgrade graph instead of the remaining purchase plan: ancestors of owned items and all alternative paths remain accessible, even when buying is blocked or the final item is owned. Two complete chains per page, with path and component navigation for larger trees; alternative rows are explicitly marked OR.
+- Builds Into preserves the branch followed. Auto-buy labels and yellow links identify the cheapest remaining purchase route independently; browsing never forces a more expensive route. Recipe tiles show per-step prices and each row its full-chain total; list/detail/Buy prices keep their existing remaining-cost calculation.
+- Recipe graph and path counts are cached by live catalogue/root; paths are addressed directly without enumerating combinations. Cycles, duplicate and unknown edges are guarded. Regression checks cover the missing base component, alternate Blade routes, browsing across pages, ownership/full-inventory changes, long chains and a graph with over a billion possible chains.
+
 ## 0.67.1 — 2026-10-09
 
 - The HUD strip's next purchase now shows what the buyer will really buy next. With Vanilla order off: the first affordable next part in queue order, or, while none is affordable, the cheapest one (the first gold will reach). With Vanilla order on: the first unfinished item, as before (shop::upcoming replaces first_open).

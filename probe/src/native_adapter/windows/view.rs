@@ -54,6 +54,7 @@ pub(crate) struct CameraLease {
     original_full_width: u8,
     original_ui_full_width: u8,
     effective_vision: u8,
+    ai_camera: bool,
 }
 impl CameraLease {
     pub(crate) unsafe fn capture(view: usize, config: usize, ingame: usize) -> Self {
@@ -68,6 +69,7 @@ impl CameraLease {
             original_full_width: std::ptr::read((config + 0x45) as *const u8),
             original_ui_full_width: std::ptr::read((ingame + 0x9234) as *const u8),
             effective_vision: u8::MAX,
+            ai_camera: false,
         }
     }
     fn matches(&self, view: usize, config: usize) -> bool {
@@ -201,6 +203,22 @@ pub(crate) unsafe fn prepare_camera(
         {
             return;
         }
+        if let Some(saved) = lease.as_mut() {
+            if shared.timing.phase() == Some(crate::native_timing::Phase::Ai) {
+                if !saved.ai_camera {
+                    std::ptr::copy_nonoverlapping(
+                        saved.original.as_ptr(),
+                        (config + 0x18) as *mut u8,
+                        16,
+                    );
+                    std::ptr::write((config + 0x4b) as *mut u8, saved.original_vision);
+                    saved.ai_camera = true;
+                    saved.effective_vision = u8::MAX;
+                }
+                return;
+            }
+            saved.ai_camera = false;
+        }
     } else {
         return;
     }
@@ -317,25 +335,32 @@ pub(crate) unsafe extern "system" fn worker_hook(output: usize, sender: usize, f
     }
 }
 
-/// Snapshot only these three config fields; their borrow belongs to the
+/// Snapshot only these playback fields; their borrow belongs to the
 /// native caller and spans this call. Restore before that borrow is released.
 pub(crate) struct PlaybackOverride {
     config: usize,
     sync: u8,
     mode: u32,
     speed: u32,
+    paused: u8,
 }
 impl PlaybackOverride {
-    pub(crate) unsafe fn apply(config: usize) -> Self {
+    pub(crate) unsafe fn apply(config: usize, manual: bool) -> Self {
         let snapshot = Self {
             config,
             sync: std::ptr::read(config as *const u8),
             mode: std::ptr::read_unaligned((config + 0x10) as *const u32),
             speed: std::ptr::read_unaligned((config + 0x14) as *const u32),
+            paused: std::ptr::read((config + 0x48) as *const u8),
         };
         std::ptr::write(config as *mut u8, 0);
         std::ptr::write_unaligned((config + 0x10) as *mut u32, 0);
         std::ptr::write_unaligned((config + 0x14) as *mut f32, 1.0);
+        // AI spectator pause remains usable. On reclaim, the coordinator's
+        // own Running/Paused phase drives playback even if AI was paused.
+        if manual {
+            std::ptr::write((config + 0x48) as *mut u8, 0);
+        }
         snapshot
     }
 }
@@ -345,6 +370,7 @@ impl Drop for PlaybackOverride {
             std::ptr::write(self.config as *mut u8, self.sync);
             std::ptr::write_unaligned((self.config + 0x10) as *mut u32, self.mode);
             std::ptr::write_unaligned((self.config + 0x14) as *mut u32, self.speed);
+            std::ptr::write((self.config + 0x48) as *mut u8, self.paused);
         }
     }
 }
@@ -373,6 +399,11 @@ pub(crate) unsafe extern "system" fn view_hook(
         ingame_node,
         dt,
     );
+    if let Some(shared) = SHARED.get() {
+        // Native text is resolved after the original update, while this
+        // viewer's Assets borrow is still live. The adapter owns no pointers.
+        tooltips::resolve_pending(view, assets, shared);
+    }
 }
 #[allow(clippy::too_many_arguments)]
 pub(crate) unsafe fn view_hook_body(
@@ -501,7 +532,10 @@ pub(crate) unsafe fn view_hook_body(
         );
         return;
     };
-    let snapshot = PlaybackOverride::apply(config);
+    let snapshot = PlaybackOverride::apply(
+        config,
+        shared.timing.phase() != Some(crate::native_timing::Phase::Ai),
+    );
     if catch_unwind(AssertUnwindSafe(|| {
         prepare_camera(view, config, ingame_ui, mode, dt, shared)
     }))

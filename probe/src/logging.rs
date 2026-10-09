@@ -62,6 +62,7 @@ const VERBOSE: &[&str] = &[
     "NATIVE HOOK_ENTRY",
     "NATIVE SPECTATOR_KEY",
     "NATIVE STACK",
+    "NATIVE TOOLTIP_TEXT",
     "NATIVE TRAFFIC",
     "NAVIGATION ",
     "OUTLINE ",

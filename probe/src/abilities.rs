@@ -1937,6 +1937,7 @@ mod tests {
             body: Some(crate::sprite_picking::Body {
                 width: 24.,
                 height: 40.,
+                art: None,
             }),
         };
         let head = Keys {
@@ -2185,7 +2186,7 @@ mod tests {
         a.update(keys(true, false), true, &c, &log);
         assert_eq!(
             take(&a, &units, |_| true, &log).unwrap().target.target_id,
-            3 // Champion priority also applies when champion-only mode is off.
+            2 // No champion-first rule: the more central body (the minion) wins.
         );
         // Ground, direction, self and no-cursor requests remain native requests.
         for (casting, target, expected) in [

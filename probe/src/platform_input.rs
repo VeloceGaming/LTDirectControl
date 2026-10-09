@@ -38,6 +38,8 @@ pub struct Keys {
     pub abilities: [bool; 3],
     pub recall: bool,
     pub shop: bool,
+    /// Home and End held together (test_cheats; not rebindable).
+    pub home_end: bool,
     /// Current primary/secondary champion-only binding states.
     pub champion_toggle: [bool; 2],
     /// Session-scoped mode resolved by the client before command acquisition.
@@ -181,7 +183,8 @@ pub fn poll() -> Keys {
                 needed[c.code as usize] = true;
             }
         }
-        for i in [1, 0x10, 0x11, 0x12, 0x1b] {
+        // Mouse, modifiers, Esc, and End+Home for the test toggle.
+        for i in [1, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24] {
             needed[i] = true;
         }
         for (i, query) in needed.into_iter().enumerate() {
@@ -206,6 +209,7 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
     let mut keys = Keys {
         focused,
         raw,
+        home_end: raw.0[0x24] && raw.0[0x23],
         cursor,
         mapped: true,
         dx: i8::from(pressed("pan_right")) - i8::from(pressed("pan_left")),
@@ -288,6 +292,14 @@ mod tests {
             champion_toggle: buttons,
             ..Keys::default()
         }
+    }
+    #[test]
+    fn home_and_end_together_make_the_test_chord() {
+        let mut raw = Raw::default();
+        raw.0[0x24] = true;
+        assert!(!mapped(raw, true, None).home_end);
+        raw.0[0x23] = true;
+        assert!(mapped(raw, true, None).home_end);
     }
     #[test]
     fn hold_mode_releases_without_a_second_press_and_drops_on_focus_loss() {

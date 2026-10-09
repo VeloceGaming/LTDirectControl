@@ -11,12 +11,15 @@ use std::{
 pub struct Body {
     pub width: f32,
     pub height: f32,
+    /// The unit type's measured body art (crate::sprite_art), once loaded.
+    pub art: Option<u16>,
 }
 impl Default for Body {
     fn default() -> Self {
         Self {
             width: 28.,
             height: 32.,
+            art: None,
         }
     }
 }
@@ -28,16 +31,77 @@ impl Body {
             .then_some(Self {
                 width: w * 0.5,
                 height: h * 0.5,
+                art: None,
             })
     }
 }
 static PROFILES: OnceLock<HashMap<String, Body>> = OnceLock::new();
 static BASE: OnceLock<Value> = OnceLock::new();
+static LOG: OnceLock<std::sync::Arc<Logger>> = OnceLock::new();
+/// Unit names already reported without measured art (each logged once).
+static UNMATCHED: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec::new());
 pub fn body(name: Option<&str>) -> Body {
     name.and_then(|name| PROFILES.get()?.get(name).copied())
         .unwrap_or_default()
 }
+/// A unit's selection body: the measured art when loaded (placed live by
+/// crate::sprite_art), with the bounded envelope below as the fallback.
 pub fn entity_body(
+    name: Option<&str>,
+    champion: bool,
+    minion: bool,
+    tower: bool,
+    radius: u64,
+) -> Option<Body> {
+    let mut body = envelope_body(name, champion, minion, tower, radius)?;
+    body.art = art_key(name, champion, minion).and_then(|k| crate::sprite_art::index(&k));
+    if body.art.is_none() && crate::sprite_art::loaded() {
+        report_unmatched(name.unwrap_or("<unnamed>"));
+    }
+    Some(body)
+}
+/// Log once per name a unit that keeps the fallback box although the art is
+/// loaded, so a missing name mapping shows up in the log.
+fn report_unmatched(name: &str) {
+    let Ok(mut seen) = UNMATCHED.lock() else {
+        return;
+    };
+    if seen.len() >= 64 || seen.iter().any(|n| n == name) {
+        return;
+    }
+    seen.push(name.to_owned());
+    if let Some(log) = LOG.get() {
+        log.write(&format!("SPRITE ART unmatched name={name:?}"));
+    }
+}
+/// The base sheet name of a native non-champion unit name. Native names are
+/// generic ("tower", "bee_monster"); the renderer maps them to side-specific
+/// or differently named art, and both sides share body dimensions.
+fn sheet_name(name: &str) -> &str {
+    let n = name
+        .rsplit('/')
+        .next()
+        .unwrap_or(name)
+        .trim_end_matches("#anim");
+    match n.strip_suffix("_monster").unwrap_or(n) {
+        "tower" | "red_tower" => "blue_tower",
+        "nexus" | "red_nexus" => "blue_nexus",
+        other => other,
+    }
+}
+/// The art key of a unit type: champions by name, minions their shared
+/// sheet (the drawn frame picks the kind), other units "ingame/<name>".
+fn art_key(name: Option<&str>, champion: bool, minion: bool) -> Option<String> {
+    if minion {
+        return Some("ui/minion".into());
+    }
+    let name = name?;
+    if champion {
+        return Some(name.to_owned());
+    }
+    Some(format!("ingame/{}", sheet_name(name)))
+}
+fn envelope_body(
     name: Option<&str>,
     champion: bool,
     minion: bool,
@@ -53,16 +117,10 @@ pub fn entity_body(
         return Some(Body {
             width: 12.5,
             height: 13.5,
+            art: None,
         });
     }
-    let name = name.map(|n| n.rsplit('/').next().unwrap_or(n).trim_end_matches("#anim"));
-    // Native entity names are generic; the renderer maps them to side-specific
-    // art. Both sides have matching body dimensions. Keep this mapping here.
-    let name = name.map(|n| match n {
-        "tower" => "blue_tower",
-        "nexus" => "blue_nexus",
-        other => other,
-    });
+    let name = name.map(sheet_name);
     let structure = tower
         || matches!(
             name,
@@ -88,6 +146,7 @@ pub fn entity_body(
             Body {
                 width: profile.width * 2.,
                 height: profile.height * 2.,
+                art: None,
             }
         } else {
             profile
@@ -97,6 +156,7 @@ pub fn entity_body(
         return Some(Body {
             width: 48.,
             height: 80.,
+            art: None,
         });
     }
     // Unknown/modded monsters have no declared champion art. Use a bounded
@@ -105,17 +165,21 @@ pub fn entity_body(
     Some(Body {
         width,
         height: width * 1.25,
+        art: None,
     })
 }
-pub fn initialize(log: &Logger) {
+pub fn initialize(log: &std::sync::Arc<Logger>) {
     let Some(game) = std::env::current_exe()
         .ok()
         .and_then(|exe| exe.parent().map(Path::to_owned))
     else {
         return;
     };
-    let profiles = load(&game, log);
+    let mut art = Vec::new();
+    let profiles = load(&game, log, &mut art);
     let _ = PROFILES.set(profiles);
+    let _ = LOG.set(log.clone());
+    crate::sprite_art::start(game, art, log.clone());
 }
 fn normal(name: &str) -> bool {
     let name = name.to_ascii_lowercase();
@@ -329,7 +393,12 @@ fn sprite(root: &Path, id: &str, source: &str) -> Option<Body> {
     }
     aseprite(&std::fs::read(source).ok()?)
 }
-fn load(game: &Path, log: &Logger) -> HashMap<String, Body> {
+/// `art` collects each mod champion's sprite: its own files, or a base sheet.
+fn load(
+    game: &Path,
+    log: &Logger,
+    art: &mut Vec<(String, crate::sprite_art::Source)>,
+) -> HashMap<String, Body> {
     let value: Value =
         serde_json::from_str(include_str!("picking_assets.json")).expect("base sprite dimensions");
     let mut profiles: HashMap<_, _> = value
@@ -355,6 +424,15 @@ fn load(game: &Path, log: &Logger) -> HashMap<String, Body> {
             let Some(name) = v.get("id").and_then(Value::as_str) else {
                 continue;
             };
+            if let Some(source) = v.get("sprite").and_then(Value::as_str) {
+                if let Some(base) = owned(&root, &id, source) {
+                    art.push((name.into(), crate::sprite_art::Source::Files(base)));
+                } else if let Some(file) =
+                    source.strip_prefix("asset/base/aseprite_resources/champions/")
+                {
+                    art.push((name.into(), crate::sprite_art::Source::Base(file.into())));
+                }
+            }
             let profile = v
                 .get("sprite")
                 .and_then(Value::as_str)
@@ -387,7 +465,8 @@ mod tests {
             fallback,
             Body {
                 width: 48.,
-                height: 80.
+                height: 80.,
+                art: None,
             }
         );
         // Nexus may not have the tower flag; known structure art still uses
@@ -407,13 +486,25 @@ mod tests {
             entity_body(Some("tower"), false, false, true, 1000),
             Some(Body {
                 width: 31.,
-                height: 63.
+                height: 63.,
+                art: None,
             })
         );
         assert_ne!(
             entity_body(Some("nexus"), false, false, false, 1000),
             Some(fallback)
         );
+    }
+    #[test]
+    fn native_unit_names_map_to_their_sheets() {
+        // Names as logged by 0.72.2 (SPRITE ART unmatched).
+        assert_eq!(sheet_name("bee_monster"), "bee");
+        assert_eq!(sheet_name("mushroom_monster"), "mushroom");
+        assert_eq!(sheet_name("rhino_monster"), "rhino");
+        assert_eq!(sheet_name("stump_monster"), "stump");
+        assert_eq!(sheet_name("tower"), "blue_tower");
+        assert_eq!(sheet_name("red_nexus"), "blue_nexus");
+        assert_eq!(sheet_name("asset/x/rhino#anim"), "rhino");
     }
     #[test]
     fn bundled_monsters_stay_unchanged_and_champions_cap_combat_poses() {
@@ -503,7 +594,8 @@ mod tests {
             aseprite(&bytes),
             Some(Body {
                 width: 20.,
-                height: 30.
+                height: 30.,
+                art: None,
             })
         );
         // Corrupt chunk cannot cause an unbounded walk or oversized click box.
@@ -520,7 +612,8 @@ mod tests {
             fanim(&value),
             Some(Body {
                 width: 28.75,
-                height: 30.
+                height: 30.,
+                art: None,
             })
         );
         assert!(Body::pixels(f32::NAN, 20.).is_none());
@@ -534,7 +627,7 @@ mod tests {
             return;
         };
         let log = crate::test_support::logger("installed-picking");
-        let p = load(Path::new(&game), &log);
+        let p = load(Path::new(&game), &log, &mut Vec::new());
         assert!(p["ogre"].height > p["lancer"].height);
         assert_ne!(p["harpy"], Body::default());
         assert_ne!(p["cf_archangel"], Body::default());

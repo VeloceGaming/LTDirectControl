@@ -1,6 +1,6 @@
 [package]
 name = "lt_direct_control_probe"
-version = "0.67.1"
+version = "0.74.4"
 edition = "2021"
 publish = false
 
@@ -10,5 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 mod-api-stable = { path = "../sdk/mod-api-stable" }
 serde_json = "=1.0.151"
+png = "=0.17.16"
+miniz_oxide = "=0.8.9"
 
 [workspace]

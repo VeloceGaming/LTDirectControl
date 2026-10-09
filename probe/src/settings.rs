@@ -299,7 +299,7 @@ pub static BINDINGS: &[BindingDef] = &[
     bind!(
         "start",
         "Control & camera",
-        "Start, pause or resume control",
+        "Start, pause, resume or reclaim control",
         0x7a,
         0
     ),

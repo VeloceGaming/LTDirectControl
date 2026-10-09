@@ -274,12 +274,13 @@ pub fn resolve(text: &str, spec: Option<&Value>) -> String {
     out.push_str(rest);
     rich(&out)
 }
-pub fn skill_spec(champion: &str, slot: usize, spec: &Value) -> Option<Value> {
+fn skill_definition(slot: usize, spec: &Value) -> Option<&Value> {
     let tag = ["skill", "skill2", "ult"][slot];
-    let mut value = spec
-        .get(tag)
-        .or_else(|| (slot == 0).then(|| spec.get("skill1")).flatten())?
-        .clone();
+    spec.get(tag)
+        .or_else(|| (slot == 0).then(|| spec.get("skill1")).flatten())
+}
+pub fn skill_spec(champion: &str, slot: usize, spec: &Value) -> Option<Value> {
+    let mut value = skill_definition(slot, spec)?.clone();
     // Ghost's takedown bonuses are declared on the champion, outside Q.
     if champion == "ghost" && slot == 0 && value.is_object() {
         for key in ["add_attack", "add_attack_speed", "heal"] {
@@ -308,15 +309,31 @@ pub fn skill(ctx: &StableClient<'_>, champion: &str, slot: usize, spec: Option<&
     )
     .unwrap_or_else(|| key.into());
     let fallback = format!("#asset/base/text/champion?description.{champion}.{tag}");
-    let parameters = spec.and_then(|s| skill_spec(champion, slot, s));
-    let reference = parameters
-        .as_ref()
+    let reference = spec
+        .and_then(|s| skill_definition(slot, s))
         .and_then(|s| s.get("description"))
         .and_then(Value::as_str)
         .unwrap_or(&fallback);
-    let description = translated(ctx, reference).map_or("—".into(), |s| {
-        resolve_skill(&s, champion, slot, parameters.as_ref())
+    let template = translated(ctx, reference);
+    // A Workshop action can supply native text without a template accessible
+    // through the SDK. Still request it, and retain a localized cache identity.
+    let identity = template.clone().unwrap_or_else(|| {
+        let locale = translated(
+            ctx,
+            "#asset/base/text/champion?description.illusionist.skill",
+        )
+        .unwrap_or_default();
+        format!("{reference}\n{locale}")
     });
+    let description = crate::native_tooltips::description(champion, slot, &identity)
+        .map(|s| rich_with_icons(&s))
+        .unwrap_or_else(|| {
+            // Clone nested effect data only when fallback is actually needed.
+            let parameters = spec.and_then(|s| skill_spec(champion, slot, s));
+            template.map_or("—".into(), |s| {
+                resolve_skill(&s, champion, slot, parameters.as_ref())
+            })
+        });
     let title = if name == key {
         key.into()
     } else {
@@ -364,6 +381,26 @@ pub fn item(ctx: &StableClient<'_>, key: &str, spec: Option<&Value>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn native_workshop_text_does_not_require_an_sdk_localized_template() {
+        let mut asset: mod_api_stable::AssetVtableV1 = unsafe { std::mem::zeroed() };
+        asset.size = std::mem::size_of_val(&asset);
+        let mut raw: mod_api_stable::ClientCtxV1 = unsafe { std::mem::zeroed() };
+        raw.size = std::mem::size_of_val(&raw);
+        raw.asset = &asset;
+        let ctx = unsafe { StableClient::from_raw(&mut raw) }.unwrap();
+        crate::native_tooltips::observe(42, true);
+        assert_eq!(skill(&ctx, "workshop/new", 0, None), "Q\n\n—");
+        let request =
+            crate::native_tooltips::take(42).expect("native request despite absent SDK text");
+        assert_eq!(request.champion, "workshop/new");
+        crate::native_tooltips::publish(request, Some("Deals <#ff9933ff>80<> damage.".into()));
+        assert_eq!(
+            skill(&ctx, "workshop/new", 0, None),
+            "Q\n\nDeals <#ff9933ff>80<> damage."
+        );
+        crate::native_tooltips::observe(42, false);
+    }
     #[test]
     fn ghost_native_q_root_bonuses_and_w_recasts_resolve_without_guessing_seconds() {
         let root = base_champion("ghost").unwrap();

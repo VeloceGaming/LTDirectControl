@@ -73,6 +73,24 @@ mod windows {
                     msg.lparam = 0;
                     return CallNextHookEx(0, code, removed, message);
                 }
+                let over_tooltip = keys.focused
+                    && keys.cursor.is_some_and(|p| {
+                        crate::player_hud::TOOLTIP_SCROLL_AREA
+                            .lock()
+                            .is_ok_and(|area| {
+                                area.is_some_and(|(panel, tile)| {
+                                    panel.contains(p) || tile.contains(p)
+                                })
+                            })
+                    });
+                if over_tooltip {
+                    let delta = ((msg.wparam >> 16) as u16 as i16) as i32;
+                    crate::player_hud::TOOLTIP_SCROLL.fetch_add(delta / 120, Ordering::Relaxed);
+                    msg.message = 0;
+                    msg.wparam = 0;
+                    msg.lparam = 0;
+                    return CallNextHookEx(0, code, removed, message);
+                }
                 let battlefield = keys.focused
                     && !crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed)
                     && CAMERA.get().is_some_and(|camera| {

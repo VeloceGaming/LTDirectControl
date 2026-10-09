@@ -1,33 +1,53 @@
 # Backlog
 
-Reported by the user; to do after the codebase clean-up (stages 5–6 of
-[codebase-review-66.md](codebase-review-66.md)).
+What is left to do, as of 0.74.4 (2026-10-09). Finished and declined items
+are listed at the end for reference.
 
-1. **Ability tooltip numbers show "…".** Example (2026-10-09, 0.66.1): the
-   Illusionist's R ("Copy": an ally illusion lasting … seconds) and Q
-   ("charm bolt": 60 + …% magic attack, taunt for … seconds). Seen often,
-   across many champions. Start in `probe/src/tooltips.rs`; its doc says
-   unknown formula parameters stay visibly unknown, so these values are
-   probably not found in the data it reads.
-2. **Done in 0.67.0.** **F11 should also pause.** Today F11 starts or resumes control; pressing
-   it while running should pause, so one key toggles.
-3. **Done in 0.67.0 (Vanilla order, default on).** **Shop design: queued items buy small components.** With several items
-   queued, each affordable next step is bought at once, so slots fill with
-   cheap components instead of saving gold for a bigger upgrade. User
-   decision (2026-10-09): offer "first order first" as an option. That is
-   the vanilla buying behaviour (finish one item before starting the next):
-   only the first unfinished order buys; later orders wait.
-4. **Won't do (user, 2026-10-09: too much work for a small thing).** **Esc on the shop also opens the game's Esc menu.** While the shop or
-   the mod's Settings window is open, Esc should only close that window.
-   Otherwise Esc must keep opening the game's menu (quit, game settings).
-   Finding (0.67): the spectator-key hook already suppresses Esc during
-   control (game key code 0x37; the game's key table is Left, Right, Up,
-   Down, Tab, A-Z, Space, LShift, LCtrl, Num1-8, F1-F12, Enter, Escape, ...),
-   yet the menu still opens, so the game opens it through another path. The
-   SDK cannot consume keys. Fixing it needs that path found and hooked:
-   a reverse-engineering task.
-5. **Skill previews are wrong for many skills.** The aim/range previews
-   (`probe/src/skill_preview.rs`, `native_preview.rs`, `preview_assets.json`)
-   do not match the real skill for a large number of champions, and fixing
-   them one by one by hand is not realistic. Needs a dedicated focus session:
-   find a general way to derive each preview from the game's own skill data.
+## Open
+
+1. **Skill preview redesign.** The user is redesigning the previews from
+   [preview-drawing.md](preview-drawing.md). Before building it, a small
+   drawing test build should confirm in game what that sheet marks as
+   untried: very wide lines, `draw_svg` and `draw_sprite`. Then the preview
+   look moves into a layered renderer: each preview piece (area, corridor,
+   cone, movement, range ring, target) becomes a list of layers in a style
+   file, built to the design.
+2. **Skill previews still missing** for base-game skills built from effect
+   types no JSON names yet: Gunner Q and R, Bard Q and R, Exorcist R,
+   Cavalry Knight R, and an unknown `1ad9600/48` inside Executioner W and the
+   Poison Dart Hunter skills. Needs static analysis of the game code, as in
+   0.71. Bard W (changed by the 0.74.1 landing rule) is untested in game.
+   The user keeps observing every champion's preview over time.
+   Known limits, accepted for now: buff-dependent skills (SwitchByBuff)
+   show the unbuffed version; dashes that stop at the first unit (Rush) have
+   no known end; timed dashes are drawn one body wide.
+   Keep the PREVIEW TREE / PREVIEW ROSTER logging until previews are done.
+3. **Ability tooltip numbers ("…").** Native descriptions are enabled for
+   all champions since 0.69.1, with the old resolver as fallback. Of 204
+   localized entries, 6 are confirmed in logs and 198 are unobserved. Needs
+   broader in-game testing. See
+   [investigation-tooltips-native.md](investigation-tooltips-native.md) and
+   `tools/audit_tooltips.py`.
+4. **Emotes.** The last item of the post-shop investigation
+   ([investigation-pass-65.md](investigation-pass-65.md)); not started.
+5. **Champion stats (optional).** The game's match HUD already shows AD, AP,
+   Armor, MR, attack speed and move speed. Adding stats it does not show
+   (ability haste, crit, range, lifesteal, penetration) is optional; the
+   SDK can read them.
+6. **Public release.** Rename the mod ID and finish the Steam description.
+
+## Done
+
+- Selection pass (0.72.0-0.72.3, accepted): bodies measured from the art,
+  placed with the game's draw data; the agreed League-style ranking.
+- Skill previews (0.71-0.74.3): 13 native effect types decoded; landing
+  and post-dash placement rules.
+- Testing aid (0.74.1-0.74.3): Home+End, no cooldowns (+900 haste).
+- F11 also pauses (0.67.0).
+- Shop "Vanilla order" option, default on (0.67.0).
+
+## Declined
+
+- Esc on the shop also opens the game's Esc menu (user, 2026-10-09: too
+  much work for a small thing). The SDK cannot consume keys and the game
+  opens the menu through a path not yet found.

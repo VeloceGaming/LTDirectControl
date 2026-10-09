@@ -15,7 +15,20 @@ type Point = (f32, f32);
 pub enum Placement {
     Caster,
     Aim,
-    Forward { offset: f32 },
+    Forward {
+        offset: f32,
+    },
+    /// Where a projectile ends: the target unit for unit-targeted casts,
+    /// otherwise its full flight length toward the aim.
+    End {
+        length: f32,
+    },
+    /// Where a projectile that hits nothing in flight lands: the target for
+    /// unit casts, the aimed point (within its flight length) for location
+    /// casts, its full flight length for direction casts.
+    Landing {
+        length: f32,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Shape {
@@ -486,6 +499,11 @@ fn placed(origin: Point, aim: Point, p: Placement, range: f32, casting: u32) -> 
         // RangeEffect's current consumer offsets unit/point inputs only.
         Placement::Forward { offset } if casting <= 1 => endpoint(origin, aim, offset, true),
         Placement::Forward { .. } => origin,
+        Placement::End { .. } if casting == 0 => aim,
+        Placement::End { length } => endpoint(origin, aim, length, true),
+        Placement::Landing { .. } if casting == 0 => aim,
+        Placement::Landing { .. } if casting == 3 => origin,
+        Placement::Landing { length } => endpoint(origin, aim, length, casting == 2),
     }
 }
 fn corridor(from: Point, to: Point, radius: f32) -> Option<[Point; 4]> {
@@ -560,12 +578,12 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
             } else {
                 out.dashed(center, at, 6., 6., col);
             }
-            let (half, height, bottom, margin) = crate::combat::selection_envelope(frame, &target);
+            let (x0, y0, x1, y1, margin) = crate::combat::screen_area(frame, &target);
             let (x, y, w, h) = (
-                at.0 - half - margin,
-                at.1 - height - margin,
-                2. * (half + margin),
-                height + bottom + 2. * margin,
+                x0 - margin,
+                y0 - margin,
+                x1 - x0 + 2. * margin,
+                y1 - y0 + 2. * margin,
             );
             let corner = w.min(h).min(24.) * 0.3;
             for (cx, cy, dx, dy) in [
@@ -617,6 +635,10 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 }
             }
             Shape::Corridor { radius, length } => {
+                // Length 0: as far as the cast range (dashes). A zero-width
+                // projectile is still drawn as a thin line.
+                let length = if length > 0. { length } else { range };
+                let radius = radius.max(1.5);
                 if let Some(points) = corridor(base, endpoint(base, aiming, length, true), radius) {
                     out.polygon(&points.map(project), color, frame.viewport);
                 }
@@ -978,6 +1000,21 @@ mod tests {
         assert_eq!(g.footprints[0].placement, Placement::Aim);
         assert_eq!(g.footprints[1].placement, Placement::Caster);
         assert!(g.issues.is_empty());
+    }
+    #[test]
+    fn projectile_end_is_the_target_or_the_full_flight_length() {
+        let end = Placement::End { length: 50. };
+        // Unit-targeted: where the target is.
+        assert_eq!(placed((0., 0.), (30., 0.), end, 60., 0), (30., 0.));
+        // Skillshot: the full length toward the aim, even past a near cursor.
+        assert_eq!(placed((0., 0.), (10., 0.), end, 60., 1), (50., 0.));
+        // A lobbed shot lands where a location cast is aimed, within its
+        // flight length; a direction cast still flies its full length.
+        let landing = Placement::Landing { length: 50. };
+        assert_eq!(placed((0., 0.), (10., 0.), landing, 60., 1), (10., 0.));
+        assert_eq!(placed((0., 0.), (90., 0.), landing, 60., 1), (50., 0.));
+        assert_eq!(placed((0., 0.), (10., 0.), landing, 60., 2), (50., 0.));
+        assert_eq!(placed((0., 0.), (30., 0.), landing, 60., 0), (30., 0.));
     }
     #[test]
     fn live_range_and_point_clamp_are_distinct_and_keep_diagonal_aim() {

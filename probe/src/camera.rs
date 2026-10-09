@@ -196,6 +196,19 @@ impl CameraControl {
             };
         }
     }
+    /// End manual gestures at a handoff while retaining zoom/vision/lock choices.
+    pub fn suspend(&self, keys: Keys) {
+        if let Ok(mut s) = self.state.lock() {
+            s.running = false;
+            s.drag_active = false;
+            s.previous_middle = keys.middle;
+            s.previous_y = keys.camera_toggle;
+            s.previous_cursor = None;
+            s.expected_follow = false;
+            s.interrupted_space = keys.space;
+            s.toggle_requested = false;
+        }
+    }
     pub fn blocked(&self, p: (f32, f32)) -> bool {
         self.state
             .lock()
@@ -375,6 +388,34 @@ impl CameraControl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn reclaim_recenters_without_replaying_a_drag_or_resetting_vision() {
+        let camera = CameraControl::default();
+        let log = crate::test_support::logger("camera-handoff");
+        let f = frame();
+        let keys = Keys {
+            focused: true,
+            ..Keys::default()
+        };
+        camera.step(f, 1, keys, 4, (300_000, 400_000), true, 0.016, &log);
+        camera.set_vision(Vision::Other);
+        camera.suspend(Keys {
+            middle: true,
+            camera_toggle: true,
+            ..keys
+        });
+        assert_eq!(camera.vision(), Vision::Other);
+        assert_eq!(
+            camera.step(f, 1, keys, 4, (500_000, 600_000), true, 0.016, &log),
+            Some(Request::Free((500., 600.)))
+        );
+        camera.set_locked(true);
+        camera.suspend(keys);
+        assert_eq!(
+            camera.step(f, 1, keys, 4, (500_000, 600_000), true, 0.016, &log),
+            Some(Request::Follow(4))
+        );
+    }
     #[test]
     fn vision_modes_follow_controlled_side_and_clear_for_next_session() {
         assert_eq!(Vision::Own.native(0), Some(1));

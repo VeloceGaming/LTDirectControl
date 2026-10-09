@@ -12,6 +12,7 @@ pub enum Phase {
     Ready,
     Running,
     Paused,
+    Ai,
     Released,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -20,6 +21,7 @@ pub enum SessionAction {
     Pause,
     Resume,
     ReturnAi,
+    TakeControl,
 }
 struct State {
     generation: u64,
@@ -36,6 +38,7 @@ struct State {
     battlefield: bool,
     selected: bool,
     previous_start: bool,
+    previous_release: bool,
     key: Option<MatchKey>,
     worker: Option<u64>,
     sender: Option<usize>,
@@ -102,6 +105,7 @@ impl NativeTiming {
                 battlefield: false,
                 selected: false,
                 previous_start: false,
+                previous_release: false,
                 key: None,
                 worker: None,
                 sender: None,
@@ -163,8 +167,14 @@ impl NativeTiming {
         s.selected = selected;
         // The deadline must work even if neither native hook ever arrives.
         Self::check_limits(&mut s, log);
-        if keys.release {
-            Self::release(&mut s, "F12", log);
+        if keys.release && !s.previous_release {
+            if matches!(s.phase, Phase::Loading | Phase::Armed) {
+                Self::release(&mut s, "F12 during startup", log);
+            } else if matches!(s.phase, Phase::Ready | Phase::Running | Phase::Paused) {
+                if let Some(key) = s.key {
+                    s.pending_action = Some((key, s.phase, SessionAction::ReturnAi));
+                }
+            }
         }
         if was_battlefield && !battlefield && s.key.is_some() {
             Self::release(&mut s, "Left battlefield", log);
@@ -185,7 +195,15 @@ impl NativeTiming {
                 s.began.elapsed().as_millis()
             ));
         }
-        if keys.start && !s.previous_start && matches!(s.phase, Phase::Ready | Phase::Paused) {
+        if keys.start && !s.previous_start && s.phase == Phase::Ai {
+            if let Some(key) = s.key {
+                s.pending_action = Some((key, Phase::Ai, SessionAction::TakeControl));
+            }
+        } else if keys.start
+            && !s.previous_start
+            && matches!(s.phase, Phase::Ready | Phase::Paused)
+            && s.pending_action.is_none()
+        {
             s.phase = Phase::Running;
             s.running.get_or_insert_with(Instant::now);
             log.write("NATIVE START/RESUME backup F11; playback=1x maximum frame lead=1");
@@ -198,6 +216,7 @@ impl NativeTiming {
             }
         }
         s.previous_start = keys.start;
+        s.previous_release = keys.release;
     }
     pub fn phase(&self) -> Option<Phase> {
         let s = self.state.lock().ok()?;
@@ -251,6 +270,7 @@ impl NativeTiming {
         s.view = None;
         s.selected = false;
         s.previous_start = keys.start;
+        s.previous_release = keys.release;
         s.began = Instant::now();
         s.running = None;
         s.produced = 0;
@@ -288,12 +308,16 @@ impl NativeTiming {
             return;
         }
         let action = if !primary {
+            if s.phase == Phase::Ai {
+                return;
+            }
             SessionAction::ReturnAi
         } else {
             match s.phase {
                 Phase::Ready => SessionAction::Start,
                 Phase::Running => SessionAction::Pause,
                 Phase::Paused => SessionAction::Resume,
+                Phase::Ai => SessionAction::TakeControl,
                 _ => return,
             }
         };
@@ -319,8 +343,15 @@ impl NativeTiming {
             return;
         }
         match (action, s.phase) {
-            (SessionAction::ReturnAi, _) => Self::release(&mut s, "Return to AI button", log),
-            (SessionAction::Start, Phase::Ready) | (SessionAction::Resume, Phase::Paused) => {
+            (SessionAction::ReturnAi, Phase::Ready | Phase::Running | Phase::Paused) => {
+                s.phase = Phase::Ai;
+                s.pending_action = None;
+                s.running.get_or_insert_with(Instant::now);
+                log.write("SESSION AI control; same match/player retained; pacing=1x frame_lead=1; F11 reclaims control");
+            }
+            (SessionAction::Start, Phase::Ready)
+            | (SessionAction::Resume, Phase::Paused)
+            | (SessionAction::TakeControl, Phase::Ai) => {
                 s.phase = Phase::Running;
                 s.running.get_or_insert_with(Instant::now);
                 log.write(&format!(
@@ -459,14 +490,14 @@ impl NativeTiming {
             {
                 return;
             }
-            if keys.release {
+            if keys.release && s.phase == Phase::Loading {
                 Self::release(&mut s, "F12 at worker boundary", log);
             }
             Self::check_limits(&mut s, log);
             let wait = match s.phase {
                 Phase::Released | Phase::Armed => false,
                 Phase::Loading | Phase::Ready | Phase::Paused => true,
-                Phase::Running => s.produced.saturating_sub(s.consumed) >= 1,
+                Phase::Running | Phase::Ai => s.produced.saturating_sub(s.consumed) >= 1,
             };
             if !wait {
                 return;
@@ -487,7 +518,7 @@ impl NativeTiming {
             Phase::Loading if s.began.elapsed() >= Duration::from_secs(15) => {
                 Self::release(s, "Startup interception not confirmed within 15s", log)
             }
-            Phase::Ready | Phase::Running | Phase::Paused
+            Phase::Ready | Phase::Running | Phase::Paused | Phase::Ai
                 if s.heartbeat
                     .is_none_or(|t| t.elapsed() >= Duration::from_secs(2)) =>
             {
@@ -521,7 +552,7 @@ impl NativeTiming {
                 s.boundary_seen
             ));
         }
-        if s.phase == Phase::Running {
+        if matches!(s.phase, Phase::Running | Phase::Ai) {
             ViewMode::Running
         } else if !s.bootstrap_applied && queued > 0 {
             ViewMode::Bootstrap
@@ -667,11 +698,19 @@ impl NativeTiming {
     pub fn client_controls(&self, view: Option<usize>) -> bool {
         self.state
             .lock()
+            .is_ok_and(|s| s.phase != Phase::Ai && Self::client_owned(&s, view))
+    }
+    /// AI handoff retains pacing and the same viewer, but releases manual input.
+    pub fn client_session(&self, view: Option<usize>) -> bool {
+        self.state
+            .lock()
             .is_ok_and(|s| Self::client_owned(&s, view))
     }
     fn client_owned(s: &State, view: Option<usize>) -> bool {
-        matches!(s.phase, Phase::Ready | Phase::Running | Phase::Paused)
-            && s.battlefield
+        matches!(
+            s.phase,
+            Phase::Ready | Phase::Running | Phase::Paused | Phase::Ai
+        ) && s.battlefield
             && s.selected
             && s.client == Some(crate::platform_input::thread_id())
             && view.is_none_or(|view| s.view == Some(view))
@@ -714,6 +753,7 @@ impl NativeTiming {
             Phase::Paused => {
                 "Control paused | Camera and Tab available | Resume / Return to AI".into()
             }
+            Phase::Ai => "AI control | F11 or Take control returns to your champion".into(),
             Phase::Released => format!("Control inactive: {}", s.reason),
         }
     }
@@ -732,6 +772,107 @@ mod tests {
         s.client = Some(crate::platform_input::thread_id());
         drop(s);
         t
+    }
+    #[test]
+    fn repeated_handoffs_keep_binding_pacing_and_never_reclaim_on_mouse_input() {
+        let t = active();
+        let log = logger("repeated-handoff");
+        t.heartbeat(true, true, Keys::default(), &log);
+        {
+            let mut s = t.state.lock().unwrap();
+            s.phase = Phase::Running;
+            s.worker = Some(crate::platform_input::thread_id());
+            s.view = Some(100);
+            s.sender = Some(42);
+            s.produced = 50;
+            s.consumed = 49;
+            s.played_tick = 49;
+            s.bootstrap_applied = true;
+        }
+        for _ in 0..4 {
+            t.request_action(false);
+            t.apply_action(t.take_action().unwrap(), &log);
+            assert_eq!(t.phase(), Some(Phase::Ai));
+            assert!(t.client_session(Some(100)));
+            assert!(!t.client_session(Some(200)));
+            assert!(!t.client_controls(None));
+            assert!(!t.client_early_input());
+            assert!(!t.allows_input((1, 2, 3)));
+            t.heartbeat(
+                true,
+                true,
+                Keys {
+                    left: true,
+                    right: true,
+                    ..Keys::default()
+                },
+                &log,
+            );
+            assert!(t.take_action().is_none());
+            assert_eq!(t.before_view(100, 49, 1, &log), ViewMode::Running);
+            t.heartbeat(
+                true,
+                true,
+                Keys {
+                    start: true,
+                    ..Keys::default()
+                },
+                &log,
+            );
+            assert_eq!(t.take_action(), Some(SessionAction::TakeControl));
+            t.apply_action(SessionAction::TakeControl, &log);
+            assert!(t.client_controls(Some(100)));
+            assert!(t.allows_input((1, 2, 3)));
+            assert!(!t.allows_input((1, 2, 4)));
+            t.heartbeat(true, true, Keys::default(), &log);
+            let s = t.state.lock().unwrap();
+            assert_eq!(
+                (
+                    s.generation,
+                    s.key,
+                    s.sender,
+                    s.view,
+                    s.produced,
+                    s.consumed,
+                    s.played_tick
+                ),
+                (0, Some((1, 2, 3)), Some(42), Some(100), 50, 49, 49)
+            );
+        }
+    }
+    #[test]
+    fn f12_is_an_edge_and_ai_heartbeat_failure_cannot_be_reclaimed() {
+        let t = active();
+        let log = logger("handoff-edges");
+        t.state.lock().unwrap().phase = Phase::Running;
+        let f12 = Keys {
+            release: true,
+            ..Keys::default()
+        };
+        t.heartbeat(true, true, f12, &log);
+        t.apply_action(t.take_action().unwrap(), &log);
+        t.request_action(true);
+        t.apply_action(t.take_action().unwrap(), &log);
+        t.heartbeat(true, true, f12, &log);
+        assert!(t.take_action().is_none()); // Held F12 cannot undo a button reclaim.
+        t.request_action(false);
+        t.apply_action(t.take_action().unwrap(), &log);
+        t.state.lock().unwrap().heartbeat = Some(Instant::now() - Duration::from_secs(3));
+        assert_eq!(t.before_view(100, 0, 0, &log), ViewMode::Native);
+        assert_eq!(t.ui_phase(), Some(Phase::Released));
+        t.heartbeat(
+            true,
+            true,
+            Keys {
+                start: true,
+                ..Keys::default()
+            },
+            &log,
+        );
+        t.request_action(true);
+        assert!(t.take_action().is_none());
+        t.apply_action(SessionAction::TakeControl, &log);
+        assert_eq!(t.ui_phase(), Some(Phase::Released));
     }
     #[test]
     fn f11_pauses_while_running_and_resumes_when_paused() {
@@ -1038,8 +1179,18 @@ mod tests {
         t.apply_action(t.take_action().unwrap(), &log);
         assert!(!t.client_controls(None));
         assert!(!t.allows_input((1, 2, 3)));
-        assert_eq!(t.state.lock().unwrap().reason, "Return to AI button");
-        assert_eq!(t.before_view(100, 1, 2, &log), ViewMode::Native);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Ai);
+        assert_eq!(t.before_view(100, 1, 2, &log), ViewMode::Running);
+        t.request_action(true);
+        assert_eq!(t.take_action(), Some(SessionAction::TakeControl));
+        t.apply_action(SessionAction::TakeControl, &log);
+        assert!(t.client_controls(Some(100)));
+        assert!(t.allows_input((1, 2, 3)));
+        let s = t.state.lock().unwrap();
+        assert_eq!(
+            (s.key, s.view, s.produced, s.consumed, s.played_tick),
+            (Some((1, 2, 3)), Some(100), 3, 1, 1)
+        );
     }
     #[test]
     fn queued_button_actions_expire_on_phase_or_key_changes_and_pause_retains_guards() {
@@ -1120,6 +1271,9 @@ mod tests {
         wait_produced(3);
         assert!(receive.recv_timeout(Duration::from_millis(10)).is_err());
         t.apply_action(SessionAction::ReturnAi, &log);
+        assert!(receive.recv_timeout(Duration::from_millis(10)).is_err());
+        // AI remains paced; handoff never allows the worker to run ahead.
+        t.after_view(ViewMode::Running, 1, 0, 3, &log);
         assert_eq!(
             receive.recv_timeout(Duration::from_secs(1)).unwrap(),
             "released"
@@ -1163,7 +1317,9 @@ mod tests {
             },
             &log,
         );
-        assert_eq!(t.state.lock().unwrap().phase, Phase::Released);
+        assert_eq!(t.take_action(), Some(SessionAction::ReturnAi));
+        t.apply_action(SessionAction::ReturnAi, &log);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Ai);
     }
     #[test]
     fn viewer_bootstraps_once_then_holds_and_rejects_view_change() {

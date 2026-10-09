@@ -35,7 +35,7 @@ All bindings can be changed in the mod's Settings window (gear button).
 | Show range / normal-cast override | Shift + Q/W/R |
 | Self-cast | Alt + Q/W/R |
 | Choose your athlete (before Start) | Ctrl + 1–5 (top, jungle, mid, bottom, support) |
-| Start or resume control / return control to the AI | F11 / F12 |
+| Start, pause, resume or reclaim control / hand control to AI | F11 / F12 |
 | Team details | Hold Tab |
 | Shop | P, or the gold button on the HUD |
 | Lock camera / hold to follow | Y / Space |
@@ -51,11 +51,17 @@ All bindings can be changed in the mod's Settings window (gear button).
   optional low-health screen effect.
 - **Shop**: turn on *Manual shopping* in Settings and the game stops
   auto-buying for your athlete. Press P to buy anything, League-style:
-  recommended build, item grid with stat filters, recipe tree, Builds into,
-  and prices showing the gold still needed. Purchases happen when your athlete
-  is in base. The shop can optionally pause the match while open.
-- **Session controls**: Start, Pause and Return to AI buttons; F12 always
-  returns control to the AI.
+  recommended build, item grid with stat filters, complete alternative upgrade
+  paths and Builds into. Prices show the gold still needed from your inventory.
+  Items with alternative routes offer a path choice or automatic cheapest
+  planning; vanilla items keep a simple linear recipe. Choose a path before
+  queueing a purchase; existing orders keep their original choice. Purchases
+  happen when your athlete is in base. The shop can optionally pause the match
+  while open.
+- **Session controls**: Start, Pause and Return to AI buttons. F12 hands the
+  selected champion to AI; F11 or Take control reclaims the same champion in
+  that match. AI playback stays at 1x so the worker remains synchronized.
+  Handoffs clear pending movement and casts; mouse clicks do not reclaim control.
 
 ## Install
 
@@ -109,7 +115,7 @@ Everything lives in `probe/src`. The crate is still named
 | Orders and input | `platform_input.rs` (keyboard/mouse), `movement.rs` (orders and movement), `combat.rs` (targets), `abilities.rs` (casting), `camera.rs`, `wheel.rs`, `map_path.rs` |
 | Picking | `sprite_picking.rs` (body sizes), `own_selection.rs` |
 | HUD and windows | `player_hud.rs`, `team_status.rs`, `team_info.rs`, `session_ui.rs`, `settings_ui.rs`, `shop_ui.rs`, `minimap.rs`, `screen_effect.rs`, `skill_preview.rs`, `cursor.rs`, `tooltips.rs`, `hud_*.rs`, `ui_graphics.rs` |
-| Shop logic | `shop.rs` (orders, purchase plans, buyer answers), `purchase_tracker.rs`, `inventory.rs` |
+| Shop logic | `shop.rs` (orders, purchase plans, buyer answers), `shop_recipe.rs` (structural upgrade graph and alternative paths), `purchase_tracker.rs`, `inventory.rs` |
 | Settings and shared state | `settings.rs` (options and key bindings), `ui_state.rs` (which windows are open, read by input and camera code) |
 | Logging and diagnostics | `logging.rs` (log detail levels), `perf.rs`, `attack_trace.rs`, `shop_trace.rs`, `input_trace.rs`, `result_audit.rs`, `runtime_storage.rs` |
 

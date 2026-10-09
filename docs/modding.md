@@ -6,12 +6,19 @@ steps are in the [README](../README.md). Everything below lives in
 
 ## The big picture
 
-The game's mod SDK calls the mod through two entry points:
+The game's mod SDK calls the mod through these entry points:
 
 | Entry point | File | Runs on | Does |
 |---|---|---|---|
 | `Client` | `client.rs` | the client thread, every frame | input, session controls, HUD, Tab, settings, shop, cursor, battlefield drawing |
 | `Simulation` | `simulation.rs` | simulation workers, once per player per tick | binds the session, samples HUD/Tab/shop data, returns the controlled athlete's input |
+| `CooldownHook` | `test_cheats.rs` | simulation workers, once per match per tick | the testing aid only (Home+End: no cooldowns); the only code that changes a match |
+
+`Simulation` reads the match but cannot change it: the SDK ignores changes
+made from an AI callback. Anything that must change a match (a buff, a
+teleport) belongs in a match hook (`StableMatchHook::on_match_tick`), which
+runs for every match, so it must first check that the match is the viewed
+one (see `CooldownHook`).
 
 On top of the SDK, `native_adapter/` hooks a few places inside the game
 executable (movement, combat, outlines, camera/pacing, hotkeys, the item
@@ -87,6 +94,9 @@ order or hold) and validate it with the SDK.
 3. Use that field where the action belongs (`abilities.rs` for casting,
    `movement.rs` for orders, a `Client` step for windows).
 
+Home+End (the no-cooldown test toggle) is deliberately not a binding: it
+is read directly in `platform_input` and cannot be rebound.
+
 The Settings window lists new bindings automatically and saves them in
 `controls.json`. Its layout tests in `settings_ui.rs` count rows, so they
 may need a new number.
@@ -141,7 +151,37 @@ closed and nothing is bought.
 
 Draw in `Client::post_render`. `camera::CameraFrame` projects world
 positions to the screen. `skill_preview::Drawing` collects lines and shapes
-and clips them against the HUD and minimap.
+and clips them against the HUD and minimap. What the game's drawing calls
+can and cannot do is in [preview-drawing.md](preview-drawing.md).
+
+### Change what a skill preview shows
+
+Previews come from the game's own skill data, never per-skill code:
+
+- `native_preview.rs` reads the controlled champion's live effect tree and
+  turns each recognised effect type (identified by its apply function and
+  size) into footprints: a shape (circle, corridor, rectangle, cone,
+  movement) and a placement (caster, aim, ahead, projectile end, landing).
+  The known types and their field layouts are listed in
+  [investigation-preview-selection.md](investigation-preview-selection.md).
+  To add a type, find it in the PREVIEW TREE log lines, match its words to
+  a champion JSON that uses it, then add a decoder and a test with the
+  logged words.
+- `skill_preview.rs` places and draws the footprints (`placed`, `drawing`).
+  Data-driven and Workshop champions' JSON trees are the fallback.
+
+### Change hover and click selection
+
+- `sprite_art.rs` measures each unit kind's body from the installed art at
+  start-up (background thread) and places it with the game's own draw data,
+  recorded per unit by the outline hook (`native_adapter::sprite_draw`).
+- `sprite_picking.rs` maps a native unit name to its art (`sheet_name`,
+  `art_key`) and keeps the older size-based fallback. A unit still on the
+  fallback is logged once as `SPRITE ART unmatched name=…`.
+- `combat::picked` ranks the units under the cursor (enemies first,
+  structures last, body before edge, the previous hover kept, then the most
+  central body). Settings › Show selection markers draws each area: green
+  is measured, grey is the fallback.
 
 ### Logging
 
@@ -161,10 +201,24 @@ Debug › Log detail = Verbose when investigating.
 | `windows/layout.rs` | every 0.6.3 code address, call site and expected byte pattern |
 | `windows/movement.rs` | move, steering, stop, recall |
 | `windows/combat.rs` | attacks, Q/W/R, aim, ability reads |
-| `windows/outline.rs` | sprite outlines, death greyscale |
+| `windows/outline.rs` | sprite outlines, death greyscale, each unit's drawn sprites for selection |
 | `windows/view.rs` | viewer/worker hooks: pacing, camera, full-screen layout |
 | `windows/input.rs` | blocking game hotkeys during control |
 | `windows/shop.rs` | buyer hooks, item/gold/build reads |
+| `windows/tooltips.rs` | native ChampionInfo descriptions and allocation ownership; called from the existing viewer hook |
+
+`native_tooltips.rs` outside the adapter holds only owned requests/results.
+Since 0.69.1 the formatter accepts all valid champion IDs; the Windows adapter
+still permits only reviewed ChampionInfo implementations. `tooltips.rs` keeps the ordinary resolver as fallback, and
+`player_hud.rs` refreshes eligible hovered skills when a native result arrives.
+Keep game calls outside the cache lock and native pointers inside the viewer
+borrow. See [the formatter investigation](investigation-tooltips-native.md)
+before changing the register bridge or ownership code.
+
+`tools/audit_tooltips.py` reads the user's captured log results against the
+base inventory in `tools/records/tooltip-skills.json`. Use `--refresh-inventory`
+to rebuild that inventory from installed bundle metadata. Missing observations
+must never be counted as passing tests; Workshop entries are reported separately.
 
 Each hook replaces a `call` (or a jump thunk) at a reviewed site. It is
 installed only if the site and the target's opening bytes match

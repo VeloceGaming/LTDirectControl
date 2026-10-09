@@ -1039,15 +1039,21 @@ fn recall_stop_emits_once_and_preserves_timer_effects_and_other_actions() {
 fn scoped_config_restores_every_overridden_bit() {
     let mut config = [0u8; 0x60];
     config[0] = 1;
+    config[0x48] = 1;
     config[0x10..0x14].copy_from_slice(&1u32.to_le_bytes());
     config[0x14..0x18].copy_from_slice(&3.0f32.to_bits().to_le_bytes());
     let before = config;
-    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize) };
+    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, true) };
     assert_eq!(config[0], 0);
+    assert_eq!(config[0x48], 0);
     assert_eq!(
         u32::from_le_bytes(config[0x14..0x18].try_into().unwrap()),
         1.0f32.to_bits()
     );
+    drop(snapshot);
+    assert_eq!(config, before);
+    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, false) };
+    assert_eq!(config[0x48], 1); // Spectator pause survives AI handoff.
     drop(snapshot);
     assert_eq!(config, before);
 }

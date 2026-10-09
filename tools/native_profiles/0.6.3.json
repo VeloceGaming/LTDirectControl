@@ -369,6 +369,22 @@
     "VIEW_LAYOUT_CONTROLS_HIDE": {
       "rva": "0x280f42f",
       "bytes": "4c8d05fa8c490141b90e000000488b95280b0000e8887b0400904885c00f844c6c0000c6806002000000"
+    },
+    "ENTITY_BORROW_GETTER": {
+      "rva": "0x2e1666f",
+      "bytes": "48ffca488b014c8b41084889c141ff9008020000904885c07418488b8858060000488b806006000048890f488906b001"
+    },
+    "ENTITY_AA_RANGE": {
+      "rva": "0x16f6f62",
+      "bytes": "4c8b92c005000049ffca4c0faf92a00400004c8b9a30040000"
+    },
+    "ENTITY_AA_RANGE_BASE": {
+      "rva": "0x16f6f8c",
+      "bytes": "4c039a98040000"
+    },
+    "VIEW_LAYOUT_PAUSE": {
+      "rva": "0x93078b",
+      "bytes": "807e4800"
     }
   },
   "review_notes": "Explicit source-reference/caller/consumer review against exact preserved 0.6.2; instruction alignment is supporting evidence only. No automatic runtime signature matching.",
@@ -1101,5 +1117,1635 @@
         "data_bytes": "00004040000040400000000000000000"
       }
     ]
+  },
+  "tooltip_anchors": {
+    "TOOLTIP_SHEET_GETTER_ENTRY": {
+      "rva": "0x338420",
+      "bytes": "5541574156415541545657534881ec98000000488dac2480000000"
+    },
+    "TOOLTIP_INFO_LOOKUP_ENTRY": {
+      "rva": "0x19d1bf0",
+      "bytes": "5541574156415541545657534881ec88000000488dac2480000000"
+    },
+    "TOOLTIP_ARC_DROP_ENTRY": {
+      "rva": "0x28b20",
+      "bytes": "5556574883ec40488d6c244048c745f8feffffff488b01488945f0488b4908488b01"
+    },
+    "TOOLTIP_ILLUSION_Q_ENTRY": {
+      "rva": "0x15e96b0",
+      "bytes": "555657534883ec38488d6c243048c74500feffffff4c89c74889d34889ce"
+    },
+    "TOOLTIP_ILLUSION_W_ENTRY": {
+      "rva": "0x15e9790",
+      "bytes": "555657534883ec38488d6c243048c74500feffffff4c89c74889d34889ce"
+    },
+    "TOOLTIP_ILLUSION_R_ENTRY": {
+      "rva": "0x15e95e0",
+      "bytes": "555657534883ec38488d6c243048c74500feffffff4c89c74889d34889ce"
+    },
+    "TOOLTIP_MOD_Q_ENTRY": {
+      "rva": "0x19f0f10",
+      "bytes": "55415741565657534881ece8050000488dac248000000048c78560050000feffffff4c89c7"
+    },
+    "TOOLTIP_MOD_W_ENTRY": {
+      "rva": "0x19f13c0",
+      "bytes": "555657534881ece8030000488dac248000000048c78560030000feffffff4889d34889ce4883bae803000000"
+    },
+    "TOOLTIP_MOD_R_ENTRY": {
+      "rva": "0x19f0cf0",
+      "bytes": "555657534881ece8030000488dac248000000048c78560030000feffffff4889ce4883bac8050000ff7414"
+    },
+    "TOOLTIP_DATA_Q_ENTRY": {
+      "rva": "0x1506e50",
+      "bytes": "554157415641545657534881ecc0000000488dac248000000048c74538feffffff"
+    },
+    "TOOLTIP_DATA_W_ENTRY": {
+      "rva": "0x1507100",
+      "bytes": "564883ec304889ce4881c2f003000048c74424200000000041b908000000e8ddedfcff4889f04883c4305e"
+    },
+    "TOOLTIP_DATA_R_ENTRY": {
+      "rva": "0x1506df0",
+      "bytes": "564883ec304883ba10060000ff74274881c21006000048c74424200000000041b9080000004889cee8e3f0fcff4889f0"
+    },
+    "TOOLTIP_DATA_RESOLVER_ENTRY": {
+      "rva": "0x14d5f00",
+      "bytes": "5541574156415541545657534881ec28020000488dac2480000000"
+    },
+    "TOOLTIP_LOOKUP_CONSUMER": {
+      "rva": "0xbb9910",
+      "bytes": "488d158199f00241b820000000488b8d780d0100e8f7ea77ff904885c00f849a0000004d8b8550fdffff4d8b8d58fdffffc685a60e010000c685a50e0100004889c1488b95780d0100e89282e100"
+    },
+    "TOOLTIP_ARC_CONSUMER": {
+      "rva": "0xbb9984",
+      "bytes": "488b421048ffc84883e0f04801c14883c110ff92d8000000904989c44989d7488b85d00c0100f048ff087520c685a60e010000c685a50e010000488d8d20150000e856f146ff"
+    },
+    "TOOLTIP_Q_DISPATCH": {
+      "rva": "0x2300468",
+      "bytes": "ff93e0000000"
+    },
+    "TOOLTIP_W_DISPATCH": {
+      "rva": "0x2300a46",
+      "bytes": "ff93e8000000"
+    },
+    "TOOLTIP_R_DISPATCH": {
+      "rva": "0x2301018",
+      "bytes": "ff93f0000000"
+    },
+    "TOOLTIP_STRING_FREE": {
+      "rva": "0x2308272",
+      "bytes": "4983b96001000000741b488bbe68010000ff15772a6c014889c131d24989f8ff15612a6c01"
+    },
+    "TOOLTIP_SHEET_PATH": {
+      "rva": "0x3ac3298",
+      "bytes": "61737365742f626173652f73657474696e672f6368616d70696f6e5f696e666f"
+    },
+    "TOOLTIP_LOOKUP_RETURN": {
+      "rva": "0x19d1d41",
+      "bytes": "488b45c8488b55d0488b75d84885c00f85fefeffff"
+    },
+    "TOOLTIP_VIEW_ASSETS": {
+      "rva": "0x930d5a",
+      "bytes": "488b8d400100004885f674174c897c2420488b95480100004d89e84989f1e8f3bb2600"
+    },
+    "TOOLTIP_ILLUSION_LAYOUT": {
+      "rva": "0x3beba40",
+      "bytes": "e8010000000000000800000000000000"
+    },
+    "TOOLTIP_ILLUSION_DROP_POINTER": {
+      "rva": "0x3beba38",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_ILLUSION_Q_POINTER": {
+      "rva": "0x3bebb18",
+      "pointer_target": "0x15e96b0"
+    },
+    "TOOLTIP_ILLUSION_W_POINTER": {
+      "rva": "0x3bebb20",
+      "pointer_target": "0x15e9790"
+    },
+    "TOOLTIP_ILLUSION_R_POINTER": {
+      "rva": "0x3bebb28",
+      "pointer_target": "0x15e95e0"
+    },
+    "TOOLTIP_MOD_LAYOUT": {
+      "rva": "0x3be38f8",
+      "bytes": "180b0000000000000800000000000000"
+    },
+    "TOOLTIP_MOD_DROP_POINTER": {
+      "rva": "0x3be38f0",
+      "pointer_target": "0x19a7070"
+    },
+    "TOOLTIP_MOD_Q_POINTER": {
+      "rva": "0x3be39d0",
+      "pointer_target": "0x19f0f10"
+    },
+    "TOOLTIP_MOD_W_POINTER": {
+      "rva": "0x3be39d8",
+      "pointer_target": "0x19f13c0"
+    },
+    "TOOLTIP_MOD_R_POINTER": {
+      "rva": "0x3be39e0",
+      "pointer_target": "0x19f0cf0"
+    },
+    "TOOLTIP_DATA_A_LAYOUT": {
+      "rva": "0x3b24320",
+      "bytes": "d0090000000000000800000000000000"
+    },
+    "TOOLTIP_DATA_A_DROP_POINTER": {
+      "rva": "0x3b24318",
+      "pointer_target": "0x109e3b0"
+    },
+    "TOOLTIP_DATA_A_Q_POINTER": {
+      "rva": "0x3b243f8",
+      "pointer_target": "0x1506e50"
+    },
+    "TOOLTIP_DATA_A_W_POINTER": {
+      "rva": "0x3b24400",
+      "pointer_target": "0x1507100"
+    },
+    "TOOLTIP_DATA_A_R_POINTER": {
+      "rva": "0x3b24408",
+      "pointer_target": "0x1506df0"
+    },
+    "TOOLTIP_DATA_B_LAYOUT": {
+      "rva": "0x3b8ba78",
+      "bytes": "d0090000000000000800000000000000"
+    },
+    "TOOLTIP_DATA_B_DROP_POINTER": {
+      "rva": "0x3b8ba70",
+      "pointer_target": "0x1549d10"
+    },
+    "TOOLTIP_DATA_B_Q_POINTER": {
+      "rva": "0x3b8bb50",
+      "pointer_target": "0x1506e50"
+    },
+    "TOOLTIP_DATA_B_W_POINTER": {
+      "rva": "0x3b8bb58",
+      "pointer_target": "0x1507100"
+    },
+    "TOOLTIP_DATA_B_R_POINTER": {
+      "rva": "0x3b8bb60",
+      "pointer_target": "0x1506df0"
+    },
+    "TOOLTIP_DATA_C_LAYOUT": {
+      "rva": "0x3bee2f0",
+      "bytes": "d0090000000000000800000000000000"
+    },
+    "TOOLTIP_DATA_C_DROP_POINTER": {
+      "rva": "0x3bee2e8",
+      "pointer_target": "0x19a7930"
+    },
+    "TOOLTIP_DATA_C_Q_POINTER": {
+      "rva": "0x3bee3c8",
+      "pointer_target": "0x1506e50"
+    },
+    "TOOLTIP_DATA_C_W_POINTER": {
+      "rva": "0x3bee3d0",
+      "pointer_target": "0x1507100"
+    },
+    "TOOLTIP_DATA_C_R_POINTER": {
+      "rva": "0x3bee3d8",
+      "pointer_target": "0x1506df0"
+    },
+    "TOOLTIP_DATA_D_LAYOUT": {
+      "rva": "0x3d01cd8",
+      "bytes": "d0090000000000000800000000000000"
+    },
+    "TOOLTIP_DATA_D_DROP_POINTER": {
+      "rva": "0x3d01cd0",
+      "pointer_target": "0x2e113b0"
+    },
+    "TOOLTIP_DATA_D_Q_POINTER": {
+      "rva": "0x3d01db0",
+      "pointer_target": "0x1506e50"
+    },
+    "TOOLTIP_DATA_D_W_POINTER": {
+      "rva": "0x3d01db8",
+      "pointer_target": "0x1507100"
+    },
+    "TOOLTIP_DATA_D_R_POINTER": {
+      "rva": "0x3d01dc0",
+      "pointer_target": "0x1506df0"
+    },
+    "TOOLTIP_BUILTIN_3BEC008_LAYOUT": {
+      "rva": "0x3bec010",
+      "bytes": "18020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC008_DROP_POINTER": {
+      "rva": "0x3bec008",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC008_Q_POINTER": {
+      "rva": "0x3bec0e8",
+      "pointer_target": "0x14a06b0"
+    },
+    "TOOLTIP_BUILTIN_3BEC008_W_POINTER": {
+      "rva": "0x3bec0f0",
+      "pointer_target": "0x14a0790"
+    },
+    "TOOLTIP_BUILTIN_3BEC008_R_POINTER": {
+      "rva": "0x3bec0f8",
+      "pointer_target": "0x14a05c0"
+    },
+    "TOOLTIP_BUILTIN_3BEC008_LOOKUP_RETURN": {
+      "rva": "0x19bf0f0",
+      "bytes": "488d1511cf2202e944ffffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB750_LAYOUT": {
+      "rva": "0x3beb758",
+      "bytes": "00020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB750_DROP_POINTER": {
+      "rva": "0x3beb750",
+      "pointer_target": "0x251ec0"
+    },
+    "TOOLTIP_BUILTIN_3BEB750_Q_POINTER": {
+      "rva": "0x3beb830",
+      "pointer_target": "0x1a76710"
+    },
+    "TOOLTIP_BUILTIN_3BEB750_W_POINTER": {
+      "rva": "0x3beb838",
+      "pointer_target": "0x19dad60"
+    },
+    "TOOLTIP_BUILTIN_3BEB750_R_POINTER": {
+      "rva": "0x3beb840",
+      "pointer_target": "0x1a76630"
+    },
+    "TOOLTIP_BUILTIN_3BEB750_LOOKUP_RETURN": {
+      "rva": "0x19bf17d",
+      "bytes": "488d15ccc52202e9b7feffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB940_LAYOUT": {
+      "rva": "0x3beb948",
+      "bytes": "38020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB940_DROP_POINTER": {
+      "rva": "0x3beb940",
+      "pointer_target": "0x251e20"
+    },
+    "TOOLTIP_BUILTIN_3BEB940_Q_POINTER": {
+      "rva": "0x3beba20",
+      "pointer_target": "0x15eb100"
+    },
+    "TOOLTIP_BUILTIN_3BEB940_W_POINTER": {
+      "rva": "0x3beba28",
+      "pointer_target": "0x15eb1b0"
+    },
+    "TOOLTIP_BUILTIN_3BEB940_R_POINTER": {
+      "rva": "0x3beba30",
+      "pointer_target": "0x15eb020"
+    },
+    "TOOLTIP_BUILTIN_3BEB940_LOOKUP_RETURN": {
+      "rva": "0x19bf223",
+      "bytes": "488d1516c72202e911feffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB180_LAYOUT": {
+      "rva": "0x3beb188",
+      "bytes": "d8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB180_DROP_POINTER": {
+      "rva": "0x3beb180",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEB180_Q_POINTER": {
+      "rva": "0x3beb260",
+      "pointer_target": "0x15418e0"
+    },
+    "TOOLTIP_BUILTIN_3BEB180_W_POINTER": {
+      "rva": "0x3beb268",
+      "pointer_target": "0x15419c0"
+    },
+    "TOOLTIP_BUILTIN_3BEB180_R_POINTER": {
+      "rva": "0x3beb270",
+      "pointer_target": "0x1541800"
+    },
+    "TOOLTIP_BUILTIN_3BEB180_LOOKUP_RETURN": {
+      "rva": "0x19bf319",
+      "bytes": "488d1560be2202e91bfdffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC100_LAYOUT": {
+      "rva": "0x3bec108",
+      "bytes": "30020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC100_DROP_POINTER": {
+      "rva": "0x3bec100",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEC100_Q_POINTER": {
+      "rva": "0x3bec1e0",
+      "pointer_target": "0x153d170"
+    },
+    "TOOLTIP_BUILTIN_3BEC100_W_POINTER": {
+      "rva": "0x3bec1e8",
+      "pointer_target": "0x153d270"
+    },
+    "TOOLTIP_BUILTIN_3BEC100_R_POINTER": {
+      "rva": "0x3bec1f0",
+      "pointer_target": "0x153d070"
+    },
+    "TOOLTIP_BUILTIN_3BEC100_LOOKUP_RETURN": {
+      "rva": "0x19bf3ad",
+      "bytes": "488d154ccd2202e987fcffff"
+    },
+    "TOOLTIP_BUILTIN_3BEACA8_LAYOUT": {
+      "rva": "0x3beacb0",
+      "bytes": "f8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEACA8_DROP_POINTER": {
+      "rva": "0x3beaca8",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEACA8_Q_POINTER": {
+      "rva": "0x3bead88",
+      "pointer_target": "0x14284e0"
+    },
+    "TOOLTIP_BUILTIN_3BEACA8_W_POINTER": {
+      "rva": "0x3bead90",
+      "pointer_target": "0x1428790"
+    },
+    "TOOLTIP_BUILTIN_3BEACA8_R_POINTER": {
+      "rva": "0x3bead98",
+      "pointer_target": "0x14a3ea0"
+    },
+    "TOOLTIP_BUILTIN_3BEACA8_LOOKUP_RETURN": {
+      "rva": "0x19bf4a1",
+      "bytes": "488d1500b82202e993fbffff"
+    },
+    "TOOLTIP_BUILTIN_3BEAAB8_LAYOUT": {
+      "rva": "0x3beaac0",
+      "bytes": "00020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEAAB8_DROP_POINTER": {
+      "rva": "0x3beaab8",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEAAB8_Q_POINTER": {
+      "rva": "0x3beab98",
+      "pointer_target": "0x12a5b90"
+    },
+    "TOOLTIP_BUILTIN_3BEAAB8_W_POINTER": {
+      "rva": "0x3beaba0",
+      "pointer_target": "0x12a5c60"
+    },
+    "TOOLTIP_BUILTIN_3BEAAB8_R_POINTER": {
+      "rva": "0x3beaba8",
+      "pointer_target": "0x12a5ab0"
+    },
+    "TOOLTIP_BUILTIN_3BEAAB8_LOOKUP_RETURN": {
+      "rva": "0x19bf523",
+      "bytes": "488d158eb52202e911fbffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB370_LAYOUT": {
+      "rva": "0x3beb378",
+      "bytes": "f8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB370_DROP_POINTER": {
+      "rva": "0x3beb370",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEB370_Q_POINTER": {
+      "rva": "0x3beb450",
+      "pointer_target": "0x153fc70"
+    },
+    "TOOLTIP_BUILTIN_3BEB370_W_POINTER": {
+      "rva": "0x3beb458",
+      "pointer_target": "0x153fd60"
+    },
+    "TOOLTIP_BUILTIN_3BEB370_R_POINTER": {
+      "rva": "0x3beb460",
+      "pointer_target": "0x153fb90"
+    },
+    "TOOLTIP_BUILTIN_3BEB370_LOOKUP_RETURN": {
+      "rva": "0x19bf5f4",
+      "bytes": "488d1575bd2202e940faffff"
+    },
+    "TOOLTIP_BUILTIN_3BEA9C0_LAYOUT": {
+      "rva": "0x3bea9c8",
+      "bytes": "e0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEA9C0_DROP_POINTER": {
+      "rva": "0x3bea9c0",
+      "pointer_target": "0x2521a0"
+    },
+    "TOOLTIP_BUILTIN_3BEA9C0_Q_POINTER": {
+      "rva": "0x3beaaa0",
+      "pointer_target": "0x153ee10"
+    },
+    "TOOLTIP_BUILTIN_3BEA9C0_W_POINTER": {
+      "rva": "0x3beaaa8",
+      "pointer_target": "0x153eee0"
+    },
+    "TOOLTIP_BUILTIN_3BEA9C0_R_POINTER": {
+      "rva": "0x3beaab0",
+      "pointer_target": "0x153ed30"
+    },
+    "TOOLTIP_BUILTIN_3BEA9C0_LOOKUP_RETURN": {
+      "rva": "0x19bf74c",
+      "bytes": "488d156db22202e9e8f8ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB278_LAYOUT": {
+      "rva": "0x3beb280",
+      "bytes": "18040000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB278_DROP_POINTER": {
+      "rva": "0x3beb278",
+      "pointer_target": "0x251fc0"
+    },
+    "TOOLTIP_BUILTIN_3BEB278_Q_POINTER": {
+      "rva": "0x3beb358",
+      "pointer_target": "0x19db830"
+    },
+    "TOOLTIP_BUILTIN_3BEB278_W_POINTER": {
+      "rva": "0x3beb360",
+      "pointer_target": "0x1a78520"
+    },
+    "TOOLTIP_BUILTIN_3BEB278_R_POINTER": {
+      "rva": "0x3beb368",
+      "pointer_target": "0x1a78420"
+    },
+    "TOOLTIP_BUILTIN_3BEB278_LOOKUP_RETURN": {
+      "rva": "0x19bf818",
+      "bytes": "488d1559ba2202e91cf8ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEAE98_LAYOUT": {
+      "rva": "0x3beaea0",
+      "bytes": "30020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEAE98_DROP_POINTER": {
+      "rva": "0x3beae98",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEAE98_Q_POINTER": {
+      "rva": "0x3beaf78",
+      "pointer_target": "0x15e88c0"
+    },
+    "TOOLTIP_BUILTIN_3BEAE98_W_POINTER": {
+      "rva": "0x3beaf80",
+      "pointer_target": "0x15e89a0"
+    },
+    "TOOLTIP_BUILTIN_3BEAE98_R_POINTER": {
+      "rva": "0x3beaf88",
+      "pointer_target": "0x15e87e0"
+    },
+    "TOOLTIP_BUILTIN_3BEAE98_LOOKUP_RETURN": {
+      "rva": "0x19bf8d9",
+      "bytes": "488d15b8b52202e95bf7ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEAF90_LAYOUT": {
+      "rva": "0x3beaf98",
+      "bytes": "40020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEAF90_DROP_POINTER": {
+      "rva": "0x3beaf90",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEAF90_Q_POINTER": {
+      "rva": "0x3beb070",
+      "pointer_target": "0x18f5a50"
+    },
+    "TOOLTIP_BUILTIN_3BEAF90_W_POINTER": {
+      "rva": "0x3beb078",
+      "pointer_target": "0x18bc5e0"
+    },
+    "TOOLTIP_BUILTIN_3BEAF90_R_POINTER": {
+      "rva": "0x3beb080",
+      "pointer_target": "0x18f5960"
+    },
+    "TOOLTIP_BUILTIN_3BEAF90_LOOKUP_RETURN": {
+      "rva": "0x19bfafd",
+      "bytes": "488d158cb42202e937f5ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED178_LAYOUT": {
+      "rva": "0x3bed180",
+      "bytes": "e8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED178_DROP_POINTER": {
+      "rva": "0x3bed178",
+      "pointer_target": "0x128c0"
+    },
+    "TOOLTIP_BUILTIN_3BED178_Q_POINTER": {
+      "rva": "0x3bed258",
+      "pointer_target": "0x1a75a10"
+    },
+    "TOOLTIP_BUILTIN_3BED178_W_POINTER": {
+      "rva": "0x3bed260",
+      "pointer_target": "0x19da5b0"
+    },
+    "TOOLTIP_BUILTIN_3BED178_R_POINTER": {
+      "rva": "0x3bed268",
+      "pointer_target": "0x1a75940"
+    },
+    "TOOLTIP_BUILTIN_3BED178_LOOKUP_RETURN": {
+      "rva": "0x19bfe15",
+      "bytes": "488d155cd32202e91ff2ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEE000_LAYOUT": {
+      "rva": "0x3bee008",
+      "bytes": "f8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEE000_DROP_POINTER": {
+      "rva": "0x3bee000",
+      "pointer_target": "0x252340"
+    },
+    "TOOLTIP_BUILTIN_3BEE000_Q_POINTER": {
+      "rva": "0x3bee0e0",
+      "pointer_target": "0x1a7abd0"
+    },
+    "TOOLTIP_BUILTIN_3BEE000_W_POINTER": {
+      "rva": "0x3bee0e8",
+      "pointer_target": "0x1a7aca0"
+    },
+    "TOOLTIP_BUILTIN_3BEE000_R_POINTER": {
+      "rva": "0x3bee0f0",
+      "pointer_target": "0x1a7ab00"
+    },
+    "TOOLTIP_BUILTIN_3BEE000_LOOKUP_RETURN": {
+      "rva": "0x19bfe7e",
+      "bytes": "488d157be12202e9b6f1ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC8C0_LAYOUT": {
+      "rva": "0x3bec8c8",
+      "bytes": "40020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC8C0_DROP_POINTER": {
+      "rva": "0x3bec8c0",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEC8C0_Q_POINTER": {
+      "rva": "0x3bec9a0",
+      "pointer_target": "0x18f6940"
+    },
+    "TOOLTIP_BUILTIN_3BEC8C0_W_POINTER": {
+      "rva": "0x3bec9a8",
+      "pointer_target": "0x18f6a40"
+    },
+    "TOOLTIP_BUILTIN_3BEC8C0_R_POINTER": {
+      "rva": "0x3bec9b0",
+      "pointer_target": "0x18f6850"
+    },
+    "TOOLTIP_BUILTIN_3BEC8C0_LOOKUP_RETURN": {
+      "rva": "0x19bfedc",
+      "bytes": "488d15ddc92202e958f1ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEDC20_LAYOUT": {
+      "rva": "0x3bedc28",
+      "bytes": "e0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEDC20_DROP_POINTER": {
+      "rva": "0x3bedc20",
+      "pointer_target": "0x128c0"
+    },
+    "TOOLTIP_BUILTIN_3BEDC20_Q_POINTER": {
+      "rva": "0x3bedd00",
+      "pointer_target": "0x15426c0"
+    },
+    "TOOLTIP_BUILTIN_3BEDC20_W_POINTER": {
+      "rva": "0x3bedd08",
+      "pointer_target": "0x1542790"
+    },
+    "TOOLTIP_BUILTIN_3BEDC20_R_POINTER": {
+      "rva": "0x3bedd10",
+      "pointer_target": "0x15425d0"
+    },
+    "TOOLTIP_BUILTIN_3BEDC20_LOOKUP_RETURN": {
+      "rva": "0x19c0109",
+      "bytes": "488d1510db2202e92befffff"
+    },
+    "TOOLTIP_BUILTIN_3BEDB28_LAYOUT": {
+      "rva": "0x3bedb30",
+      "bytes": "f8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEDB28_DROP_POINTER": {
+      "rva": "0x3bedb28",
+      "pointer_target": "0x251f40"
+    },
+    "TOOLTIP_BUILTIN_3BEDB28_Q_POINTER": {
+      "rva": "0x3bedc08",
+      "pointer_target": "0x14a1550"
+    },
+    "TOOLTIP_BUILTIN_3BEDB28_W_POINTER": {
+      "rva": "0x3bedc10",
+      "pointer_target": "0x14a1620"
+    },
+    "TOOLTIP_BUILTIN_3BEDB28_R_POINTER": {
+      "rva": "0x3bedc18",
+      "pointer_target": "0x14a1470"
+    },
+    "TOOLTIP_BUILTIN_3BEDB28_LOOKUP_RETURN": {
+      "rva": "0x19c0167",
+      "bytes": "488d15bad92202e9cdeeffff"
+    },
+    "TOOLTIP_BUILTIN_3BEE1F0_LAYOUT": {
+      "rva": "0x3bee1f8",
+      "bytes": "d8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEE1F0_DROP_POINTER": {
+      "rva": "0x3bee1f0",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEE1F0_Q_POINTER": {
+      "rva": "0x3bee2d0",
+      "pointer_target": "0x16c3d70"
+    },
+    "TOOLTIP_BUILTIN_3BEE1F0_W_POINTER": {
+      "rva": "0x3bee2d8",
+      "pointer_target": "0x16c3e50"
+    },
+    "TOOLTIP_BUILTIN_3BEE1F0_R_POINTER": {
+      "rva": "0x3bee2e0",
+      "pointer_target": "0x16c3ca0"
+    },
+    "TOOLTIP_BUILTIN_3BEE1F0_LOOKUP_RETURN": {
+      "rva": "0x19c03ba",
+      "bytes": "488d152fde2202e97aecffff"
+    },
+    "TOOLTIP_BUILTIN_3BEE0F8_LAYOUT": {
+      "rva": "0x3bee100",
+      "bytes": "c0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEE0F8_DROP_POINTER": {
+      "rva": "0x3bee0f8",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEE0F8_Q_POINTER": {
+      "rva": "0x3bee1d8",
+      "pointer_target": "0x12a7880"
+    },
+    "TOOLTIP_BUILTIN_3BEE0F8_W_POINTER": {
+      "rva": "0x3bee1e0",
+      "pointer_target": "0x12a7940"
+    },
+    "TOOLTIP_BUILTIN_3BEE0F8_R_POINTER": {
+      "rva": "0x3bee1e8",
+      "pointer_target": "0x12a77a0"
+    },
+    "TOOLTIP_BUILTIN_3BEE0F8_LOOKUP_RETURN": {
+      "rva": "0x19c0606",
+      "bytes": "488d15ebda2202e92eeaffff"
+    },
+    "TOOLTIP_BUILTIN_3BED840_LAYOUT": {
+      "rva": "0x3bed848",
+      "bytes": "d8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED840_DROP_POINTER": {
+      "rva": "0x3bed840",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BED840_Q_POINTER": {
+      "rva": "0x3bed920",
+      "pointer_target": "0x1a791e0"
+    },
+    "TOOLTIP_BUILTIN_3BED840_W_POINTER": {
+      "rva": "0x3bed928",
+      "pointer_target": "0x1a792c0"
+    },
+    "TOOLTIP_BUILTIN_3BED840_R_POINTER": {
+      "rva": "0x3bed930",
+      "pointer_target": "0x1a79110"
+    },
+    "TOOLTIP_BUILTIN_3BED840_LOOKUP_RETURN": {
+      "rva": "0x19c0664",
+      "bytes": "488d15d5d12202e9d0e9ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEDA30_LAYOUT": {
+      "rva": "0x3beda38",
+      "bytes": "48020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEDA30_DROP_POINTER": {
+      "rva": "0x3beda30",
+      "pointer_target": "0x251bc0"
+    },
+    "TOOLTIP_BUILTIN_3BEDA30_Q_POINTER": {
+      "rva": "0x3bedb10",
+      "pointer_target": "0x1a72fe0"
+    },
+    "TOOLTIP_BUILTIN_3BEDA30_W_POINTER": {
+      "rva": "0x3bedb18",
+      "pointer_target": "0x1a73090"
+    },
+    "TOOLTIP_BUILTIN_3BEDA30_R_POINTER": {
+      "rva": "0x3bedb20",
+      "pointer_target": "0x1a72f30"
+    },
+    "TOOLTIP_BUILTIN_3BEDA30_LOOKUP_RETURN": {
+      "rva": "0x19c06c2",
+      "bytes": "488d1567d32202e972e9ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED558_LAYOUT": {
+      "rva": "0x3bed560",
+      "bytes": "f0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED558_DROP_POINTER": {
+      "rva": "0x3bed558",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BED558_Q_POINTER": {
+      "rva": "0x3bed638",
+      "pointer_target": "0x153a7d0"
+    },
+    "TOOLTIP_BUILTIN_3BED558_W_POINTER": {
+      "rva": "0x3bed640",
+      "pointer_target": "0x153a8b0"
+    },
+    "TOOLTIP_BUILTIN_3BED558_R_POINTER": {
+      "rva": "0x3bed648",
+      "pointer_target": "0x153a700"
+    },
+    "TOOLTIP_BUILTIN_3BED558_LOOKUP_RETURN": {
+      "rva": "0x19c0720",
+      "bytes": "488d1531ce2202e914e9ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC9B8_LAYOUT": {
+      "rva": "0x3bec9c0",
+      "bytes": "38020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC9B8_DROP_POINTER": {
+      "rva": "0x3bec9b8",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEC9B8_Q_POINTER": {
+      "rva": "0x3beca98",
+      "pointer_target": "0x153c260"
+    },
+    "TOOLTIP_BUILTIN_3BEC9B8_W_POINTER": {
+      "rva": "0x3becaa0",
+      "pointer_target": "0x153c340"
+    },
+    "TOOLTIP_BUILTIN_3BEC9B8_R_POINTER": {
+      "rva": "0x3becaa8",
+      "pointer_target": "0x153c160"
+    },
+    "TOOLTIP_BUILTIN_3BEC9B8_LOOKUP_RETURN": {
+      "rva": "0x19c077e",
+      "bytes": "488d1533c22202e9b6e8ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED748_LAYOUT": {
+      "rva": "0x3bed750",
+      "bytes": "08020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED748_DROP_POINTER": {
+      "rva": "0x3bed748",
+      "pointer_target": "0x251da0"
+    },
+    "TOOLTIP_BUILTIN_3BED748_Q_POINTER": {
+      "rva": "0x3bed828",
+      "pointer_target": "0x1a74b60"
+    },
+    "TOOLTIP_BUILTIN_3BED748_W_POINTER": {
+      "rva": "0x3bed830",
+      "pointer_target": "0x1a74c10"
+    },
+    "TOOLTIP_BUILTIN_3BED748_R_POINTER": {
+      "rva": "0x3bed838",
+      "pointer_target": "0x1a74a90"
+    },
+    "TOOLTIP_BUILTIN_3BED748_LOOKUP_RETURN": {
+      "rva": "0x19c07dc",
+      "bytes": "488d1565cf2202e958e8ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED938_LAYOUT": {
+      "rva": "0x3bed940",
+      "bytes": "38020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED938_DROP_POINTER": {
+      "rva": "0x3bed938",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BED938_Q_POINTER": {
+      "rva": "0x3beda18",
+      "pointer_target": "0x15ece30"
+    },
+    "TOOLTIP_BUILTIN_3BED938_W_POINTER": {
+      "rva": "0x3beda20",
+      "pointer_target": "0x15ecf00"
+    },
+    "TOOLTIP_BUILTIN_3BED938_R_POINTER": {
+      "rva": "0x3beda28",
+      "pointer_target": "0x15ecd30"
+    },
+    "TOOLTIP_BUILTIN_3BED938_LOOKUP_RETURN": {
+      "rva": "0x19c083a",
+      "bytes": "488d15f7d02202e9fae7ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED650_LAYOUT": {
+      "rva": "0x3bed658",
+      "bytes": "c0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED650_DROP_POINTER": {
+      "rva": "0x3bed650",
+      "pointer_target": "0x128c0"
+    },
+    "TOOLTIP_BUILTIN_3BED650_Q_POINTER": {
+      "rva": "0x3bed730",
+      "pointer_target": "0x1a7bbd0"
+    },
+    "TOOLTIP_BUILTIN_3BED650_W_POINTER": {
+      "rva": "0x3bed738",
+      "pointer_target": "0x1a7bca0"
+    },
+    "TOOLTIP_BUILTIN_3BED650_R_POINTER": {
+      "rva": "0x3bed740",
+      "pointer_target": "0x1a7bb00"
+    },
+    "TOOLTIP_BUILTIN_3BED650_LOOKUP_RETURN": {
+      "rva": "0x19c0898",
+      "bytes": "488d15b1cd2202e99ce7ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED368_LAYOUT": {
+      "rva": "0x3bed370",
+      "bytes": "90010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED368_DROP_POINTER": {
+      "rva": "0x3bed368",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BED368_Q_POINTER": {
+      "rva": "0x3bed448",
+      "pointer_target": "0x1696250"
+    },
+    "TOOLTIP_BUILTIN_3BED368_W_POINTER": {
+      "rva": "0x3bed450",
+      "pointer_target": "0x16c23b0"
+    },
+    "TOOLTIP_BUILTIN_3BED368_R_POINTER": {
+      "rva": "0x3bed458",
+      "pointer_target": "0x16c22e0"
+    },
+    "TOOLTIP_BUILTIN_3BED368_LOOKUP_RETURN": {
+      "rva": "0x19c08f6",
+      "bytes": "488d156bca2202e93ee7ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEDE10_LAYOUT": {
+      "rva": "0x3bede18",
+      "bytes": "08020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEDE10_DROP_POINTER": {
+      "rva": "0x3bede10",
+      "pointer_target": "0x252200"
+    },
+    "TOOLTIP_BUILTIN_3BEDE10_Q_POINTER": {
+      "rva": "0x3bedef0",
+      "pointer_target": "0x1ad8560"
+    },
+    "TOOLTIP_BUILTIN_3BEDE10_W_POINTER": {
+      "rva": "0x3bedef8",
+      "pointer_target": "0x1b035e0"
+    },
+    "TOOLTIP_BUILTIN_3BEDE10_R_POINTER": {
+      "rva": "0x3bedf00",
+      "pointer_target": "0x1b03530"
+    },
+    "TOOLTIP_BUILTIN_3BEDE10_LOOKUP_RETURN": {
+      "rva": "0x19c095f",
+      "bytes": "488d15aad42202e9d5e6ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEDF08_LAYOUT": {
+      "rva": "0x3bedf10",
+      "bytes": "40020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEDF08_DROP_POINTER": {
+      "rva": "0x3bedf08",
+      "pointer_target": "0x252080"
+    },
+    "TOOLTIP_BUILTIN_3BEDF08_Q_POINTER": {
+      "rva": "0x3bedfe8",
+      "pointer_target": "0x153df30"
+    },
+    "TOOLTIP_BUILTIN_3BEDF08_W_POINTER": {
+      "rva": "0x3bedff0",
+      "pointer_target": "0x153e010"
+    },
+    "TOOLTIP_BUILTIN_3BEDF08_R_POINTER": {
+      "rva": "0x3bedff8",
+      "pointer_target": "0x153de80"
+    },
+    "TOOLTIP_BUILTIN_3BEDF08_LOOKUP_RETURN": {
+      "rva": "0x19c09c8",
+      "bytes": "488d1539d52202e96ce6ffff"
+    },
+    "TOOLTIP_BUILTIN_3BECBA8_LAYOUT": {
+      "rva": "0x3becbb0",
+      "bytes": "d0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BECBA8_DROP_POINTER": {
+      "rva": "0x3becba8",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BECBA8_Q_POINTER": {
+      "rva": "0x3becc88",
+      "pointer_target": "0x1a77520"
+    },
+    "TOOLTIP_BUILTIN_3BECBA8_W_POINTER": {
+      "rva": "0x3becc90",
+      "pointer_target": "0x1a77600"
+    },
+    "TOOLTIP_BUILTIN_3BECBA8_R_POINTER": {
+      "rva": "0x3becc98",
+      "pointer_target": "0x1a77450"
+    },
+    "TOOLTIP_BUILTIN_3BECBA8_LOOKUP_RETURN": {
+      "rva": "0x19c0a26",
+      "bytes": "488d157bc12202e90ee6ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC7C8_LAYOUT": {
+      "rva": "0x3bec7d0",
+      "bytes": "08020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC7C8_DROP_POINTER": {
+      "rva": "0x3bec7c8",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC7C8_Q_POINTER": {
+      "rva": "0x3bec8a8",
+      "pointer_target": "0x1539070"
+    },
+    "TOOLTIP_BUILTIN_3BEC7C8_W_POINTER": {
+      "rva": "0x3bec8b0",
+      "pointer_target": "0x1539170"
+    },
+    "TOOLTIP_BUILTIN_3BEC7C8_R_POINTER": {
+      "rva": "0x3bec8b8",
+      "pointer_target": "0x1538f80"
+    },
+    "TOOLTIP_BUILTIN_3BEC7C8_LOOKUP_RETURN": {
+      "rva": "0x19c0a84",
+      "bytes": "488d153dbd2202e9b0e5ffff"
+    },
+    "TOOLTIP_BUILTIN_3BED270_LAYOUT": {
+      "rva": "0x3bed278",
+      "bytes": "e0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED270_DROP_POINTER": {
+      "rva": "0x3bed270",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BED270_Q_POINTER": {
+      "rva": "0x3bed350",
+      "pointer_target": "0x1a73d90"
+    },
+    "TOOLTIP_BUILTIN_3BED270_W_POINTER": {
+      "rva": "0x3bed358",
+      "pointer_target": "0x1a73e70"
+    },
+    "TOOLTIP_BUILTIN_3BED270_R_POINTER": {
+      "rva": "0x3bed360",
+      "pointer_target": "0x1a73cb0"
+    },
+    "TOOLTIP_BUILTIN_3BED270_LOOKUP_RETURN": {
+      "rva": "0x19c0ae2",
+      "bytes": "488d1587c72202e952e5ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC6D0_LAYOUT": {
+      "rva": "0x3bec6d8",
+      "bytes": "d8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC6D0_DROP_POINTER": {
+      "rva": "0x3bec6d0",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC6D0_Q_POINTER": {
+      "rva": "0x3bec7b0",
+      "pointer_target": "0x12a4d50"
+    },
+    "TOOLTIP_BUILTIN_3BEC6D0_W_POINTER": {
+      "rva": "0x3bec7b8",
+      "pointer_target": "0x12a4e20"
+    },
+    "TOOLTIP_BUILTIN_3BEC6D0_R_POINTER": {
+      "rva": "0x3bec7c0",
+      "pointer_target": "0x12a4c70"
+    },
+    "TOOLTIP_BUILTIN_3BEC6D0_LOOKUP_RETURN": {
+      "rva": "0x19c0b40",
+      "bytes": "488d1589bb2202e9f4e4ffff"
+    },
+    "TOOLTIP_BUILTIN_3BECF88_LAYOUT": {
+      "rva": "0x3becf90",
+      "bytes": "e0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BECF88_DROP_POINTER": {
+      "rva": "0x3becf88",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BECF88_Q_POINTER": {
+      "rva": "0x3bed068",
+      "pointer_target": "0x153b5c0"
+    },
+    "TOOLTIP_BUILTIN_3BECF88_W_POINTER": {
+      "rva": "0x3bed070",
+      "pointer_target": "0x153b6a0"
+    },
+    "TOOLTIP_BUILTIN_3BECF88_R_POINTER": {
+      "rva": "0x3bed078",
+      "pointer_target": "0x153b4e0"
+    },
+    "TOOLTIP_BUILTIN_3BECF88_LOOKUP_RETURN": {
+      "rva": "0x19c0b9e",
+      "bytes": "488d15e3c32202e996e4ffff"
+    },
+    "TOOLTIP_BUILTIN_3BECE90_LAYOUT": {
+      "rva": "0x3bece98",
+      "bytes": "70020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BECE90_DROP_POINTER": {
+      "rva": "0x3bece90",
+      "pointer_target": "0x2522c0"
+    },
+    "TOOLTIP_BUILTIN_3BECE90_Q_POINTER": {
+      "rva": "0x3becf70",
+      "pointer_target": "0x14a3170"
+    },
+    "TOOLTIP_BUILTIN_3BECE90_W_POINTER": {
+      "rva": "0x3becf78",
+      "pointer_target": "0x14a3220"
+    },
+    "TOOLTIP_BUILTIN_3BECE90_R_POINTER": {
+      "rva": "0x3becf80",
+      "pointer_target": "0x14a3080"
+    },
+    "TOOLTIP_BUILTIN_3BECE90_LOOKUP_RETURN": {
+      "rva": "0x19c0bfc",
+      "bytes": "488d158dc22202e938e4ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEBD20_LAYOUT": {
+      "rva": "0x3bebd28",
+      "bytes": "20020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEBD20_DROP_POINTER": {
+      "rva": "0x3bebd20",
+      "pointer_target": "0x251e20"
+    },
+    "TOOLTIP_BUILTIN_3BEBD20_Q_POINTER": {
+      "rva": "0x3bebe00",
+      "pointer_target": "0x1a7c990"
+    },
+    "TOOLTIP_BUILTIN_3BEBD20_W_POINTER": {
+      "rva": "0x3bebe08",
+      "pointer_target": "0x1a7ca70"
+    },
+    "TOOLTIP_BUILTIN_3BEBD20_R_POINTER": {
+      "rva": "0x3bebe10",
+      "pointer_target": "0x1a7c8c0"
+    },
+    "TOOLTIP_BUILTIN_3BEBD20_LOOKUP_RETURN": {
+      "rva": "0x19c0c5a",
+      "bytes": "488d15bfb02202e9dae3ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC1F8_LAYOUT": {
+      "rva": "0x3bec200",
+      "bytes": "38020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC1F8_DROP_POINTER": {
+      "rva": "0x3bec1f8",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEC1F8_Q_POINTER": {
+      "rva": "0x3bec2d8",
+      "pointer_target": "0x18f7840"
+    },
+    "TOOLTIP_BUILTIN_3BEC1F8_W_POINTER": {
+      "rva": "0x3bec2e0",
+      "pointer_target": "0x18f7920"
+    },
+    "TOOLTIP_BUILTIN_3BEC1F8_R_POINTER": {
+      "rva": "0x3bec2e8",
+      "pointer_target": "0x18f7740"
+    },
+    "TOOLTIP_BUILTIN_3BEC1F8_LOOKUP_RETURN": {
+      "rva": "0x19c0cb8",
+      "bytes": "488d1539b52202e97ce3ffff"
+    },
+    "TOOLTIP_BUILTIN_3BECD98_LAYOUT": {
+      "rva": "0x3becda0",
+      "bytes": "40020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BECD98_DROP_POINTER": {
+      "rva": "0x3becd98",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BECD98_Q_POINTER": {
+      "rva": "0x3bece78",
+      "pointer_target": "0x18f8520"
+    },
+    "TOOLTIP_BUILTIN_3BECD98_W_POINTER": {
+      "rva": "0x3bece80",
+      "pointer_target": "0x18f8620"
+    },
+    "TOOLTIP_BUILTIN_3BECD98_R_POINTER": {
+      "rva": "0x3bece88",
+      "pointer_target": "0x18f8440"
+    },
+    "TOOLTIP_BUILTIN_3BECD98_LOOKUP_RETURN": {
+      "rva": "0x19c0d16",
+      "bytes": "488d157bc02202e91ee3ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEDD18_LAYOUT": {
+      "rva": "0x3bedd20",
+      "bytes": "18020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEDD18_DROP_POINTER": {
+      "rva": "0x3bedd18",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEDD18_Q_POINTER": {
+      "rva": "0x3beddf8",
+      "pointer_target": "0x12a87b0"
+    },
+    "TOOLTIP_BUILTIN_3BEDD18_W_POINTER": {
+      "rva": "0x3bede00",
+      "pointer_target": "0x12a8890"
+    },
+    "TOOLTIP_BUILTIN_3BEDD18_R_POINTER": {
+      "rva": "0x3bede08",
+      "pointer_target": "0x12a86c0"
+    },
+    "TOOLTIP_BUILTIN_3BEDD18_LOOKUP_RETURN": {
+      "rva": "0x19c0d7f",
+      "bytes": "488d1592cf2202e9b5e2ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEBF10_LAYOUT": {
+      "rva": "0x3bebf18",
+      "bytes": "c0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEBF10_DROP_POINTER": {
+      "rva": "0x3bebf10",
+      "pointer_target": "0x128c0"
+    },
+    "TOOLTIP_BUILTIN_3BEBF10_Q_POINTER": {
+      "rva": "0x3bebff0",
+      "pointer_target": "0x12a6a60"
+    },
+    "TOOLTIP_BUILTIN_3BEBF10_W_POINTER": {
+      "rva": "0x3bebff8",
+      "pointer_target": "0x12a6b40"
+    },
+    "TOOLTIP_BUILTIN_3BEBF10_R_POINTER": {
+      "rva": "0x3bec000",
+      "pointer_target": "0x12a69a0"
+    },
+    "TOOLTIP_BUILTIN_3BEBF10_LOOKUP_RETURN": {
+      "rva": "0x19c0fa1",
+      "bytes": "488d1568af2202e993e0ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC5D8_LAYOUT": {
+      "rva": "0x3bec5e0",
+      "bytes": "00020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC5D8_DROP_POINTER": {
+      "rva": "0x3bec5d8",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC5D8_Q_POINTER": {
+      "rva": "0x3bec6b8",
+      "pointer_target": "0x16c0610"
+    },
+    "TOOLTIP_BUILTIN_3BEC5D8_W_POINTER": {
+      "rva": "0x3bec6c0",
+      "pointer_target": "0x16c06e0"
+    },
+    "TOOLTIP_BUILTIN_3BEC5D8_R_POINTER": {
+      "rva": "0x3bec6c8",
+      "pointer_target": "0x16c0510"
+    },
+    "TOOLTIP_BUILTIN_3BEC5D8_LOOKUP_RETURN": {
+      "rva": "0x19c0fff",
+      "bytes": "488d15d2b52202e935e0ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB848_LAYOUT": {
+      "rva": "0x3beb850",
+      "bytes": "e8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB848_DROP_POINTER": {
+      "rva": "0x3beb848",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEB848_Q_POINTER": {
+      "rva": "0x3beb928",
+      "pointer_target": "0x12a3f20"
+    },
+    "TOOLTIP_BUILTIN_3BEB848_W_POINTER": {
+      "rva": "0x3beb930",
+      "pointer_target": "0x12a4000"
+    },
+    "TOOLTIP_BUILTIN_3BEB848_R_POINTER": {
+      "rva": "0x3beb938",
+      "pointer_target": "0x12a3e30"
+    },
+    "TOOLTIP_BUILTIN_3BEB848_LOOKUP_RETURN": {
+      "rva": "0x19c105d",
+      "bytes": "488d15e4a72202e9d7dfffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB658_LAYOUT": {
+      "rva": "0x3beb660",
+      "bytes": "10020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB658_DROP_POINTER": {
+      "rva": "0x3beb658",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEB658_Q_POINTER": {
+      "rva": "0x3beb738",
+      "pointer_target": "0x15ea390"
+    },
+    "TOOLTIP_BUILTIN_3BEB658_W_POINTER": {
+      "rva": "0x3beb740",
+      "pointer_target": "0x15ea480"
+    },
+    "TOOLTIP_BUILTIN_3BEB658_R_POINTER": {
+      "rva": "0x3beb748",
+      "pointer_target": "0x15ea2a0"
+    },
+    "TOOLTIP_BUILTIN_3BEB658_LOOKUP_RETURN": {
+      "rva": "0x19c10bb",
+      "bytes": "488d1596a52202e979dfffff"
+    },
+    "TOOLTIP_BUILTIN_3BECCA0_LAYOUT": {
+      "rva": "0x3becca8",
+      "bytes": "e0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BECCA0_DROP_POINTER": {
+      "rva": "0x3becca0",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BECCA0_Q_POINTER": {
+      "rva": "0x3becd80",
+      "pointer_target": "0x16c4b50"
+    },
+    "TOOLTIP_BUILTIN_3BECCA0_W_POINTER": {
+      "rva": "0x3becd88",
+      "pointer_target": "0x16c4c20"
+    },
+    "TOOLTIP_BUILTIN_3BECCA0_R_POINTER": {
+      "rva": "0x3becd90",
+      "pointer_target": "0x16c4a70"
+    },
+    "TOOLTIP_BUILTIN_3BECCA0_LOOKUP_RETURN": {
+      "rva": "0x19c1119",
+      "bytes": "488d1580bb2202e91bdfffff"
+    },
+    "TOOLTIP_BUILTIN_3BEADA0_LAYOUT": {
+      "rva": "0x3beada8",
+      "bytes": "40020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEADA0_DROP_POINTER": {
+      "rva": "0x3beada0",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEADA0_Q_POINTER": {
+      "rva": "0x3beae80",
+      "pointer_target": "0x134de00"
+    },
+    "TOOLTIP_BUILTIN_3BEADA0_W_POINTER": {
+      "rva": "0x3beae88",
+      "pointer_target": "0x134def0"
+    },
+    "TOOLTIP_BUILTIN_3BEADA0_R_POINTER": {
+      "rva": "0x3beae90",
+      "pointer_target": "0x134dd00"
+    },
+    "TOOLTIP_BUILTIN_3BEADA0_LOOKUP_RETURN": {
+      "rva": "0x19c1177",
+      "bytes": "488d15229c2202e9bddeffff"
+    },
+    "TOOLTIP_BUILTIN_3BECAB0_LAYOUT": {
+      "rva": "0x3becab8",
+      "bytes": "e8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BECAB0_DROP_POINTER": {
+      "rva": "0x3becab0",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BECAB0_Q_POINTER": {
+      "rva": "0x3becb90",
+      "pointer_target": "0x1540b00"
+    },
+    "TOOLTIP_BUILTIN_3BECAB0_W_POINTER": {
+      "rva": "0x3becb98",
+      "pointer_target": "0x1540be0"
+    },
+    "TOOLTIP_BUILTIN_3BECAB0_R_POINTER": {
+      "rva": "0x3becba0",
+      "pointer_target": "0x1540a10"
+    },
+    "TOOLTIP_BUILTIN_3BECAB0_LOOKUP_RETURN": {
+      "rva": "0x19c11d5",
+      "bytes": "488d15d4b82202e95fdeffff"
+    },
+    "TOOLTIP_BUILTIN_3BED460_LAYOUT": {
+      "rva": "0x3bed468",
+      "bytes": "d8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED460_DROP_POINTER": {
+      "rva": "0x3bed460",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BED460_Q_POINTER": {
+      "rva": "0x3bed540",
+      "pointer_target": "0x16c2fb0"
+    },
+    "TOOLTIP_BUILTIN_3BED460_W_POINTER": {
+      "rva": "0x3bed548",
+      "pointer_target": "0x16c3090"
+    },
+    "TOOLTIP_BUILTIN_3BED460_R_POINTER": {
+      "rva": "0x3bed550",
+      "pointer_target": "0x16c2ed0"
+    },
+    "TOOLTIP_BUILTIN_3BED460_LOOKUP_RETURN": {
+      "rva": "0x19c1233",
+      "bytes": "488d1526c22202e901deffff"
+    },
+    "TOOLTIP_BUILTIN_3BEBB30_LAYOUT": {
+      "rva": "0x3bebb38",
+      "bytes": "c8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEBB30_DROP_POINTER": {
+      "rva": "0x3bebb30",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEBB30_Q_POINTER": {
+      "rva": "0x3bebc10",
+      "pointer_target": "0x13225f0"
+    },
+    "TOOLTIP_BUILTIN_3BEBB30_W_POINTER": {
+      "rva": "0x3bebc18",
+      "pointer_target": "0x134c330"
+    },
+    "TOOLTIP_BUILTIN_3BEBB30_R_POINTER": {
+      "rva": "0x3bebc20",
+      "pointer_target": "0x134c270"
+    },
+    "TOOLTIP_BUILTIN_3BEBB30_LOOKUP_RETURN": {
+      "rva": "0x19c1291",
+      "bytes": "488d1598a82202e9a3ddffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC2F0_LAYOUT": {
+      "rva": "0x3bec2f8",
+      "bytes": "c0020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC2F0_DROP_POINTER": {
+      "rva": "0x3bec2f0",
+      "pointer_target": "0x251d00"
+    },
+    "TOOLTIP_BUILTIN_3BEC2F0_Q_POINTER": {
+      "rva": "0x3bec3d0",
+      "pointer_target": "0x18f4d90"
+    },
+    "TOOLTIP_BUILTIN_3BEC2F0_W_POINTER": {
+      "rva": "0x3bec3d8",
+      "pointer_target": "0x18f4e40"
+    },
+    "TOOLTIP_BUILTIN_3BEC2F0_R_POINTER": {
+      "rva": "0x3bec3e0",
+      "pointer_target": "0x18f4cc0"
+    },
+    "TOOLTIP_BUILTIN_3BEC2F0_LOOKUP_RETURN": {
+      "rva": "0x19c12ef",
+      "bytes": "488d15faaf2202e945ddffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB468_LAYOUT": {
+      "rva": "0x3beb470",
+      "bytes": "d0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB468_DROP_POINTER": {
+      "rva": "0x3beb468",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEB468_Q_POINTER": {
+      "rva": "0x3beb548",
+      "pointer_target": "0x16c15f0"
+    },
+    "TOOLTIP_BUILTIN_3BEB468_W_POINTER": {
+      "rva": "0x3beb550",
+      "pointer_target": "0x16c16d0"
+    },
+    "TOOLTIP_BUILTIN_3BEB468_R_POINTER": {
+      "rva": "0x3beb558",
+      "pointer_target": "0x16c1520"
+    },
+    "TOOLTIP_BUILTIN_3BEB468_LOOKUP_RETURN": {
+      "rva": "0x19c134d",
+      "bytes": "488d1514a12202e9e7dcffff"
+    },
+    "TOOLTIP_BUILTIN_3BEA8C8_LAYOUT": {
+      "rva": "0x3bea8d0",
+      "bytes": "10020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEA8C8_DROP_POINTER": {
+      "rva": "0x3bea8c8",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEA8C8_Q_POINTER": {
+      "rva": "0x3bea9a8",
+      "pointer_target": "0x134b460"
+    },
+    "TOOLTIP_BUILTIN_3BEA8C8_W_POINTER": {
+      "rva": "0x3bea9b0",
+      "pointer_target": "0x134b550"
+    },
+    "TOOLTIP_BUILTIN_3BEA8C8_R_POINTER": {
+      "rva": "0x3bea9b8",
+      "pointer_target": "0x134b360"
+    },
+    "TOOLTIP_BUILTIN_3BEA8C8_LOOKUP_RETURN": {
+      "rva": "0x19c13ab",
+      "bytes": "488d1516952202e989dcffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC4E0_LAYOUT": {
+      "rva": "0x3bec4e8",
+      "bytes": "28020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC4E0_DROP_POINTER": {
+      "rva": "0x3bec4e0",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC4E0_Q_POINTER": {
+      "rva": "0x3bec5c0",
+      "pointer_target": "0x16c5a80"
+    },
+    "TOOLTIP_BUILTIN_3BEC4E0_W_POINTER": {
+      "rva": "0x3bec5c8",
+      "pointer_target": "0x16c5b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC4E0_R_POINTER": {
+      "rva": "0x3bec5d0",
+      "pointer_target": "0x16c5980"
+    },
+    "TOOLTIP_BUILTIN_3BEC4E0_LOOKUP_RETURN": {
+      "rva": "0x19c1409",
+      "bytes": "488d15d0b02202e92bdcffff"
+    },
+    "TOOLTIP_BUILTIN_3BED080_LAYOUT": {
+      "rva": "0x3bed088",
+      "bytes": "c0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BED080_DROP_POINTER": {
+      "rva": "0x3bed080",
+      "pointer_target": "0x252120"
+    },
+    "TOOLTIP_BUILTIN_3BED080_Q_POINTER": {
+      "rva": "0x3bed160",
+      "pointer_target": "0x19e51c0"
+    },
+    "TOOLTIP_BUILTIN_3BED080_W_POINTER": {
+      "rva": "0x3bed168",
+      "pointer_target": "0x19e5470"
+    },
+    "TOOLTIP_BUILTIN_3BED080_R_POINTER": {
+      "rva": "0x3bed170",
+      "pointer_target": "0x1a79ee0"
+    },
+    "TOOLTIP_BUILTIN_3BED080_LOOKUP_RETURN": {
+      "rva": "0x19c1467",
+      "bytes": "488d1512bc2202e9cddbffff"
+    },
+    "TOOLTIP_BUILTIN_3BEC3E8_LAYOUT": {
+      "rva": "0x3bec3f0",
+      "bytes": "e0010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEC3E8_DROP_POINTER": {
+      "rva": "0x3bec3e8",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEC3E8_Q_POINTER": {
+      "rva": "0x3bec4c8",
+      "pointer_target": "0x134d040"
+    },
+    "TOOLTIP_BUILTIN_3BEC3E8_W_POINTER": {
+      "rva": "0x3bec4d0",
+      "pointer_target": "0x134d110"
+    },
+    "TOOLTIP_BUILTIN_3BEC3E8_R_POINTER": {
+      "rva": "0x3bec4d8",
+      "pointer_target": "0x134cf50"
+    },
+    "TOOLTIP_BUILTIN_3BEC3E8_LOOKUP_RETURN": {
+      "rva": "0x19c14c5",
+      "bytes": "488d151caf2202e96fdbffff"
+    },
+    "TOOLTIP_BUILTIN_3BEBE18_LAYOUT": {
+      "rva": "0x3bebe20",
+      "bytes": "d8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEBE18_DROP_POINTER": {
+      "rva": "0x3bebe18",
+      "pointer_target": "0x128c0"
+    },
+    "TOOLTIP_BUILTIN_3BEBE18_Q_POINTER": {
+      "rva": "0x3bebef8",
+      "pointer_target": "0x1ad7d30"
+    },
+    "TOOLTIP_BUILTIN_3BEBE18_W_POINTER": {
+      "rva": "0x3bebf00",
+      "pointer_target": "0x1ad7ef0"
+    },
+    "TOOLTIP_BUILTIN_3BEBE18_R_POINTER": {
+      "rva": "0x3bebf08",
+      "pointer_target": "0x1b01990"
+    },
+    "TOOLTIP_BUILTIN_3BEBE18_LOOKUP_RETURN": {
+      "rva": "0x19c1523",
+      "bytes": "488d15eea82202e911dbffff"
+    },
+    "TOOLTIP_BUILTIN_3BEBC28_LAYOUT": {
+      "rva": "0x3bebc30",
+      "bytes": "c8010000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEBC28_DROP_POINTER": {
+      "rva": "0x3bebc28",
+      "pointer_target": "0x251b60"
+    },
+    "TOOLTIP_BUILTIN_3BEBC28_Q_POINTER": {
+      "rva": "0x3bebd08",
+      "pointer_target": "0x14a23a0"
+    },
+    "TOOLTIP_BUILTIN_3BEBC28_W_POINTER": {
+      "rva": "0x3bebd10",
+      "pointer_target": "0x14a2470"
+    },
+    "TOOLTIP_BUILTIN_3BEBC28_R_POINTER": {
+      "rva": "0x3bebd18",
+      "pointer_target": "0x14a22b0"
+    },
+    "TOOLTIP_BUILTIN_3BEBC28_LOOKUP_RETURN": {
+      "rva": "0x19c1581",
+      "bytes": "488d15a0a62202e9b3daffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB560_LAYOUT": {
+      "rva": "0x3beb568",
+      "bytes": "10020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB560_DROP_POINTER": {
+      "rva": "0x3beb560",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEB560_Q_POINTER": {
+      "rva": "0x3beb640",
+      "pointer_target": "0x17462c0"
+    },
+    "TOOLTIP_BUILTIN_3BEB560_W_POINTER": {
+      "rva": "0x3beb648",
+      "pointer_target": "0x17463b0"
+    },
+    "TOOLTIP_BUILTIN_3BEB560_R_POINTER": {
+      "rva": "0x3beb650",
+      "pointer_target": "0x17461c0"
+    },
+    "TOOLTIP_BUILTIN_3BEB560_LOOKUP_RETURN": {
+      "rva": "0x19c15df",
+      "bytes": "488d157a9f2202e955daffff"
+    },
+    "TOOLTIP_BUILTIN_3BEB088_LAYOUT": {
+      "rva": "0x3beb090",
+      "bytes": "28020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEB088_DROP_POINTER": {
+      "rva": "0x3beb088",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEB088_Q_POINTER": {
+      "rva": "0x3beb168",
+      "pointer_target": "0x15ebfd0"
+    },
+    "TOOLTIP_BUILTIN_3BEB088_W_POINTER": {
+      "rva": "0x3beb170",
+      "pointer_target": "0x15b1810"
+    },
+    "TOOLTIP_BUILTIN_3BEB088_R_POINTER": {
+      "rva": "0x3beb178",
+      "pointer_target": "0x15ebee0"
+    },
+    "TOOLTIP_BUILTIN_3BEB088_LOOKUP_RETURN": {
+      "rva": "0x19c163d",
+      "bytes": "488d15449a2202e9f7d9ffff"
+    },
+    "TOOLTIP_BUILTIN_3BEABB0_LAYOUT": {
+      "rva": "0x3beabb8",
+      "bytes": "08020000000000000800000000000000"
+    },
+    "TOOLTIP_BUILTIN_3BEABB0_DROP_POINTER": {
+      "rva": "0x3beabb0",
+      "pointer_target": "0x251c80"
+    },
+    "TOOLTIP_BUILTIN_3BEABB0_Q_POINTER": {
+      "rva": "0x3beac90",
+      "pointer_target": "0x1b026f0"
+    },
+    "TOOLTIP_BUILTIN_3BEABB0_W_POINTER": {
+      "rva": "0x3beac98",
+      "pointer_target": "0x1b027e0"
+    },
+    "TOOLTIP_BUILTIN_3BEABB0_R_POINTER": {
+      "rva": "0x3beaca0",
+      "pointer_target": "0x1b02610"
+    },
+    "TOOLTIP_BUILTIN_3BEABB0_LOOKUP_RETURN": {
+      "rva": "0x19c169b",
+      "bytes": "488d150e952202e999d9ffff"
+    },
+    "TOOLTIP_BUILTIN_LOOKUP_ENTRY": {
+      "rva": "0x19beff0",
+      "bytes": "55415741565657534881ec48060000488dac248000000048c785c0050000feffffff4c89c7"
+    }
   }
 }
