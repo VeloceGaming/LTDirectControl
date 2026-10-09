@@ -41,3 +41,4 @@
 /tools/render_design_reference.cjs
 /tools/prepare_hud_review.py
 /tools/prepare_endfield_preview.py
+/tools/compare_hud_review.py
