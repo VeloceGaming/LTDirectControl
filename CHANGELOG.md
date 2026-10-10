@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.5 — 2026-10-10
+
+- The emote sound plays 25% louder (playback volume 0.3 to 0.375); the sound file is unchanged.
+
 ## 1.0.4 — 2026-10-10
 
 - The camera jumped back to the champion after the shop closed, and after any pause: it centred whenever the match went from not running to running. It now centres at match start and when control is taken back from the AI only (`centred` in camera.rs, tested); a pause and resume leaves it where it was.

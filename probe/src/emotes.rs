@@ -454,7 +454,7 @@ impl Emotes {
         }
         if std::mem::take(&mut self.pending_sound) && config.sound {
             // This small original asset is prepackaged; SDK queues playback.
-            if !ctx.play_sound("asset/lt_direct_control/sound/sfx/emote", 0.3) {
+            if !ctx.play_sound("asset/lt_direct_control/sound/sfx/emote", 0.375) {
                 log.write("EMOTE sound request unavailable; image remains usable");
             }
         }
