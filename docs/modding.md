@@ -248,7 +248,7 @@ Previews come from the game's own skill data, never per-skill code:
   a champion JSON that uses it, then add a decoder and a test with the
   logged words.
 - `skill_preview.rs` places the footprints (`placed`) and draws them as the
-  design's pieces (`drawing`: area, corridor with the spearhead arrow,
+  design's pieces (`drawing`: area, corridor (a strip with chevrons and an end cap),
   cone, wall, dash, blink, unit target, range ring). Data-driven and
   Workshop champions' JSON trees are the fallback.
 - `preview_style.json` holds every colour, width, opacity and size of the

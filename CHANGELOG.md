@@ -3,6 +3,17 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.13 — 2026-10-11
+
+- Development build for game 0.7.0. Skill previews restyled (the user's choices from mock-ups; design/previews/dash-arrows-v2.svg): the spearhead arrow is gone.
+  - Line skills: the strip at its true width is the main element, with a visible fill (0.2, was 0.045), yellow edges (were faint white) and small chevrons along it for the direction. No arrow is laid over it.
+  - Strip ends: both edges trail on past the end when the shot is known to pass through units, a solid bar when it is known to stop at the first one (`Shape::Shot`); a thin closing edge otherwise. Known so far: Hypnotist Q passes through, Ferryman Q stops. Strips with absolute endpoints get no chevrons.
+  - Dashes and movement: up to three chevrons closing on the landing point, the nearest the largest and brightest, with a faint dotted lead-in when there is room; never drawn behind the start (tested).
+  - A skill whose area is not understood: a small white crosshair where it is aimed (with the range ring), no arrow and no strip, so it cannot be mistaken for a line skill.
+  - Circles are unchanged.
+  - preview_style.json: the `arrow_*`, `skillshot_*`, `dash_head` and `dash_wing` keys are gone (overrides of them are ignored); `corridor_*`, `chevron_*`, `guide_*`, `dash_start` and `hover_range_*` are new.
+- Hovering a skill slot on the HUD: its range ring is drawn in the skill's colour (was only the faint grey aiming ring, easy to miss). Shapes centred on the champion are shown as before; shapes that need an aim are not.
+
 ## 1.1.12 — 2026-10-11
 
 - Shop: several copies of one item queued together are each bought. Each order excludes the copies owned when it was queued; queued together they excluded none, so the first finished copy also satisfied the next order, and one order left the queue at every later purchase (user log: four queued, one bought, the queue emptied over the next three purchases). The slot that finishes an order is now excluded from the later orders for the same item (tested). Present since 1.0.3.

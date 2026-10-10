@@ -321,7 +321,17 @@ unsafe fn payload(
             match word(object + 0x98) as u8 {
                 // Ferryman Q (stops at the first unit), Hypnotist Q (passes
                 // through): a shot of hit radius word 1 over the range.
-                4 | 12 => strip(at(1), out),
+                tag @ (4 | 12) => match (at(1), at(0)) {
+                    (Some(radius), Some(length)) => out.add(
+                        Shape::Shot {
+                            radius,
+                            length,
+                            pierce: tag == 12,
+                        },
+                        Placement::Caster,
+                    ),
+                    _ => out.issue("invalid native champion skill shot"),
+                },
                 // Gladiator W, Ferryman W: a strip from the caster toward
                 // the aim, up to the range long (read for Ferryman W).
                 1 | 6 => strip(at(6), out),

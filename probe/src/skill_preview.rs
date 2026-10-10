@@ -59,6 +59,13 @@ pub enum Shape {
     Movement {
         blink: bool,
     },
+    /// A shot from the caster of hit radius `radius` over `length`, known to
+    /// pass through units (`pierce`) or to stop at the first one.
+    Shot {
+        radius: f32,
+        length: f32,
+        pierce: bool,
+    },
     /// A ring around the caster at its basic attack range plus `extra`
     /// (Bombardier Q's cannon mode). Drawn only while that range is known.
     Reach {
@@ -109,6 +116,7 @@ impl Geometry {
                     && !matches!(
                         f.shape,
                         Shape::Corridor { .. }
+                            | Shape::Shot { .. }
                             | Shape::Cone { .. }
                             | Shape::Movement { .. }
                             | Shape::Fan { .. }
@@ -724,119 +732,174 @@ fn area(d: &mut Drawing, s: &Style, center: Point, radius: f32, ink: Ink, with_g
 }
 /// A skillshot's hit corridor: a faint full-width body with thin white
 /// edges (the direction arrow is drawn separately).
-fn corridor_body(d: &mut Drawing, s: &Style, from: Point, to: Point, half: f32, ink: Ink) {
+/// How a strip ends.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum End {
+    /// Not a direction of travel (absolute endpoints): closed, no chevrons.
+    Still,
+    /// Nothing is known about what stops it: a thin closing edge.
+    Plain,
+    /// It passes through units: both edges trail on past the end.
+    Open,
+    /// It stops at the first unit it hits: a solid bar.
+    Capped,
+}
+/// A strip at its true width: fill, both edges, chevrons along it for the
+/// direction it travels, and its end.
+fn corridor_body(
+    d: &mut Drawing,
+    s: &Style,
+    from: Point,
+    to: Point,
+    half: f32,
+    ink: Ink,
+    end: End,
+) {
     let Some(body) = corridor(from, to, half) else {
         return;
     };
     d.fill(s, &body, ink.col, s.corridor_fill);
-    let edge = alpha(ink.white, s.corridor_edge_opacity);
+    let edge = alpha(ink.col, s.corridor_edge_opacity);
     d.line(body[0], body[1], s.corridor_edge_width, edge, Z_CORE);
     d.line(body[3], body[2], s.corridor_edge_width, edge, Z_CORE);
-}
-/// The open-spearhead arrow from `a` to `b`: tapered spine, two split
-/// facets with a bright upper edge, a white tip and a small origin grip.
-/// Skillshots use the larger head.
-fn arrow(d: &mut Drawing, s: &Style, a: Point, b: Point, ink: Ink, skillshot: bool) {
-    let length = (b.0 - a.0).hypot(b.1 - a.1);
-    let Some(dir) = unit_vector(a, b).filter(|_| length >= 12.) else {
-        d.disc(b, 2.5, alpha(ink.col, 1.));
+    let Some(dir) = unit_vector(from, to) else {
         return;
     };
-    let n = (-dir.1, dir.0);
-    let q = |x: f32, y: f32| (a.0 + dir.0 * x + n.0 * y, a.1 + dir.1 * x + n.1 * y);
-    let (head, wing) = if skillshot {
-        (s.skillshot_head, s.skillshot_wing)
-    } else {
-        (s.dash_head, s.dash_wing)
-    };
-    let h = head.min(length * 0.42);
-    let wing = h * wing;
-    let neck = length - h;
-    let outline = |d: &mut Drawing, points: &[Point], width: f32| {
-        d.poly(
-            points,
-            width + s.arrow_ink_extra,
-            alpha(s.ink, s.arrow_ink_opacity),
-            true,
-            Z_INK,
-        );
-        d.poly(
-            points,
-            width,
-            alpha(ink.col, s.arrow_outline_opacity),
-            true,
-            Z_MAIN,
-        );
-    };
-    let spine = [
-        q(0., 0.),
-        q(14f32.min(neck * 0.3), -2.5),
-        q((neck - 13.).max(4.), -5.),
-        q(neck + 4., 0.),
-        q((neck - 13.).max(4.), 5.),
-        q(14f32.min(neck * 0.3), 2.5),
-    ];
-    d.fill(s, &spine, ink.col, s.arrow_body_fill);
-    outline(d, &spine, s.arrow_body_width);
-    for sign in [-1f32, 1.] {
-        let facet = [
-            q(neck - 2., wing * sign),
-            q(length, 0.),
-            q(length - 10., 0.),
-            q(neck + 9., wing * 0.4 * sign),
-        ];
-        let fill = if sign < 0. {
-            s.arrow_upper_facet_fill
-        } else {
-            s.arrow_lower_facet_fill
-        };
-        d.fill(s, &facet, ink.col, fill);
-        outline(d, &facet, s.arrow_head_width);
-        if sign < 0. {
-            d.line(
-                facet[0],
-                facet[1],
-                s.arrow_head_width,
-                alpha(ink.white, s.arrow_edge_opacity),
+    let length = (to.0 - from.0).hypot(to.1 - from.1);
+    let wing = s.corridor_chevron_half.min(half - 2.);
+    if end != End::Still && wing >= 2. && s.corridor_chevron_step >= 4. {
+        let color = alpha(ink.white, s.corridor_chevron_opacity);
+        let mut x = s.corridor_chevron_step;
+        while x < length - wing {
+            let tip = (from.0 + dir.0 * x, from.1 + dir.1 * x);
+            d.poly(
+                &chevron(tip, dir, wing),
+                s.corridor_chevron_width,
+                color,
+                false,
                 Z_CORE,
+            );
+            x += s.corridor_chevron_step;
+        }
+    }
+    match end {
+        End::Still | End::Plain => d.line(body[1], body[2], s.corridor_edge_width, edge, Z_CORE),
+        End::Open => {
+            let reach = 2. * (s.corridor_open_dash + s.corridor_open_gap);
+            for corner in [body[1], body[2]] {
+                let start = (
+                    corner.0 + dir.0 * s.corridor_open_gap,
+                    corner.1 + dir.1 * s.corridor_open_gap,
+                );
+                let stop = (corner.0 + dir.0 * reach, corner.1 + dir.1 * reach);
+                d.dashed(
+                    start,
+                    stop,
+                    s.corridor_edge_width,
+                    edge,
+                    s.corridor_open_dash,
+                    s.corridor_open_gap,
+                );
+            }
+        }
+        End::Capped => {
+            let n = (-dir.1, dir.0);
+            let over = half + s.corridor_cap_over;
+            d.line(
+                (to.0 - n.0 * over, to.1 - n.1 * over),
+                (to.0 + n.0 * over, to.1 + n.1 * over),
+                s.corridor_cap_width,
+                alpha(ink.col, 1.),
+                Z_MAIN,
             );
         }
     }
-    d.line(
-        q(length - 9., 0.),
-        q(length, 0.),
-        s.arrow_tip_width,
-        alpha(ink.white, 1.),
-        Z_TOP,
-    );
-    let grip_color = alpha(ink.col, s.arrow_grip_opacity);
-    d.line(
-        q(-5., -8.),
-        q(3., -4.),
-        s.arrow_grip_width,
-        grip_color,
-        Z_MAIN,
-    );
-    d.line(
-        q(-5., 8.),
-        q(3., 4.),
-        s.arrow_grip_width,
-        grip_color,
-        Z_MAIN,
-    );
 }
-/// Dash: the spearhead from just ahead of the caster to the landing point,
-/// or a compact grip when the dash is very short.
+/// A chevron pointing along `dir` with its point at `tip`.
+fn chevron(tip: Point, dir: Point, half: f32) -> [Point; 3] {
+    let n = (-dir.1, dir.0);
+    let back = (tip.0 - dir.0 * half, tip.1 - dir.1 * half);
+    [
+        (back.0 - n.0 * half, back.1 - n.1 * half),
+        tip,
+        (back.0 + n.0 * half, back.1 + n.1 * half),
+    ]
+}
+/// Movement from `a` to `b`: up to three chevrons closing on `b`, the
+/// nearest the largest and brightest, and a faint dotted lead-in when there
+/// is room. A chevron that would start behind `a` is left out.
+fn chevrons(d: &mut Drawing, s: &Style, a: Point, b: Point, ink: Ink) {
+    let length = (b.0 - a.0).hypot(b.1 - a.1);
+    let Some(dir) = unit_vector(a, b) else {
+        return;
+    };
+    let mut furthest = 0.;
+    for k in 0..3 {
+        let k = k as f32;
+        let half = s.chevron_half - s.chevron_shrink * k;
+        let back = 2. + s.chevron_step * k;
+        if half < 2. || back + half > length {
+            break;
+        }
+        furthest = back + half;
+        let points = chevron((b.0 - dir.0 * back, b.1 - dir.1 * back), dir, half);
+        let width = (s.chevron_width - s.chevron_thin * k).max(1.);
+        d.poly(
+            &points,
+            width + s.chevron_ink_extra,
+            alpha(s.ink, s.chevron_ink_opacity),
+            false,
+            Z_INK,
+        );
+        d.poly(
+            &points,
+            width,
+            alpha(ink.col, 1. - s.chevron_fade * k),
+            false,
+            Z_MAIN,
+        );
+    }
+    let lead = length - furthest - 2. * s.chevron_lead_gap;
+    if furthest > 0. && lead >= 3. * (s.chevron_lead_dash + s.chevron_lead_gap) {
+        d.dashed(
+            a,
+            (a.0 + dir.0 * lead, a.1 + dir.1 * lead),
+            s.chevron_lead_width,
+            alpha(ink.col, s.chevron_lead_opacity),
+            s.chevron_lead_dash,
+            s.chevron_lead_gap,
+        );
+    }
+}
+/// Dash: chevrons from just ahead of the caster to the landing point, or a
+/// compact grip when the dash is very short.
 fn dash(d: &mut Drawing, s: &Style, caster: Point, end: Point, ink: Ink) {
     match unit_vector(caster, end) {
         Some(dir) if (end.0 - caster.0).hypot(end.1 - caster.1) >= s.dash_short => {
             let start = (
-                caster.0 + dir.0 * s.arrow_start,
-                caster.1 + dir.1 * s.arrow_start,
+                caster.0 + dir.0 * s.dash_start,
+                caster.1 + dir.1 * s.dash_start,
             );
-            arrow(d, s, start, end, ink, false);
+            chevrons(d, s, start, end, ink);
         }
         _ => grip(d, s, end, ink, s.dash_short_grip),
+    }
+}
+/// A skill whose area is not understood: a small white crosshair where it
+/// is aimed. It claims no shape and no direction.
+fn crosshair(d: &mut Drawing, s: &Style, p: Point, ink: Ink) {
+    let color = alpha(ink.white, s.guide_opacity);
+    let ring = arc_points(p, s.guide_ring, s.guide_ring, 0., std::f32::consts::TAU);
+    d.poly(&ring, s.guide_width, color, true, Z_MAIN);
+    let (inner, outer) = (s.guide_ring - 1., s.guide_ring + s.guide_tick);
+    for (x, y) in [(1., 0.), (-1., 0.), (0., 1.), (0., -1.)] {
+        d.line(
+            (p.0 + x * inner, p.1 + y * inner),
+            (p.0 + x * outer, p.1 + y * outer),
+            s.guide_width,
+            color,
+            Z_MAIN,
+        );
     }
 }
 /// Blink: a four-part destination aperture, a core dot and a white pin.
@@ -1071,14 +1134,22 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 // projectile is still drawn as a thin line.
                 let length = if length > 0. { length } else { range };
                 let end = project(endpoint(base, aiming, length, true));
-                corridor_body(&mut out, s, at, end, radius.max(1.5) * sx, ink);
-                if let Some(dir) = unit_vector(at, end) {
-                    let start = (at.0 + dir.0 * s.arrow_start, at.1 + dir.1 * s.arrow_start);
-                    arrow(&mut out, s, start, end, ink, true);
-                }
+                let half = radius.max(1.5) * sx;
+                corridor_body(&mut out, s, at, end, half, ink, End::Plain);
+            }
+            Shape::Shot {
+                radius,
+                length,
+                pierce,
+            } => {
+                let end = project(endpoint(base, aiming, length, true));
+                let cap = if pierce { End::Open } else { End::Capped };
+                corridor_body(&mut out, s, at, end, radius.max(1.5) * sx, ink, cap);
             }
             Shape::Segment { radius, from, to } => {
-                corridor_body(&mut out, s, project(from), project(to), radius * sx, ink);
+                // Absolute endpoints: no direction of travel is implied.
+                let (a, b) = (project(from), project(to));
+                corridor_body(&mut out, s, a, b, radius * sx, ink, End::Still);
             }
             Shape::Movement { blink: true } => blink(&mut out, s, at, ink),
             Shape::Reach { extra } => {
@@ -1102,12 +1173,7 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                     for offset in fan_offsets(count) {
                         let d = turned(dir, offset);
                         let end = project((base.0 + d.0 * length, base.1 + d.1 * length));
-                        corridor_body(&mut out, s, at, end, radius * sx, ink);
-                        if let Some(sd) = unit_vector(at, end) {
-                            let start = (at.0 + sd.0 * s.arrow_start, at.1 + sd.1 * s.arrow_start);
-                            // Smaller heads keep up to 10 blades readable.
-                            arrow(&mut out, s, start, end, ink, false);
-                        }
+                        corridor_body(&mut out, s, at, end, radius * sx, ink, End::Plain);
                     }
                 }
             }
@@ -1118,14 +1184,9 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
         let end = endpoint(origin, aim, range, p.casting == 2);
         let at = project(end);
         if p.geometry.footprints.is_empty() && !p.geometry.known_without_area() {
-            // Limited guide: the direction only, for skills not understood.
-            if let Some(dir) = unit_vector(center, at) {
-                let start = (
-                    center.0 + dir.0 * s.arrow_start,
-                    center.1 + dir.1 * s.arrow_start,
-                );
-                arrow(&mut out, s, start, at, ink, true);
-            }
+            // Limited guide, for skills not understood: where it is aimed,
+            // with no claim about shape or direction.
+            crosshair(&mut out, s, at, ink);
         }
         if p.casting == 1 && (end.0 - aim.0).hypot(end.1 - aim.1) > 0.1 {
             beyond(&mut out, s, at, project(aim), p.ready);
@@ -1165,10 +1226,22 @@ pub fn hover_drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let center = frame.project_unclipped(p.origin.0 as f32 / 1000., p.origin.1 as f32 / 1000.);
     let (sx, sy) = (2048. / frame.extent.0, 2048. / frame.extent.1);
     let self_area = p.self_target || p.casting == 3 || p.geometry.self_area();
-    if p.range > 0 && !self_area {
-        range_ring(&mut out, s, center, p.range as f32 / 1000. * sx);
-    }
     let ink = Ink::of(s, p.ready);
+    if p.range > 0 && !self_area {
+        // No aim while the pointer is on the HUD: the range is the whole
+        // preview, so it is drawn in the skill's colour, not the faint
+        // aiming ring.
+        let radius = p.range as f32 / 1000. * sx;
+        range_ring(&mut out, s, center, radius);
+        let ring = arc_points(center, radius, radius, 0., std::f32::consts::TAU);
+        out.poly(
+            &ring,
+            s.hover_range_width,
+            alpha(ink.col, s.hover_range_opacity),
+            true,
+            Z_MAIN,
+        );
+    }
     for footprint in &p.geometry.footprints {
         let centered = footprint.placement == Placement::Caster
             || footprint.placement == Placement::Aim && (p.self_target || p.casting == 3);
@@ -1324,7 +1397,12 @@ mod tests {
         assert!(d
             .strokes
             .iter()
-            .all(|s| rgb(s.color) == st.gray || rgb(s.color) == st.ink));
+            .all(|s| [st.gray, st.ink, st.yellow].contains(&rgb(s.color))));
+        // The range itself is drawn in the skill's colour.
+        assert!(d
+            .strokes
+            .iter()
+            .any(|s| rgb(s.color) == st.yellow && s.width == st.hover_range_width));
         assert!(d
             .strokes
             .iter()
@@ -1477,39 +1555,72 @@ mod tests {
         assert!(strips(&[(0., 0.), (1., 1.)], 3.).is_empty());
     }
     #[test]
-    fn spearhead_follows_the_design_geometry() {
+    fn a_dash_is_chevrons_closing_on_the_landing_point() {
         let st = style();
         let ink = Ink::of(st, true);
         let mut d = Drawing::default();
-        // A 200 px dash along +x: 37 px head, wings 0.48 of it.
-        arrow(&mut d, st, (0., 0.), (200., 0.), ink, false);
-        let (neck, wing) = (200. - st.dash_head, st.dash_head * st.dash_wing);
-        // The upper facet's bright edge runs from its shoulder to the tip.
-        assert!(d.strokes.iter().any(|s| rgb(s.color) == st.white
-            && near(s.a, (neck - 2., -wing))
-            && near(s.b, (200., 0.))));
-        // The white tip ends exactly at the end point.
-        assert!(d
-            .strokes
-            .iter()
-            .any(|s| s.z == Z_TOP && near(s.a, (191., 0.)) && near(s.b, (200., 0.))));
-        // Skillshots use the larger head; short arrows shrink it.
+        // A 200 px dash along +x: three chevrons, the nearest with its
+        // point 2 px short of the end and the full half width.
+        chevrons(&mut d, st, (0., 0.), (200., 0.), ink);
+        let h = st.chevron_half;
+        let points = |d: &Drawing, tip: Point, half: f32| {
+            d.strokes
+                .iter()
+                .any(|s| s.z == Z_MAIN && near(s.a, (tip.0 - half, tip.1 - half)) && near(s.b, tip))
+                && d.strokes.iter().any(|s| {
+                    s.z == Z_MAIN && near(s.a, tip) && near(s.b, (tip.0 - half, tip.1 + half))
+                })
+        };
+        assert!(points(&d, (198., 0.), h));
+        assert!(points(
+            &d,
+            (198. - st.chevron_step, 0.),
+            h - st.chevron_shrink
+        ));
+        assert!(points(
+            &d,
+            (198. - 2. * st.chevron_step, 0.),
+            h - 2. * st.chevron_shrink
+        ));
+        // Nothing is drawn behind the start, however short the dash.
         let mut d = Drawing::default();
-        arrow(&mut d, st, (0., 0.), (50., 0.), ink, true);
-        let h = 50. * 0.42;
-        assert!(d
-            .strokes
-            .iter()
-            .any(|s| near(s.a, (50. - h - 2., -h * st.skillshot_wing))));
-        // A very short dash is a grip, not a reversed arrow.
+        chevrons(&mut d, st, (0., 0.), (20., 0.), ink);
+        assert!(points(&d, (18., 0.), h));
+        assert!(d.strokes.iter().all(|s| s.a.0 >= -0.01 && s.b.0 >= -0.01));
+        // A very short dash is a grip, not chevrons.
         let mut d = Drawing::default();
         dash(&mut d, st, (0., 0.), (10., 0.), ink);
         let top = (10., -st.dash_short_grip);
         assert!(d.strokes.iter().any(|s| near(s.a, top)));
-        assert!(!d
-            .strokes
-            .iter()
-            .any(|s| s.z == Z_TOP && rgb(s.color) == st.white && s.width == st.arrow_tip_width));
+    }
+    #[test]
+    fn a_strip_ends_open_when_it_passes_through_and_capped_when_it_stops() {
+        let st = style();
+        let ink = Ink::of(st, true);
+        let bar = |d: &Drawing| {
+            d.strokes.iter().any(|s| {
+                s.width == st.corridor_cap_width && near(s.a, (100., -8. - st.corridor_cap_over))
+            })
+        };
+        let beyond = |d: &Drawing| d.strokes.iter().any(|s| s.a.0 > 100.5 || s.b.0 > 100.5);
+        let mut d = Drawing::default();
+        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Capped);
+        assert!(bar(&d) && !beyond(&d));
+        let mut d = Drawing::default();
+        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Open);
+        assert!(!bar(&d) && beyond(&d));
+        // Chevrons along a travelling strip, none on a still one.
+        let inner = |d: &Drawing| {
+            d.strokes
+                .iter()
+                .filter(|s| rgb(s.color) == st.white && s.width == st.corridor_chevron_width)
+                .count()
+        };
+        assert!(inner(&d) >= 4);
+        let mut d = Drawing::default();
+        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Still);
+        assert_eq!(inner(&d), 0);
+        assert!(!bar(&d) && !beyond(&d));
     }
     #[test]
     fn a_cone_at_the_caster_sweeps_toward_the_aim() {
@@ -1553,7 +1664,7 @@ mod tests {
         // +90 turns +x (screen right) to +y (screen down): clockwise.
         let v = turned((1., 0.), 90.);
         assert!(v.0.abs() < 1e-6 && (v.1 - 1.).abs() < 1e-6);
-        // Drawn: one white tip per blade.
+        // Drawn: two edges and a closing end per blade.
         let mut geometry = Geometry::default();
         geometry.add(
             Shape::Fan {
@@ -1577,12 +1688,14 @@ mod tests {
             },
         );
         let st = style();
-        let tips = d
+        let edges = d
             .strokes
             .iter()
-            .filter(|s| s.z == Z_TOP && s.width == st.arrow_tip_width && rgb(s.color) == st.white)
+            .filter(|s| {
+                s.z == Z_CORE && s.width == st.corridor_edge_width && rgb(s.color) == st.yellow
+            })
             .count();
-        assert_eq!(tips, 4);
+        assert_eq!(edges, 12);
     }
     #[test]
     fn understood_skills_without_an_area_get_no_direction_guide() {
@@ -1839,7 +1952,7 @@ mod tests {
             assert!(d
                 .strokes
                 .iter()
-                .any(|s| rgb(s.color) == style().white && (s.a.1 - edge).abs() < 0.01));
+                .any(|s| rgb(s.color) == style().yellow && (s.a.1 - edge).abs() < 0.01));
             assert!(d
                 .strokes
                 .iter()
