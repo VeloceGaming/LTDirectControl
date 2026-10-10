@@ -630,8 +630,9 @@ impl Shop {
         }
     }
     /// Shop window: queue items after the ones already queued, in order
-    /// (Recommended's "Queue whole build"); items already owned or queued are
-    /// skipped. Returns how many were added.
+    /// (Recommended's "Queue whole build"). A build may list an item more than
+    /// once: each copy already owned or queued covers one of them. Returns
+    /// how many were added.
     pub fn enqueue_back(
         &self,
         items: &[usize],
@@ -641,13 +642,20 @@ impl Shop {
             return 0;
         };
         let mut added = 0;
+        let mut covered = std::collections::HashMap::new();
         for item in items {
-            if !s.queue.iter().any(|o| o.item == *item) && !s.live.owned.contains(item) {
-                let mut order = new_order(&s.live, *item);
-                order.path = path(*item);
-                s.queue.push(order);
-                added += 1;
+            let have = covered.entry(*item).or_insert_with(|| {
+                s.live.owned.iter().filter(|o| *o == item).count()
+                    + s.queue.iter().filter(|o| o.item == *item).count()
+            });
+            if *have > 0 {
+                *have -= 1;
+                continue;
             }
+            let mut order = new_order(&s.live, *item);
+            order.path = path(*item);
+            s.queue.push(order);
+            added += 1;
         }
         added
     }
@@ -1147,6 +1155,11 @@ mod tests {
         // Dirk is owned now and left the queue; boots join after the flare.
         assert_eq!(shop.enqueue_back(&[2, 7, 6], |_| None), 1);
         assert_eq!(shop.view().unwrap().queue, vec![6, 7]);
+        // A build listing an item twice queues the missing copy: one dirk
+        // is owned, one flare is queued.
+        assert_eq!(shop.enqueue_back(&[2, 2, 6, 6, 7], |_| None), 2);
+        assert_eq!(shop.view().unwrap().queue, vec![6, 7, 2, 6]);
+        assert_eq!(shop.enqueue_back(&[2, 2, 6, 6, 7], |_| None), 0);
     }
 
     #[test]

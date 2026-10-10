@@ -1042,11 +1042,11 @@ fn template() -> String {
         1523,
     ));
     for i in 0..CHIPS {
-        let mut c = rect("plate", (0, 0, 176, 50), "~292726ff", 1524);
+        let mut c = rect("plate", (0, 0, 166, 50), "~292726ff", 1524);
         c.push_str(&art("icon", (6, 7, 36), 1525));
         c.push_str(&label(
             "name",
-            (48, 4, 100, 24),
+            (48, 4, 90, 24),
             14,
             "",
             true,
@@ -1056,7 +1056,7 @@ fn template() -> String {
         ));
         c.push_str(&label(
             "price",
-            (48, 26, 100, 20),
+            (48, 26, 90, 20),
             13,
             "",
             true,
@@ -1064,16 +1064,27 @@ fn template() -> String {
             "Left",
             1525,
         ));
-        c.push_str(&glyph("x", "ef_x", (152, 17, 16), "989694ff", 1525));
+        c.push_str(&glyph("x", "ef_x", (142, 17, 16), "989694ff", 1525));
         s.push_str(&button(
             &format!("chip{i}"),
-            (610 + i as i32 * 184, 801, 176, 50),
+            (610 + i as i32 * 174, 801, 166, 50),
             "",
             12,
             1523,
             &c,
         ));
     }
+    // Orders queued beyond the chips shown ("+2").
+    s.push_str(&label(
+        "queue_more",
+        (1302, 801, 52, 50),
+        18,
+        "",
+        true,
+        "989694ff",
+        "Center",
+        1523,
+    ));
     s.push_str(&label(
         "queue_empty",
         (610, 801, 300, 50),
@@ -2046,9 +2057,10 @@ impl ShopUi {
                     self.props(ctx, &node, format!("visible: true; x: {x}px; y: {y:.1}px; btn: {{ back_color: #{back:08x}; color: #{}; stroke: {}; }}", if selected { SELECTED } else if hover { "ffffffff" } else { "00000000" }, if selected { 2 } else { u32::from(hover) }));
                     self.icon(ctx, &format!("{node}.icon"), hud, Some(&key));
                     let badge = Self::badge(view, item);
-                    // Item list: owned items look normal; items you cannot
-                    // buy right now (gold or a full inventory) are dimmed.
-                    let dim = !view.live.owned.contains(&item) && !self.buyable(view, item);
+                    // Item list: items you cannot buy right now (gold or a
+                    // full inventory) are dimmed, owned or not: another copy
+                    // can be bought.
+                    let dim = !self.buyable(view, item);
                     self.tint(ctx, &format!("{node}.icon"), dim);
                     // League price: gold still needed; red when not affordable now.
                     self.price_label(ctx, &format!("{node}.price"), view, item);
@@ -2930,6 +2942,9 @@ impl ShopUi {
             },
         );
         self.visible(ctx, "queue_empty", view.queue.is_empty());
+        let more = view.queue.len().saturating_sub(CHIPS);
+        self.visible(ctx, "queue_more", more > 0);
+        self.text(ctx, "queue_more", &format!("+{more}"));
         self.chips = view.queue.iter().copied().take(CHIPS).collect();
         for i in 0..CHIPS {
             let node = format!("chip{i}");
@@ -2941,7 +2956,7 @@ impl ShopUi {
             let name = self.name(ctx, hud, &key);
             self.visible(ctx, &node, true);
             self.icon(ctx, &format!("{node}.icon"), hud, Some(&key));
-            let (short, _) = crate::hud_style::wrap(&name, 14., 100.);
+            let (short, _) = crate::hud_style::wrap(&name, 14., 90.);
             self.text(
                 ctx,
                 &format!("{node}.name"),

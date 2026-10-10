@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.3 — 2026-10-10
+
+- "Queue whole build" queued an item the build lists twice only once, and skipped it entirely when one copy was owned: it tested "queued or owned" by item, not by count. It now queues each listed copy that an owned or already queued copy does not cover (tested).
+- The queue strip shows four orders; longer queues looked cut off (the log showed six orders queued, four drawn). A "+N" count after the fourth chip shows how many more are queued. The chips are 10 px narrower to make room.
+- Item grid: an item you cannot buy right now is dimmed even when you own a copy, matching its red price; owned items used to stay bright because a second copy could not be bought when that rule was written. The recipe tree and Builds into are unchanged.
+
 ## 1.0.2 — 2026-10-10
 
 - The Background colour field went blank after scrolling the Interface page. Settings rows are a recycled pool: scrolling moved the option into another row slot, whose own native text field was empty, and the empty text was read as typed input. The field now carries its text over when its row slot changes (`hex_step`, tested). The saved colour was never affected.
