@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.7 — 2026-10-10
+
+- Development build for game 0.7.0. An "Emote volume" slider (0 to 100% in steps of 5, 70% by default) replaces the emote sound switch; 0% is silent. The game accepts a playback volume from 0 to 1, so the setting can only turn a sound down: 100% is the level of the sound file, and the game's SFX volume applies on top. Translated in all 16 languages.
+- The built-in sound is generated at a higher level (peak 20% of full scale, was 14%) and was played at a fixed 0.375: measured against the WAV effects in the game bundle, its average level at 70% is now a little above the game's median effect (it was under half of it). A steady tone is far denser than its peak suggests, so it is not raised to the game's peak level.
+- Settings saved with the old switch off stay silent; with it on they get the default 70% (tested).
+- Groundwork for imported emote sounds (WAV, levelled at import), which would use the same slider.
+
 ## 1.1.6 — 2026-10-10
 
 - Development build for game 0.7.0: the outline family joins (unit outlines, exact unit hit boxes from drawn sprites, the death greyscale). Only the readers family (native tooltips and skill previews) is still off.
