@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.12 — 2026-10-11
+
+- Shop: several copies of one item queued together are each bought. Each order excludes the copies owned when it was queued; queued together they excluded none, so the first finished copy also satisfied the next order, and one order left the queue at every later purchase (user log: four queued, one bought, the queue emptied over the next three purchases). The slot that finishes an order is now excluded from the later orders for the same item (tested). Present since 1.0.3.
+- Skill previews for the four 0.7.0 champions, whose twelve skills are one effect (apply 0x160da70, 160 bytes, skill number in the byte at +0x98): Ferryman Q and Hypnotist Q as a strip of the shot's hit radius (word 1) over the range (word 0); Gladiator W and Ferryman W as a strip of half width word 6 over the range; Bombardier W/R and Hypnotist W/R as a circle of radius word 4 at the aim; Gladiator R and Ferryman R have no area; Gladiator Q is not read and keeps the generic guide. The field meanings come from the values and the player's description of each skill; only Ferryman W's use of the range was read in the code. The strips' width may be half or full: to be checked in game.
+- Bombardier Q: a marker at the aim and a ring around him at his basic attack range plus word 12 (50), taken to be the range bonus of his cannon mode; to be checked in game.
+- Log: `MANUAL rebound` names the champion chosen before the match starts (the earlier `MANUAL bound` line names the default lane).
+
 ## 1.1.11 — 2026-10-11
 
 - Development build for game 0.7.0. "HUD tooltips" (Settings, Interface, Appearance): On hover (default, as before), Hold key and hover, or Off, for the skill and item tooltips of the HUD; the shop window's tooltips are not affected. The key is the new binding "HUD tooltip (hold)", Alt by default. In every mode the tooltip is hidden while a mouse button is held, so a click or drag passing over the HUD does not open it (requested on the Workshop). Translated in all 16 languages.

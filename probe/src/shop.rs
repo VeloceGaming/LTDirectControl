@@ -295,6 +295,30 @@ pub fn assign(cat: &[Item], owned: &[usize], orders: &[Order], full: bool) -> Ve
         .collect()
 }
 
+/// Orders the inventory satisfies leave the queue. The slot that satisfied
+/// one is then excluded from the later orders for the same item: several
+/// copies queued together own none of them yet, and the first finished copy
+/// must not also finish the second.
+pub fn retire(queue: &mut Vec<Order>, assigned: &[Assigned]) {
+    let finished: Vec<(usize, usize)> = queue
+        .iter()
+        .zip(assigned)
+        .filter_map(|(o, a)| match a {
+            Assigned::Done(slot) => Some((o.item, *slot)),
+            Assigned::Open(_) => None,
+        })
+        .collect();
+    let mut done = assigned.iter().map(|a| matches!(a, Assigned::Done(_)));
+    queue.retain(|_| !done.next().unwrap_or(false));
+    for (item, slot) in finished {
+        for order in queue.iter_mut().filter(|o| o.item == item) {
+            if !order.excluded.contains(&slot) {
+                order.excluded.push(slot);
+            }
+        }
+    }
+}
+
 fn slots_full(live: &Live) -> bool {
     let cap = live.slots();
     cap > 0 && live.owned.len() >= cap
@@ -802,8 +826,7 @@ impl Shop {
         // Orders the inventory already satisfies leave the queue.
         s.queue.retain(|o| o.item < cat.len());
         let assigned = assign(&cat, &live.owned, &s.queue, slots_full(&live));
-        let mut done = assigned.iter().map(|a| matches!(a, Assigned::Done(_)));
-        s.queue.retain(|_| !done.next().unwrap_or(false));
+        retire(&mut s.queue, &assigned);
         // The first order whose next step is affordable now.
         let step = next_step(&cat, &live, &s.queue, s.vanilla_order).map(|(_, step)| step);
         s.step = step;
@@ -1516,6 +1539,49 @@ mod tests {
         // No recipe leads into or out of an item that is off.
         assert_eq!(cat[0].next, vec![2]);
         assert!(cat[1].next.is_empty());
+    }
+    #[test]
+    fn copies_queued_together_are_each_bought() {
+        // Four copies queued while owning none (the 1.1.11 report): the first
+        // finished copy retired one order per purchase until none was left.
+        let order = |item| Order {
+            item,
+            excluded: Vec::new(),
+            path: None,
+        };
+        let mut queue = vec![order(7), order(7), order(7), order(3)];
+        let pass = |queue: &mut Vec<Order>, owned: &[usize]| {
+            let assigned: Vec<Assigned> = {
+                let mut claimed = vec![false; owned.len()];
+                queue
+                    .iter()
+                    .map(|o| {
+                        match (0..owned.len()).find(|i| {
+                            !claimed[*i] && owned[*i] == o.item && !o.excluded.contains(i)
+                        }) {
+                            Some(i) => {
+                                claimed[i] = true;
+                                Assigned::Done(i)
+                            }
+                            None => Assigned::Open(None),
+                        }
+                    })
+                    .collect()
+            };
+            retire(queue, &assigned);
+            queue.len()
+        };
+        // The first copy is finished in slot 0.
+        assert_eq!(pass(&mut queue, &[7]), 3);
+        // A component of the second copy arrives, then is upgraded: the
+        // finished copy in slot 0 satisfies nothing more.
+        assert_eq!(pass(&mut queue, &[7, 1]), 3);
+        assert_eq!(pass(&mut queue, &[7, 2]), 3);
+        // The second copy finishes in slot 1, later the third in slot 2.
+        assert_eq!(pass(&mut queue, &[7, 7]), 2);
+        assert_eq!(pass(&mut queue, &[7, 7, 1]), 2);
+        assert_eq!(pass(&mut queue, &[7, 7, 7]), 1);
+        assert_eq!(queue[0].item, 3);
     }
     #[test]
     fn whole_build_queue_copies_preferences_and_automatic_orders_stay_unpinned() {

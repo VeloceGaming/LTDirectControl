@@ -59,6 +59,11 @@ pub enum Shape {
     Movement {
         blink: bool,
     },
+    /// A ring around the caster at its basic attack range plus `extra`
+    /// (Bombardier Q's cannon mode). Drawn only while that range is known.
+    Reach {
+        extra: f32,
+    },
     /// Dancer R: `count` blades from the caster, each `length` long with hit
     /// radius `radius`, spread by the game's rule (`fan_offsets`).
     Fan {
@@ -117,6 +122,16 @@ impl Geometry {
     }
 }
 static SHAPES: OnceLock<HashMap<String, [Geometry; 3]>> = OnceLock::new();
+/// The controlled champion's basic attack range in thousandths of a world
+/// unit (0 = unknown), for `Shape::Reach`. Written by the movement module.
+static ATTACK_RANGE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+pub fn set_attack_range(range: Option<u64>) {
+    ATTACK_RANGE.store(range.unwrap_or(0), std::sync::atomic::Ordering::Relaxed);
+}
+fn attack_range() -> Option<f32> {
+    let range = ATTACK_RANGE.load(std::sync::atomic::Ordering::Relaxed);
+    (range > 0).then_some(range as f32 / 1000.)
+}
 pub fn initialize(log: &Logger) {
     let base: Value =
         serde_json::from_str(include_str!("preview_assets.json")).expect("preview declarations");
@@ -1066,6 +1081,18 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 corridor_body(&mut out, s, project(from), project(to), radius * sx, ink);
             }
             Shape::Movement { blink: true } => blink(&mut out, s, at, ink),
+            Shape::Reach { extra } => {
+                if let Some(range) = attack_range() {
+                    area(
+                        &mut out,
+                        s,
+                        project(origin),
+                        (range + extra) * sx,
+                        ink,
+                        false,
+                    );
+                }
+            }
             Shape::Fan {
                 count,
                 radius,

@@ -276,6 +276,40 @@ same size and ranks their `+0x20` method by alignment with the old one.
 Open: the range term the skill functions add through effect method
 `+0x120`; the four new champions' hand-written effects, if any.
 
+### New champions (1.1.12)
+
+Gladiator, Ferryman, Bombardier and Hypnotist build every skill from one
+effect: apply `0x160da70`, 160 bytes (20 words), about 3,900 instructions
+with one hand-written branch per skill, chosen by the byte at `+0x98`:
+0-2 Gladiator, 4/6/7 Ferryman, 8-10 Bombardier, 12/14/15 Hypnotist (Q, W,
+R). Branch tables: tags 4-7 at `0x3ef83f4`, 12-15 at `0x3ef8404`; 0-3
+enter at `0x160ddfb`, 8-11 at `0x160e02e`.
+
+Values seen in game logs (`PREVIEW TREE`):
+
+| Tag | Skill | Words |
+|---|---|---|
+| 0 | Gladiator Q | `afc8 0 3c 46 0 0 f618 0 0 0 0 0 0 3c 0 0 46 0 0` |
+| 1 | Gladiator W | `9c40 0 46 5a 0 0 2710 0 f0 0 19 3` |
+| 2 | Gladiator R | `ea60 1964 50 50 0 0 0 0 0 0 28 0 0 f0` |
+| 4 | Ferryman Q | `15f90 1964 8c 64 0 0 36b0 0 78 78 1e 0 1388 0 0 0 0 32 3c` |
+| 6 | Ferryman W | `11170 0 0 0 0 0 3e80 0 12c 0 32 0 0 0 0 0 0 0 3c` |
+| 7 | Ferryman R | `11170 0 190 64 0 0 0 0 5a 78 0 0 ea60 0 0 0 0 28 1e` |
+| 8 | Bombardier Q | `0 0 0 0 0 0 0 0 5a 0 14 0 c350 0 0 0 0 0 32` |
+| 9 | Bombardier W | `186a0 0 64 64 55f0 0 0 24 0 5a 0 0 0 0 0 0 0 0 2d` |
+| 10 | Bombardier R | `1d4c0 0 5a 50 88b8 3e80 0 24 0 0 0 0 d6d8 0 6 12` |
+| 12 | Hypnotist Q | `13880 1770 82 6e 0 0 61a8 0 0 5a 0 0 0 0 0 0 0 0 1e` |
+| 14 | Hypnotist W | `13880 0 0 0 4e20 0 0 28 78 0 4b` |
+| 15 | Hypnotist R | `15f90 0 0 0 9c40 0 0 2d 96 0 5a` |
+
+Read in the code: Ferryman W (`0x160e40e`, then `0x160eff3`) takes the
+direction to the input, clamps the distance to word 0 and builds an end
+point; words 6 and 8 go to the effect it queues. Everything else in the
+reader is inferred from the values and the player's descriptions: word 0
+range, 1 shot hit radius, 4 area radius, 6 strip half width, 12
+Bombardier Q's range bonus. Open: Gladiator Q's radii and angle; whether
+word 6 is a half or full width.
+
 ## Open questions
 
 - One build for both game versions, or a switch-over when 0.7 is released.

@@ -29,6 +29,12 @@ const ICE_MAGE_ULT: usize = 0x1709a30;
 const BARD_ULT: usize = 0x1bdf040;
 const EXORCIST_ULT: usize = 0x1a865c0;
 const DANCER_ULT: usize = 0x1a974f0;
+/// 0.7.0: every skill of Gladiator, Ferryman, Bombardier and Hypnotist is
+/// one hand-written effect of 20 words; the byte at +0x98 selects the skill
+/// (0-2 Gladiator, 4/6/7 Ferryman, 8-10 Bombardier, 12/14/15 Hypnotist; Q, W,
+/// R in that order). Word 0 is the range, 1 a projectile's hit radius, 4 an
+/// area radius, 6 a strip's half width, 12 Bombardier Q's range bonus.
+const CHAMPION_SKILL: usize = 0x160da70;
 /// The caster's current stack (stat block `stack`, entity +0x648, just
 /// before its position at +0x658): Dancer R's extra blades. Set by `read`.
 const ENTITY_STACK: usize = 0x648;
@@ -301,6 +307,46 @@ unsafe fn payload(
                 out.add(shape, inherited);
             } else {
                 out.issue("native period area shape unresolved");
+            }
+        }
+        (Some(CHAMPION_SKILL), 160) => {
+            out.family("native ChampionSkill");
+            let at = |i: usize| distance(word(object + i * 8) as u64);
+            let strip = |radius: Option<f32>, out: &mut Geometry| match (radius, at(0)) {
+                (Some(radius), Some(length)) => {
+                    out.add(Shape::Corridor { radius, length }, Placement::Caster)
+                }
+                _ => out.issue("invalid native champion skill strip"),
+            };
+            match word(object + 0x98) as u8 {
+                // Ferryman Q (stops at the first unit), Hypnotist Q (passes
+                // through): a shot of hit radius word 1 over the range.
+                4 | 12 => strip(at(1), out),
+                // Gladiator W, Ferryman W: a strip from the caster toward
+                // the aim, up to the range long (read for Ferryman W).
+                1 | 6 => strip(at(6), out),
+                // Bombardier W and R, Hypnotist W and R: a circle at the aim.
+                9 | 10 | 14 | 15 => match at(4) {
+                    Some(radius) => out.add(Shape::Circle { radius }, inherited),
+                    None => out.issue("invalid native champion skill radius"),
+                },
+                // Bombardier Q: a cannon at the aim; he then attacks from
+                // further away without moving.
+                8 => {
+                    out.add(
+                        Shape::Circle {
+                            radius: CHAMPION_RADIUS,
+                        },
+                        inherited,
+                    );
+                    if let Some(extra) = at(12) {
+                        out.add(Shape::Reach { extra }, Placement::Caster);
+                    }
+                }
+                // Gladiator R, Ferryman R: one unit, no area.
+                2 | 7 => {}
+                // Gladiator Q (a ring-shaped cone) and unused numbers.
+                _ => out.issue("native champion skill shape not read"),
             }
         }
         (Some(RUSH), 56) => {

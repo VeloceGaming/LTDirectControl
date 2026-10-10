@@ -268,6 +268,14 @@ impl Movement {
         if !s.selection.choose_prepared(key, lane) {
             return false;
         }
+        // The first "MANUAL bound" names the default lane; this is the
+        // champion the player went on to choose.
+        if let Some(selected) = s.selection.selected() {
+            logger.write(&format!(
+                "MANUAL rebound player={} athlete={} side={} lane={} champion={:?}",
+                selected.player, selected.athlete, selected.side, selected.lane, selected.champion
+            ));
+        }
         s.target = None;
         s.route.clear();
         s.marker = None;
@@ -616,6 +624,7 @@ impl Movement {
                 ));
             }
             s.attack_range = range.map(|r| (r, Instant::now()));
+            crate::skill_preview::set_attack_range(range);
         }
     }
     /// Capture the exact AA/acquisition pair used by the selected player's
