@@ -48,6 +48,7 @@ impl Drop for Client {
         ui_state::EMOTE_CAPTURE.store(false, Ordering::Relaxed);
         self.settings.flush(true, &self.logger);
         self.cursor.shutdown();
+        pointer_clip::shutdown();
         wheel::shutdown();
         self.timing
             .cancel("Client extension detached", &self.logger);
@@ -181,6 +182,15 @@ impl Client {
         self.install_once(ctx);
         let scene = ctx.client_scene_kind();
         let battlefield = scene == Some(mod_api_stable::ClientSceneKindV1::InGame);
+        pointer_clip::update(
+            pointer_clip::wanted(
+                settings::current_shared().number("pointer_clip") == 1.,
+                battlefield && self.timing.client_running(),
+                ui_state::SHOP_OPEN.load(Ordering::Relaxed),
+                ui_state::SETTINGS_OPEN.load(Ordering::Relaxed),
+            ),
+            &self.logger,
+        );
         let pre_match = matches!(
             scene,
             Some(

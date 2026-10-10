@@ -146,6 +146,15 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.,
     },
     OptionDef {
+        key: "pointer_clip",
+        page: 2,
+        section: "Navigation",
+        label: "Keep pointer in window",
+        hint: "Keeps the pointer inside the game window while you control a match, so it cannot slip onto another monitor. It is free while paused or in a window.",
+        control: Control::Toggle,
+        default: 1.,
+    },
+    OptionDef {
         key: "drag",
         page: 2,
         section: "Navigation",

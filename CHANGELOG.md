@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.10 — 2026-10-11
+
+- Development build for game 0.7.0: "Keep pointer in window" carried over from 1.0.7 (released for 0.6.3), unchanged. The frame-rate fix of 1.1.9, the shop filter and the emote volume slider were released for 0.6.3 as 1.0.6.
+
 ## 1.1.9 — 2026-10-11
 
 - Development build for game 0.7.0. Match speed no longer follows the frame rate. The worker was held to one tick ahead of playback and a client frame can only play what is queued, so below 60 fps the match slowed in proportion (30 fps played at half speed; reported on the Workshop). The lead now follows the average client frame time: 1 tick at 60 fps and above (unchanged), up to 4 below, which keeps full speed down to 15 fps.
