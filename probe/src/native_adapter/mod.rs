@@ -37,10 +37,10 @@ pub(crate) fn asset_digest(bytes: &[u8]) -> Result<String, String> {
     }
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
-/// The executable's base once the native readers (tooltips, items,
-/// previews) are installed for it.
+/// The executable's base once the shop family (which the item catalogue
+/// reader belongs to) is installed for it.
 pub(crate) fn verified_base() -> Option<usize> {
-    windows::family_base(crate::native_profile::family::READERS)
+    windows::family_base(crate::native_profile::family::SHOP)
 }
 pub fn set_death_greyscale(dead: bool) {
     DEATH_GREYSCALE.store(dead, Ordering::Release);

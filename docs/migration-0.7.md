@@ -66,7 +66,8 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Minimap | Enabled in 1.1.1 (all 54 operands); passed in game 2026-10-10 |
 | Movement | Enabled in 1.1.2; passed in game 2026-10-10 |
 | Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
-| Outline, Shop, Readers | Open |
+| Shop (with the item catalogue) | Enabled in 1.1.3; in-game test pending |
+| Outline, Readers (tooltips, previews) | Open |
 
 ### Session (worker, viewer, input)
 
@@ -192,6 +193,31 @@ Changed in 0.7.0:
   functions. A different vtable used by the entity update gained two
   entries below `+0x2a0` (now `+0x2b0`); the mod does not call through it,
   but the shop family's `+0x158` slot must be re-proven.
+
+### Shop and item catalogue
+
+`tools/relocate.py` maps an old address through the aligned functions.
+
+| Item | 0.6.3 | 0.7.0 | Evidence |
+| --- | --- | --- | --- |
+| Gold getter | `0x2e17b30` | `0x315cf50` | 22/22 equal: slot `+0x158`, gold `+0x868` |
+| Build vector reads | `0xea1ecb`, `0xea1ed2` | `0xe947ab`, `0xe947b2` | Next-step function 232/232 equal |
+| Goal search / next step | `0xea1b90` / `0xea1ea0` | `0xe94470` / `0xe94780` | Equal |
+| Selector gate | `0xea216a` | `0xe94a4a` | Same function |
+| Purchase executor | `0x1465e80` | `0x1745420` | Recompiled (2662/4935); slot gate `0x174ab91`, payments `0x174a6a8` and `0x174ac4d` |
+| Upgrade / new-item decisions | `0xf3f3a0` / `0xf3f510` | `0xfd19c0` / `0xfd1b30` | 100/101 and 95/96 |
+| Their thunks | `0xf60620` / `0xf61b80` | `0xff9040` / `0xffa590` | The only jumps to the decisions outside a function |
+| Controller slots | `0x3b08c60` / `0x3b08c58` | `0x3e5ddd0` / `0x3e5ddc8` | The only pointers to the thunks |
+| AI bridge table | `0x3d10330` | `0x407dbf8` | Size word 120; entries +8 and +48 are the two functions below |
+| Settings getter / AI settings entry | `0x2e83dd0` / `0x2e84800` | `0x31a13d0` / `0x31a1e00` | Byte-identical, one match each |
+| Item wrapper constructor | `0x2e66f50` | `0x3184010` | 137/137 equal |
+| Wrapper next-tier getter | `0x1322f80` | `0x12ce710` | Byte-identical, one match |
+| Game item tooltip | `0x27e9090` | `0x23646e0` | 1601/1936; all 166 field uses unchanged |
+
+The executor loads the controller slots `+0x80` and `+0x88` and passes the
+same registers and stack arguments as before, so the hooks' calling
+convention is unchanged. The game's goal search calls the item methods
+`+0x70`, `+0x80`, `+0x50`, `+0x68` in the same order in both builds.
 
 ## Open questions
 

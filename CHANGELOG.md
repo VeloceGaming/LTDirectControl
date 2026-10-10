@@ -3,6 +3,14 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.3 — 2026-10-10
+
+- Development build for game 0.7.0: the shop family joins, with the item catalogue reader (moved from the readers family to the shop family, which is its only user). Outlines, native tooltips and skill previews are still off.
+- Purchase hooks: the two decision thunks (0xff9040 upgrade, 0xffa590 new item), their controller slots (0x3e5ddd0, 0x3e5ddc8) and decision bodies are located; the executor (0x1745420, recompiled) calls both slots with the same arguments and stack layout, and its slot gate and both gold payments are the same instructions (one now through another register).
+- Gold and build readers: the gold getter (still through slot +0x158, gold at +0x868) and the build-vector reads are in functions equal to their 0.6.3 forms; owned-item fields (+0x310, +0x318) are used the same way by the executor.
+- Item catalogue: the AI bridge table (0x407dbf8) and its two identity functions, the registered-item vector path, and the item methods the reader calls (+0x50 enabled, +0x68 price, +0x70 tier, +0x80 next tiers, called in the same order by the game's goal search; +0x78 stats) are unchanged; the stat block fields are used at the same offsets by the game's item tooltip.
+- New tools/relocate.py (old address to new address through aligned functions).
+
 ## 1.1.2 — 2026-10-10
 
 - Development build for game 0.7.0: the movement and combat families join session, camera and minimap. Outlines, the purchase hooks, the item catalogue, native tooltips and skill previews are still off.

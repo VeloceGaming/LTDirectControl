@@ -28,8 +28,12 @@ pub mod family {
     pub const ALL: u32 = (1 << 8) - 1;
 }
 /// The families reviewed for `EXPECTED_SHA`.
-pub const ENABLED: u32 =
-    family::SESSION | family::CAMERA | family::MINIMAP | family::MOVEMENT | family::COMBAT;
+pub const ENABLED: u32 = family::SESSION
+    | family::CAMERA
+    | family::MINIMAP
+    | family::MOVEMENT
+    | family::COMBAT
+    | family::SHOP;
 const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     // VIEW_LAYOUT_PAUSE
     (0xb1960b, &[0x80, 0x7e, 0x48, 0x00]),
@@ -198,7 +202,7 @@ const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     ),
     // ITEM_AI_SETTINGS_ENTRY
     (
-        0x2e84800,
+        0x31a1e00,
         &[
             0x48, 0x85, 0xc9, 0x74, 0x0f, 0x48, 0x8b, 0x41, 0x10, 0x48, 0x8b, 0x00, 0x48, 0x8b,
             0x80, 0xb8, 0x01, 0x00, 0x00, 0xc3,
@@ -229,7 +233,7 @@ const LAYOUT_FAMILIES: &[(u32, &[usize])] = &[
             0x155af47, 0x155631f, 0x156300d, 0x1561a7b,
         ],
     ),
-    (family::SHOP, &[0x2e84800]),
+    (family::SHOP, &[0x31a1e00]),
 ];
 fn layout_family(rva: usize) -> u32 {
     LAYOUT_FAMILIES

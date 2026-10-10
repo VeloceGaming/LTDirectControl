@@ -7,7 +7,8 @@
     "camera",
     "minimap",
     "movement",
-    "combat"
+    "combat",
+    "shop"
   ],
   "executable_sha256": "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f",
   "timestamp": "0x6ac5fab4",
@@ -140,6 +141,58 @@
     "AIM_DIRECTION_WRITE": {
       "rva": "0x1569904",
       "bytes": "4c894008"
+    },
+    "GOLD_GETTER_BYTES": {
+      "rva": "0x315cf50",
+      "bytes": "554883ec30488d6c243048c745f8feffffff4885d2742748ffca488b014c8b41084889c141ff9058010000904885c0740d488b80680800004883c4305dc331c04883c4305dc3"
+    },
+    "BUILD_LEN_BYTES": {
+      "rva": "0xe947b2",
+      "bytes": "4c8ba260030000"
+    },
+    "BUILD_PTR_BYTES": {
+      "rva": "0xe947ab",
+      "bytes": "488b9a58030000"
+    },
+    "ITEM_AI_PLAYER": {
+      "rva": "0x31a13d0",
+      "bytes": "4885c9740c488b4108488b80f8070000c3"
+    },
+    "ITEM_AI_CONTEXT": {
+      "rva": "0x31a1e05",
+      "bytes": "488b4110488b00488b80b8010000c3"
+    },
+    "ITEM_REGISTERED_VEC": {
+      "rva": "0xe93e7d",
+      "bytes": "488b4330488b58084c8b7010"
+    },
+    "ITEM_STAT_GETTER": {
+      "rva": "0x2364d5b",
+      "bytes": "4d8b7778498bb790000000"
+    },
+    "ITEM_NEXT_GETTER": {
+      "rva": "0xe940bd",
+      "bytes": "ff9080000000"
+    },
+    "ITEM_NEXT_BORROW": {
+      "rva": "0x12ce710",
+      "bytes": "488d4130c3"
+    },
+    "ITEM_NEXT_CACHE_CALL": {
+      "rva": "0x3184144",
+      "bytes": "ff5350"
+    },
+    "ITEM_NEXT_CACHE_STORE": {
+      "rva": "0x31841aa",
+      "bytes": "0f114630"
+    },
+    "ITEM_BUY_CONTEXT_SETTINGS": {
+      "rva": "0xe93e77",
+      "bytes": "498b5908"
+    },
+    "ITEM_AI_CONTEXT_SETTINGS": {
+      "rva": "0xe9599f",
+      "bytes": "488b4208"
     }
   },
   "layout_anchors": {
@@ -262,9 +315,13 @@
     "ENTITY_LEVEL_RANGE": {
       "rva": "0x15630cf",
       "bytes": "488bbbc005000048ffcf480fafbbd8040000488bb330040000"
+    },
+    "ITEM_AI_SETTINGS_ENTRY": {
+      "rva": "0x31a1e00",
+      "bytes": "4885c9740f488b4110488b00488b80b8010000c3"
     }
   },
-  "review_notes": "Session, camera, minimap, movement and combat families; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
+  "review_notes": "Session, camera, minimap, movement, combat and shop (with the item catalogue) families; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
   "native_game_test": "Session passed with mod 1.1.0, camera and minimap with 1.1.1, movement and combat with 1.1.2, on 2026-10-10.",
   "minimap": {
     "reviewed": true,
