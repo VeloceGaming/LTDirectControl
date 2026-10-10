@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.14 — 2026-10-11
+
+- Development build for game 0.7.0. Skill previews: an area that affects allies (a heal, a shield) is drawn in the preview style's ally colour; areas for enemies, both or unknown stay yellow, and a skill that is not ready stays grey. A skill with an ally area and an enemy area (user example: a shield for allies within 60 and a pull on enemies) now shows which is which. The game's RangeEffect, RangeProjectile, RangePeriodProjectile and ParabolicProjectile carry their target as the last word (CastingTarget codes: 0-4 allies, 5-9 enemies, 10-12 both, 13 none, as in mod-api-stable and as seen in PREVIEW TREE logs); declared (data and Workshop champion) effects name it in `target`. Hand-written effects, lines and dashes are not coloured. Tested for the code mapping and the colours drawn; not checked in game.
+
 ## 1.1.13 — 2026-10-11
 
 - Development build for game 0.7.0. Skill previews restyled (the user's choices from mock-ups; design/previews/dash-arrows-v2.svg): the spearhead arrow is gone.

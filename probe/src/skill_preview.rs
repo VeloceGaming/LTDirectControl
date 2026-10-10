@@ -83,6 +83,15 @@ pub enum Shape {
 pub struct Footprint {
     pub shape: Shape,
     pub placement: Placement,
+    /// The area affects allies (a heal, a shield), not enemies: drawn in
+    /// the ally colour. False when it affects enemies, both, or is unknown.
+    pub allies: bool,
+}
+/// The game's `CastingTarget` codes 0-4 are the ally targets (Ally,
+/// AllyChampion, AllyChampionInCc, AllyNotSelf, AllyOnlySelf); 5-9 enemies,
+/// 10-12 both, 13 none (mod-api-stable `CastingTargetV1`).
+pub fn targets_allies(code: usize) -> bool {
+    code as u32 <= 4
 }
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Geometry {
@@ -92,7 +101,14 @@ pub struct Geometry {
 }
 impl Geometry {
     pub fn add(&mut self, shape: Shape, placement: Placement) {
-        let footprint = Footprint { shape, placement };
+        self.add_for(shape, placement, false);
+    }
+    pub fn add_for(&mut self, shape: Shape, placement: Placement, allies: bool) {
+        let footprint = Footprint {
+            shape,
+            placement,
+            allies,
+        };
         if !self.footprints.contains(&footprint) && self.footprints.len() < 8 {
             self.footprints.push(footprint);
         }
@@ -128,6 +144,13 @@ impl Geometry {
     pub fn known_without_area(&self) -> bool {
         self.footprints.is_empty() && self.issues.is_empty() && !self.families.is_empty()
     }
+}
+/// A declared effect's `target` (or `applied_target`) names an ally group.
+fn declared_allies(v: &Value) -> bool {
+    ["target", "applied_target"]
+        .iter()
+        .filter_map(|key| v.get(key).and_then(Value::as_str))
+        .any(|name| name.starts_with("Ally"))
 }
 static SHAPES: OnceLock<HashMap<String, [Geometry; 3]>> = OnceLock::new();
 /// The controlled champion's basic attack range in thousandths of a world
@@ -303,7 +326,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
                 if matches!(shape, Shape::Cone { .. }) && placement == Placement::Caster {
                     out.issue("DirDot facing unresolved at caster center");
                 } else {
-                    out.add(shape, placement);
+                    out.add_for(shape, placement, declared_allies(v));
                 }
             } else {
                 out.issue("RangeEffect placement/shape unresolved");
@@ -312,7 +335,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
         }
         "RangeProjectile" | "RangePeriodProjectile" => {
             if let Some(shape) = declared_shape(v) {
-                out.add(shape, inherited);
+                out.add_for(shape, inherited, declared_allies(v));
             } else {
                 out.issue("range projectile shape unresolved");
             }
@@ -646,6 +669,18 @@ struct Ink {
     white: u32,
 }
 impl Ink {
+    /// The ally colour for an area that affects allies; a skill that is
+    /// not ready stays grey.
+    fn side(self, s: &Style, allies: bool, ready: bool) -> Self {
+        if allies && ready {
+            Self {
+                col: s.ally,
+                ..self
+            }
+        } else {
+            self
+        }
+    }
     fn of(s: &Style, ready: bool) -> Self {
         if ready {
             Self {
@@ -1100,6 +1135,7 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
         if p.casting == 0 && !self_area && world_target.is_none() {
             continue;
         }
+        let ink = ink.side(s, f.allies, p.ready);
         let aiming = aim.unwrap_or(origin);
         let base = placed(origin, aiming, f.placement, range, p.casting);
         let at = project(base);
@@ -1248,6 +1284,7 @@ pub fn hover_drawing(frame: CameraFrame, p: Preview) -> Drawing {
         if !centered {
             continue;
         }
+        let ink = ink.side(s, footprint.allies, p.ready);
         match footprint.shape {
             Shape::Circle { radius } => area(&mut out, s, center, radius * sx, ink, false),
             Shape::Rectangle { width, height } => wall(
@@ -1803,7 +1840,8 @@ mod tests {
                     radius: 5.,
                     length: 46.
                 },
-                placement: Placement::Caster
+                placement: Placement::Caster,
+                allies: false,
             }
         );
         assert_eq!(
@@ -1901,6 +1939,41 @@ mod tests {
         assert!(visible((50., 20.), (50., 80.), viewport, &blockers, 2.).is_empty());
     }
     #[test]
+    fn an_area_for_allies_is_drawn_in_the_ally_colour_unless_on_cooldown() {
+        let st = style();
+        let preview = |ready| {
+            let mut geometry = Geometry::default();
+            geometry.add_for(Shape::Circle { radius: 60. }, Placement::Caster, true);
+            geometry.add(Shape::Circle { radius: 40. }, Placement::Caster);
+            Preview {
+                origin: (480000, 480000),
+                aim: Some((600000, 480000)),
+                casting: 3,
+                self_target: false,
+                range: 0,
+                ready,
+                geometry,
+                target: None,
+            }
+        };
+        let colours = |d: &Drawing| {
+            let has = |c| d.strokes.iter().any(|s| rgb(s.color) == c);
+            (has(st.ally), has(st.yellow))
+        };
+        // The shield ring in the ally colour, the pull ring in yellow.
+        assert_eq!(colours(&drawing(frame(), preview(true))), (true, true));
+        assert_eq!(
+            colours(&hover_drawing(frame(), preview(true))),
+            (true, true)
+        );
+        assert_eq!(colours(&drawing(frame(), preview(false))), (false, false));
+        // Declared effects name their target.
+        let ally = serde_json::json!({"target": "AllyChampion"});
+        let enemy = serde_json::json!({"applied_target": "EnemyWithoutTower"});
+        assert!(declared_allies(&ally) && !declared_allies(&enemy));
+        assert!(targets_allies(4) && !targets_allies(5) && !targets_allies(13));
+    }
+    #[test]
     fn footprint_world_dimensions_scale_with_camera_and_render_is_bounded() {
         let frame = CameraFrame {
             viewport: Rect {
@@ -1941,6 +2014,7 @@ mod tests {
                                 length: 120.,
                             },
                             placement: Placement::Caster,
+                            allies: false,
                         }],
                         ..Geometry::default()
                     },

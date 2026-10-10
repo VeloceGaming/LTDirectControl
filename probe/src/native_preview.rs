@@ -4,7 +4,7 @@
 //! 0.6.3 forms; RANGE_PERIOD, RANGE_PROJECTILE, ICE_MAGE_ULT and
 //! TargetProjectile were rewritten by the game (docs/migration-0.7.md).
 //! No native code is invoked and no native address leaves this callback.
-use crate::skill_preview::{Geometry, Placement, Shape};
+use crate::skill_preview::{targets_allies, Geometry, Placement, Shape};
 
 const COMBINE: usize = 0x16169d0;
 const RANGE: usize = 0x156e070;
@@ -239,7 +239,7 @@ unsafe fn combine(
                 let mut moved = Geometry::default();
                 effect(base, arc, table, inherited, &mut moved, nodes, depth + 1);
                 for f in moved.footprints {
-                    out.add(f.shape, after_dash(f.placement, length));
+                    out.add_for(f.shape, after_dash(f.placement, length), f.allies);
                 }
                 for issue in moved.issues {
                     out.issue(issue);
@@ -304,7 +304,8 @@ unsafe fn payload(
             out.family("native RangePeriodProjectile");
             let words = std::array::from_fn(|i| word(object + i * 8) as u64);
             if let Some(shape) = shape(words) {
-                out.add(shape, inherited);
+                // Its last word (18) is who the area affects.
+                out.add_for(shape, inherited, targets_allies(word(object + 144)));
             } else {
                 out.issue("native period area shape unresolved");
             }
@@ -380,7 +381,7 @@ unsafe fn payload(
             out.family("native RangeProjectile");
             let words = std::array::from_fn(|i| word(object + i * 8) as u64);
             match shape(words) {
-                Some(shape) => out.add(shape, inherited),
+                Some(shape) => out.add_for(shape, inherited, targets_allies(word(object + 112))),
                 None => out.issue("native range projectile shape unresolved"),
             }
         }
@@ -392,7 +393,7 @@ unsafe fn payload(
             out.family("native ParabolicProjectile");
             let words = std::array::from_fn(|i| word(object + i * 8) as u64);
             match shape(words) {
-                Some(shape) => out.add(shape, inherited),
+                Some(shape) => out.add_for(shape, inherited, targets_allies(word(object + 160))),
                 None => out.issue("native parabolic shape unresolved"),
             }
             children(base, object + 120, inherited, out, nodes, depth);
@@ -517,7 +518,9 @@ unsafe fn payload(
                 if matches!(shape, Shape::Cone { .. }) && placement == Placement::Caster {
                     out.issue("native DirDot facing unresolved at caster center");
                 } else {
-                    out.add(shape, placement);
+                    // { placement, offset, shape (6 words), effects (3),
+                    // target }: the last word is who the area affects.
+                    out.add_for(shape, placement, targets_allies(word(object + 88)));
                 }
             } else {
                 out.issue("native range shape unresolved");
@@ -1030,27 +1033,35 @@ mod tests {
         bytes[3] = 40000; // circle radius
         bytes[9] = 1;
         bytes[10] = 1;
-        bytes[11] = 1; // intentionally unreadable hit-child vector
-        let mut g = Geometry::default();
-        unsafe {
-            payload(
-                0,
-                bytes.as_ptr() as usize,
-                Some(RANGE),
-                96,
-                Placement::Aim,
-                &mut g,
-                &mut 0,
-                0,
-            );
-        }
+        bytes[11] = 6; // target: EnemyWithoutTower (the hit-child vector is unreadable)
+        let read = |bytes: &[usize]| {
+            let mut g = Geometry::default();
+            unsafe {
+                payload(
+                    0,
+                    bytes.as_ptr() as usize,
+                    Some(RANGE),
+                    96,
+                    Placement::Aim,
+                    &mut g,
+                    &mut 0,
+                    0,
+                );
+            }
+            g
+        };
+        let g = read(&bytes);
         assert_eq!(
             g.footprints,
             [crate::skill_preview::Footprint {
                 shape: Shape::Circle { radius: 40. },
-                placement: Placement::Forward { offset: 20. }
+                placement: Placement::Forward { offset: 20. },
+                allies: false,
             }]
         );
+        // The same area for allies (AllyChampion) is marked for the ally colour.
+        bytes[11] = 1;
+        assert!(read(&bytes).footprints[0].allies);
         let mut projectile = [0usize; 19];
         projectile[1] = 6000;
         (projectile[9], projectile[10], projectile[11]) = (1, 8, 1); // hits in flight
