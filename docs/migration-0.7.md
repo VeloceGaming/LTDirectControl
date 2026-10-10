@@ -67,7 +67,8 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Movement | Enabled in 1.1.2; passed in game 2026-10-10 |
 | Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
 | Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
-| Outline, Readers (tooltips, previews) | Open |
+| Outline | Enabled in 1.1.6; in-game test pending |
+| Readers (tooltips, previews) | Open |
 
 ### Session (worker, viewer, input)
 
@@ -218,6 +219,27 @@ The executor loads the controller slots `+0x80` and `+0x88` and passes the
 same registers and stack arguments as before, so the hooks' calling
 convention is unchanged. The game's goal search calls the item methods
 `+0x70`, `+0x80`, `+0x50`, `+0x68` in the same order in both builds.
+
+### Outline
+
+| Item | 0.6.3 | 0.7.0 | Evidence |
+| --- | --- | --- | --- |
+| Unit body renderer | `0x230ec30` | `0x2399810` | Target of all 15 relocated call sites; recompiled (16 more bytes of stack) |
+| Its 15 call sites | see `OUTLINE_SITES` | see `OUTLINE_SITES` | Each found by aligning its calling function; 7 of those functions are equal; 15 callers in both builds |
+| Render command drop glue | `0x1c5190` | `0x1a3e10` | 179/179 equal: same variants and fields |
+| Its jump table | `0x3a199ac` | `0x3d69354` | Referenced by the equal drop glue |
+| Drop glue caller in `shader()` | `0x1ca533` | `0x1a9356` | Calls the new drop glue |
+| Shader setter | `0x1c91f0` | `0x1a8130` | Recompiled (about half aligned); same four arguments at the composite call |
+| Composite shader call | `0x2322b12` | `0x2440b01` | In the aligned renderer |
+| f32 / colour parameter setters | `0x21725a0` / `0x2171ae0` | `0x1cfc5d0` / `0x1cfbaf0` | 13 and 24 aligned callers agree; same arguments |
+| DrawLine tag write | `0x2311692` | `0x239c1e6` | The one `0x8000000000000008` in the unit renderer |
+| NinePatch tag write | `0x1c7a8a` | `0x1a6a0d` | Aligned |
+
+The command stride (`0xd0`) and the sprite fields the code reads
+(`+0x68`..`+0x7c`) are used the same way in the unit renderer; the unit
+view's centre (`+0x17c`) likewise. Inside the shader setter a few byte
+fields beyond `+0x90` moved by one (consistent with the new `palette`
+flag); the mod does not touch them.
 
 ## Open questions
 

@@ -338,11 +338,11 @@ pub(super) fn install() -> Result<(), String> {
             ),
             (
                 family::OUTLINE,
-                (0x21725a0, OUTLINE_PARAM_PROLOGUE.as_slice()),
+                (OUTLINE_FLOAT_PARAM, OUTLINE_FLOAT_PROLOGUE.as_slice()),
             ),
             (
                 family::OUTLINE,
-                (0x2171ae0, OUTLINE_PARAM_PROLOGUE.as_slice()),
+                (OUTLINE_COLOR_PARAM, OUTLINE_COLOR_PROLOGUE.as_slice()),
             ),
             (family::COMBAT, AIM_WRITES[0]),
             (family::COMBAT, AIM_WRITES[1]),

@@ -33,7 +33,8 @@ pub const ENABLED: u32 = family::SESSION
     | family::MINIMAP
     | family::MOVEMENT
     | family::COMBAT
-    | family::SHOP;
+    | family::SHOP
+    | family::OUTLINE;
 const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     // VIEW_LAYOUT_PAUSE
     (0xb1960b, &[0x80, 0x7e, 0x48, 0x00]),

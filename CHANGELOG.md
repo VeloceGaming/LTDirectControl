@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.6 — 2026-10-10
+
+- Development build for game 0.7.0: the outline family joins (unit outlines, exact unit hit boxes from drawn sprites, the death greyscale). Only the readers family (native tooltips and skill previews) is still off.
+- The render command the outline code moves and restyles is unchanged: its drop glue is equal instruction for instruction (179/179), with the same 0xd0-byte stride and variant tags in the unit renderer. The unit body renderer (0x2399810) was recompiled; all 15 of its call sites are located (there are still exactly 15) and seven of the calling functions are equal, so its arguments are unchanged.
+- The shader setter (0x1a8130) and the two parameter setters (f32 0x1cfc5d0, colour 0x1cfbaf0) were recompiled; the game calls each with the same arguments as before. The two parameter setters no longer share a prologue, so each has its own guard, and their addresses are named constants in layout.rs instead of literals in outline.rs.
+
 ## 1.1.5 — 2026-10-10
 
 - Development build for game 0.7.0. Confirmed in game with 1.1.4: the registry held 237 items of which the game reported 30 enabled, and the grid showed only those. The filter counts still counted every registered item ("All 237"); they now count enabled items only, so a filter no enabled item matches is not listed.

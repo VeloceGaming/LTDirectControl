@@ -204,9 +204,9 @@ pub(crate) unsafe fn rewrite_command(
     color: Option<[f32; 4]>,
 ) {
     let base = GetModuleHandleW(std::ptr::null()) as usize;
-    let shader_fn: ShaderFn = std::mem::transmute(base + 0x1c91f0);
-    let float_fn: FloatParamFn = std::mem::transmute(base + 0x21725a0);
-    let color_fn: ColorParamFn = std::mem::transmute(base + 0x2171ae0);
+    let shader_fn: ShaderFn = std::mem::transmute(base + SHADER_ORIGINAL);
+    let float_fn: FloatParamFn = std::mem::transmute(base + OUTLINE_FLOAT_PARAM);
+    let color_fn: ColorParamFn = std::mem::transmute(base + OUTLINE_COLOR_PARAM);
     // Each setter consumes an owned command and writes its replacement.
     // Copying bytes to a temporary is a move here: the former source slot
     // is immediately overwritten and the temporary is never dropped.
