@@ -56,7 +56,7 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 
 | Family | Status |
 | --- | --- |
-| Session | Enabled in 1.1.0 (anchors and fields below); in-game test pending |
+| Session | Enabled in 1.1.0; passed in game 2026-10-10 (hold at start, start, pause, resume, AI hand-back and reclaim, a full match, keys normal) |
 | Camera | Two guards relocated (below); the rest open |
 | Movement, Combat, Outline, Minimap, Shop, Readers | Open |
 

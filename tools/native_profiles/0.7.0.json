@@ -45,5 +45,5 @@
     }
   },
   "review_notes": "Session family only; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
-  "native_game_test": "pending"
+  "native_game_test": "Session family passed in game with mod 1.1.0 on 2026-10-10."
 }
