@@ -66,7 +66,7 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Minimap | Enabled in 1.1.1 (all 54 operands); passed in game 2026-10-10 |
 | Movement | Enabled in 1.1.2; passed in game 2026-10-10 |
 | Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
-| Shop (with the item catalogue) | Enabled in 1.1.3; in-game test pending |
+| Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
 | Outline, Readers (tooltips, previews) | Open |
 
 ### Session (worker, viewer, input)
