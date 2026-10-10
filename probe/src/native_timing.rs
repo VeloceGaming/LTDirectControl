@@ -687,6 +687,18 @@ impl NativeTiming {
         let since = *s.progress.get_or_insert(now);
         if s.stalled.is_none() && now.duration_since(since) >= crate::worker_watch::STALL {
             s.stalled = Some(since);
+            // A finished match ends its worker; the result screen can take
+            // longer than the stall time to appear. That is not a stall.
+            if s.worker
+                .is_some_and(|worker| !crate::native_adapter::thread_alive(worker))
+            {
+                s.stack_logged = Some((now, 3));
+                log.write(&format!(
+                    "WORKER ENDED the match worker thread has exited (normal when a match finishes); played_tick={} produced={} consumed={} phase={:?}",
+                    s.played_tick, s.produced, s.consumed, s.phase
+                ));
+                return;
+            }
             let (step, player) = crate::worker_watch::last();
             let (begun, last_player) = crate::worker_watch::progress();
             log.write(&format!(
@@ -707,11 +719,13 @@ impl NativeTiming {
         if let (Some(_), true, Some(worker)) = (s.stalled, due, s.worker) {
             let count = s.stack_logged.map_or(1, |(_, count)| count + 1);
             s.stack_logged = Some((now, count));
-            log.write(&format!(
-                "WORKER STALL stack {count}/3 step={:?} frames={:?}",
-                crate::worker_watch::last().0,
-                crate::native_adapter::thread_stack(worker)
-            ));
+            log.write(&match crate::native_adapter::thread_stack(worker) {
+                Ok(frames) => format!(
+                    "WORKER STALL stack {count}/3 step={:?} frames={frames:?}",
+                    crate::worker_watch::last().0
+                ),
+                Err(why) => format!("WORKER STALL stack {count}/3 unavailable: {why}"),
+            });
         }
     }
     pub fn trace_dispatch(
