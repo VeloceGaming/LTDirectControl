@@ -44,6 +44,11 @@ hooks, and a match starts and ends without a crash.
   builds is a different function in 0.7.0 and passes a null `ingame` node.
   Align the enclosing functions instead (`tools/compare_functions.py`,
   `--at <old rva>`), or compare how each caller sets up its arguments.
+- `tools/map_functions.py` follows aligned calls outward from known
+  function pairs (1,436 pairs so far, in
+  `research/game-builds/function-map-0.6.3-to-0.7.0.json`);
+  `tools/find_context.py` looks for an instruction by its neighbours with
+  shrinking windows.
 - `tools/compare_functions.py` compares one function across the two
   builds with relocated addresses masked; field displacements and
   constants are compared. `tools/show_code.py` prints the instructions
@@ -57,8 +62,9 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Family | Status |
 | --- | --- |
 | Session | Enabled in 1.1.0; passed in game 2026-10-10 (hold at start, start, pause, resume, AI hand-back and reclaim, a full match, keys normal) |
-| Camera | Two guards relocated (below); the rest open |
-| Movement, Combat, Outline, Minimap, Shop, Readers | Open |
+| Camera | All 17 guards relocated and fields reviewed, except the camera-follow config fields; not yet enabled |
+| Minimap | 53 of 54 operands aligned; not yet enabled |
+| Movement, Combat, Outline, Shop, Readers | Open |
 
 ### Session (worker, viewer, input)
 
@@ -76,12 +82,69 @@ Not part of the session family and still open inside the viewer hook: the
 `ingame` UI downcast (node `+0x230/+0x238`, type id, `+0x9150`) and all
 camera, vision and layout fields. Those run only with the camera family.
 
-### Camera (partial)
+### Camera (reviewed, not yet enabled)
+
+Enclosing functions were located and aligned with
+`tools/compare_functions.py`; each guard below is the same instruction in
+both builds (same field displacement).
+
+| Function | 0.6.3 | 0.7.0 | Found by |
+| --- | --- | --- | --- |
+| Client update (viewer caller) | `0xcd6d80` | `0x871540` | Argument setup at the viewer call |
+| Client UI update | `0xb9c970` | `0x9148a0` | Call from the viewer update (`tools/map_functions.py`) |
+| Layout config link | `0xa43be0` | `0xb9bcb0` | 253/253 instructions equal |
+| Input handler | `0x7b37f0` | `0xa3ac10` | Call from its aligned caller |
+| Renderer | `0x231f310` | `0x243d020` | Instruction context (`tools/find_context.py`), 3410/5554 aligned |
+| In-game UI update | `0x280bba0` | `0x24a3390` | Instruction context, 4725/7998 aligned |
 
 | Guard | 0.6.3 | 0.7.0 |
 | --- | --- | --- |
 | `VIEW_LAYOUT_INGAME_ARGUMENT` | `0xcdcbf6` | `0x877476` |
 | `VIEW_LAYOUT_INGAME_NODE_ARGUMENT` | `0xcdcc79` | `0x8774f9` |
+| `VIEW_LAYOUT_UI_DOWNCAST` | `0xb9cfc5` | `0x914f03` |
+| `VIEW_LAYOUT_UI_CONFIG_LINK` | `0xa43e02` | `0xb9bed2` |
+| `VIEW_LAYOUT_NATIVE_TOGGLE` | `0x7b4de5` | `0xa3c219` |
+| `VIEW_LAYOUT_UI_WIDE_BINDING` | `0x280bd60` | `0x24a3550` |
+| `VIEW_LAYOUT_CONTROLS_HIDE` | `0x280f42f` | `0x24a7384` |
+| `VIEW_LAYOUT_ANNOUNCE_BINDINGS` | `0x280d99d` | `0x24a551f` |
+| `VIEW_LAYOUT_KILLS_BINDINGS` | `0x280d9de` | `0x24a5560` |
+| `VIEW_LAYOUT_ANNOUNCE_WIDE` | `0x1e71e40` | `0x2b594c0` |
+| `VIEW_LAYOUT_KILLS_WIDE` | `0x1e71f60` | `0x2b595e0` |
+| `VIEW_LAYOUT_FULL_WIDTH` | `0x23228d4` | `0x24408ba` |
+| `VIEW_LAYOUT_COMPACT_SIDE` | `0x2322906` | `0x24408ec` |
+| `VISION_RENDER_FIELD` | `0x231f8ae` | `0x243d5f8` |
+| `VISION_CACHE_COMPARE` | `0x2320bcd` | `0x243e98d` |
+| `VISION_CACHE_WRITE` | `0x2320f0a` | `0x243ed0d` |
+| `VISION_UI_FIELD` | `0x280bfe2` | `0x24a37d0` |
+
+Guards that contain a stack slot or a relative jump (for example
+`UI_DOWNCAST`, whose frame slot moved from `rbp+0x10e18` to `rbp+0x10e20`)
+need their 0.7.0 bytes read from the new address; the field offsets in
+them are unchanged.
+
+Fields:
+
+- The `ingame` UI object check is unchanged: node `+0x230/+0x238`, the
+  `+0x50` and `+0x18` calls, the type id pair
+  (`0x810a3f1ff5177337`, `0xaf7a6919a6336e28`, 124 uses in both builds),
+  `+0x9234` (UI full width) and `+0x9150` (config link).
+- Config `+0x45` (full width), `+0x46` (compact side) and `+0x4b` (vision)
+  are read by the aligned renderer and UI instructions above.
+- View `+0x110`..`+0x120` and `+0x130` are used identically by the equal
+  viewer update; `+0xf8`..`+0x12c` by aligned renderer instructions;
+  `+0x458` (pan velocity) by the input handler with the same constants.
+- **Open:** config `+0x18/+0x1c/+0x20` (camera mode, lane or x, team or y).
+  Their 0.6.3 consumers (`0x1fcfd10`, `0xcafeb0`) are not located yet.
+
+### Minimap (reviewed in part)
+
+The camera's click handling assumes the mod's enlarged minimap
+(`minimap::content_rect`), so camera and minimap are enabled together.
+Of the 54 patched operands (37 in the renderer, 17 in the input handler),
+53 align in the mapped functions: 17 with identical bytes and 36 whose
+RIP-relative operand or data address moved and must be re-read
+(`research/game-builds/minimap-operands-0.7.0-candidates.json`).
+`input_narrow_right_x` at `0x7b4369` is not located yet.
 
 ## Open questions
 
