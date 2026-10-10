@@ -276,6 +276,20 @@ pub fn capture_trace(label: &str, logger: &Logger) {
     ));
 }
 
+/// `thread`'s call stack as `module+0xoffset`, innermost first; empty when
+/// unavailable. For the worker stall report (crate::worker_watch).
+pub fn thread_stack(thread: u64) -> Vec<String> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        windows::thread_stack(thread)
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        let _ = thread;
+        Vec::new()
+    }
+}
+
 /// Called from the SDK client, independent of whether a native hook arrives.
 pub fn sample_status(logger: &Logger) -> bool {
     let worker = WORKER_ENTRIES.load(Ordering::Relaxed);

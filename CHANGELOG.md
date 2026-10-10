@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.1 — 2026-10-10
+
+- Diagnostics only, no gameplay change. A second match freeze (1.0.0, Riot item mod, tick 6592) was caught by the stall report with `last_step=Outside`: the worker was not in the mod's per-player work or its pacing wait, but the report could not tell the game, another mod or one of our native hooks apart.
+- The stall report now logs the frozen worker's call stack as `module+0xoffset`, three times two seconds apart (`WORKER STALL stack n/3`): the same stack each time is a wait, a changing one is a loop. New native_adapter/windows/stack.rs suspends the worker only while it copies up to 48 return addresses into a fixed array, and allocates and logs after the worker runs again. The stacks are still logged if the player pauses or hands the frozen match back.
+- The native hooks on the worker mark their own steps (`Send`, `Steer`, `Move`, `Attack`, `Skill`, `Aim`, `ShopHook`), each covering the hook and the game function it forwards to, and put back the step they interrupted. `Outside` now means none of the mod's code.
+- The stall line adds `players_begun` (players whose per-tick work started since the last published frame) and `last_player`.
+
 ## 1.0.0 — 2026-10-10
 
 - First public release, as "LT Takeover: Open-Source Direct Control" (mod ID `lt_direct_control`) by Layton, on the Steam Workshop and GitHub. Same code as 0.83.2.

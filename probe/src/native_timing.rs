@@ -74,6 +74,8 @@ struct State {
     /// reported stall began.
     progress: Option<Instant>,
     stalled: Option<Instant>,
+    /// When the stalled worker's stack was last logged, and how many times.
+    stack_logged: Option<(Instant, u8)>,
 }
 pub struct NativeTiming {
     state: Mutex<State>,
@@ -143,6 +145,7 @@ impl NativeTiming {
                 pending_action: None,
                 progress: None,
                 stalled: None,
+                stack_logged: None,
             }),
         }
     }
@@ -296,6 +299,7 @@ impl NativeTiming {
         crate::worker_watch::bind(0);
         s.progress = None;
         s.stalled = None;
+        s.stack_logged = None;
         s.sender = None;
         s.view = None;
         s.selected = false;
@@ -473,7 +477,7 @@ impl NativeTiming {
     /// Called after a successful frame send in the runtime-identified worker.
     /// The current tick has returned and all three output locks are released.
     pub fn after_publication(&self, sender: usize, log: &Logger) {
-        crate::worker_watch::enter(crate::worker_watch::Step::Publication, usize::MAX);
+        crate::worker_watch::published();
         let _outside = crate::worker_watch::Outside;
         let generation = {
             let Ok(mut s) = self.state.lock() else { return };
@@ -490,6 +494,7 @@ impl NativeTiming {
             s.sender = Some(sender);
             s.produced += 1;
             s.progress = Some(Instant::now());
+            s.stack_logged = None;
             if let Some(since) = s.stalled.take() {
                 log.write(&format!(
                     "WORKER RESUMED after {} ms; produced={}",
@@ -668,19 +673,39 @@ impl NativeTiming {
         let now = Instant::now();
         if !matches!(s.phase, Phase::Running | Phase::Ai) || s.produced > s.consumed {
             s.progress = Some(now);
-            return;
+            // A reported stall stays reported (and its stack logged) while
+            // the player pauses or hands back a match that is still frozen.
+            if s.stalled.is_none() {
+                return;
+            }
         }
         let since = *s.progress.get_or_insert(now);
         if s.stalled.is_none() && now.duration_since(since) >= crate::worker_watch::STALL {
             s.stalled = Some(since);
             let (step, player) = crate::worker_watch::last();
+            let (begun, last_player) = crate::worker_watch::progress();
             log.write(&format!(
-                "WORKER STALL no frame for {} ms; played_tick={} produced={} consumed={} phase={:?} last_step={step:?} player={player:?}",
+                "WORKER STALL no frame for {} ms; played_tick={} produced={} consumed={} phase={:?} last_step={step:?} player={player:?} players_begun={begun} last_player={last_player:?}",
                 now.duration_since(since).as_millis(),
                 s.played_tick,
                 s.produced,
                 s.consumed,
                 s.phase
+            ));
+        }
+        // The worker's call stack, three times two seconds apart: the same
+        // stack each time is a wait, a changing one is a loop.
+        let due = match s.stack_logged {
+            None => true,
+            Some((at, count)) => count < 3 && now.duration_since(at) >= Duration::from_secs(2),
+        };
+        if let (Some(_), true, Some(worker)) = (s.stalled, due, s.worker) {
+            let count = s.stack_logged.map_or(1, |(_, count)| count + 1);
+            s.stack_logged = Some((now, count));
+            log.write(&format!(
+                "WORKER STALL stack {count}/3 step={:?} frames={:?}",
+                crate::worker_watch::last().0,
+                crate::native_adapter::thread_stack(worker)
             ));
         }
     }

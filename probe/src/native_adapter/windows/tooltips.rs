@@ -10,20 +10,24 @@ const MAX_TEXT_CAPACITY: usize = 1024 * 1024;
 
 #[repr(C)]
 #[derive(Default)]
-struct MemoryRegion {
-    base: usize,
+pub(super) struct MemoryRegion {
+    pub(super) base: usize,
     allocation_base: usize,
     allocation_protection: u32,
     partition_id: u16,
     padding: u16,
-    size: usize,
+    pub(super) size: usize,
     state: u32,
     protection: u32,
     kind: u32,
 }
 #[link(name = "kernel32")]
 extern "system" {
-    fn VirtualQuery(address: *const c_void, info: *mut MemoryRegion, size: usize) -> usize;
+    pub(super) fn VirtualQuery(
+        address: *const c_void,
+        info: *mut MemoryRegion,
+        size: usize,
+    ) -> usize;
     fn HeapValidate(heap: *mut c_void, flags: u32, memory: *const c_void) -> i32;
 }
 

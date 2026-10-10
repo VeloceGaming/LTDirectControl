@@ -14,6 +14,7 @@ mod layout;
 mod movement;
 mod outline;
 mod shop;
+mod stack;
 #[cfg(test)]
 mod tests;
 mod tooltips;
@@ -33,6 +34,7 @@ pub(super) use shop::{
     buyer_anchor_report, item_slot_capacity, native_player, player_build, player_owned_len,
     shop_ready,
 };
+pub(super) use stack::thread_stack;
 pub(super) use view::reset_session;
 use view::*;
 

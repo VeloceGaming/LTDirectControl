@@ -119,6 +119,7 @@ pub(crate) unsafe extern "system" fn shop_upgrade_hook(
     a7: usize,
 ) -> usize {
     use crate::shop::Answer;
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::ShopHook);
     let answer =
         catch_unwind(|| crate::shop::SHOP.upgrade_answer(player)).unwrap_or(Answer::Native);
     let fields: [u64; 3] = match answer {

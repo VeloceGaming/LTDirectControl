@@ -1,13 +1,16 @@
 # Backlog
 
-What is left to do, as of 1.0.0 (2026-10-10, first public release). Finished and declined items
+What is left to do, as of 1.0.1 (2026-10-10; 1.0.0 was the first public release). Finished and declined items
 are listed at the end for reference.
 
 ## Open
 
-1. **Match freeze (0.77.2, once).** The worker stopped mid-match with
-   nothing logged. 0.77.3 logs `WORKER STALL ... last_step=...` (always
-   written); if it recurs, the line names where the worker stopped.
+1. **Match freeze (0.77.2 and 1.0.0, once each; both with the Riot item
+   mod).** The simulation worker stops mid-match while the screen stays
+   responsive. The 1.0.0 report read `last_step=Outside`: not the mod's
+   per-player work or pacing wait. 1.0.1 logs the worker's call stack
+   (`WORKER STALL stack n/3`), marks the native hooks as steps and counts
+   the players begun in the frozen tick; if it recurs, read those lines.
 2. **Skill previews.** 0.75.2 decodes Ice Mage R (cone), Bard R (aura) and
    Exorcist R (area at the cast), matched to `champion_info`; Gunner Q/R/W,
    Bard Q, Exorcist W and Executioner W are single-target or self buffs and

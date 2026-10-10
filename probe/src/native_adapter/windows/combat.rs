@@ -94,6 +94,7 @@ pub(crate) unsafe extern "system" fn aim_hook(
     effect: usize,
     target: usize,
 ) {
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Aim);
     crate::perf::hook(crate::perf::Hook::Aim);
     let original: AimFn = std::mem::transmute(ORIGINAL_AIM.load(Ordering::Acquire));
     let manual = catch_unwind(AssertUnwindSafe(|| {
@@ -262,9 +263,11 @@ pub(crate) unsafe fn read_effect_metadata(
     )
 }
 pub(crate) unsafe extern "system" fn attack_hook(entity: usize, input: usize, events: usize) {
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Attack);
     attack_hook_from("input", entity, input, events);
 }
 pub(crate) unsafe extern "system" fn auto_attack_hook(entity: usize, input: usize, events: usize) {
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Attack);
     attack_hook_from("native-auto", entity, input, events);
 }
 /// Native InputTarget::Target is a POD tag (low dword) and entity ID.
@@ -470,14 +473,17 @@ pub(crate) unsafe fn skill_hook(slot: usize, entity: usize, input: usize, events
 }
 pub(crate) unsafe extern "system" fn skill_q_hook(entity: usize, input: usize, events: usize) {
     crate::perf::hook(crate::perf::Hook::Skill);
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Skill);
     skill_hook(0, entity, input, events);
 }
 pub(crate) unsafe extern "system" fn skill_w_hook(entity: usize, input: usize, events: usize) {
     crate::perf::hook(crate::perf::Hook::Skill);
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Skill);
     skill_hook(1, entity, input, events);
 }
 pub(crate) unsafe extern "system" fn skill_r_hook(entity: usize, input: usize, events: usize) {
     crate::perf::hook(crate::perf::Hook::Skill);
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Skill);
     skill_hook(2, entity, input, events);
 }
 

@@ -25,6 +25,7 @@ pub(crate) unsafe extern "system" fn steer_hook(
     goal_y: u64,
     events: usize,
 ) {
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Steer);
     STEER_ENTRIES.fetch_add(1, Ordering::Relaxed);
     crate::perf::hook(crate::perf::Hook::Steer);
     let original: SteerFn = std::mem::transmute(ORIGINAL_STEER.load(Ordering::Acquire));
@@ -155,6 +156,7 @@ pub(crate) unsafe fn cancel_recall(shared: &Shared, entity: usize, actor: usize,
     }
 }
 pub(crate) unsafe extern "system" fn move_hook(entity: usize, x: u64, y: u64, events: usize) {
+    let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Move);
     let _profile = crate::perf::work(crate::perf::Work::MoveInclusive);
     crate::perf::hook(crate::perf::Hook::Move);
     let original: MoveFn = std::mem::transmute(ORIGINAL_MOVE.load(Ordering::Acquire));

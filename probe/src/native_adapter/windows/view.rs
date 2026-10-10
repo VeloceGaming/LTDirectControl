@@ -314,7 +314,9 @@ pub(crate) unsafe extern "system" fn worker_hook(output: usize, sender: usize, f
     // highlights and highlight-segments write guards have been released.
     crate::perf::worker_thread();
     let tick = crate::perf::time(crate::perf::Section::WorkerSend);
+    let send = crate::worker_watch::hook(crate::worker_watch::Step::Send);
     original(output, sender, frame);
+    drop(send);
     drop(tick);
     let _after = crate::perf::time(crate::perf::Section::WorkerAfterSend);
     if let Some(shared) = SHARED.get() {
