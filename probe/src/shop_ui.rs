@@ -1932,6 +1932,7 @@ impl ShopUi {
         let matching = |extra: Option<usize>, active: &[usize]| {
             view.cat
                 .iter()
+                .filter(|item| item.enabled)
                 .filter(|item| active.iter().chain(extra.iter()).all(|f| has(item, *f)))
                 .count()
         };
