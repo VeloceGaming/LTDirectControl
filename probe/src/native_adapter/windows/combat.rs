@@ -23,7 +23,7 @@ pub(crate) unsafe fn attack_ranges(
     if state == 0
         || table == 0
         || std::ptr::read_unaligned(table as *const usize) < 0x50
-        || std::ptr::read_unaligned((table + 0x48) as *const usize) != base + 0x2e16650
+        || std::ptr::read_unaligned((table + 0x48) as *const usize) != base + 0x315ba70
     {
         return None;
     }

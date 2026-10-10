@@ -5,7 +5,9 @@
   "families": [
     "session",
     "camera",
-    "minimap"
+    "minimap",
+    "movement",
+    "combat"
   ],
   "executable_sha256": "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f",
   "timestamp": "0x6ac5fab4",
@@ -38,6 +40,106 @@
     "INPUT_PROLOGUE": {
       "rva": "0xa3ac10",
       "bytes": "5541574156415541545657534881ec98010000"
+    },
+    "MOVE_BYTES": {
+      "rva": "0x1463914",
+      "bytes": "e967ed0f00",
+      "target": "0x1562680"
+    },
+    "MOVE_PROLOGUE": {
+      "rva": "0x1562680",
+      "bytes": "56574c8b91c80200004d85d27438488b"
+    },
+    "ATTACK_BYTES": {
+      "rva": "0x14639c0",
+      "bytes": "e8fbe20e00",
+      "target": "0x1551cc0"
+    },
+    "ATTACK_PROLOGUE": {
+      "rva": "0x1551cc0",
+      "bytes": "5541574156415541545657534881ec88000000"
+    },
+    "STEER_CALL": {
+      "rva": "0x155b676",
+      "bytes": "e8f55b0000",
+      "target": "0x1561270"
+    },
+    "STEER_PROLOGUE": {
+      "rva": "0x1561270",
+      "bytes": "5541574156415541545657534883ec58"
+    },
+    "AIM_CORRECTION_CALL": {
+      "rva": "0x15590e9",
+      "bytes": "e802ff0000",
+      "target": "0x1568ff0"
+    },
+    "AIM_CORRECTION_PROLOGUE": {
+      "rva": "0x1568ff0",
+      "bytes": "4157415641554154565755534881eca8010000"
+    },
+    "AUTO_ATTACK_CALL": {
+      "rva": "0x1555f9f",
+      "bytes": "e81cbdffff",
+      "target": "0x1551cc0"
+    },
+    "STOP_PROLOGUE": {
+      "rva": "0x1695430",
+      "bytes": "5556574883ec30488d6c243048c745f8"
+    },
+    "CANCEL_RECALL_PROLOGUE": {
+      "rva": "0x16957b0",
+      "bytes": "5556574883ec30488d6c243048c745f8"
+    },
+    "DIRECT_STEP_PROLOGUE": {
+      "rva": "0x1553290",
+      "bytes": "5541574156415541545657534883ec38"
+    },
+    "SKILL_Q_CALL": {
+      "rva": "0x14639f1",
+      "bytes": "e8eaf50f00",
+      "target": "0x1562fe0"
+    },
+    "SKILL_Q_PROLOGUE": {
+      "rva": "0x1562fe0",
+      "bytes": "5541574156415541545657534881ecb8"
+    },
+    "SKILL_Q_QUEUE_LAYOUT": {
+      "rva": "0x15632f5",
+      "bytes": "488b83a8020000486bce38"
+    },
+    "SKILL_W_CALL": {
+      "rva": "0x1463940",
+      "bytes": "e89be90e00",
+      "target": "0x15522e0"
+    },
+    "SKILL_W_PROLOGUE": {
+      "rva": "0x15522e0",
+      "bytes": "5541574156415541545657534881ecb8"
+    },
+    "SKILL_W_QUEUE_LAYOUT": {
+      "rva": "0x1552615",
+      "bytes": "488b83a8020000486bce38"
+    },
+    "SKILL_R_CALL": {
+      "rva": "0x1463aa3",
+      "bytes": "e888df0f00",
+      "target": "0x1561a30"
+    },
+    "SKILL_R_PROLOGUE": {
+      "rva": "0x1561a30",
+      "bytes": "5541574156415541545657534881ecb8"
+    },
+    "SKILL_R_QUEUE_LAYOUT": {
+      "rva": "0x1561d75",
+      "bytes": "488b83a8020000486bce38"
+    },
+    "AIM_POINT_WRITE": {
+      "rva": "0x15698ed",
+      "bytes": "4c894008"
+    },
+    "AIM_DIRECTION_WRITE": {
+      "rva": "0x1569904",
+      "bytes": "4c894008"
     }
   },
   "layout_anchors": {
@@ -112,9 +214,57 @@
     "VISION_UI_FIELD": {
       "rva": "0x24a37d0",
       "bytes": "418a5963"
+    },
+    "ENTITY_BORROW_GETTER": {
+      "rva": "0x315ba8f",
+      "bytes": "48ffca488b014c8b41084889c141ff9008020000904885c07418488b8858060000488b806006000048890f488906b001"
+    },
+    "ENTITY_KIND_POSITION": {
+      "rva": "0x156273a",
+      "bytes": "8379680f7548837970027742488b81580600004c8b9160060000"
+    },
+    "ENTITY_EFFECT_GATE": {
+      "rva": "0x1562682",
+      "bytes": "4c8b91c80200004d85d27438488b81c002000049c1e2034f8d14924531dbbeb8030000"
+    },
+    "ENTITY_ID": {
+      "rva": "0x1551d81",
+      "bytes": "488b97b8050000"
+    },
+    "ENTITY_ATTACK_ACTION": {
+      "rva": "0x1551fbc",
+      "bytes": "48c747700300000048c74778000000004c89b780000000"
+    },
+    "ENTITY_ATTACK_BUDGET": {
+      "rva": "0x155af47",
+      "bytes": "498b8fb00000004c0f42c04c8d51ff4d39d44d0f42d44883f9014c0f42d0498b47704d8997b00000004d8987b80000004d898fc0000000498997c8000000"
+    },
+    "ENTITY_ATTACK_TYPE": {
+      "rva": "0x155631f",
+      "bytes": "8b8eb4040000"
+    },
+    "ENTITY_SKILL_ACTION_CDR": {
+      "rva": "0x156300d",
+      "bytes": "488b8978050000488b83800500004889daff90900000008b93f803000083c264"
+    },
+    "ENTITY_ULT_CDR": {
+      "rva": "0x1561a7b",
+      "bytes": "8b8bf80300008b936404000001ca"
+    },
+    "ENTITY_AA_RANGE": {
+      "rva": "0x15550f8",
+      "bytes": "488b9ac005000048ffcb480faf9aa00400004c8ba230040000"
+    },
+    "ENTITY_AA_RANGE_BASE": {
+      "rva": "0x1555131",
+      "bytes": "4c03a298040000"
+    },
+    "ENTITY_LEVEL_RANGE": {
+      "rva": "0x15630cf",
+      "bytes": "488bbbc005000048ffcf480fafbbd8040000488bb330040000"
     }
   },
-  "review_notes": "Session, camera and minimap families; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
+  "review_notes": "Session, camera, minimap, movement and combat families; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
   "native_game_test": "Session passed with mod 1.1.0, camera and minimap with 1.1.1, on 2026-10-10.",
   "minimap": {
     "reviewed": true,

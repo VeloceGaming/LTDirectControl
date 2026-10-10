@@ -64,7 +64,9 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Session | Enabled in 1.1.0; passed in game 2026-10-10 (hold at start, start, pause, resume, AI hand-back and reclaim, a full match, keys normal) |
 | Camera | Enabled in 1.1.1; passed in game 2026-10-10 (layout, lock and follow, pan, zoom, vision, hand-back) |
 | Minimap | Enabled in 1.1.1 (all 54 operands); passed in game 2026-10-10 |
-| Movement, Combat, Outline, Shop, Readers | Open |
+| Movement | Enabled in 1.1.2; in-game test pending |
+| Combat | Enabled in 1.1.2; in-game test pending |
+| Outline, Shop, Readers | Open |
 
 ### Session (worker, viewer, input)
 
@@ -149,6 +151,47 @@ All 54 patched operands (37 in the renderer, 17 in the input handler) are
 relocated in the mapped functions: 17 with identical bytes, 37 whose
 RIP-relative operand moved. The native constants they replace are
 unchanged. They are listed in `tools/native_profiles/0.7.0.json`.
+
+### Movement and combat
+
+The entity layout is unchanged. `tools/field_shifts.py` aligns function
+pairs with field displacements masked and then compares the displacements:
+in the nine functions below every entity field the hooks use keeps its
+offset (`+0x68`, `+0x70`..`+0x80`, `+0xb0`..`+0xc8`, `+0x2a0`..`+0x2c8`,
+`+0x3f4`, `+0x3f8`, `+0x430`, `+0x464`, `+0x488`..`+0x4b8`, `+0x4c0`,
+`+0x4f8`, `+0x530`, `+0x578`..`+0x598`, `+0x5b8`, `+0x5c0`, `+0x658`,
+`+0x660`).
+
+| Function | 0.6.3 | 0.7.0 | Alignment |
+| --- | --- | --- | --- |
+| Input dispatcher (move, attack, skill sites) | `0x11d8fc0` | `0x1463780` | 757/757 |
+| Move | `0x1703fa0` | `0x1562680` | 49/49 |
+| Attack | `0x16f3e30` | `0x1551cc0` | 236/236 |
+| Skill Q / W / R | `0x17046b0` / `0x16f4450` / `0x1703390` | `0x1562fe0` / `0x15522e0` / `0x1561a30` | recompiled, about 70% |
+| Steer | `0x1702bd0` | `0x1561270` | 462/462 |
+| Direct step | `0x16f5100` | `0x1553290` | equal |
+| Stop event / recall cancel | `0x13cccc0` / `0x13cda10` | `0x1695430` / `0x16957b0` | equal |
+| Entity update (auto attack, aim, steer sites) | `0x16f6cc0` | `0x1554ec0` | 3857/5736 with fields masked |
+| Aim correction | `0x1707b00` | `0x1568ff0` | 547/547 |
+| Entity getter checked by the range reader | `0x2e16650` | `0x315ba70` | equal |
+
+Call sites: move `0x1463914`, attack `0x14639c0`, skills `0x14639f1`,
+`0x1463940`, `0x1463aa3`, auto attack `0x1555f9f`, aim `0x15590e9`, steer
+`0x155b676`; each has the same argument setup as in 0.6.3.
+
+Changed in 0.7.0:
+
+- The skill functions take 16 more bytes of stack and, before the range
+  check, call a new method on the skill's effect object (vtable `+0x120`)
+  whose result is added to the range. The mod's own skill range
+  (`read_effect_metadata`) does not include that term: ranges used for
+  casting decisions and previews may be short for effects that return a
+  bonus. Not a memory-safety matter.
+- The action table slots the hooks call (`+0x90` cooldown, `+0xa8` use
+  count, `+0x48`/`+0x50`/`+0x58`) are called the same way by the skill
+  functions. A different vtable used by the entity update gained two
+  entries below `+0x2a0` (now `+0x2b0`); the mod does not call through it,
+  but the shop family's `+0x158` slot must be re-proven.
 
 ## Open questions
 

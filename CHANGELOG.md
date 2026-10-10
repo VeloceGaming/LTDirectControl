@@ -3,6 +3,14 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.2 — 2026-10-10
+
+- Development build for game 0.7.0: the movement and combat families join session, camera and minimap. Outlines, the purchase hooks, the item catalogue, native tooltips and skill previews are still off.
+- The entity layout did not move: across the nine functions these hooks live in, every entity field the hooks read or write (action, position, cooldowns, level, range, skill descriptors, charges, id, inventory queue) is used at the same offset in 0.7.0 (new tools/field_shifts.py: 601 field uses unchanged in the entity update alone).
+- Movement: move, steer, direct step, stop and recall-cancel functions equal their 0.6.3 forms; call sites aligned with identical argument setup.
+- Combat: the attack and aim-correction functions are equal; the dispatcher that calls move, attack and the three skills is equal. The three skill functions were recompiled (16 more bytes of stack) and now add a per-effect range term through a new effect method (+0x120); cooldown, action state and the queued-intent layout are unchanged. The mod's own skill range does not include that new term yet.
+- Three guards changed shape with the recompile (attack range, its base, skill level range) and were re-read; the entity getter the attack-range reader checks moved to 0x315ba70.
+
 ## 1.1.1 — 2026-10-10
 
 - Development build for game 0.7.0: the camera and minimap families join the session family. Movement, attacks, skills, outlines, the purchase hooks and native tooltips are still off.
