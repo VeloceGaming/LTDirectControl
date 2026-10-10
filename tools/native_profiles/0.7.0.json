@@ -3,7 +3,9 @@
   "game_version": "0.7.0",
   "reviewed": true,
   "families": [
-    "session"
+    "session",
+    "camera",
+    "minimap"
   ],
   "executable_sha256": "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f",
   "timestamp": "0x6ac5fab4",
@@ -42,8 +44,805 @@
     "VIEW_LAYOUT_PAUSE": {
       "rva": "0xb1960b",
       "bytes": "807e4800"
+    },
+    "VIEW_LAYOUT_INGAME_ARGUMENT": {
+      "rva": "0x877476",
+      "bytes": "488d05e29c5603"
+    },
+    "VIEW_LAYOUT_INGAME_NODE_ARGUMENT": {
+      "rva": "0x8774f9",
+      "bytes": "e832d095ff4989c5"
+    },
+    "VIEW_LAYOUT_UI_DOWNCAST": {
+      "rva": "0x914f03",
+      "bytes": "488b85200e0100488b8830020000488b8038020000ff5050904889c64889d0488d8d201500004889f2ff5018904885f60f8458d8010048b9377317f51f3f0a81488b85201500004831c848ba286e33a619697aaf488b8d281500004831d14809c10f8527d801000fb68634920000"
+    },
+    "VIEW_LAYOUT_UI_CONFIG_LINK": {
+      "rva": "0xb9bed2",
+      "bytes": "488b875091000048837810000f85880200004088685d"
+    },
+    "VIEW_LAYOUT_NATIVE_TOGGLE": {
+      "rva": "0xa3c219",
+      "bytes": "408a705d4080f6014088705d80b33492000001"
+    },
+    "VIEW_LAYOUT_UI_WIDE_BINDING": {
+      "rva": "0x24a3550",
+      "bytes": "488d9134920000488995f8080000"
+    },
+    "VIEW_LAYOUT_CONTROLS_HIDE": {
+      "rva": "0x24a7384",
+      "bytes": "4c8d05ad69b20141b90e000000488b95f80a0000e8e30c0700904885c00f84be6a0000c6806002000000"
+    },
+    "VIEW_LAYOUT_ANNOUNCE_BINDINGS": {
+      "rva": "0x24a551f",
+      "bytes": "488d91339200004889c1488995400500004c8b85f8080000e8843f6b0090"
+    },
+    "VIEW_LAYOUT_KILLS_BINDINGS": {
+      "rva": "0x24a5560",
+      "bytes": "4883c0304889c1488b95400500004c8b85f8080000e866406b00"
+    },
+    "VIEW_LAYOUT_ANNOUNCE_WIDE": {
+      "rva": "0x2b594c0",
+      "bytes": "41803800"
+    },
+    "VIEW_LAYOUT_KILLS_WIDE": {
+      "rva": "0x2b595e0",
+      "bytes": "41803800"
+    },
+    "VIEW_LAYOUT_FULL_WIDTH": {
+      "rva": "0x24408ba",
+      "bytes": "0fb64845"
+    },
+    "VIEW_LAYOUT_COMPACT_SIDE": {
+      "rva": "0x24408ec",
+      "bytes": "80784601"
+    },
+    "VISION_RENDER_FIELD": {
+      "rva": "0x243d5f8",
+      "bytes": "0fb6404b"
+    },
+    "VISION_CACHE_COMPARE": {
+      "rva": "0x243e98d",
+      "bytes": "3a414b"
+    },
+    "VISION_CACHE_WRITE": {
+      "rva": "0x243ed0d",
+      "bytes": "0fb6404b"
+    },
+    "VISION_UI_FIELD": {
+      "rva": "0x24a37d0",
+      "bytes": "418a5963"
     }
   },
-  "review_notes": "Session family only; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
-  "native_game_test": "Session family passed in game with mod 1.1.0 on 2026-10-10."
+  "review_notes": "Session, camera and minimap families; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
+  "native_game_test": "Session family passed in game with mod 1.1.0 on 2026-10-10.",
+  "minimap": {
+    "reviewed": true,
+    "map_size": 352,
+    "padding": 4,
+    "wide_origin": [
+      1560,
+      720
+    ],
+    "narrow_origins": [
+      [
+        565,
+        711
+      ],
+      [
+        995,
+        711
+      ]
+    ],
+    "operands": [
+      {
+        "name": "render_wide_origin",
+        "rva": "0x2441408",
+        "bytes": "f20f103df0dbb701",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          1560,
+          720,
+          0,
+          0
+        ],
+        "data_rva": "0x3fbf000",
+        "data_bytes": "0020c34400003444"
+      },
+      {
+        "name": "frame_rounding",
+        "rva": "0x2441485",
+        "bytes": "48b80000000000004041",
+        "offset": 6,
+        "kind": "immediate",
+        "value": "00004040",
+        "width": 4
+      },
+      {
+        "name": "frame_warm_base",
+        "rva": "0x24414c6",
+        "bytes": "0f280573e69901",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          0,
+          0.10980392156862745,
+          0.10196078431372549,
+          0.09411764705882353
+        ],
+        "data_rva": "0x3ddfb40",
+        "data_bytes": "00000000b1b0b03db9b8b83d8584043e"
+      },
+      {
+        "name": "render_inset",
+        "rva": "0x244155d",
+        "bytes": "0f583d4c049c01",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          4,
+          4,
+          0,
+          0
+        ],
+        "data_rva": "0x3e019b0",
+        "data_bytes": "0000a0410000a0410000000000000000"
+      },
+      {
+        "name": "map_dimension_0x2441593",
+        "rva": "0x2441593",
+        "bytes": "c74424380000a043",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "0000b043",
+        "width": 4
+      },
+      {
+        "name": "map_dimension_0x244159b",
+        "rva": "0x244159b",
+        "bytes": "c74424300000a043",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "0000b043",
+        "width": 4
+      },
+      {
+        "name": "fog_cell_pitch",
+        "rva": "0x2441af3",
+        "bytes": "48b8abaa2a4164000000",
+        "offset": 2,
+        "kind": "immediate",
+        "value": "bcbb3b41",
+        "width": 4
+      },
+      {
+        "name": "marker_world_scale",
+        "rva": "0x2441c4b",
+        "bytes": "440f28257d509b01",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          2.727272727272727,
+          2.727272727272727,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cd0",
+        "data_bytes": "00004040000040400000000000000000"
+      },
+      {
+        "name": "camera_origin_scale",
+        "rva": "0x2443b62",
+        "bytes": "0f5e0567319b01",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          2.727272727272727,
+          2.727272727272727,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cd0",
+        "data_bytes": "00004040000040400000000000000000"
+      },
+      {
+        "name": "camera_extent_scale",
+        "rva": "0x2443b71",
+        "bytes": "0f5e0de8b5b701",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          0,
+          0,
+          2.727272727272727,
+          2.727272727272727
+        ],
+        "data_rva": "0x3fbf160",
+        "data_bytes": "00000000000000000000404000004040"
+      },
+      {
+        "name": "marker_visual_0x2441c5c",
+        "rva": "0x2441c5c",
+        "bytes": "440f282d5cd4b701",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -15.400000000000002,
+          -15.400000000000002,
+          30.800000000000004,
+          30.800000000000004
+        ],
+        "data_rva": "0x3fbf0c0",
+        "data_bytes": "000060c1000060c10000e0410000e041"
+      },
+      {
+        "name": "marker_visual_0x2442264",
+        "rva": "0x2442264",
+        "bytes": "0f580545ceb701",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          -16.5,
+          -16.5,
+          0.0,
+          0.0
+        ],
+        "data_rva": "0x3fbf0b0",
+        "data_bytes": "000070c1000070c10000000000000000"
+      },
+      {
+        "name": "marker_visual_0x244226b",
+        "rva": "0x244226b",
+        "bytes": "660f14057de5b201",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          33.0,
+          33.0,
+          0.0,
+          0.0
+        ],
+        "data_rva": "0x3f707f0",
+        "data_bytes": "0000f0410000f0410000000000000000"
+      },
+      {
+        "name": "marker_visual_0x2442c8c",
+        "rva": "0x2442c8c",
+        "bytes": "f30f100dd4c19901",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -4.4,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3ddee68",
+        "data_bytes": "000080c0"
+      },
+      {
+        "name": "marker_visual_0x2442e98",
+        "rva": "0x2442e98",
+        "bytes": "f30f100d10cc9901",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -9.9,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3ddfab0",
+        "data_bytes": "000010c1"
+      },
+      {
+        "name": "marker_visual_0x24430a3",
+        "rva": "0x24430a3",
+        "bytes": "f30f581d699eae01",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -7.700000000000001,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3f2cf14",
+        "data_bytes": "0000e0c0"
+      },
+      {
+        "name": "marker_visual_0x24430b0",
+        "rva": "0x24430b0",
+        "bytes": "f30f5805f8c99901",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -9.9,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3ddfab0",
+        "data_bytes": "000010c1"
+      },
+      {
+        "name": "marker_visual_0x2443314",
+        "rva": "0x2443314",
+        "bytes": "f30f100dc0ab9201",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -6.6000000000000005,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3d6dedc",
+        "data_bytes": "0000c0c0"
+      },
+      {
+        "name": "marker_visual_0x2443639",
+        "rva": "0x2443639",
+        "bytes": "f20f10058fbab701",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -0.0,
+          105.60000000000001,
+          0,
+          0
+        ],
+        "data_rva": "0x3fbf0d0",
+        "data_bytes": "000000800000c042"
+      },
+      {
+        "name": "marker_visual_0x2443644",
+        "rva": "0x2443644",
+        "bytes": "0f580595bab701",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          105.60000000000001,
+          2.2,
+          0.0,
+          0.0
+        ],
+        "data_rva": "0x3fbf0e0",
+        "data_bytes": "0000c042000000400000000000000000"
+      },
+      {
+        "name": "marker_visual_0x2443685",
+        "rva": "0x2443685",
+        "bytes": "0f580564bab701",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          -44.0,
+          -16.5,
+          88.0,
+          33.0
+        ],
+        "data_rva": "0x3fbf0f0",
+        "data_bytes": "000020c2000070c10000a0420000f041"
+      },
+      {
+        "name": "marker_visual_0x2443896",
+        "rva": "0x2443896",
+        "bytes": "f20f100562b8b701",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          -0.0,
+          246.400016784668,
+          0,
+          0
+        ],
+        "data_rva": "0x3fbf100",
+        "data_bytes": "0000008001006043"
+      },
+      {
+        "name": "marker_visual_0x24438a1",
+        "rva": "0x24438a1",
+        "bytes": "0f580568b8b701",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          246.400016784668,
+          2.2,
+          0.0,
+          0.0
+        ],
+        "data_rva": "0x3fbf110",
+        "data_bytes": "01006043000000400000000000000000"
+      },
+      {
+        "name": "marker_visual_0x24438e5",
+        "rva": "0x24438e5",
+        "bytes": "0f580d04b8b701",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          -44.0,
+          -16.5,
+          88.0,
+          33.0
+        ],
+        "data_rva": "0x3fbf0f0",
+        "data_bytes": "000020c2000070c10000a0420000f041"
+      },
+      {
+        "name": "portrait_ring_rounding",
+        "rva": "0x244222a",
+        "bytes": "48b80000000000007041",
+        "offset": 6,
+        "kind": "immediate",
+        "value": "00008441",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x24428a4",
+        "rva": "0x24428a4",
+        "bytes": "c74424380000e041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "6666f641",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x24428ac",
+        "rva": "0x24428ac",
+        "bytes": "c74424300000e041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "6666f641",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x2442cc8",
+        "rva": "0x2442cc8",
+        "bytes": "c744243800000041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "cdcc0c41",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x2442cd0",
+        "rva": "0x2442cd0",
+        "bytes": "c744243000000041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "cdcc0c41",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x2442ed4",
+        "rva": "0x2442ed4",
+        "bytes": "c744243800009041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "66669e41",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x2442edc",
+        "rva": "0x2442edc",
+        "bytes": "c744243000009041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "66669e41",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x24430e3",
+        "rva": "0x24430e3",
+        "bytes": "c744243800009041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "66669e41",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x24430eb",
+        "rva": "0x24430eb",
+        "bytes": "c744243000006041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "66667641",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x2443350",
+        "rva": "0x2443350",
+        "bytes": "c744243800004041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "33335341",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x2443358",
+        "rva": "0x2443358",
+        "bytes": "c744243000004041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "33335341",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x24436cb",
+        "rva": "0x24436cb",
+        "bytes": "c744244000009041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "66669e41",
+        "width": 4
+      },
+      {
+        "name": "marker_image_or_text_0x244392b",
+        "rva": "0x244392b",
+        "bytes": "c744244000009041",
+        "offset": 4,
+        "kind": "immediate",
+        "value": "66669e41",
+        "width": 4
+      },
+      {
+        "name": "input_wide_pair_0xa3b191",
+        "rva": "0xa3b191",
+        "bytes": "f20f100df7ba3b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          1564,
+          724,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6c90",
+        "data_bytes": "00a0c54400003944"
+      },
+      {
+        "name": "input_wide_pair_0xa3b263",
+        "rva": "0xa3b263",
+        "bytes": "f20f100d25ba3b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          1564,
+          724,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6c90",
+        "data_bytes": "00a0c54400003944"
+      },
+      {
+        "name": "input_wide_y_0xa3b199",
+        "rva": "0xa3b199",
+        "bytes": "f30f1015ffba3b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          724,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6ca0",
+        "data_bytes": "00003944"
+      },
+      {
+        "name": "input_wide_y_0xa3b26b",
+        "rva": "0xa3b26b",
+        "bytes": "f30f10152dba3b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          724,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6ca0",
+        "data_bytes": "00003944"
+      },
+      {
+        "name": "input_wide_x_0xa3b1a1",
+        "rva": "0xa3b1a1",
+        "bytes": "f30f101dfbba3b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          1564,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6ca4",
+        "data_bytes": "00a0c544"
+      },
+      {
+        "name": "input_wide_x_0xa3b273",
+        "rva": "0xa3b273",
+        "bytes": "f30f101d29ba3b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          1564,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6ca4",
+        "data_bytes": "00a0c544"
+      },
+      {
+        "name": "input_narrow_right_x_0xa3b7a2",
+        "rva": "0xa3b7a2",
+        "bytes": "f30f101d02b53b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          569,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cac",
+        "data_bytes": "00401244"
+      },
+      {
+        "name": "input_narrow_right_x_0xa3ba36",
+        "rva": "0xa3ba36",
+        "bytes": "f30f101d6eb23b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          569,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cac",
+        "data_bytes": "00401244"
+      },
+      {
+        "name": "input_narrow_left_x_0xa3b90b",
+        "rva": "0xa3b90b",
+        "bytes": "f30f101d95b33b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          999,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6ca8",
+        "data_bytes": "00c07d44"
+      },
+      {
+        "name": "input_narrow_left_x_0xa3bb57",
+        "rva": "0xa3bb57",
+        "bytes": "f30f101d49b13b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          999,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6ca8",
+        "data_bytes": "00c07d44"
+      },
+      {
+        "name": "input_narrow_pair_0xa3b913",
+        "rva": "0xa3b913",
+        "bytes": "0f280d96b33b03",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          0,
+          715,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cb0",
+        "data_bytes": "0000000000c036440000000000000000"
+      },
+      {
+        "name": "input_narrow_pair_0xa3bb5f",
+        "rva": "0xa3bb5f",
+        "bytes": "0f280d4ab13b03",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          0,
+          715,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cb0",
+        "data_bytes": "0000000000c036440000000000000000"
+      },
+      {
+        "name": "input_narrow_y_0xa3b91e",
+        "rva": "0xa3b91e",
+        "bytes": "f30f10159ab33b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          715,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cc0",
+        "data_bytes": "00c03644"
+      },
+      {
+        "name": "input_narrow_y_0xa3bb6a",
+        "rva": "0xa3bb6a",
+        "bytes": "f30f10154eb13b03",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          715,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cc0",
+        "data_bytes": "00c03644"
+      },
+      {
+        "name": "input_bounds_0xa3b933",
+        "rva": "0xa3b933",
+        "bytes": "f30f102511343303",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          352,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3d6ed4c",
+        "data_bytes": "0000a043"
+      },
+      {
+        "name": "input_bounds_0xa3bb7f",
+        "rva": "0xa3bb7f",
+        "bytes": "f30f1025c5313303",
+        "offset": 4,
+        "kind": "rip_f32x4",
+        "values": [
+          352,
+          0,
+          0,
+          0
+        ],
+        "data_rva": "0x3d6ed4c",
+        "data_bytes": "0000a043"
+      },
+      {
+        "name": "input_world_scale",
+        "rva": "0xa3bbda",
+        "bytes": "0f593defb03b03",
+        "offset": 3,
+        "kind": "rip_f32x4",
+        "values": [
+          2.727272727272727,
+          2.727272727272727,
+          0,
+          0
+        ],
+        "data_rva": "0x3df6cd0",
+        "data_bytes": "00004040000040400000000000000000"
+      }
+    ]
+  }
 }

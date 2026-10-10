@@ -3,6 +3,14 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.1 — 2026-10-10
+
+- Development build for game 0.7.0: the camera and minimap families join the session family. Movement, attacks, skills, outlines, the purchase hooks and native tooltips are still off.
+- Camera: all 17 layout and vision guards relocated by aligning their six enclosing functions; the `ingame` UI object check, the config fields (+0x18/+0x1c/+0x20 camera mode and target, +0x45/+0x46 layout, +0x4b vision) and the view fields (viewport, centre, extent, zoom, pan velocity) are used by the same instructions as in 0.6.3. The camera-follow evidence in the old notes was from 0.6.2 addresses; it is re-established for 0.7.0 (follow routine 0x2439fd0, own-mid shortcut 0xa3bd8e).
+- Minimap: all 54 operands relocated (37 in the renderer, 17 in the input handler); the native constants they replace are unchanged. The camera needs the enlarged minimap's geometry, so the two families are enabled together.
+- Stall report: a worker thread that has exited is logged as `WORKER ENDED` (normal when a match finishes) instead of `WORKER STALL`; a stack that cannot be read says why.
+- New tools/map_functions.py (follows aligned calls from known function pairs) and tools/find_context.py (finds an instruction by its neighbours).
+
 ## 1.1.0 — 2026-10-10
 
 - Development build for game 0.7.0 (beta branch), on the `game-0.7` branch. Not a release: only the session hooks are installed. Movement, attacks, skills, camera control, outlines, the minimap scaling, the purchase hooks and native tooltips are off until each is reviewed for 0.7.0 (docs/migration-0.7.md).

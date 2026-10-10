@@ -44,7 +44,7 @@ def verify_sources(profile, root=ROOT):
     preview = (root/'probe/src/native_preview.rs').read_text()
     if 'minimap' in profile:
         minimap = (root/'probe/src/minimap.rs').read_text()
-        assert 'include_str!("../../tools/native_profiles/0.6.3.json")' in minimap
+        assert f'include_str!("../../tools/native_profiles/{profile["game_version"]}.json")' in minimap
         assert 'minimap_plan.verify()' in adapter
         assert 'crate::minimap::content_rect(wide, left, custom)' in adapter
     anchors = profile['anchors']

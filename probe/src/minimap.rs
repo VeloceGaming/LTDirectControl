@@ -75,7 +75,7 @@ pub fn draw_frame(ctx: &mut StableClient<'_>, camera: &CameraControl) {
 #[cfg(any(test, all(windows, target_arch = "x86_64")))]
 pub(crate) mod native {
     use serde_json::Value;
-    const PROFILE: &str = include_str!("../../tools/native_profiles/0.6.3.json");
+    const PROFILE: &str = include_str!("../../tools/native_profiles/0.7.0.json");
     pub struct BytePatch {
         pub site: usize,
         pub expected: Vec<u8>,

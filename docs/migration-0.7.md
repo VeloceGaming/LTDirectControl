@@ -62,8 +62,8 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Family | Status |
 | --- | --- |
 | Session | Enabled in 1.1.0; passed in game 2026-10-10 (hold at start, start, pause, resume, AI hand-back and reclaim, a full match, keys normal) |
-| Camera | All 17 guards relocated and fields reviewed, except the camera-follow config fields; not yet enabled |
-| Minimap | 53 of 54 operands aligned; not yet enabled |
+| Camera | Enabled in 1.1.1; in-game test pending |
+| Minimap | Enabled in 1.1.1 (all 54 operands); in-game test pending |
 | Movement, Combat, Outline, Shop, Readers | Open |
 
 ### Session (worker, viewer, input)
@@ -82,7 +82,7 @@ Not part of the session family and still open inside the viewer hook: the
 `ingame` UI downcast (node `+0x230/+0x238`, type id, `+0x9150`) and all
 camera, vision and layout fields. Those run only with the camera family.
 
-### Camera (reviewed, not yet enabled)
+### Camera
 
 Enclosing functions were located and aligned with
 `tools/compare_functions.py`; each guard below is the same instruction in
@@ -133,18 +133,22 @@ Fields:
 - View `+0x110`..`+0x120` and `+0x130` are used identically by the equal
   viewer update; `+0xf8`..`+0x12c` by aligned renderer instructions;
   `+0x458` (pan velocity) by the input handler with the same constants.
-- **Open:** config `+0x18/+0x1c/+0x20` (camera mode, lane or x, team or y).
-  Their 0.6.3 consumers (`0x1fcfd10`, `0xcafeb0`) are not located yet.
+- Config `+0x18` (camera mode), `+0x1c` and `+0x20` (lane and team when
+  following, x and y when free): the follow routine (`0x2439fd0`) reads
+  `[rdi+0x20]` and `[rdi+0x1c]` and copies `[rdi+0x1c]` to view `+0x114`
+  in free mode; the own-mid shortcut in the input handler (`0xa3bd8e`)
+  writes mode 2 and the pair through the config holder (`+0x30`, `+0x38`,
+  the config being the holder `+0x18`). The addresses in the older notes
+  (`1fcfd5d`, `cb020e`) were 0.6.2 addresses.
 
-### Minimap (reviewed in part)
+### Minimap
 
 The camera's click handling assumes the mod's enlarged minimap
 (`minimap::content_rect`), so camera and minimap are enabled together.
-Of the 54 patched operands (37 in the renderer, 17 in the input handler),
-53 align in the mapped functions: 17 with identical bytes and 36 whose
-RIP-relative operand or data address moved and must be re-read
-(`research/game-builds/minimap-operands-0.7.0-candidates.json`).
-`input_narrow_right_x` at `0x7b4369` is not located yet.
+All 54 patched operands (37 in the renderer, 17 in the input handler) are
+relocated in the mapped functions: 17 with identical bytes, 37 whose
+RIP-relative operand moved. The native constants they replace are
+unchanged. They are listed in `tools/native_profiles/0.7.0.json`.
 
 ## Open questions
 
