@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.7 — 2026-10-11
+
+- "Keep pointer in window" (Settings, Camera, Navigation; on by default): while the player controls a running match the pointer is confined to the game window's client area, so edge scrolling works next to a second monitor (reported on the Workshop: the pointer slid onto the other screen in every window mode). The clip is renewed each frame and released when the match is paused, the shop or settings window is open, control is with the AI, the match is over, the game is not the foreground window, or the extension unloads. `POINTER clip on/off` at verbose log detail. Translated in all 16 languages.
+
 ## 1.0.6 — 2026-10-11
 
 - Match speed no longer follows the frame rate. The worker was held to one tick ahead of playback and a client frame can only play what is queued, so below 60 fps the match slowed in proportion (30 fps played at half speed; reported on the Workshop). The lead now follows the average client frame time: 1 tick at 60 fps and above (unchanged), up to 4 below, which keeps full speed down to 15 fps. It rises once the match would run more than 5% slow and falls back only when the smaller lead is nearly enough; one long frame or a pause does not raise it (tested). Frames are timed on the wall clock between running viewer calls. `TIMING frame lead a -> b` is logged for the first eight changes of a match, and `TIMING slow playback` when a ten-second window ran under 95% of full speed (which also shows a slow simulation thread, not addressed here). Passed in game on 0.7.0 at 30 and 45 fps (build 1.1.9 of the game-0.7 branch).

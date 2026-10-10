@@ -42,6 +42,7 @@ mod own_selection;
 mod perf;
 mod platform_input;
 mod player_hud;
+mod pointer_clip;
 mod preview_style;
 mod purchase_tracker;
 mod result_audit;

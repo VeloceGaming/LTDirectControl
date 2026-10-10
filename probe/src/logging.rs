@@ -73,6 +73,7 @@ const VERBOSE: &[&str] = &[
     "PERF ",
     "PLAYBACK ",
     "PLAYER HUD",
+    "POINTER ",
     "PREVIEW GEOMETRY",
     "PURCHASE TRACE",
     "RECALL NATIVE",

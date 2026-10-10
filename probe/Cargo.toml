@@ -1,6 +1,6 @@
 [package]
 name = "lt_direct_control"
-version = "1.0.6"
+version = "1.0.7"
 edition = "2021"
 publish = false
 
