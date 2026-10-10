@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "game_version": "0.7.0",
+  "reviewed": true,
+  "families": [
+    "session"
+  ],
+  "executable_sha256": "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f",
+  "timestamp": "0x6ac5fab4",
+  "size_of_image": "0x56d8000",
+  "image_base": "0x140000000",
+  "anchors": {
+    "WORKER_BYTES": {
+      "rva": "0x979089",
+      "bytes": "e84269f4ff",
+      "target": "0x8bf9d0"
+    },
+    "VIEW_BYTES": {
+      "rva": "0x877560",
+      "bytes": "e85b1f2a00",
+      "target": "0xb194c0"
+    },
+    "INPUT_BYTES": {
+      "rva": "0x89fd1d",
+      "bytes": "e8eeae1900",
+      "target": "0xa3ac10"
+    },
+    "WORKER_PROLOGUE": {
+      "rva": "0x8bf9d0",
+      "bytes": "5541574156415541545657534881ecb8050000"
+    },
+    "VIEW_PROLOGUE": {
+      "rva": "0xb194c0",
+      "bytes": "5541574156415541545657534881ec58010000"
+    },
+    "INPUT_PROLOGUE": {
+      "rva": "0xa3ac10",
+      "bytes": "5541574156415541545657534881ec98010000"
+    }
+  },
+  "layout_anchors": {
+    "VIEW_LAYOUT_PAUSE": {
+      "rva": "0xb1960b",
+      "bytes": "807e4800"
+    }
+  },
+  "review_notes": "Session family only; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
+  "native_game_test": "pending"
+}

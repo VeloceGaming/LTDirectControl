@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.0 — 2026-10-10
+
+- Development build for game 0.7.0 (beta branch), on the `game-0.7` branch. Not a release: only the session hooks are installed. Movement, attacks, skills, camera control, outlines, the minimap scaling, the purchase hooks and native tooltips are off until each is reviewed for 0.7.0 (docs/migration-0.7.md).
+- Native hooks install per family (session, camera, movement, combat, outline, minimap, shop, readers): each is verified and patched on its own, and code that needs a family that is not installed switches off. `native_profile::ENABLED` lists the families reviewed for the executable.
+- Identity and the session family moved to 0.7.0: worker send 0x979089 -> 0x8bf9d0, viewer update 0x877560 -> 0xb194c0, input 0x89fd1d -> 0xa3ac10, pause guard 0xb1960b. The worker and viewer functions equal their 0.6.3 forms instruction for instruction.
+- tools/native_profiles/0.7.0.json reviews the session family only; verify_native_profile.py and verify_build.py compare only the families a profile lists. New tools/compare_functions.py and tools/show_code.py.
+
 ## 1.0.5 — 2026-10-10
 
 - The emote sound plays 25% louder (playback volume 0.3 to 0.375); the sound file is unchanged.

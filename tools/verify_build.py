@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--version', required=True)
 parser.add_argument('--probe-tests', type=int, required=True)
 parser.add_argument('--previous-result', default='', help='What the previous build showed in game (optional).')
-parser.add_argument('--native-profile', type=Path, default=root / 'tools/native_profiles/0.6.3.json')
+parser.add_argument('--native-profile', type=Path, default=root / 'tools/native_profiles/0.7.0.json')
 args = parser.parse_args()
 
 # Release notes: the bullet lines under "## <version>" in CHANGELOG.md.
@@ -47,7 +47,7 @@ expected = profile['executable_sha256']
 anchors = dict(profile['anchors'])
 anchors.update(profile.get('tooltip_anchors', {}))
 # Include the render/input operands and source data in future migration audits.
-for op in profile['minimap']['operands']:
+for op in profile.get('minimap', {}).get('operands', []):
     anchors['MINIMAP_' + op['name']] = {'rva': op['rva'], 'bytes': op['bytes']}
     if 'data_rva' in op:
         anchors['MINIMAP_DATA_' + op['name']] = {'rva': op['data_rva'], 'bytes': op['data_bytes']}
@@ -133,12 +133,13 @@ record = {
     'native_profile_sha256': digest(args.native_profile),
     'native_branches': anchors,
     'native_layout_guards': profile['layout_anchors'],
-    'native_minimap_operands': profile['minimap'],
+    'native_minimap_operands': profile.get('minimap'),
+    'native_families': profile.get('families', ['all']),
     'source_sha256': {p.relative_to(root).as_posix(): digest(p) for p in sources},
     'ui_asset_hashes': ui_art['files'],
     'font_check': font_check,
     'automated_checks': f'{args.probe_tests} probe tests passed; Clippy with warnings denied, formatting and release build passed; {len(anchors)} executable anchors, ABI 6/null-host rejection, {len(ui_art["files"])} UI/font assets and source fingerprints verified; {len(profile["layout_anchors"])} layout guards verified; fonts: {font_check}; ZIP verified separately.',
-    'game_test': 'pending user test on 0.6.3; native rendering/gameplay not verified by automated tests',
+    'game_test': f'pending user test on {profile["game_version"]}; native rendering/gameplay not verified by automated tests',
     'installation': 'Package verified; installation pending.',
 }
 (root / f'dist/build-{version}.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')

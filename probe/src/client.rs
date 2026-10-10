@@ -446,13 +446,16 @@ impl Client {
                 Some(mod_api_stable::SceneKindV1::Title) => {
                     self.install_attempted.store(true, Ordering::Relaxed);
                     match native_adapter::install() {
-                    Ok(()) => self.timing.installed(
-                        true,
-                        "verified 0.6.3 SHA256; worker, viewer, movement, input and attack-observer branches installed at title",
-                        &self.logger,
-                    ),
-                    Err(reason) => self.timing.installed(false, &reason, &self.logger),
-                }
+                        Ok(()) => self.timing.installed(
+                            true,
+                            &format!(
+                                "verified 0.7.0 SHA256; hook families {:#x} installed at title",
+                                crate::native_profile::ENABLED
+                            ),
+                            &self.logger,
+                        ),
+                        Err(reason) => self.timing.installed(false, &reason, &self.logger),
+                    }
                 }
                 Some(mod_api_stable::SceneKindV1::InGame) => {
                     self.install_attempted.store(true, Ordering::Relaxed);

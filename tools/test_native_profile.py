@@ -89,7 +89,9 @@ class ProfileTest(unittest.TestCase):
             self.verify(p)
 
     def test_reviewed_profile_cannot_verify_stale_rust_addresses(self):
-        profile=json.loads((verifier.ROOT/'tools/native_profiles/0.6.3.json').read_text())
+        # The branch's profile reviews the session family only; the other
+        # families' constants are not compared (see verify_sources).
+        profile=json.loads((verifier.ROOT/'tools/native_profiles/0.7.0.json').read_text())
         for name in ['native_profile','native_items','native_preview','minimap']:
             target=self.root/f'probe/src/{name}.rs';target.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(verifier.ROOT/f'probe/src/{name}.rs',target)
@@ -97,13 +99,12 @@ class ProfileTest(unittest.TestCase):
         verifier.verify_sources(profile,self.root)
         path=self.root/'probe/src/native_adapter/windows/layout.rs'
         original=path.read_text()
-        path.write_text(original.replace('WORKER_SITE: usize = 0xbfc77a','WORKER_SITE: usize = 0xbe470a'))
-        with self.assertRaises(AssertionError):
-            verifier.verify_sources(profile,self.root)
-        path.write_text(original.replace('TOOLTIP_INFO_LOOKUP: usize = 0x19d1bf0',
-                                         'TOOLTIP_INFO_LOOKUP: usize = 0x19d1bf1'))
-        with self.assertRaises(AssertionError):
-            verifier.verify_sources(profile,self.root)
+        for old,stale in [('WORKER_SITE: usize = 0x979089','WORKER_SITE: usize = 0xbfc77a'),
+                          ('VIEW_ORIGINAL: usize = 0xb194c0','VIEW_ORIGINAL: usize = 0x930640')]:
+            self.assertIn(old,original)
+            path.write_text(original.replace(old,stale))
+            with self.assertRaises(AssertionError):
+                verifier.verify_sources(profile,self.root)
 
 
 if __name__=='__main__':

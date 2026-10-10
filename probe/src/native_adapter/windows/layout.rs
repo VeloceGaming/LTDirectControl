@@ -1,16 +1,23 @@
-//! Every 0.6.3 code address, call site and expected byte pattern the
+//! Session family (worker, viewer, input): reviewed for 0.7.0. Every other
+//! address below still holds its 0.6.3 value and is used only once its
+//! family is enabled (crate::native_profile::ENABLED).
+//!
+//! Every code address, call site and expected byte pattern the
 //! hooks rely on. Updating the mod for a new game version starts here (and
 //! with tools/native_profiles). Entity field offsets are still inline in
 //! the hook files.
 
-// 0.6.3: foreground worker send after runner locks; source/call graph
-// and all 420 decoded instructions reviewed against the 0.6.2 baseline.
-pub(crate) const WORKER_SITE: usize = 0xbfc77a;
-pub(crate) const WORKER_ORIGINAL: usize = 0xd1c2a0;
+// 0.7.0: foreground worker send after runner locks; all 420 decoded
+// instructions equal the 0.6.3 function, and the caller aligns with its
+// 0.6.3 form around the site.
+pub(crate) const WORKER_SITE: usize = 0x979089;
+pub(crate) const WORKER_ORIGINAL: usize = 0x8bf9d0;
 // Actual foreground viewer dispatch, paired with the unchanged playback
 // implementation. The alternate dispatch branches are not this hook.
-pub(crate) const VIEW_SITE: usize = 0xcdcce0;
-pub(crate) const VIEW_ORIGINAL: usize = 0x930640;
+// 0.7.0: the caller that passes the `ingame` node lookup as the eighth
+// argument (the other callers in that function pass none).
+pub(crate) const VIEW_SITE: usize = 0x877560;
+pub(crate) const VIEW_ORIGINAL: usize = 0xb194c0;
 pub(crate) const MOVE_SITE: usize = 0x11d9154;
 pub(crate) const MOVE_ORIGINAL: usize = 0x1703fa0;
 pub(crate) const STOP_EVENT: usize = 0x13cccc0;
@@ -25,7 +32,7 @@ pub(crate) const CANCEL_RECALL_PROLOGUE: [u8; 16] = [
 // These two variants are POD; skipping them needs no native allocation drop.
 // The foreground dispatch forwards the SAME view to the input and
 // playback branches; the alternative scene dispatch is not this hook.
-pub(crate) const INPUT_SITE: usize = 0xd03c7f;
+pub(crate) const INPUT_SITE: usize = 0x89fd1d;
 // Native Input::Attack variant: EntityData, &InputTarget, &events -> unit.
 // This observes POD skill metadata on attack ticks as well as move ticks.
 pub(crate) const ATTACK_SITE: usize = 0x11d9200;
@@ -214,10 +221,10 @@ pub(crate) const SHOP_NEW_THUNK: usize = 0xf61b80;
 pub(crate) const SHOP_NEW_BYTES: [u8; 5] = [0xe9, 0x8b, 0xd9, 0xfd, 0xff];
 pub(crate) const SHOP_SLOTS: [(usize, usize); 2] =
     [(0x3b08c60, SHOP_UPGRADE_THUNK), (0x3b08c58, SHOP_NEW_THUNK)];
-pub(crate) const INPUT_ORIGINAL: usize = 0x7b37f0;
-pub(crate) const INPUT_BYTES: [u8; 5] = [0xe8, 0x6c, 0xfb, 0xaa, 0xff];
+pub(crate) const INPUT_ORIGINAL: usize = 0xa3ac10;
+pub(crate) const INPUT_BYTES: [u8; 5] = [0xe8, 0xee, 0xae, 0x19, 0x00];
 pub(crate) const INPUT_PROLOGUE: [u8; 19] = [
-    0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xec, 0xb8,
+    0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xec, 0x98,
     0x01, 0x00, 0x00,
 ];
 pub(crate) const MOVE_BYTES: [u8; 5] = [0xe9, 0x47, 0xae, 0x52, 0x00];
@@ -227,8 +234,8 @@ pub(crate) const MOVE_PROLOGUE: [u8; 16] = [
 pub(crate) const STOP_PROLOGUE: [u8; 16] = [
     0x55, 0x56, 0x57, 0x48, 0x83, 0xec, 0x30, 0x48, 0x8d, 0x6c, 0x24, 0x30, 0x48, 0xc7, 0x45, 0xf8,
 ];
-pub(crate) const WORKER_BYTES: [u8; 5] = [0xe8, 0x21, 0xfb, 0x11, 0x00];
-pub(crate) const VIEW_BYTES: [u8; 5] = [0xe8, 0x5b, 0x39, 0xc5, 0xff];
+pub(crate) const WORKER_BYTES: [u8; 5] = [0xe8, 0x42, 0x69, 0xf4, 0xff];
+pub(crate) const VIEW_BYTES: [u8; 5] = [0xe8, 0x5b, 0x1f, 0x2a, 0x00];
 pub(crate) const WORKER_PROLOGUE: [u8; 19] = [
     0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xec, 0xb8,
     0x05, 0x00, 0x00,

@@ -70,10 +70,16 @@ def verify_sources(profile, root=ROOT):
         'GOLD_GETTER_BYTES':('GOLD_GETTER','GOLD_GETTER_BYTES'),
         'BUILD_LEN_BYTES':('BUILD_LEN_SITE','BUILD_LEN_BYTES'), 'BUILD_PTR_BYTES':('BUILD_PTR_SITE','BUILD_PTR_BYTES'),
     }
+    # A profile may review only some hook families (its "families" list);
+    # constants of the others are not compared.
     for name, (site, value) in byte_names.items():
+        if name not in anchors:
+            continue
         assert numbers(declaration(adapter, site)) == [int(anchors[name]['rva'], 16)], name
         assert bytes(numbers(declaration(adapter, value))).hex() == anchors[name]['bytes'], name
     for idx, slot in enumerate('QWR'):
+        if f'SKILL_{slot}_CALL' not in anchors:
+            continue
         a = anchors[f'SKILL_{slot}_CALL']
         assert numbers(declaration(adapter, 'SKILL_SITES'))[idx] == int(a['rva'], 16)
         assert numbers(declaration(adapter, 'SKILL_ORIGINALS'))[idx] == int(a['target'], 16)
@@ -111,6 +117,8 @@ def verify_sources(profile, root=ROOT):
             assert tooltip_bytes[table+8] == struct.pack('<QQ',size,alignment)
     for name, anchor in [('COMBINE','PREVIEW_COMBINE_APPLY'),('RANGE','PREVIEW_RANGE_APPLY'),
                          ('LINEAR','PREVIEW_LINEAR_APPLY'),('WHIP_LINE','PREVIEW_CHANNEL_LINE_APPLY')]:
+        if anchor not in anchors:
+            continue
         assert numbers(declaration(preview,name)) == [int(anchors[anchor]['rva'],16)]
 
 
@@ -172,10 +180,11 @@ def verify(profile_path, executable=DEFAULT_EXE, check_sources=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--profile', type=Path, default=ROOT/'tools/native_profiles/0.6.3.json')
+    parser.add_argument('--profile', type=Path, default=ROOT/'tools/native_profiles/0.7.0.json')
     parser.add_argument('--executable', type=Path, default=DEFAULT_EXE)
     args = parser.parse_args()
     p = verify(args.profile, args.executable)
-    print(f"Verified game {p['game_version']}: exact identity, {len(p['anchors'])} anchors, "
+    print(f"Verified game {p['game_version']} (families: {', '.join(p.get('families', ['all']))}): "
+          f"exact identity, {len(p['anchors'])} anchors, "
           f"{len(p['layout_anchors'])} layout guards, {len(p.get('tooltip_anchors', {}))} tooltip guards, "
           "call targets, pointers and Rust constants.")

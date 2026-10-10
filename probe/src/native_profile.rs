@@ -1,7 +1,10 @@
-//! Reviewed 0.6.3 identity and field-consumer guards; never runtime-scanned.
-pub const EXPECTED_SHA: &str = "f21cf691799a83d9afa0ccae3e2b95862f5780446a501ee97860b91b752dbe2f";
-pub const PE_TIMESTAMP: u32 = 0x6ac5c567;
-pub const IMAGE_SIZE: u32 = 0x52d6000;
+//! Reviewed 0.7.0 identity and field-consumer guards; never runtime-scanned.
+//! Only the families in `ENABLED` are reviewed for 0.7.0 (see
+//! docs/migration-0.7.md); guards and addresses of the other families
+//! still hold their 0.6.3 values and are never read.
+pub const EXPECTED_SHA: &str = "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f";
+pub const PE_TIMESTAMP: u32 = 0x6ac5fab4;
+pub const IMAGE_SIZE: u32 = 0x56d8000;
 /// Hook families. Each is verified and installed on its own, so a game
 /// build can be supported one family at a time: a family is listed in
 /// `ENABLED` only when its anchors, its layout guards below and every raw
@@ -25,10 +28,10 @@ pub mod family {
     pub const ALL: u32 = (1 << 8) - 1;
 }
 /// The families reviewed for `EXPECTED_SHA`.
-pub const ENABLED: u32 = family::ALL;
+pub const ENABLED: u32 = family::SESSION;
 const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     // VIEW_LAYOUT_PAUSE
-    (0x93078b, &[0x80, 0x7e, 0x48, 0x00]),
+    (0xb1960b, &[0x80, 0x7e, 0x48, 0x00]),
     // ENTITY_BORROW_GETTER
     (
         0x2e1666f,
@@ -209,7 +212,7 @@ const LAYOUT_POINTERS: &[(usize, usize)] = &[
 
 /// The family each layout guard protects, by guard address.
 const LAYOUT_FAMILIES: &[(u32, &[usize])] = &[
-    (family::SESSION, &[0x93078b]),
+    (family::SESSION, &[0xb1960b]),
     (
         family::CAMERA,
         &[
