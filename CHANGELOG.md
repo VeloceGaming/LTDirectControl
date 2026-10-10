@@ -3,6 +3,24 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.8 — 2026-10-11
+
+All of this was developed and passed in game on the game-0.7 branch (game 0.7.0, builds 1.1.11 to 1.1.14); this build is the same code for game 0.6.3.
+
+- Shop: several copies of one item queued together are each bought. Each order excludes the copies owned when it was queued; queued together they excluded none, so the first finished copy also satisfied the next order and one order left the queue at every later purchase. The slot that finishes an order is now excluded from the later orders for the same item (tested). Present since 1.0.3.
+- "HUD tooltips" (Settings, Interface, Appearance): On hover (default, as before), Hold key and hover, or Off, for the HUD's skill and item tooltips; the shop window's tooltips are not affected. The key is the new binding "HUD tooltip (hold)", Alt by default. In every mode the tooltip is hidden while a mouse button is held. Translated in all 16 languages.
+- Skill previews restyled; the spearhead arrow is gone.
+  - Line skills: the strip at its true width with a visible fill, yellow edges and small chevrons along it.
+  - Strip ends: trailing edges for a shot known to pass through units, a solid bar for one known to stop at the first, a thin closing edge otherwise (none is known yet for the champions of game 0.6.3).
+  - Dashes and movement: up to three chevrons closing on the landing point, with a faint dotted lead-in; never drawn behind the start.
+  - A skill whose area is not understood: the range ring and a small white crosshair at the aim.
+  - Circles, cones, walls and blinks are unchanged.
+  - preview_style.json: the `arrow_*`, `skillshot_*`, `dash_head` and `dash_wing` keys are gone (overrides of them are ignored); `corridor_*`, `chevron_*`, `guide_*`, `dash_start` and `hover_range_*` are new.
+- An area that affects allies (a heal, a shield) is drawn in the ally colour; enemy, both and unknown stay yellow. Read from the last word of the game's RangeEffect, RangeProjectile, RangePeriodProjectile and ParabolicProjectile and from `target` in declared effects.
+- Hovering a skill slot on the HUD draws its range ring in the skill's colour (was only the faint grey aiming ring).
+- Log: `MANUAL rebound` names the champion chosen before the match starts.
+- The reader for the four champions added in game 0.7.0 is present but never matches in this build.
+
 ## 1.0.7 — 2026-10-11
 
 - "Keep pointer in window" (Settings, Camera, Navigation; on by default): while the player controls a running match the pointer is confined to the game window's client area, so edge scrolling works next to a second monitor (reported on the Workshop: the pointer slid onto the other screen in every window mode). The clip is renewed each frame and released when the match is paused, the shop or settings window is open, control is with the AI, the match is over, the game is not the foreground window, or the extension unloads. `POINTER clip on/off` at verbose log detail. Translated in all 16 languages.

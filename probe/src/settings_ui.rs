@@ -2358,7 +2358,8 @@ mod tests {
         assert!(max_scroll(0) > 0.);
         assert_eq!(max_scroll(2), 0.);
         // Emotes have a fixed body; Interface retains its scrolling viewport.
-        assert_eq!(max_scroll(3), 57. + 142.);
+        // + 90 for the HUD tooltips row.
+        assert_eq!(max_scroll(3), 57. + 142. + 90.);
         assert_eq!(max_scroll(PAGE_EMOTES), 0.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);

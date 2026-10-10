@@ -1,6 +1,6 @@
 //! Borrowed effect-family reader for the fingerprinted 0.6.3 build.
 //! No native code is invoked and no native address leaves this callback.
-use crate::skill_preview::{Geometry, Placement, Shape};
+use crate::skill_preview::{targets_allies, Geometry, Placement, Shape};
 
 const COMBINE: usize = 0x1adaf00;
 const RANGE: usize = 0x16974f0;
@@ -25,6 +25,14 @@ const ICE_MAGE_ULT: usize = 0x160fd80;
 const BARD_ULT: usize = 0x18c1cc0;
 const EXORCIST_ULT: usize = 0x18bec80;
 const DANCER_ULT: usize = 0x1aebb90;
+/// Game 0.7.0 only: every skill of Gladiator, Ferryman, Bombardier and
+/// Hypnotist is one hand-written effect of 20 words; the byte at +0x98
+/// selects the skill (0-2 Gladiator, 4/6/7 Ferryman, 8-10 Bombardier,
+/// 12/14/15 Hypnotist; Q, W, R in that order). Word 0 is the range, 1 a
+/// projectile's hit radius, 4 an area radius, 6 a strip's half width, 12
+/// Bombardier Q's range bonus. The effect does not exist in game 0.6.3: no
+/// apply address is 0, so this build never matches it.
+const CHAMPION_SKILL: usize = 0;
 /// The caster's current stack (stat block `stack`, entity +0x648, just
 /// before its position at +0x658): Dancer R's extra blades. Set by `read`.
 const ENTITY_STACK: usize = 0x648;
@@ -226,7 +234,7 @@ unsafe fn combine(
                 let mut moved = Geometry::default();
                 effect(base, arc, table, inherited, &mut moved, nodes, depth + 1);
                 for f in moved.footprints {
-                    out.add(f.shape, after_dash(f.placement, length));
+                    out.add_for(f.shape, after_dash(f.placement, length), f.allies);
                 }
                 for issue in moved.issues {
                     out.issue(issue);
@@ -291,9 +299,60 @@ unsafe fn payload(
             out.family("native RangePeriodProjectile");
             let words = std::array::from_fn(|i| word(object + i * 8) as u64);
             if let Some(shape) = shape(words) {
-                out.add(shape, inherited);
+                // Its last word (18) is who the area affects.
+                out.add_for(shape, inherited, targets_allies(word(object + 144)));
             } else {
                 out.issue("native period area shape unresolved");
+            }
+        }
+        (Some(CHAMPION_SKILL), 160) => {
+            out.family("native ChampionSkill");
+            let at = |i: usize| distance(word(object + i * 8) as u64);
+            let strip = |radius: Option<f32>, out: &mut Geometry| match (radius, at(0)) {
+                (Some(radius), Some(length)) => {
+                    out.add(Shape::Corridor { radius, length }, Placement::Caster)
+                }
+                _ => out.issue("invalid native champion skill strip"),
+            };
+            match word(object + 0x98) as u8 {
+                // Ferryman Q (stops at the first unit), Hypnotist Q (passes
+                // through): a shot of hit radius word 1 over the range.
+                tag @ (4 | 12) => match (at(1), at(0)) {
+                    (Some(radius), Some(length)) => out.add(
+                        Shape::Shot {
+                            radius,
+                            length,
+                            pierce: tag == 12,
+                        },
+                        Placement::Caster,
+                    ),
+                    _ => out.issue("invalid native champion skill shot"),
+                },
+                // Gladiator W, Ferryman W: a strip from the caster toward
+                // the aim, up to the range long (read for Ferryman W).
+                1 | 6 => strip(at(6), out),
+                // Bombardier W and R, Hypnotist W and R: a circle at the aim.
+                9 | 10 | 14 | 15 => match at(4) {
+                    Some(radius) => out.add(Shape::Circle { radius }, inherited),
+                    None => out.issue("invalid native champion skill radius"),
+                },
+                // Bombardier Q: a cannon at the aim; he then attacks from
+                // further away without moving.
+                8 => {
+                    out.add(
+                        Shape::Circle {
+                            radius: CHAMPION_RADIUS,
+                        },
+                        inherited,
+                    );
+                    if let Some(extra) = at(12) {
+                        out.add(Shape::Reach { extra }, Placement::Caster);
+                    }
+                }
+                // Gladiator R, Ferryman R: one unit, no area.
+                2 | 7 => {}
+                // Gladiator Q (a ring-shaped cone) and unused numbers.
+                _ => out.issue("native champion skill shape not read"),
             }
         }
         (Some(RUSH), 56) => {
@@ -317,7 +376,7 @@ unsafe fn payload(
             out.family("native RangeProjectile");
             let words = std::array::from_fn(|i| word(object + i * 8) as u64);
             match shape(words) {
-                Some(shape) => out.add(shape, inherited),
+                Some(shape) => out.add_for(shape, inherited, targets_allies(word(object + 112))),
                 None => out.issue("native range projectile shape unresolved"),
             }
         }
@@ -329,7 +388,7 @@ unsafe fn payload(
             out.family("native ParabolicProjectile");
             let words = std::array::from_fn(|i| word(object + i * 8) as u64);
             match shape(words) {
-                Some(shape) => out.add(shape, inherited),
+                Some(shape) => out.add_for(shape, inherited, targets_allies(word(object + 160))),
                 None => out.issue("native parabolic shape unresolved"),
             }
             children(base, object + 120, inherited, out, nodes, depth);
@@ -454,7 +513,9 @@ unsafe fn payload(
                 if matches!(shape, Shape::Cone { .. }) && placement == Placement::Caster {
                     out.issue("native DirDot facing unresolved at caster center");
                 } else {
-                    out.add(shape, placement);
+                    // { placement, offset, shape (6 words), effects (3),
+                    // target }: the last word is who the area affects.
+                    out.add_for(shape, placement, targets_allies(word(object + 88)));
                 }
             } else {
                 out.issue("native range shape unresolved");
@@ -967,27 +1028,35 @@ mod tests {
         bytes[3] = 40000; // circle radius
         bytes[9] = 1;
         bytes[10] = 1;
-        bytes[11] = 1; // intentionally unreadable hit-child vector
-        let mut g = Geometry::default();
-        unsafe {
-            payload(
-                0,
-                bytes.as_ptr() as usize,
-                Some(RANGE),
-                96,
-                Placement::Aim,
-                &mut g,
-                &mut 0,
-                0,
-            );
-        }
+        bytes[11] = 6; // target: EnemyWithoutTower (the hit-child vector is unreadable)
+        let read = |bytes: &[usize]| {
+            let mut g = Geometry::default();
+            unsafe {
+                payload(
+                    0,
+                    bytes.as_ptr() as usize,
+                    Some(RANGE),
+                    96,
+                    Placement::Aim,
+                    &mut g,
+                    &mut 0,
+                    0,
+                );
+            }
+            g
+        };
+        let g = read(&bytes);
         assert_eq!(
             g.footprints,
             [crate::skill_preview::Footprint {
                 shape: Shape::Circle { radius: 40. },
-                placement: Placement::Forward { offset: 20. }
+                placement: Placement::Forward { offset: 20. },
+                allies: false,
             }]
         );
+        // The same area for allies (AllyChampion) is marked for the ally colour.
+        bytes[11] = 1;
+        assert!(read(&bytes).footprints[0].allies);
         let mut projectile = [0usize; 19];
         projectile[1] = 6000;
         (projectile[9], projectile[10], projectile[11]) = (1, 8, 1); // hits in flight

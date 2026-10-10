@@ -189,7 +189,7 @@ pub fn poll() -> Keys {
             }
         }
         // Mouse, modifiers, Esc, and End+Home for the test toggle.
-        for i in [1, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24] {
+        for i in [1, 2, 4, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24] {
             needed[i] = true;
         }
         for (i, query) in needed.into_iter().enumerate() {
@@ -270,6 +270,12 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         camera_lock_default: v.number("camera_lock") == 1.,
         ..Keys::default()
     };
+    crate::ui_state::HUD_TOOLTIP_KEY
+        .store(pressed("hud_tooltip"), std::sync::atomic::Ordering::Relaxed);
+    crate::ui_state::POINTER_BUTTON.store(
+        raw.0[1] || raw.0[2] || raw.0[4],
+        std::sync::atomic::Ordering::Relaxed,
+    );
     if crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed) {
         keys = Keys {
             focused,
