@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.9 — 2026-10-11
+
+- Development build for game 0.7.0. Match speed no longer follows the frame rate. The worker was held to one tick ahead of playback and a client frame can only play what is queued, so below 60 fps the match slowed in proportion (30 fps played at half speed; reported on the Workshop). The lead now follows the average client frame time: 1 tick at 60 fps and above (unchanged), up to 4 below, which keeps full speed down to 15 fps.
+- The lead rises once the match would run more than 5% slow and falls back only when the smaller lead is nearly enough, so it does not flip at a boundary; one long frame does not raise it (tested). The per-frame playback limit and the "unexpected frame counts" guard follow the same maximum. Frames are timed on the wall clock between running viewer calls, not from the game's own frame time; a gap over 250 ms is a pause and is not counted. `TIMING frame lead a -> b` is logged for the first eight changes of a match. The playback rate is measured over ten-second windows: `PACING playback` at verbose detail, and `TIMING slow playback` (at every detail level, eight a match) when a window ran under 95% of full speed, which also shows a slow simulation thread that this change does not address.
+- Skill previews (1.1.8): Ice Mage R and Sand Mage Q and R, the effects the game rewrote, passed in game. Hypnotist's three skills use a new 0.7.0 effect (apply 0x160da70, 160 bytes) the reader does not know yet.
+
 ## 1.1.8 — 2026-10-10
 
 - Development build for game 0.7.0: skill previews are back (the readers family). Native ability tooltips, split off as their own family, are the only part still off.

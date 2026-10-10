@@ -68,7 +68,7 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
 | Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
 | Outline | Enabled in 1.1.6; passed in game 2026-10-10 |
-| Readers (skill previews) | Enabled in 1.1.8; in-game test pending |
+| Readers (skill previews) | Known effects passed in game (1.1.8); new 0.7.0 effect `0x160da70` (Hypnotist) open |
 | Tooltips (native ability text) | Open |
 
 ### Session (worker, viewer, input)
@@ -263,7 +263,8 @@ same size and ranks their `+0x20` method by alignment with the old one.
   instructions align): `RANGE_PERIOD` `0x14294c0` -> `0x1bde9d0` (152
   bytes), `RANGE_PROJECTILE` `0x1489140` -> `0x1aa08c0` (120),
   `ICE_MAGE_ULT` `0x160fd80` -> `0x1709a30` (88). The payload layout is
-  assumed unchanged and must be confirmed from `PREVIEW TREE` log lines.
+  assumed unchanged; Ice Mage R and Sand Mage Q and R passed in game
+  (1.1.8).
 - `TargetProjectile` `0x14e0490` -> `0x17d70f0` is 80 bytes (was 72): one
   field was inserted at `+0x40`. A second 72-byte vtable method
   (`0x1804b60`) is similar and unidentified.
