@@ -1,7 +1,6 @@
 //! Reviewed 0.7.0 identity and field-consumer guards; never runtime-scanned.
-//! Only the families in `ENABLED` are reviewed for 0.7.0 (see
-//! docs/migration-0.7.md); guards and addresses of the other families
-//! still hold their 0.6.3 values and are never read.
+//! Every family in `ENABLED` is reviewed for 0.7.0 (see
+//! docs/migration-0.7.md).
 pub const EXPECTED_SHA: &str = "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f";
 pub const PE_TIMESTAMP: u32 = 0x6ac5fab4;
 pub const IMAGE_SIZE: u32 = 0x56d8000;
@@ -37,7 +36,8 @@ pub const ENABLED: u32 = family::SESSION
     | family::COMBAT
     | family::SHOP
     | family::OUTLINE
-    | family::READERS;
+    | family::READERS
+    | family::TOOLTIPS;
 const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     // VIEW_LAYOUT_PAUSE
     (0xb1960b, &[0x80, 0x7e, 0x48, 0x00]),

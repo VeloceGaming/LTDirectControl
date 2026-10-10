@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.15 — 2026-10-11
+
+- Development build for game 0.7.0: native ability descriptions (the tooltips family) are back, so every hook family is now enabled on 0.7.0.
+- The 407 tooltip anchors were carried from the 0.6.3 profile with the new tools/migrate_tooltips.py: code bytes by aligning the enclosing functions, the 60 built-in ChampionInfo tables through the `lea rdx, [table]` each aligned return of the built-in lookup now loads (1808 of its 1809 instructions align; all 60 keep their size), the mod and the four data tables as the vtables whose Q/W/R functions align with the old ones (0.90 against 0.19 for the next candidate). The sheet getter, the info lookup, the Arc drop, the three dispatch sites and the consumers keep their instructions; only frame and field offsets inside the game's own functions moved. The mod table grew from 0xb18 to 0xb38 bytes and the data tables from 0x9d0 to 0x9f0; the reader takes sizes from the tables.
+- Nine built-in champions' description functions align only 0.52 to 0.65 with their 0.6.3 forms: the game changed them. Their tables are identified by position in the lookup, not by those functions.
+- The built-in lookup returns no table that 0.6.3 did not have, so the four 0.7.0 champions get their descriptions through another implementation (the mod or data tables, to be confirmed in game). An implementation the reader does not know falls back to the old resolver.
+
 ## 1.1.14 — 2026-10-11
 
 - Development build for game 0.7.0. Skill previews: an area that affects allies (a heal, a shield) is drawn in the preview style's ally colour; areas for enemies, both or unknown stay yellow, and a skill that is not ready stays grey. A skill with an ally area and an enemy area (user example: a shield for allies within 60 and a pull on enemies) now shows which is which. The game's RangeEffect, RangeProjectile, RangePeriodProjectile and ParabolicProjectile carry their target as the last word (CastingTarget codes: 0-4 allies, 5-9 enemies, 10-12 both, 13 none, as in mod-api-stable and as seen in PREVIEW TREE logs); declared (data and Workshop champion) effects name it in `target`. Hand-written effects, lines and dashes are not coloured. Tested for the code mapping and the colours drawn; not checked in game.

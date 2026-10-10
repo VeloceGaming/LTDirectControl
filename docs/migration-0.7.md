@@ -69,7 +69,7 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
 | Outline | Enabled in 1.1.6; passed in game 2026-10-10 |
 | Readers (skill previews) | Known effects passed in game (1.1.8); new 0.7.0 effect `0x160da70` (Hypnotist) open |
-| Tooltips (native ability text) | Open |
+| Tooltips (native ability text) | Enabled in 1.1.15; in-game test pending |
 
 ### Session (worker, viewer, input)
 
@@ -309,6 +309,37 @@ reader is inferred from the values and the player's descriptions: word 0
 range, 1 shot hit radius, 4 area radius, 6 strip half width, 12
 Bombardier Q's range bonus. Open: Gladiator Q's radii and angle; whether
 word 6 is a half or full width.
+
+### Tooltips (native ability text)
+
+`tools/migrate_tooltips.py` carries the 0.6.3 profile's 407 tooltip
+anchors (run it with the old profile, both snapshots and the function
+map; it lists what it could not carry and guesses nothing).
+
+- Functions called: sheet getter `0x338420` -> `0x3676a0`, info lookup
+  `0x19d1bf0` -> `0x17b9070` (102 of 102 instructions align), Arc drop
+  `0x28b20` unchanged, built-in lookup `0x19beff0` -> `0x17a6470` (1808 of
+  1809), data resolver `0x14d5f00` -> `0x1605ca0`.
+- Consumers: lookup consumer `0xbb9910` -> `0x93195b`, Arc consumer
+  `0xbb9984` -> `0x9319cf`, Q/W/R dispatch `0x2300468`/`0x2300a46`/
+  `0x2301018` -> `0x238a4b3`/`0x238aa72`/`0x238b025` (same bytes), lookup
+  return `0x19d1d41` -> `0x17b91c1`, viewer assets `0x930d5a` ->
+  `0xb19bda`. The sheet path is the string the lookup consumer loads
+  (`0x3deb038`); the same 32 bytes occur eight times in the image.
+- Tables: the 60 built-in ones moved together (`0x3bea8c8..0x3bee1f0` ->
+  `0x3f16718..0x3f1a040`), each taken from the `lea rdx` its aligned
+  return site loads; sizes unchanged. The mod table `0x3be38f0` ->
+  `0x3f0fbe0` (0xb18 -> 0xb38) and the data tables `0x3b24318`,
+  `0x3b8ba70`, `0x3bee2e8`, `0x3d01cd0` -> `0x3e7a8e0`, `0x3f1a138`,
+  `0x3f3bfa8`, `0x4077ee0` (0x9d0 -> 0x9f0) are the vtables whose Q/W/R
+  functions align with the old ones; exactly four tables share the data
+  functions. Which old data variant is which new one is not established
+  and does not matter to the reader.
+- Changed by the game: the Q/W/R functions of nine built-in tables
+  (alignment 0.52 to 0.65), offsets inside the mod and data Q/W/R
+  functions (for example `[rdx + 0x610]` -> `[rdx + 0x628]`).
+- Not established: which implementation serves the four new champions.
+  The built-in lookup returns no new table.
 
 ## Open questions
 
