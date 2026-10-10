@@ -18,6 +18,9 @@ pub(crate) const WORKER_ORIGINAL: usize = 0x8bf9d0;
 // argument (the other callers in that function pass none).
 pub(crate) const VIEW_SITE: usize = 0x877560;
 pub(crate) const VIEW_ORIGINAL: usize = 0xb194c0;
+// The simulation table's entity getter (slot +0x48), which the attack-range
+// reader checks before using the table. Holds the ENTITY_BORROW_GETTER guard.
+pub(crate) const ENTITY_GETTER: usize = 0x315ba70;
 pub(crate) const MOVE_SITE: usize = 0x1463914;
 pub(crate) const MOVE_ORIGINAL: usize = 0x1562680;
 pub(crate) const STOP_EVENT: usize = 0x1695430;

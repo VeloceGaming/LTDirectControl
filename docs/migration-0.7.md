@@ -235,9 +235,14 @@ convention is unchanged. The game's goal search calls the item methods
 | DrawLine tag write | `0x2311692` | `0x239c1e6` | The one `0x8000000000000008` in the unit renderer |
 | NinePatch tag write | `0x1c7a8a` | `0x1a6a0d` | Aligned |
 
-The command stride (`0xd0`) and the sprite fields the code reads
-(`+0x68`..`+0x7c`) are used the same way in the unit renderer; the unit
-view's centre (`+0x17c`) likewise. Inside the shader setter a few byte
+The sprite command fields the code reads and writes (source rectangle
+`+0x68`, draw position `+0x78`) are set by two functions that are equal in
+0.7.0 with every field use unchanged (`0x1c76e0` -> `0x1a6670`, 84/84;
+`0x1c9050` -> `0x1a7f90`, 86/86). The command stride (`0xd0`) and the unit
+view's centre (`+0x17c`) are used the same way in the unit renderer. The
+unit id at view `+0x100` has no located 0.7.0 consumer yet: a wrong id
+would make clicks land on the wrong unit, so that is a stop condition of
+the in-game test. Inside the shader setter a few byte
 fields beyond `+0x90` moved by one (consistent with the new `palette`
 flag); the mod does not touch them.
 
