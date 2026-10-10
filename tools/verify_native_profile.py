@@ -51,7 +51,7 @@ def verify_sources(profile, root=ROOT):
     assert json.loads(declaration(identity, 'EXPECTED_SHA')) == profile['executable_sha256']
     assert numbers(declaration(identity, 'PE_TIMESTAMP')) == [int(profile['timestamp'], 16)]
     assert numbers(declaration(identity, 'IMAGE_SIZE')) == [int(profile['size_of_image'], 16)]
-    assert 'native_profile::verify_layout(base)' in adapter
+    assert 'native_profile::verify_layout(base, families)' in adapter
     byte_names = {
         'WORKER_BYTES':('WORKER_SITE','WORKER_BYTES'), 'VIEW_BYTES':('VIEW_SITE','VIEW_BYTES'),
         'MOVE_BYTES':('MOVE_SITE','MOVE_BYTES'), 'INPUT_BYTES':('INPUT_SITE','INPUT_BYTES'),

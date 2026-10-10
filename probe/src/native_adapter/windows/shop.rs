@@ -3,7 +3,7 @@
 use super::*;
 
 pub(crate) unsafe fn player_pointer(state: usize, table: usize, id: usize) -> Option<usize> {
-    if PATCHES.get().is_none() || state == 0 || id == usize::MAX {
+    if !installed(family::SHOP) || state == 0 || id == usize::MAX {
         return None;
     }
     let base = GetModuleHandleW(std::ptr::null()) as usize;
@@ -49,8 +49,8 @@ pub(crate) unsafe fn module_offset(address: usize) -> String {
 }
 
 pub fn buyer_anchor_report() -> Vec<String> {
-    if PATCHES.get().is_none() {
-        return vec!["SHOP ANCHORS skipped: host identity not verified".into()];
+    if !installed(family::SHOP) {
+        return vec!["SHOP ANCHORS skipped: shop hooks not installed for this executable".into()];
     }
     unsafe {
         let base = GetModuleHandleW(std::ptr::null()) as usize;
@@ -96,7 +96,7 @@ pub(crate) type ShopUpgradeFn =
     unsafe extern "system" fn(usize, usize, usize, usize, usize, usize, usize) -> usize;
 
 pub(crate) fn item_slot_capacity() -> Option<usize> {
-    PATCHES.get()?;
+    installed(family::SHOP).then_some(())?;
     unsafe {
         let base = GetModuleHandleW(std::ptr::null()) as usize;
         let gate = std::slice::from_raw_parts((base + 0x146baf3) as *const u8, 6);
@@ -310,7 +310,7 @@ pub(crate) unsafe fn install_shop(base: usize) -> Result<(), String> {
 }
 
 pub unsafe fn player_build(state: usize, table: usize, id: usize) -> Option<Vec<usize>> {
-    if PATCHES.get().is_none() || state == 0 || id == usize::MAX {
+    if !installed(family::SHOP) || state == 0 || id == usize::MAX {
         return None;
     }
     let base = GetModuleHandleW(std::ptr::null()) as usize;

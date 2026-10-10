@@ -412,7 +412,9 @@ pub(crate) unsafe extern "system" fn view_hook(
     if let Some(shared) = SHARED.get() {
         // Native text is resolved after the original update, while this
         // viewer's Assets borrow is still live. The adapter owns no pointers.
-        tooltips::resolve_pending(view, assets, shared);
+        if installed(family::READERS) {
+            tooltips::resolve_pending(view, assets, shared);
+        }
     }
 }
 #[allow(clippy::too_many_arguments)]
@@ -456,7 +458,22 @@ pub(crate) unsafe fn view_hook_body(
             .cancel("Viewer entrance diagnostic panic", &shared.logger);
         false
     });
-    let ingame = ingame_ui_from_node(ingame_node, config);
+    // Camera, vision and the full-screen layout lease are their own family:
+    // without it the viewer only paces frames and leaves the spectator's
+    // camera and layout alone.
+    let camera = installed(family::CAMERA);
+    let ingame = if camera {
+        ingame_ui_from_node(ingame_node, config)
+    } else {
+        None
+    };
+    let capture = |shared: &Shared| {
+        if camera {
+            if let Some(frame) = camera_frame(view, config) {
+                shared.camera.capture(frame);
+            }
+        }
+    };
     if !accepted {
         restore_camera(view, config, ingame, shared);
         original(
@@ -470,9 +487,7 @@ pub(crate) unsafe fn view_hook_body(
             ingame_node,
             dt,
         );
-        if let Some(frame) = camera_frame(view, config) {
-            shared.camera.capture(frame);
-        }
+        capture(shared);
         return;
     }
     let played = std::ptr::read_unaligned((view + 0x290) as *const usize);
@@ -499,9 +514,7 @@ pub(crate) unsafe fn view_hook_body(
             ingame_node,
             dt,
         );
-        if let Some(frame) = camera_frame(view, config) {
-            shared.camera.capture(frame);
-        }
+        capture(shared);
         return;
     }
     if tps != 60 || queued > 10000 {
@@ -523,7 +536,7 @@ pub(crate) unsafe fn view_hook_body(
         );
         return;
     }
-    let Some(ingame_ui) = ingame else {
+    let Some(ingame_ui) = ingame.or((!camera).then_some(0)) else {
         shared.timing.cancel(
             "Native full-screen UI/config identity unavailable",
             &shared.logger,
@@ -546,10 +559,11 @@ pub(crate) unsafe fn view_hook_body(
         config,
         shared.timing.phase() != Some(crate::native_timing::Phase::Ai),
     );
-    if catch_unwind(AssertUnwindSafe(|| {
-        prepare_camera(view, config, ingame_ui, mode, dt, shared)
-    }))
-    .is_err()
+    if camera
+        && catch_unwind(AssertUnwindSafe(|| {
+            prepare_camera(view, config, ingame_ui, mode, dt, shared)
+        }))
+        .is_err()
     {
         shared.timing.cancel("Camera adapter panic", &shared.logger);
         restore_camera(view, config, ingame, shared);
@@ -580,14 +594,14 @@ pub(crate) unsafe fn view_hook_body(
     drop(snapshot);
     // Reassert after the viewer too, before render/camera capture, without
     // recapturing our own forced value as the spectator's preference.
-    if let Ok(lease) = CAMERA_LEASE.lock() {
-        if let Some(saved) = lease.as_ref().filter(|l| !l.ai_camera) {
-            saved.full_width(view, config, ingame_ui);
+    if camera {
+        if let Ok(lease) = CAMERA_LEASE.lock() {
+            if let Some(saved) = lease.as_ref().filter(|l| !l.ai_camera) {
+                saved.full_width(view, config, ingame_ui);
+            }
         }
     }
-    if let Some(frame) = camera_frame(view, config) {
-        shared.camera.capture(frame);
-    }
+    capture(shared);
     let remaining = std::ptr::read_unaligned((view + 0x70) as *const usize);
     let played_after = std::ptr::read_unaligned((view + 0x290) as *const usize);
     if mode != ViewMode::Running {

@@ -1,7 +1,7 @@
 //! Native hooks for the one fingerprinted 0.6.3 executable: patch
 //! installation and shared helpers. Hook families live in the child modules.
 use super::*;
-use crate::native_profile::{EXPECTED_SHA, IMAGE_SIZE, PE_TIMESTAMP};
+use crate::native_profile::{family, EXPECTED_SHA, IMAGE_SIZE, PE_TIMESTAMP};
 use std::ffi::{c_void, OsString};
 use std::os::windows::ffi::OsStringExt;
 use std::panic::{catch_unwind, AssertUnwindSafe};
@@ -43,27 +43,25 @@ pub(super) fn verified_base() -> Option<usize> {
     let base = unsafe { GetModuleHandleW(std::ptr::null()) } as usize;
     (base != 0).then_some(base)
 }
+/// The executable's base when every one of `families` is installed.
+pub(super) fn family_base(families: u32) -> Option<usize> {
+    let installed = PATCHES.get()?.families;
+    (installed & families == families)
+        .then(verified_base)
+        .flatten()
+}
+pub(super) fn installed(families: u32) -> bool {
+    PATCHES
+        .get()
+        .is_some_and(|p| p.families & families == families)
+}
 
+/// What `install` changed: the families installed, each patched site with
+/// the bytes written there, and the private minimap constants.
 struct PatchRecord {
-    worker: usize,
-    viewer: usize,
-    worker_bytes: [u8; 5],
-    viewer_bytes: [u8; 5],
-    movement: usize,
-    movement_bytes: [u8; 5],
-    input: usize,
-    input_bytes: [u8; 5],
-    attack: usize,
-    attack_bytes: [u8; 5],
-    shader: usize,
-    shader_bytes: [u8; 5],
-    skills: [(usize, [u8; 5]); 3],
-    steering: (usize, [u8; 5]),
-    auto_attack: (usize, [u8; 5]),
-    aim: (usize, [u8; 5]),
-    outlines: Vec<(usize, [u8; 5])>,
-    minimap: Vec<(usize, Vec<u8>)>,
-    minimap_constants: (usize, Vec<u8>),
+    families: u32,
+    sites: Vec<(usize, Vec<u8>)>,
+    constants: Option<(usize, Vec<u8>)>,
 }
 static PATCHES: OnceLock<PatchRecord> = OnceLock::new();
 
@@ -130,28 +128,11 @@ unsafe fn read_call(site: usize) -> [u8; 5] {
 pub(super) fn audit_patches() -> Option<bool> {
     // These addresses belong to the resident executable, not a transient view.
     PATCHES.get().map(|p| unsafe {
-        read_call(p.worker) == p.worker_bytes
-            && read_call(p.viewer) == p.viewer_bytes
-            && read_call(p.movement) == p.movement_bytes
-            && read_call(p.input) == p.input_bytes
-            && read_call(p.attack) == p.attack_bytes
-            && read_call(p.shader) == p.shader_bytes
-            && p.skills
-                .iter()
-                .all(|(site, bytes)| read_call(*site) == *bytes)
-            && read_call(p.steering.0) == p.steering.1
-            && read_call(p.auto_attack.0) == p.auto_attack.1
-            && read_call(p.aim.0) == p.aim.1
-            && p.outlines
-                .iter()
-                .all(|(site, bytes)| read_call(*site) == *bytes)
-            && p.minimap.iter().all(|(site, bytes)| {
-                std::slice::from_raw_parts(*site as *const u8, bytes.len()) == bytes
-            })
-            && std::slice::from_raw_parts(
-                p.minimap_constants.0 as *const u8,
-                p.minimap_constants.1.len(),
-            ) == p.minimap_constants.1
+        p.sites.iter().all(|(site, bytes)| {
+            std::slice::from_raw_parts(*site as *const u8, bytes.len()) == bytes
+        }) && p.constants.as_ref().is_none_or(|(address, bytes)| {
+            std::slice::from_raw_parts(*address as *const u8, bytes.len()) == bytes
+        })
     })
 }
 #[link(name = "bcrypt")]
@@ -272,116 +253,206 @@ pub(super) fn install() -> Result<(), String> {
         {
             return Err("Loaded PE identity differs; no hooks installed".into());
         }
-        if !crate::native_profile::verify_layout(base) {
+        let families = crate::native_profile::ENABLED;
+        let on = |family: u32| families & family != 0;
+        if !on(family::SESSION) {
+            return Err(
+                "No hook family is reviewed for this executable; no hooks installed".into(),
+            );
+        }
+        // The attack and skill hooks emit the movement family's stop events.
+        if on(family::COMBAT) && !on(family::MOVEMENT) {
+            return Err("Combat hooks need the movement family; no hooks installed".into());
+        }
+        if !crate::native_profile::verify_layout(base, families) {
             return Err("Native layout consumers differ; no hooks installed".into());
         }
-        for (rva, expected) in [
-            (WORKER_ORIGINAL, WORKER_PROLOGUE.as_slice()),
-            (VIEW_ORIGINAL, VIEW_PROLOGUE.as_slice()),
-            (MOVE_ORIGINAL, MOVE_PROLOGUE.as_slice()),
-            (STOP_EVENT, STOP_PROLOGUE.as_slice()),
-            (CANCEL_RECALL_EVENT, CANCEL_RECALL_PROLOGUE.as_slice()),
-            (INPUT_ORIGINAL, INPUT_PROLOGUE.as_slice()),
-            (ATTACK_ORIGINAL, ATTACK_PROLOGUE.as_slice()),
-            (SHADER_ORIGINAL, SHADER_PROLOGUE.as_slice()),
-            (GOLD_GETTER, GOLD_GETTER_BYTES.as_slice()),
-            (BUILD_LEN_SITE, BUILD_LEN_BYTES.as_slice()),
-            (BUILD_PTR_SITE, BUILD_PTR_BYTES.as_slice()),
-            (SKILL_ORIGINALS[0], SKILL_PROLOGUE.as_slice()),
-            (SKILL_ORIGINALS[1], SKILL_PROLOGUE.as_slice()),
-            (SKILL_ORIGINALS[2], SKILL_PROLOGUE.as_slice()),
-            SKILL_QUEUE_ANCHORS[0],
-            SKILL_QUEUE_ANCHORS[1],
-            SKILL_QUEUE_ANCHORS[2],
-            (STEER_ORIGINAL, STEER_PROLOGUE.as_slice()),
-            (DIRECT_STEP, DIRECT_PROLOGUE.as_slice()),
-            (AIM_ORIGINAL, AIM_PROLOGUE.as_slice()),
-            (OUTLINE_ORIGINAL, OUTLINE_PROLOGUE.as_slice()),
-            (OUTLINE_LINE_SITE, OUTLINE_LINE_BYTES.as_slice()),
-            (OUTLINE_DROP_COMMAND, OUTLINE_DROP_BYTES.as_slice()),
-            (OUTLINE_DROP_TABLE, OUTLINE_DROP_TABLE_BYTES.as_slice()),
-            (OUTLINE_DROP_CALLER, OUTLINE_DROP_CALL_BYTES.as_slice()),
-            (OUTLINE_NINEPATCH_SITE, OUTLINE_NINEPATCH_BYTES.as_slice()),
-            (0x21725a0, OUTLINE_PARAM_PROLOGUE.as_slice()),
-            (0x2171ae0, OUTLINE_PARAM_PROLOGUE.as_slice()),
-            AIM_WRITES[0],
-            AIM_WRITES[1],
+        for (family, (rva, expected)) in [
+            (
+                family::SESSION,
+                (WORKER_ORIGINAL, WORKER_PROLOGUE.as_slice()),
+            ),
+            (family::SESSION, (VIEW_ORIGINAL, VIEW_PROLOGUE.as_slice())),
+            (family::MOVEMENT, (MOVE_ORIGINAL, MOVE_PROLOGUE.as_slice())),
+            (family::MOVEMENT, (STOP_EVENT, STOP_PROLOGUE.as_slice())),
+            (
+                family::MOVEMENT,
+                (CANCEL_RECALL_EVENT, CANCEL_RECALL_PROLOGUE.as_slice()),
+            ),
+            (family::SESSION, (INPUT_ORIGINAL, INPUT_PROLOGUE.as_slice())),
+            (
+                family::COMBAT,
+                (ATTACK_ORIGINAL, ATTACK_PROLOGUE.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (SHADER_ORIGINAL, SHADER_PROLOGUE.as_slice()),
+            ),
+            (family::SHOP, (GOLD_GETTER, GOLD_GETTER_BYTES.as_slice())),
+            (family::SHOP, (BUILD_LEN_SITE, BUILD_LEN_BYTES.as_slice())),
+            (family::SHOP, (BUILD_PTR_SITE, BUILD_PTR_BYTES.as_slice())),
+            (
+                family::COMBAT,
+                (SKILL_ORIGINALS[0], SKILL_PROLOGUE.as_slice()),
+            ),
+            (
+                family::COMBAT,
+                (SKILL_ORIGINALS[1], SKILL_PROLOGUE.as_slice()),
+            ),
+            (
+                family::COMBAT,
+                (SKILL_ORIGINALS[2], SKILL_PROLOGUE.as_slice()),
+            ),
+            (family::COMBAT, SKILL_QUEUE_ANCHORS[0]),
+            (family::COMBAT, SKILL_QUEUE_ANCHORS[1]),
+            (family::COMBAT, SKILL_QUEUE_ANCHORS[2]),
+            (
+                family::MOVEMENT,
+                (STEER_ORIGINAL, STEER_PROLOGUE.as_slice()),
+            ),
+            (family::MOVEMENT, (DIRECT_STEP, DIRECT_PROLOGUE.as_slice())),
+            (family::COMBAT, (AIM_ORIGINAL, AIM_PROLOGUE.as_slice())),
+            (
+                family::OUTLINE,
+                (OUTLINE_ORIGINAL, OUTLINE_PROLOGUE.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (OUTLINE_LINE_SITE, OUTLINE_LINE_BYTES.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (OUTLINE_DROP_COMMAND, OUTLINE_DROP_BYTES.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (OUTLINE_DROP_TABLE, OUTLINE_DROP_TABLE_BYTES.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (OUTLINE_DROP_CALLER, OUTLINE_DROP_CALL_BYTES.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (OUTLINE_NINEPATCH_SITE, OUTLINE_NINEPATCH_BYTES.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (0x21725a0, OUTLINE_PARAM_PROLOGUE.as_slice()),
+            ),
+            (
+                family::OUTLINE,
+                (0x2171ae0, OUTLINE_PARAM_PROLOGUE.as_slice()),
+            ),
+            (family::COMBAT, AIM_WRITES[0]),
+            (family::COMBAT, AIM_WRITES[1]),
         ] {
-            if std::slice::from_raw_parts((base + rva) as *const u8, expected.len()) != expected {
+            if on(family)
+                && std::slice::from_raw_parts((base + rva) as *const u8, expected.len()) != expected
+            {
                 return Err("Native entry differs or another mod hooked it".into());
             }
         }
+        // (family, call site, its bytes, our hook, tail jump).
         let specs = [
             (
+                family::SESSION,
                 WORKER_SITE,
                 WORKER_BYTES,
                 worker_hook as *const () as usize,
                 false,
             ),
             (
+                family::SESSION,
                 VIEW_SITE,
                 VIEW_BYTES,
                 view_hook as *const () as usize,
                 false,
             ),
-            (MOVE_SITE, MOVE_BYTES, move_hook as *const () as usize, true),
             (
+                family::MOVEMENT,
+                MOVE_SITE,
+                MOVE_BYTES,
+                move_hook as *const () as usize,
+                true,
+            ),
+            (
+                family::SESSION,
                 INPUT_SITE,
                 INPUT_BYTES,
                 input_hook as *const () as usize,
                 false,
             ),
             (
+                family::COMBAT,
                 ATTACK_SITE,
                 ATTACK_BYTES,
                 attack_hook as *const () as usize,
                 false,
             ),
             (
+                family::OUTLINE,
                 SHADER_SITE,
                 SHADER_BYTES,
                 shader_hook as *const () as usize,
                 false,
             ),
             (
+                family::COMBAT,
                 SKILL_SITES[0],
                 SKILL_BYTES[0],
                 skill_q_hook as *const () as usize,
                 false,
             ),
             (
+                family::COMBAT,
                 SKILL_SITES[1],
                 SKILL_BYTES[1],
                 skill_w_hook as *const () as usize,
                 false,
             ),
             (
+                family::COMBAT,
                 SKILL_SITES[2],
                 SKILL_BYTES[2],
                 skill_r_hook as *const () as usize,
                 false,
             ),
             (
+                family::MOVEMENT,
                 STEER_SITE,
                 STEER_BYTES,
                 steer_hook as *const () as usize,
                 false,
             ),
             (
+                family::COMBAT,
                 AUTO_ATTACK_SITE,
                 AUTO_ATTACK_BYTES,
                 auto_attack_hook as *const () as usize,
                 false,
             ),
-            (AIM_SITE, AIM_BYTES, aim_hook as *const () as usize, false),
+            (
+                family::COMBAT,
+                AIM_SITE,
+                AIM_BYTES,
+                aim_hook as *const () as usize,
+                false,
+            ),
         ];
-        for (rva, expected, _, _) in specs {
-            if read_call(base + rva) != expected {
+        let specs: Vec<_> = specs.into_iter().filter(|spec| on(spec.0)).collect();
+        for (_, rva, expected, _, _) in &specs {
+            if read_call(base + rva) != *expected {
                 return Err("Native branch bytes differ; no hooks installed".into());
             }
         }
-        for (rva, expected) in OUTLINE_SITES {
-            if read_call(base + rva) != expected {
+        let outline_sites: &[(usize, [u8; 5])] = if on(family::OUTLINE) {
+            &OUTLINE_SITES
+        } else {
+            &[]
+        };
+        for (rva, expected) in outline_sites {
+            if read_call(base + rva) != *expected {
                 return Err("Unit renderer CALL bytes differ; no hooks installed".into());
             }
         }
@@ -389,48 +460,54 @@ pub(super) fn install() -> Result<(), String> {
         if GetModuleHandleExW(0x05, worker_hook as *const () as *const u16, &mut pinned) == 0 {
             return Err("Cannot pin adapter DLL for process lifetime".into());
         }
-        let constants_address = allocate_near(base + SHADER_SITE)?;
-        let minimap_plan = crate::minimap::native::plan(base, constants_address)?;
-        if !minimap_plan.verify() {
-            return Err(
-                "Minimap operands or shared source constants differ; no hooks installed".into(),
+        let minimap_plan = if on(family::MINIMAP) {
+            let constants_address = allocate_near(base + VIEW_SITE)?;
+            let minimap_plan = crate::minimap::native::plan(base, constants_address)?;
+            if !minimap_plan.verify() {
+                return Err(
+                    "Minimap operands or shared source constants differ; no hooks installed".into(),
+                );
+            }
+            std::ptr::copy_nonoverlapping(
+                minimap_plan.constants.as_ptr(),
+                constants_address as *mut u8,
+                minimap_plan.constants.len(),
             );
-        }
-        std::ptr::copy_nonoverlapping(
-            minimap_plan.constants.as_ptr(),
-            constants_address as *mut u8,
-            minimap_plan.constants.len(),
-        );
-        let mut constants_old = 0;
-        if VirtualProtect(
-            constants_address as *mut c_void,
-            0x1000,
-            0x02,
-            &mut constants_old,
-        ) == 0
-        {
-            return Err("Cannot protect private minimap constants".into());
-        }
+            let mut constants_old = 0;
+            if VirtualProtect(
+                constants_address as *mut c_void,
+                0x1000,
+                0x02,
+                &mut constants_old,
+            ) == 0
+            {
+                return Err("Cannot protect private minimap constants".into());
+            }
+            Some((constants_address, minimap_plan))
+        } else {
+            None
+        };
         let mut patches: Vec<(usize, Vec<u8>, Vec<u8>)> = Vec::new();
-        for (rva, expected, destination, jump) in specs {
+        for (_, rva, expected, destination, jump) in &specs {
             let site = base + rva;
-            let target = relay(site, destination)?;
-            let patch = if jump {
+            let target = relay(site, *destination)?;
+            let patch = if *jump {
                 relative_jump(site, target)?
             } else {
                 relative_call(site, target)?
             };
             patches.push((site, expected.to_vec(), patch.to_vec()));
         }
-        for (rva, expected) in OUTLINE_SITES {
+        for (rva, expected) in outline_sites {
             let site = base + rva;
             let target = relay(site, outline_hook as *const () as usize)?;
             let patch = relative_call(site, target)?;
             patches.push((site, expected.to_vec(), patch.to_vec()));
         }
-        let outline_end = patches.len();
-        for p in &minimap_plan.patches {
-            patches.push((p.site, p.expected.clone(), p.bytes.clone()));
+        if let Some((_, plan)) = &minimap_plan {
+            for p in &plan.patches {
+                patches.push((p.site, p.expected.clone(), p.bytes.clone()));
+            }
         }
         // Protect each page once. Multiple edits in one page must not save
         // an already-writable protection and leave that page writable.
@@ -451,20 +528,30 @@ pub(super) fn install() -> Result<(), String> {
             }
             protected.push((page, old));
         }
-        ORIGINAL_WORKER.store(base + WORKER_ORIGINAL, Ordering::Release);
-        ORIGINAL_VIEW.store(base + VIEW_ORIGINAL, Ordering::Release);
-        ORIGINAL_MOVE.store(base + MOVE_ORIGINAL, Ordering::Release);
-        NOTIFY_STOP.store(base + STOP_EVENT, Ordering::Release);
-        NOTIFY_CANCEL_RECALL.store(base + CANCEL_RECALL_EVENT, Ordering::Release);
-        ORIGINAL_INPUT.store(base + INPUT_ORIGINAL, Ordering::Release);
-        ORIGINAL_ATTACK.store(base + ATTACK_ORIGINAL, Ordering::Release);
-        ORIGINAL_SHADER.store(base + SHADER_ORIGINAL, Ordering::Release);
-        ORIGINAL_STEER.store(base + STEER_ORIGINAL, Ordering::Release);
-        ORIGINAL_DIRECT_STEP.store(base + DIRECT_STEP, Ordering::Release);
-        ORIGINAL_AIM.store(base + AIM_ORIGINAL, Ordering::Release);
-        ORIGINAL_OUTLINE.store(base + OUTLINE_ORIGINAL, Ordering::Release);
-        for i in 0..3 {
-            ORIGINAL_SKILLS[i].store(base + SKILL_ORIGINALS[i], Ordering::Release);
+        // A family that is not installed keeps its originals at zero: its
+        // hooks never run and nothing may call through them.
+        if on(family::SESSION) {
+            ORIGINAL_WORKER.store(base + WORKER_ORIGINAL, Ordering::Release);
+            ORIGINAL_VIEW.store(base + VIEW_ORIGINAL, Ordering::Release);
+            ORIGINAL_INPUT.store(base + INPUT_ORIGINAL, Ordering::Release);
+        }
+        if on(family::MOVEMENT) {
+            ORIGINAL_MOVE.store(base + MOVE_ORIGINAL, Ordering::Release);
+            NOTIFY_STOP.store(base + STOP_EVENT, Ordering::Release);
+            NOTIFY_CANCEL_RECALL.store(base + CANCEL_RECALL_EVENT, Ordering::Release);
+            ORIGINAL_STEER.store(base + STEER_ORIGINAL, Ordering::Release);
+            ORIGINAL_DIRECT_STEP.store(base + DIRECT_STEP, Ordering::Release);
+        }
+        if on(family::COMBAT) {
+            ORIGINAL_ATTACK.store(base + ATTACK_ORIGINAL, Ordering::Release);
+            ORIGINAL_AIM.store(base + AIM_ORIGINAL, Ordering::Release);
+            for i in 0..3 {
+                ORIGINAL_SKILLS[i].store(base + SKILL_ORIGINALS[i], Ordering::Release);
+            }
+        }
+        if on(family::OUTLINE) {
+            ORIGINAL_SHADER.store(base + SHADER_ORIGINAL, Ordering::Release);
+            ORIGINAL_OUTLINE.store(base + OUTLINE_ORIGINAL, Ordering::Release);
         }
         for (site, _, patch) in &patches {
             std::ptr::copy_nonoverlapping(patch.as_ptr(), *site as *mut u8, patch.len());
@@ -494,49 +581,31 @@ pub(super) fn install() -> Result<(), String> {
         }) {
             return Err("Branch readback mismatch; coordinator disabled".into());
         }
+        let shop = on(family::SHOP);
         let _ = PATCHES.set(PatchRecord {
-            worker: patches[0].0,
-            worker_bytes: patches[0].2.as_slice().try_into().unwrap(),
-            viewer: patches[1].0,
-            viewer_bytes: patches[1].2.as_slice().try_into().unwrap(),
-            movement: patches[2].0,
-            movement_bytes: patches[2].2.as_slice().try_into().unwrap(),
-            input: patches[3].0,
-            input_bytes: patches[3].2.as_slice().try_into().unwrap(),
-            attack: patches[4].0,
-            attack_bytes: patches[4].2.as_slice().try_into().unwrap(),
-            shader: patches[5].0,
-            shader_bytes: patches[5].2.as_slice().try_into().unwrap(),
-            skills: std::array::from_fn(|i| {
-                (
-                    patches[6 + i].0,
-                    patches[6 + i].2.as_slice().try_into().unwrap(),
-                )
-            }),
-            steering: (patches[9].0, patches[9].2.as_slice().try_into().unwrap()),
-            auto_attack: (patches[10].0, patches[10].2.as_slice().try_into().unwrap()),
-            aim: (patches[11].0, patches[11].2.as_slice().try_into().unwrap()),
-            outlines: patches[12..outline_end]
-                .iter()
-                .map(|(site, _, bytes)| (*site, bytes.as_slice().try_into().unwrap()))
-                .collect(),
-            minimap: patches[outline_end..]
+            // The purchase hooks install below and report on their own.
+            families,
+            sites: patches
                 .iter()
                 .map(|(site, _, bytes)| (*site, bytes.clone()))
                 .collect(),
-            minimap_constants: (constants_address, minimap_plan.constants),
+            constants: minimap_plan.map(|(address, plan)| (address, plan.constants)),
         });
         if let Some(shared) = SHARED.get() {
-            shared.logger.write("MINIMAP installed content=352 padding=4 wide_origin=1564,724 frame=360; native markers/fog/camera/input scaled; private constants read-only");
-            shared.logger.write(&format!("NATIVE PATCH_READBACK worker_rva={WORKER_SITE:x} viewer_rva={VIEW_SITE:x} move_rva={MOVE_SITE:x} input_rva={INPUT_SITE:x} attack_rva={ATTACK_SITE:x} auto_attack_rva={AUTO_ATTACK_SITE:x} shader_rva={SHADER_SITE:x} skill_rvas={SKILL_SITES:x?} steering_rva={STEER_SITE:x} aim_rva={AIM_SITE:x} outline_sites={} verified=true", OUTLINE_SITES.len()));
+            if on(family::MINIMAP) {
+                shared.logger.write("MINIMAP installed content=352 padding=4 wide_origin=1564,724 frame=360; native markers/fog/camera/input scaled; private constants read-only");
+            }
+            shared.logger.write(&format!("NATIVE PATCH_READBACK families={families:#x} sites={} worker_rva={WORKER_SITE:x} viewer_rva={VIEW_SITE:x} move_rva={MOVE_SITE:x} input_rva={INPUT_SITE:x} attack_rva={ATTACK_SITE:x} auto_attack_rva={AUTO_ATTACK_SITE:x} shader_rva={SHADER_SITE:x} skill_rvas={SKILL_SITES:x?} steering_rva={STEER_SITE:x} aim_rva={AIM_SITE:x} outline_sites={} verified=true", patches.len(), outline_sites.len()));
         }
-        OUTLINE_READY.store(true, Ordering::Release);
-        let shop = install_shop(base);
-        if let Some(shared) = SHARED.get() {
-            shared.logger.write(&match &shop {
-                Ok(()) => format!("SHOP HOOKS installed upgrade_thunk_rva={SHOP_UPGRADE_THUNK:x} new_thunk_rva={SHOP_NEW_THUNK:x}; native answers unless Manual shopping applies"),
-                Err(e) => format!("SHOP HOOKS unavailable: {e}; Manual shopping disabled, other hooks unaffected"),
-            });
+        OUTLINE_READY.store(on(family::OUTLINE), Ordering::Release);
+        if shop {
+            let shop = install_shop(base);
+            if let Some(shared) = SHARED.get() {
+                shared.logger.write(&match &shop {
+                    Ok(()) => format!("SHOP HOOKS installed upgrade_thunk_rva={SHOP_UPGRADE_THUNK:x} new_thunk_rva={SHOP_NEW_THUNK:x}; native answers unless Manual shopping applies"),
+                    Err(e) => format!("SHOP HOOKS unavailable: {e}; Manual shopping disabled, other hooks unaffected"),
+                });
+            }
         }
         Ok(())
     }

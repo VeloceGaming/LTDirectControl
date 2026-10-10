@@ -232,7 +232,7 @@ unsafe fn resolve(
     assets: usize,
     request: &native_tooltips::Request,
 ) -> Result<String, &'static str> {
-    let base = verified_base().ok_or("native adapter unavailable")?;
+    let base = family_base(family::READERS).ok_or("native adapter unavailable")?;
     if !profile_matches(base) {
         return Err("native tooltip profile mismatch");
     }

@@ -18,7 +18,7 @@ pub(crate) unsafe fn attack_ranges(
     actor: usize,
 ) -> Option<(u64, Option<u64>)> {
     let shared = SHARED.get()?;
-    let base = verified_base()?;
+    let base = family_base(family::COMBAT)?;
     owned_key(shared, actor)?;
     if state == 0
         || table == 0
@@ -157,7 +157,9 @@ pub(crate) unsafe fn observe_owned_abilities(
     shared
         .abilities
         .observe_metadata(key, actor, metadata, &shared.logger);
-    if let Some(base) = verified_base().filter(|_| shared.abilities.geometry_due(key, actor)) {
+    if let Some(base) =
+        family_base(family::READERS).filter(|_| shared.abilities.geometry_due(key, actor))
+    {
         let offsets = [0x4c0, 0x4f8, 0x530];
         let geometry = std::array::from_fn(|slot| {
             if metadata[slot].is_some() {
@@ -558,7 +560,7 @@ unsafe fn inventory(shared: &Shared, entity: usize) {
         }
         seen.insert(entity)
     });
-    let Some(base) = verified_base().filter(|_| fresh) else {
+    let Some(base) = family_base(family::READERS).filter(|_| fresh) else {
         return;
     };
     let actor = std::ptr::read_unaligned((entity + 0x5b8) as *const usize);

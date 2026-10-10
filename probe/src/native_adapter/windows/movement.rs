@@ -172,7 +172,9 @@ pub(crate) unsafe extern "system" fn move_hook(entity: usize, x: u64, y: u64, ev
             return false;
         };
         observe_owned_abilities(shared, entity, key, actor);
-        if finish_attack_backswing(shared, key, actor, entity, events) {
+        // Reads the combat family's entity fields.
+        if installed(family::COMBAT) && finish_attack_backswing(shared, key, actor, entity, events)
+        {
             observe_owned_abilities(shared, entity, key, actor);
         }
         let Some(ticket) = take_stop_ticket(key, actor) else {

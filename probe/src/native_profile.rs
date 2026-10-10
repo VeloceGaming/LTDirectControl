@@ -2,6 +2,30 @@
 pub const EXPECTED_SHA: &str = "f21cf691799a83d9afa0ccae3e2b95862f5780446a501ee97860b91b752dbe2f";
 pub const PE_TIMESTAMP: u32 = 0x6ac5c567;
 pub const IMAGE_SIZE: u32 = 0x52d6000;
+/// Hook families. Each is verified and installed on its own, so a game
+/// build can be supported one family at a time: a family is listed in
+/// `ENABLED` only when its anchors, its layout guards below and every raw
+/// field offset its hooks use have been reviewed for this executable.
+pub mod family {
+    /// Worker, viewer and input hooks: frame pacing and the session.
+    pub const SESSION: u32 = 1;
+    /// Camera, vision and the full-screen layout lease inside the viewer.
+    pub const CAMERA: u32 = 1 << 1;
+    /// Move, stop, recall-cancel and steering.
+    pub const MOVEMENT: u32 = 1 << 2;
+    /// Attack, auto-attack, skills, aim and the entity fields they read.
+    pub const COMBAT: u32 = 1 << 3;
+    /// Outline shader and unit renderer.
+    pub const OUTLINE: u32 = 1 << 4;
+    pub const MINIMAP: u32 = 1 << 5;
+    /// Gold and build readers, and the purchase hooks.
+    pub const SHOP: u32 = 1 << 6;
+    /// Native tooltip text, item and preview readers.
+    pub const READERS: u32 = 1 << 7;
+    pub const ALL: u32 = (1 << 8) - 1;
+}
+/// The families reviewed for `EXPECTED_SHA`.
+pub const ENABLED: u32 = family::ALL;
 const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     // VIEW_LAYOUT_PAUSE
     (0x93078b, &[0x80, 0x7e, 0x48, 0x00]),
@@ -183,11 +207,46 @@ const LAYOUT_POINTERS: &[(usize, usize)] = &[
     (0x3ba6298, 0x1611090),
 ];
 
+/// The family each layout guard protects, by guard address.
+const LAYOUT_FAMILIES: &[(u32, &[usize])] = &[
+    (family::SESSION, &[0x93078b]),
+    (
+        family::CAMERA,
+        &[
+            0xb9cfc5, 0x280bd60, 0x280f42f, 0xcdcbf6, 0xcdcc79, 0x7b4de5, 0xa43e02, 0x280d99d,
+            0x280d9de, 0x1e71e40, 0x1e71f60, 0x23228d4, 0x2322906, 0x231f8ae, 0x2320bcd, 0x2320f0a,
+            0x280bfe2,
+        ],
+    ),
+    (
+        family::COMBAT,
+        &[
+            0x2e1666f, 0x16f6f62, 0x16f6f8c, 0x1703fe2, 0x1703fa2, 0x16f3ef1, 0x17047c3, 0x16f412c,
+            0x16fd0ca, 0x16f8184, 0x17046dd, 0x17033db,
+        ],
+    ),
+    (family::SHOP, &[0x2e84800]),
+];
+fn layout_family(rva: usize) -> u32 {
+    LAYOUT_FAMILIES
+        .iter()
+        .find(|(_, guards)| guards.contains(&rva))
+        .map_or(family::ALL, |(family, _)| *family)
+}
+
 /// Call only after the exact disk hash and loaded PE identity have passed.
-pub unsafe fn verify_layout(base: usize) -> bool {
-    LAYOUT_BYTES.iter().all(|(rva, bytes)| {
-        std::slice::from_raw_parts((base + rva) as *const u8, bytes.len()) == *bytes
-    }) && LAYOUT_POINTERS.iter().all(|(rva, target)| {
-        std::ptr::read_unaligned((base + rva) as *const usize) == base + target
-    })
+/// Checks the guards of the `families` being installed; a guard without a
+/// listed family is always checked.
+pub unsafe fn verify_layout(base: usize, families: u32) -> bool {
+    let wanted = |family: u32| family == family::ALL || families & family != 0;
+    LAYOUT_BYTES
+        .iter()
+        .filter(|(rva, _)| wanted(layout_family(*rva)))
+        .all(|(rva, bytes)| {
+            std::slice::from_raw_parts((base + rva) as *const u8, bytes.len()) == *bytes
+        })
+        && (families & family::READERS == 0
+            || LAYOUT_POINTERS.iter().all(|(rva, target)| {
+                std::ptr::read_unaligned((base + rva) as *const usize) == base + target
+            }))
 }
