@@ -67,7 +67,7 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Movement | Enabled in 1.1.2; passed in game 2026-10-10 |
 | Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
 | Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
-| Outline | Enabled in 1.1.6; in-game test pending |
+| Outline | Enabled in 1.1.6; passed in game 2026-10-10 |
 | Readers (tooltips, previews) | Open |
 
 ### Session (worker, viewer, input)
