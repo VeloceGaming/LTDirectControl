@@ -202,6 +202,7 @@ fn layout(cat: &[shop::Item], active: &[usize]) -> (Vec<(Entry, i32, f32)>, f32)
     let max_tier = cat.iter().map(|i| i.tier).max().unwrap_or(0);
     for tier in 0..=max_tier {
         let mut items: Vec<usize> = (0..cat.len())
+            .filter(|i| cat[*i].enabled)
             .filter(|i| cat[*i].tier == tier && active.iter().all(|f| has(&cat[*i], *f)))
             .collect();
         if items.is_empty() {
@@ -1931,13 +1932,14 @@ impl ShopUi {
         let matching = |extra: Option<usize>, active: &[usize]| {
             view.cat
                 .iter()
+                .filter(|item| item.enabled)
                 .filter(|item| active.iter().chain(extra.iter()).all(|f| has(item, *f)))
                 .count()
         };
         self.filters = std::iter::once(None)
             .chain(
                 (0..STAT_FILTERS.len())
-                    .filter(|f| view.cat.iter().any(|item| has(item, *f)))
+                    .filter(|f| view.cat.iter().any(|item| item.enabled && has(item, *f)))
                     .map(Some),
             )
             .take(FILTERS)
@@ -3057,6 +3059,7 @@ mod tests {
             category: String::new(),
             stats: stats.iter().map(|s| s.to_string()).collect(),
             next: Vec::new(),
+            enabled: true,
         }
     }
 
@@ -3146,6 +3149,7 @@ mod tests {
                 category: String::new(),
                 stats: Vec::new(),
                 next: if tier < 4 { vec![tier + 1] } else { Vec::new() },
+                enabled: true,
             })
             .collect();
         let view = |owned: Vec<usize>| shop::View {

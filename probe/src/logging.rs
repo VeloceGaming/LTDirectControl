@@ -31,6 +31,7 @@ const SAFETY: &[&str] = &[
     "CURSOR window",
     "WORKER STALL",
     "WORKER RESUMED",
+    "WORKER ENDED",
 ];
 /// Lines starting with one of these are written only at Verbose.
 const VERBOSE: &[&str] = &[

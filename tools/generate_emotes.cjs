@@ -30,18 +30,21 @@ const faces = {
   }
   await sharp({create:{width:800,height:160,channels:4,background:'#1c1a18'}}).composite(sheets).png().toFile(path.join(design,'sheet.png'));
   // A short two-note confirmation, original PCM, no loop or external sound.
+  // Level: at the default 70% emote volume its average level sits a little
+  // above the game's median effect (measured on the bundle's WAV effects);
+  // a steady tone is much denser than its 20% peak suggests.
   const rate=24000, samples=Math.round(rate*.16), wav=Buffer.alloc(44+samples*2);
   wav.write('RIFF'); wav.writeUInt32LE(wav.length-8,4); wav.write('WAVEfmt ',8); wav.writeUInt32LE(16,16);
   wav.writeUInt16LE(1,20); wav.writeUInt16LE(1,22); wav.writeUInt32LE(rate,24); wav.writeUInt32LE(rate*2,28);
   wav.writeUInt16LE(2,32); wav.writeUInt16LE(16,34); wav.write('data',36); wav.writeUInt32LE(samples*2,40);
   for(let i=0;i<samples;i++) { const t=i/rate, freq=t<.075?660:880;
     const envelope=Math.min(t/.008,1)*Math.min((.16-t)/.04,1);
-    wav.writeInt16LE(Math.round(Math.sin(2*Math.PI*freq*t)*envelope*4500),44+i*2); }
+    wav.writeInt16LE(Math.round(Math.sin(2*Math.PI*freq*t)*envelope*6500),44+i*2); }
   const sound='sound/sfx/emote.wav'; fs.mkdirSync(path.dirname(path.join(root,'probe',sound)),{recursive:true});
   fs.writeFileSync(path.join(root,'probe',sound),wav); files[sound]=hash(wav);
   const record={source:'tools/generate_emotes.cjs',source_sha256:hash(fs.readFileSync(__filename)),files,
     art:'Five original vector faces: GG, Nice, Hype, Oops, Focus. No third-party reference art.',
-    sound:'Original 160ms mono 24kHz 16-bit PCM two-note confirmation. Optional, off by default.'};
+    sound:'Original 160ms mono 24kHz 16-bit PCM two-note confirmation. Played at the Emote volume setting (70% by default).'};
   fs.writeFileSync(path.join(root,'tools/records/emotes.json'),JSON.stringify(record,null,2)+'\n');
   const manifest=path.join(root,'tools/records/ui-graphics.json'), m=JSON.parse(fs.readFileSync(manifest));
   Object.assign(m.files, files); fs.writeFileSync(manifest,JSON.stringify(m,null,2)+'\n');

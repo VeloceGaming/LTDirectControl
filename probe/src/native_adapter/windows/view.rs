@@ -563,7 +563,12 @@ pub(crate) unsafe fn view_hook_body(
             std::ptr::write_unaligned((view + 0x358) as *mut f32, 0.0);
             0.0
         }
-        ViewMode::Running => dt.min(2.0 / tps as f32),
+        // The viewer plays what is queued; the worker's lead follows the
+        // frame rate so that a slow client still plays every tick.
+        ViewMode::Running => {
+            let lead = shared.timing.frame_time(tps, &shared.logger);
+            dt.min(lead.max(2) as f32 / tps as f32)
+        }
         ViewMode::Native => dt,
     };
     original(

@@ -276,9 +276,9 @@ pub fn capture_trace(label: &str, logger: &Logger) {
     ));
 }
 
-/// `thread`'s call stack as `module+0xoffset`, innermost first; empty when
-/// unavailable. For the worker stall report (crate::worker_watch).
-pub fn thread_stack(thread: u64) -> Vec<String> {
+/// `thread`'s call stack as `module+0xoffset`, innermost first, or why it
+/// could not be read. For the worker stall report (crate::worker_watch).
+pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
         windows::thread_stack(thread)
@@ -286,7 +286,19 @@ pub fn thread_stack(thread: u64) -> Vec<String> {
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
         let _ = thread;
-        Vec::new()
+        Err("unavailable on this platform")
+    }
+}
+/// Whether `thread` is still running (assumed so where it cannot be told).
+pub fn thread_alive(thread: u64) -> bool {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        windows::thread_alive(thread)
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        let _ = thread;
+        true
     }
 }
 

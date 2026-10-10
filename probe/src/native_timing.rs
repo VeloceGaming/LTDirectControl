@@ -12,6 +12,35 @@ pub type MatchKey = (u64, u64, u64);
 static LEFT_MATCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 /// After a start or resume, samples from before it are not yet stale.
 const RESUME_GRACE: Duration = Duration::from_millis(500);
+/// Most ticks the worker may run ahead of playback, and the most one client
+/// frame may play: the match keeps full speed down to 60 / MAX_LEAD fps.
+pub const MAX_LEAD: usize = 4;
+/// Share of each new frame time in the running average.
+const FRAME_WEIGHT: f32 = 0.1;
+/// The most one frame may exceed the running average by, in ticks.
+const FRAME_STEP: f32 = 0.4;
+/// A longer gap between running frames is a pause, not a frame.
+const FRAME_GAP: Duration = Duration::from_millis(250);
+/// Playback rate is reported over windows of this length.
+const RATE_WINDOW: Duration = Duration::from_secs(10);
+/// Lead changes and slow-playback windows logged per match at every level.
+const REPORTS: u32 = 8;
+/// How many ticks the worker may run ahead when a client frame lasts
+/// `ticks` ticks on average. One frame can only play what is queued, so
+/// below 60 fps a lead of 1 slows the match in proportion. The lead rises
+/// once the match would run more than 5% slow, and falls again only when
+/// the smaller lead is nearly enough, so it does not flip at a boundary.
+fn lead_for(current: usize, ticks: f32) -> usize {
+    let current = current.clamp(1, MAX_LEAD);
+    let needed = |slack: f32| ((ticks - slack).ceil() as usize).clamp(1, MAX_LEAD);
+    if ticks > current as f32 * 1.05 {
+        needed(0.05 * current as f32)
+    } else if ticks <= (current - 1) as f32 * 1.02 {
+        needed(0.02)
+    } else {
+        current
+    }
+}
 fn key_id(key: MatchKey) -> u64 {
     // Never 0, so 0 can mean "none".
     (key.0 ^ key.1.rotate_left(21) ^ key.2.rotate_left(42)) | 1
@@ -64,6 +93,16 @@ struct State {
     client_ran: Option<Instant>,
     produced: usize,
     consumed: usize,
+    /// Ticks the worker may run ahead of playback (1..=MAX_LEAD), from the
+    /// average client frame time in ticks.
+    lead: usize,
+    frame_ticks: f32,
+    /// The previous running frame; the playback-rate window (start,
+    /// frames consumed then); log budgets.
+    frame_at: Option<Instant>,
+    rate: Option<(Instant, usize)>,
+    lead_changes: u32,
+    slow_reports: u32,
     boundary_seen: bool,
     bootstrap_applied: bool,
     first_view_seen: bool,
@@ -138,6 +177,12 @@ impl NativeTiming {
                 client_ran: None,
                 produced: 0,
                 consumed: 0,
+                lead: 1,
+                frame_ticks: 1.,
+                frame_at: None,
+                rate: None,
+                lead_changes: 0,
+                slow_reports: 0,
                 boundary_seen: false,
                 bootstrap_applied: false,
                 first_view_seen: false,
@@ -314,6 +359,12 @@ impl NativeTiming {
         s.running = None;
         s.produced = 0;
         s.consumed = 0;
+        s.lead = 1;
+        s.frame_ticks = 1.;
+        s.frame_at = None;
+        s.rate = None;
+        s.lead_changes = 0;
+        s.slow_reports = 0;
         s.played_tick = 0;
         s.boundary_seen = false;
         s.bootstrap_applied = false;
@@ -386,16 +437,14 @@ impl NativeTiming {
                 s.phase = Phase::Ai;
                 s.pending_action = None;
                 s.running.get_or_insert_with(Instant::now);
-                log.write("SESSION AI control; same match/player retained; pacing=1x frame_lead=1; F11 reclaims control");
+                log.write("SESSION AI control; same match/player retained; pacing=1x; F11 reclaims control");
             }
             (SessionAction::Start, Phase::Ready)
             | (SessionAction::Resume, Phase::Paused)
             | (SessionAction::TakeControl, Phase::Ai) => {
                 s.phase = Phase::Running;
                 s.running.get_or_insert_with(Instant::now);
-                log.write(&format!(
-                    "SESSION {action:?}; full-match pacing=1x frame_lead=1"
-                ));
+                log.write(&format!("SESSION {action:?}; full-match pacing=1x"));
             }
             (SessionAction::Pause, Phase::Running) => {
                 s.phase = Phase::Paused;
@@ -548,7 +597,7 @@ impl NativeTiming {
             let wait = match s.phase {
                 Phase::Released | Phase::Armed => false,
                 Phase::Loading | Phase::Ready | Phase::Paused => true,
-                Phase::Running | Phase::Ai => s.produced.saturating_sub(s.consumed) >= 1,
+                Phase::Running | Phase::Ai => s.produced.saturating_sub(s.consumed) >= s.lead,
             };
             if !wait {
                 return;
@@ -611,6 +660,65 @@ impl NativeTiming {
             ViewMode::Paused
         }
     }
+    /// Viewer, each running frame at `tps` ticks a second: keeps the
+    /// worker's lead matched to the frame rate. Returns the lead.
+    pub fn frame_time(&self, tps: usize, log: &Logger) -> usize {
+        self.frame_at(Instant::now(), tps, log)
+    }
+    /// Frames are timed here, on the wall clock: the game's own frame time
+    /// is not known to be unscaled and uncapped.
+    fn frame_at(&self, now: Instant, tps: usize, log: &Logger) -> usize {
+        let Ok(mut s) = self.state.lock() else {
+            return 1;
+        };
+        let frame = s.frame_at.replace(now).map(|t| now.duration_since(t));
+        // The first frame, and the first after a pause or a held window,
+        // say nothing about the frame rate.
+        let Some(frame) = frame.filter(|d| !d.is_zero() && *d < FRAME_GAP) else {
+            s.rate = Some((now, s.consumed));
+            return s.lead;
+        };
+        // One long frame (a hitch) moves the average by less than the 5%
+        // that raises the lead; a lasting change still gets there.
+        let ticks = (frame.as_secs_f32() * tps as f32).min(s.frame_ticks + FRAME_STEP);
+        s.frame_ticks += (ticks - s.frame_ticks) * FRAME_WEIGHT;
+        let lead = lead_for(s.lead, s.frame_ticks);
+        let frame_ms = s.frame_ticks * 1000. / tps as f32;
+        if lead != s.lead {
+            s.lead_changes += 1;
+            if s.lead_changes <= REPORTS {
+                log.write(&format!(
+                    "TIMING frame lead {} -> {lead}; average client frame {frame_ms:.1} ms ({:.2} ticks); change {} of this match{}",
+                    s.lead,
+                    s.frame_ticks,
+                    s.lead_changes,
+                    if s.lead_changes == REPORTS { "; later changes are not logged" } else { "" }
+                ));
+            }
+            s.lead = lead;
+            self.wake.notify_all();
+        }
+        // Playback rate over each RATE_WINDOW of uninterrupted running.
+        let consumed = s.consumed;
+        let (since, from) = *s.rate.get_or_insert((now, consumed));
+        let window = now.duration_since(since);
+        if window >= RATE_WINDOW {
+            let rate = s.consumed.saturating_sub(from) as f32 / window.as_secs_f32();
+            let line = format!(
+                "playback {rate:.1} ticks/s of {tps} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms changes={}",
+                window.as_secs_f32(),
+                s.lead_changes
+            );
+            if rate < tps as f32 * 0.95 && s.slow_reports < REPORTS {
+                s.slow_reports += 1;
+                log.write(&format!("TIMING slow {line}"));
+            } else {
+                log.write(&format!("PACING {line}"));
+            }
+            s.rate = Some((now, s.consumed));
+        }
+        lead
+    }
     pub fn after_view(
         &self,
         mode: ViewMode,
@@ -667,7 +775,7 @@ impl NativeTiming {
                 ));
             }
         }
-        if used > 2 || s.consumed > s.produced + 1 {
+        if used > MAX_LEAD.max(2) || s.consumed > s.produced + 1 {
             Self::release(&mut s, "Unexpected publication/playback frame counts", log);
         }
     }
@@ -687,6 +795,18 @@ impl NativeTiming {
         let since = *s.progress.get_or_insert(now);
         if s.stalled.is_none() && now.duration_since(since) >= crate::worker_watch::STALL {
             s.stalled = Some(since);
+            // A finished match ends its worker; the result screen can take
+            // longer than the stall time to appear. That is not a stall.
+            if s.worker
+                .is_some_and(|worker| !crate::native_adapter::thread_alive(worker))
+            {
+                s.stack_logged = Some((now, 3));
+                log.write(&format!(
+                    "WORKER ENDED the match worker thread has exited (normal when a match finishes); played_tick={} produced={} consumed={} phase={:?}",
+                    s.played_tick, s.produced, s.consumed, s.phase
+                ));
+                return;
+            }
             let (step, player) = crate::worker_watch::last();
             let (begun, last_player) = crate::worker_watch::progress();
             log.write(&format!(
@@ -707,11 +827,13 @@ impl NativeTiming {
         if let (Some(_), true, Some(worker)) = (s.stalled, due, s.worker) {
             let count = s.stack_logged.map_or(1, |(_, count)| count + 1);
             s.stack_logged = Some((now, count));
-            log.write(&format!(
-                "WORKER STALL stack {count}/3 step={:?} frames={:?}",
-                crate::worker_watch::last().0,
-                crate::native_adapter::thread_stack(worker)
-            ));
+            log.write(&match crate::native_adapter::thread_stack(worker) {
+                Ok(frames) => format!(
+                    "WORKER STALL stack {count}/3 step={:?} frames={frames:?}",
+                    crate::worker_watch::last().0
+                ),
+                Err(why) => format!("WORKER STALL stack {count}/3 unavailable: {why}"),
+            });
         }
     }
     pub fn trace_dispatch(
@@ -1678,6 +1800,78 @@ mod tests {
         assert!(!t.hook_entry(false, &log).0);
     }
 
+    #[test]
+    fn frame_lead_follows_the_frame_rate_without_flipping_at_a_boundary() {
+        // 60 fps and faster: one tick ahead, as before.
+        assert_eq!(lead_for(1, 1.0), 1);
+        assert_eq!(lead_for(1, 0.42), 1);
+        // Up to 5% slow is tolerated; beyond it the lead rises.
+        assert_eq!(lead_for(1, 1.04), 1);
+        assert_eq!(lead_for(1, 1.33), 2); // 45 fps
+        assert_eq!(lead_for(1, 2.0), 2); // 30 fps
+        assert_eq!(lead_for(2, 2.05), 2);
+        assert_eq!(lead_for(2, 3.0), 3); // 20 fps
+        assert_eq!(lead_for(1, 9.0), MAX_LEAD);
+        // Falls back only when the smaller lead is nearly enough.
+        assert_eq!(lead_for(2, 1.04), 2);
+        assert_eq!(lead_for(2, 1.01), 1);
+        assert_eq!(lead_for(4, 1.0), 1);
+    }
+    #[test]
+    fn a_slow_client_raises_the_lead_and_one_long_frame_or_a_pause_does_not() {
+        let t = NativeTiming::running_test_worker((1, 2, 3));
+        let log = logger("native-lead");
+        let mut now = Instant::now();
+        let mut frames = |n: usize, us: u64| {
+            let mut lead = 0;
+            for _ in 0..n {
+                now += Duration::from_micros(us);
+                lead = t.frame_at(now, 60, &log);
+            }
+            lead
+        };
+        assert_eq!(frames(30, 16_667), 1);
+        // A single 100 ms hitch at 60 fps, then a two-second pause.
+        assert_eq!(frames(1, 100_000), 1);
+        assert_eq!(frames(1, 16_667), 1);
+        assert_eq!(frames(1, 2_000_000), 1);
+        assert_eq!(frames(30, 16_667), 1);
+        assert_eq!(t.state.lock().unwrap().lead_changes, 0);
+        // Steady 30 fps, then 60 fps again.
+        assert_eq!(frames(60, 33_333), 2);
+        assert_eq!(frames(120, 16_667), 1);
+        assert_eq!(t.state.lock().unwrap().lead_changes, 2);
+    }
+    #[test]
+    fn playback_rate_windows_restart_after_a_pause() {
+        let t = NativeTiming::running_test_worker((1, 2, 3));
+        let log = logger("native-rate");
+        let mut now = Instant::now();
+        t.frame_at(now, 60, &log);
+        // Five seconds at one tick in every two frames: slow.
+        for _ in 0..300 {
+            now += Duration::from_micros(16_667);
+            t.frame_at(now, 60, &log);
+        }
+        t.state.lock().unwrap().consumed += 150;
+        // A pause: the window restarts and the slow stretch is not reported.
+        now += Duration::from_secs(3);
+        t.frame_at(now, 60, &log);
+        assert_eq!(t.state.lock().unwrap().rate.unwrap().1, 150);
+        for _ in 0..660 {
+            now += Duration::from_micros(16_667);
+            t.state.lock().unwrap().consumed += 1;
+            t.frame_at(now, 60, &log);
+        }
+        assert_eq!(t.state.lock().unwrap().slow_reports, 0);
+        // Half speed for a full window is reported.
+        for i in 0..660 {
+            now += Duration::from_micros(16_667);
+            t.state.lock().unwrap().consumed += i % 2;
+            t.frame_at(now, 60, &log);
+        }
+        assert_eq!(t.state.lock().unwrap().slow_reports, 1);
+    }
     #[test]
     fn played_tick_change_without_queue_consumption_is_not_a_pause_ack() {
         let t = active();

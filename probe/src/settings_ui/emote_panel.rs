@@ -108,7 +108,7 @@ pub(super) fn template() -> String {
             // Longer explanations use the page footer; control hints remain readable.
             let hint = match def.key {
                 "emotes" => tr("Hold T · release to show"),
-                "emote_sound" => tr("Shared confirmation sound"),
+                "emote_volume" => tr("Relative to the game's sound effects"),
                 "emote_height" => tr("Above champion's ground position"),
                 "emote_scale" => tr("100% = 88 px before zoom and pop"),
                 "emote_zoom" => tr("Scale image and height with camera zoom"),

@@ -3,6 +3,14 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.6 — 2026-10-11
+
+- Match speed no longer follows the frame rate. The worker was held to one tick ahead of playback and a client frame can only play what is queued, so below 60 fps the match slowed in proportion (30 fps played at half speed; reported on the Workshop). The lead now follows the average client frame time: 1 tick at 60 fps and above (unchanged), up to 4 below, which keeps full speed down to 15 fps. It rises once the match would run more than 5% slow and falls back only when the smaller lead is nearly enough; one long frame or a pause does not raise it (tested). Frames are timed on the wall clock between running viewer calls. `TIMING frame lead a -> b` is logged for the first eight changes of a match, and `TIMING slow playback` when a ten-second window ran under 95% of full speed (which also shows a slow simulation thread, not addressed here). Passed in game on 0.7.0 at 30 and 45 fps (build 1.1.9 of the game-0.7 branch).
+- The shop hides items the game reports as not enabled (an item mod that is installed but switched off for the save), in the grid, the filters, the filter counts and the recipes.
+- An "Emote volume" slider (0 to 100% in steps of 5, 70% by default) replaces the emote sound switch; 0% is silent. The game accepts a playback volume from 0 to 1, so 100% is the level of the sound file, under the game's SFX volume. The built-in sound is generated at a higher level. Settings saved with the old switch off stay silent; with it on they get 70% (tested). Translated in all 16 languages.
+- Stall report: a worker thread that has exited is reported as `WORKER ENDED` (normal when a match finishes), not as a stall, and an unreadable stack says why.
+- All four were developed and passed in game on the game-0.7 branch (game 0.7.0); this build is the same code for game 0.6.3.
+
 ## 1.0.5 — 2026-10-10
 
 - The emote sound plays 25% louder (playback volume 0.3 to 0.375); the sound file is unchanged.

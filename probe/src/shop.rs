@@ -62,15 +62,27 @@ pub struct Item {
     pub stats: Vec<String>,
     /// Catalogue indices this item can upgrade into.
     pub next: Vec<usize>,
+    /// The game's own flag. The registry can hold items that are not active
+    /// in this save (an installed mod that is switched off): they keep
+    /// their index, which the game's build lists refer to, but are not
+    /// shown and no recipe leads into or out of them.
+    pub enabled: bool,
 }
 
 /// Engine-ordered catalogue built from the registered item metadata.
 pub fn catalogue(keys: &[String], meta: &crate::native_items::Catalogue) -> Option<Vec<Item>> {
-    let index = |k: &str| keys.iter().position(|x| x == k);
+    let enabled = |k: &str| {
+        meta.get(k)
+            .and_then(|spec| spec.get("enabled"))
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true)
+    };
+    let index = |k: &str| keys.iter().position(|x| x == k).filter(|_| enabled(k));
     keys.iter()
         .map(|key| {
             let spec = meta.get(key)?;
             Some(Item {
+                enabled: enabled(key),
                 key: key.clone(),
                 tier: usize::try_from(spec.get("tier")?.as_u64()?).ok()?,
                 price: usize::try_from(spec.get("price")?.as_u64()?).ok()?,
@@ -92,6 +104,7 @@ pub fn catalogue(keys: &[String], meta: &crate::native_items::Catalogue) -> Opti
                     .and_then(|v| v.as_array())
                     .into_iter()
                     .flatten()
+                    .filter(|_| enabled(key))
                     .filter_map(|v| index(v.as_str()?))
                     .collect(),
             })
@@ -926,6 +939,7 @@ mod tests {
             category: String::new(),
             stats: Vec::new(),
             next: next.to_vec(),
+            enabled: true,
         }
     }
     // 0 sword -> 1 longsword -> {2 dirk, 3 axe}; 4 dagger -> 5 wind -> 3 axe;
@@ -1477,6 +1491,32 @@ mod tests {
         );
     }
 
+    #[test]
+    fn items_the_game_reports_as_not_enabled_keep_their_index_but_lose_their_recipes() {
+        let keys: Vec<String> = ["part", "off_part", "final", "off_final"]
+            .map(String::from)
+            .to_vec();
+        let spec = |tier: u64, enabled: bool, next: &[&str]| serde_json::json!({"tier": tier, "price": 100, "enabled": enabled, "next_tier": next});
+        let meta: crate::native_items::Catalogue = [
+            ("part", spec(0, true, &["final", "off_final"])),
+            ("off_part", spec(0, false, &["final"])),
+            ("final", spec(1, true, &[])),
+            ("off_final", spec(1, false, &[])),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_owned(), v))
+        .collect();
+        let cat = catalogue(&keys, &meta).unwrap();
+        // Indices are the registry's: the game's build lists use them.
+        assert_eq!(cat.iter().map(|i| i.key.as_str()).collect::<Vec<_>>(), keys);
+        assert_eq!(
+            cat.iter().map(|i| i.enabled).collect::<Vec<_>>(),
+            [true, false, true, false]
+        );
+        // No recipe leads into or out of an item that is off.
+        assert_eq!(cat[0].next, vec![2]);
+        assert!(cat[1].next.is_empty());
+    }
     #[test]
     fn whole_build_queue_copies_preferences_and_automatic_orders_stay_unpinned() {
         let cat = branch_catalogue();

@@ -128,6 +128,7 @@ mod tests {
             next: next.to_vec(),
             category: String::new(),
             stats: Vec::new(),
+            enabled: true,
         }
     }
 

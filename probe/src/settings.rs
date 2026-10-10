@@ -233,9 +233,9 @@ pub static OPTIONS: &[OptionDef] = &[
         control: Control::Toggle, default: 1.,
     },
     OptionDef {
-        key: "emote_sound", page: 7, section: "Emotes", label: "Emote sound",
-        hint: "A quiet confirmation sound when an emote is displayed.",
-        control: Control::Toggle, default: 0.,
+        key: "emote_volume", page: 7, section: "Emotes", label: "Emote volume",
+        hint: "Loudness of emote sounds, relative to the game's sound effects. 0% is silent.",
+        control: Control::Slider(0., 100., 5., "%"), default: 70.,
     },
     OptionDef {
         key: "emote_height", page: 7, section: "Display", label: "Height",
@@ -460,6 +460,7 @@ impl Values {
                     .or_else(|| v.as_bool().map(|b| f64::from(b as u8)))
             })
             .filter(|n| n.is_finite())
+            .or_else(|| self.before_emote_volume(key))
             .unwrap_or(def.default);
         match def.control {
             Control::Choice(v) => {
@@ -487,6 +488,12 @@ impl Values {
                 }
             }
         }
+    }
+    /// Settings saved before the volume slider had an "emote_sound" switch,
+    /// off unless the player turned it on. Off stays silent.
+    fn before_emote_volume(&self, key: &str) -> Option<f64> {
+        let off = |v: &Value| v.as_f64() == Some(0.) || v.as_bool() == Some(false);
+        (key == "emote_volume" && self.0.get("emote_sound").is_some_and(off)).then_some(0.)
     }
     pub fn set(&mut self, key: &str, n: f64) {
         self.0[key] = json!(n);
@@ -910,6 +917,19 @@ mod tests {
         assert_eq!(v.number("hover_outline"), 1.);
         assert_eq!(v.number("selection_debug"), 0.);
         assert_eq!(v.0["other_mod"]["keep"], 3);
+    }
+    #[test]
+    fn emote_volume_defaults_to_70_and_an_old_sound_switch_left_off_stays_silent() {
+        assert_eq!(Values::default().number("emote_volume"), 70.);
+        // Saved before the slider existed.
+        let off = Values(json!({"version": 1, "emote_sound": 0.0}));
+        assert_eq!(off.number("emote_volume"), 0.);
+        let on = Values(json!({"version": 1, "emote_sound": 1.0}));
+        assert_eq!(on.number("emote_volume"), 70.);
+        // A value set with the slider wins over the old switch.
+        let mut set = off.clone();
+        set.set("emote_volume", 43.);
+        assert_eq!(set.number("emote_volume"), 45.);
     }
     #[test]
     fn rebind_restore_and_validate() {

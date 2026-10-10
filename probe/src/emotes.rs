@@ -51,7 +51,8 @@ pub struct Config {
     pub scale: f32,
     pub follow_zoom: bool,
     pub cooldown_ticks: usize,
-    pub sound: bool,
+    /// Emote sound level, 0 to 1 (0 is silent), under the game's SFX volume.
+    pub volume: f32,
 }
 impl Config {
     pub fn from_values(values: &crate::settings::Values) -> Self {
@@ -60,7 +61,7 @@ impl Config {
             scale: values.number("emote_scale") as f32 / 100.,
             follow_zoom: values.number("emote_zoom") == 1.,
             cooldown_ticks: (values.number("emote_cooldown") * 60.).round() as usize,
-            sound: values.number("emote_sound") == 1.,
+            volume: values.number("emote_volume") as f32 / 100.,
         }
     }
     pub fn geometry(self, anchor: (f32, f32), age: f32, zoom: f32) -> (Rect, u8) {
@@ -452,9 +453,14 @@ impl Emotes {
         } else {
             self.props(ctx, &path, "visible: false;");
         }
-        if std::mem::take(&mut self.pending_sound) && config.sound {
+        if std::mem::take(&mut self.pending_sound) && config.volume > 0. {
             // This small original asset is prepackaged; SDK queues playback.
-            if !ctx.play_sound("asset/lt_direct_control/sound/sfx/emote", 0.375) {
+            // The game accepts 0 to 1, so the setting can only turn a sound
+            // down: its level at 100% is the level of the file.
+            if !ctx.play_sound(
+                "asset/lt_direct_control/sound/sfx/emote",
+                config.volume.clamp(0., 1.),
+            ) {
                 log.write("EMOTE sound request unavailable; image remains usable");
             }
         }

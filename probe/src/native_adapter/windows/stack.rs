@@ -28,6 +28,7 @@ extern "system" {
     fn ResumeThread(thread: *mut c_void) -> u32;
     fn GetThreadContext(thread: *mut c_void, context: *mut Context) -> i32;
     fn CloseHandle(handle: *mut c_void) -> i32;
+    fn GetExitCodeThread(thread: *mut c_void, code: *mut u32) -> i32;
     fn RtlLookupFunctionEntry(pc: u64, image: *mut u64, history: *mut c_void) -> *mut c_void;
     fn RtlVirtualUnwind(
         handler: u32,
@@ -92,33 +93,56 @@ unsafe fn walk(thread: *mut c_void, frames: &mut [u64; FRAMES]) -> usize {
     count
 }
 
-/// `thread`'s call stack as `module+0xoffset`, innermost first; empty when
-/// it cannot be read (or is the calling thread).
-pub(crate) fn thread_stack(thread: u64) -> Vec<String> {
-    if thread == 0 || thread == crate::platform_input::thread_id() {
-        return Vec::new();
+/// Whether `thread` is still running. A thread that can no longer be
+/// opened has exited and been released.
+pub(crate) fn thread_alive(thread: u64) -> bool {
+    unsafe {
+        // THREAD_QUERY_INFORMATION
+        let handle = OpenThread(0x40, 0, thread as u32);
+        if handle.is_null() {
+            return false;
+        }
+        let mut code = 0;
+        let known = GetExitCodeThread(handle, &mut code) != 0;
+        CloseHandle(handle);
+        // STILL_ACTIVE
+        !known || code == 259
+    }
+}
+
+/// `thread`'s call stack as `module+0xoffset`, innermost first, or why it
+/// could not be read.
+pub(crate) fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
+    if thread == 0 {
+        return Err("no thread bound");
+    }
+    if thread == crate::platform_input::thread_id() {
+        return Err("it is the calling thread");
     }
     let mut frames = [0; FRAMES];
     let count = unsafe {
         // THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_QUERY_INFORMATION
         let handle = OpenThread(0x4a, 0, thread as u32);
         if handle.is_null() {
-            return Vec::new();
+            return Err("the thread could not be opened (it has exited)");
         }
         let count = if SuspendThread(handle) == u32::MAX {
-            0
+            Err("the thread could not be suspended")
         } else {
             let count = walk(handle, &mut frames);
             ResumeThread(handle);
-            count
+            Ok(count)
         };
         CloseHandle(handle);
-        count
+        count?
     };
-    frames[..count]
+    if count == 0 {
+        return Err("its context or stack could not be read");
+    }
+    Ok(frames[..count]
         .iter()
         .map(|frame| unsafe { module_offset(*frame as usize) })
-        .collect()
+        .collect())
 }
 
 #[cfg(test)]
@@ -135,15 +159,19 @@ mod tests {
         });
         let id = told.recv().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(50));
-        let frames = thread_stack(id);
+        assert!(thread_alive(id));
+        let frames = thread_stack(id).unwrap();
         assert!(frames.len() >= 3, "{frames:?}");
         assert!(frames[0].contains("ntdll"), "{frames:?}");
         assert!(
             frames.iter().any(|f| f.contains("lt_direct_control")),
             "{frames:?}"
         );
-        assert!(thread_stack(crate::platform_input::thread_id()).is_empty());
+        assert!(thread_stack(crate::platform_input::thread_id()).is_err());
         stop.send(()).unwrap();
         thread.join().unwrap();
+        // Joined and released: no longer running, and its stack says why.
+        assert!(!thread_alive(id));
+        assert!(thread_stack(id).is_err());
     }
 }

@@ -205,7 +205,7 @@ fn init(host: &StableHost) -> StableMod {
     acquisition::initialize(&logger);
     skill_preview::initialize(&logger);
     logger.write(
-        "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=1 movement_enabled=true"
+        "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=4 movement_enabled=true"
     );
     let timing = Arc::new(native_timing::NativeTiming::new(true));
     let movement = Arc::new(movement::Movement::new(true));
