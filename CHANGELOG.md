@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.8 — 2026-10-10
+
+- Development build for game 0.7.0: skill previews are back (the readers family). Native ability tooltips, split off as their own family, are the only part still off.
+- The preview reader recognises an effect by the address of its `apply` method and its size. New tools/match_vtables.py pairs the two builds' effect vtables by size and by how the method at that slot aligns: 36 of the 40 known applies equal their 0.6.3 forms and keep their size, and the vtable shape (size, align, apply at +0x20) is unchanged.
+- Rewritten by the game in 0.7.0, same size, layout not re-proven: ranged-period (0x1bde9d0), ranged-projectile (0x1aa08c0) and Ice Mage's ultimate (0x1709a30). Their previews use the 0.6.3 payload layout and need checking in game. TargetProjectile grew by one word (80 bytes); it has no area and is only named. One Attack vtable carries a second equal copy of the method; both addresses are listed.
+- Not yet included: the per-effect range term the 0.7.0 skill functions add (effect method +0x120), and preview shapes for the four new champions beyond what their effect trees give.
+
 ## 1.1.7 — 2026-10-10
 
 - Development build for game 0.7.0. An "Emote volume" slider (0 to 100% in steps of 5, 70% by default) replaces the emote sound switch; 0% is silent. The game accepts a playback volume from 0 to 1, so the setting can only turn a sound down: 100% is the level of the sound file, and the game's SFX volume applies on top. Translated in all 16 languages.

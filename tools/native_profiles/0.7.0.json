@@ -9,7 +9,8 @@
     "movement",
     "combat",
     "shop",
-    "outline"
+    "outline",
+    "readers"
   ],
   "executable_sha256": "6c9cd659e727b4130766241e9d43b222454a8455609b40f9bf73c01d5136a94f",
   "timestamp": "0x6ac5fab4",
@@ -203,6 +204,34 @@
     "SHADER_PROLOGUE": {
       "rva": "0x1a8130",
       "bytes": "5541574156415541545657534881ec38030000"
+    },
+    "PREVIEW_COMBINE_APPLY": {
+      "rva": "0x16169d0",
+      "bytes": "4157415641554154565755534881ec98"
+    },
+    "PREVIEW_RANGE_APPLY": {
+      "rva": "0x156e070",
+      "bytes": "4157415641554154565755534881ec48"
+    },
+    "PREVIEW_LINEAR_APPLY": {
+      "rva": "0x1a86e70",
+      "bytes": "5541574156415541545657534881ec98"
+    },
+    "PREVIEW_CHANNEL_LINE_APPLY": {
+      "rva": "0x12cd950",
+      "bytes": "5541574156415541545657534881ec98"
+    },
+    "PREVIEW_RANGE_HEADER": {
+      "rva": "0x3e9d078",
+      "bytes": "60000000000000000800000000000000"
+    },
+    "PREVIEW_COMBINE_HEADER": {
+      "rva": "0x3e9d1e8",
+      "bytes": "18000000000000000800000000000000"
+    },
+    "PREVIEW_CHANNEL_LINE_HEADER": {
+      "rva": "0x3e9d9d8",
+      "bytes": "58000000000000000800000000000000"
     }
   },
   "layout_anchors": {
@@ -329,9 +358,21 @@
     "ITEM_AI_SETTINGS_ENTRY": {
       "rva": "0x31a1e00",
       "bytes": "4885c9740f488b4110488b00488b80b8010000c3"
+    },
+    "PREVIEW_RANGE_TABLE_APPLY": {
+      "rva": "0x3e9d090",
+      "pointer_target": "0x156e070"
+    },
+    "PREVIEW_COMBINE_TABLE_APPLY": {
+      "rva": "0x3e9d200",
+      "pointer_target": "0x16169d0"
+    },
+    "PREVIEW_CHANNEL_LINE_TABLE_APPLY": {
+      "rva": "0x3e9d9f0",
+      "pointer_target": "0x12cd950"
     }
   },
-  "review_notes": "All families except the readers (native tooltips and skill previews); evidence in docs/migration-0.7.md. The readers are not reviewed for this executable and are not installed.",
+  "review_notes": "All families except native tooltips; evidence in docs/migration-0.7.md. Native tooltips are not reviewed for this executable and are not installed.",
   "native_game_test": "Session passed with mod 1.1.0, camera and minimap with 1.1.1, movement and combat with 1.1.2, shop and item catalogue with 1.1.3 to 1.1.5, outline with 1.1.6, on 2026-10-10.",
   "minimap": {
     "reviewed": true,

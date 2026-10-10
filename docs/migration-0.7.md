@@ -68,7 +68,8 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
 | Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
 | Outline | Enabled in 1.1.6; passed in game 2026-10-10 |
-| Readers (tooltips, previews) | Open |
+| Readers (skill previews) | Enabled in 1.1.8; in-game test pending |
+| Tooltips (native ability text) | Open |
 
 ### Session (worker, viewer, input)
 
@@ -245,6 +246,34 @@ would make clicks land on the wrong unit, so that is a stop condition of
 the in-game test. Inside the shader setter a few byte
 fields beyond `+0x90` moved by one (consistent with the new `palette`
 flag); the mod does not touch them.
+
+### Readers (skill previews)
+
+The preview reader walks a skill's effect tree and recognises each node by
+its vtable: `[drop, size, align, method, apply, ...]`, the `apply` address
+at `+0x20`. `tools/match_vtables.py` lists the new build's vtables of the
+same size and ranks their `+0x20` method by alignment with the old one.
+
+- The vtable shape is unchanged (the same header and slot for every
+  matched type), and the entity still holds each skill as a fat pointer
+  at `+0x4c0`, `+0x4f8`, `+0x530`.
+- 36 of the 40 applies in `native_preview.rs` score 0.97 to 1.00 with the
+  same size.
+- Rewritten in 0.7.0 with the same size (about a third of the
+  instructions align): `RANGE_PERIOD` `0x14294c0` -> `0x1bde9d0` (152
+  bytes), `RANGE_PROJECTILE` `0x1489140` -> `0x1aa08c0` (120),
+  `ICE_MAGE_ULT` `0x160fd80` -> `0x1709a30` (88). The payload layout is
+  assumed unchanged and must be confirmed from `PREVIEW TREE` log lines.
+- `TargetProjectile` `0x14e0490` -> `0x17d70f0` is 80 bytes (was 72): one
+  field was inserted at `+0x40`. A second 72-byte vtable method
+  (`0x1804b60`) is similar and unidentified.
+- `Attack` is two addresses in 0.7.0 (`0x161f660` in nine vtables,
+  `0x163cdc0` in one), with the same companion method.
+- Section bounds used to validate a vtable pointer: `.text` ends at
+  `0x3d1c000`, `.rdata` at `0x53d046a`.
+
+Open: the range term the skill functions add through effect method
+`+0x120`; the four new champions' hand-written effects, if any.
 
 ## Open questions
 

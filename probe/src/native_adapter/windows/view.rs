@@ -412,7 +412,7 @@ pub(crate) unsafe extern "system" fn view_hook(
     if let Some(shared) = SHARED.get() {
         // Native text is resolved after the original update, while this
         // viewer's Assets borrow is still live. The adapter owns no pointers.
-        if installed(family::READERS) {
+        if installed(family::TOOLTIPS) {
             tooltips::resolve_pending(view, assets, shared);
         }
     }

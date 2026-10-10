@@ -23,9 +23,11 @@ pub mod family {
     pub const MINIMAP: u32 = 1 << 5;
     /// Gold and build readers, and the purchase hooks.
     pub const SHOP: u32 = 1 << 6;
-    /// Native tooltip text, item and preview readers.
+    /// Skill geometry and effect-tree readers (skill previews).
     pub const READERS: u32 = 1 << 7;
-    pub const ALL: u32 = (1 << 8) - 1;
+    /// Native ability description text.
+    pub const TOOLTIPS: u32 = 1 << 8;
+    pub const ALL: u32 = (1 << 9) - 1;
 }
 /// The families reviewed for `EXPECTED_SHA`.
 pub const ENABLED: u32 = family::SESSION
@@ -34,7 +36,8 @@ pub const ENABLED: u32 = family::SESSION
     | family::MOVEMENT
     | family::COMBAT
     | family::SHOP
-    | family::OUTLINE;
+    | family::OUTLINE
+    | family::READERS;
 const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     // VIEW_LAYOUT_PAUSE
     (0xb1960b, &[0x80, 0x7e, 0x48, 0x00]),
@@ -211,9 +214,9 @@ const LAYOUT_BYTES: &[(usize, &[u8])] = &[
     ),
 ];
 const LAYOUT_POINTERS: &[(usize, usize)] = &[
-    (0x3b438a0, 0x16974f0),
-    (0x3b430f8, 0x1adaf00),
-    (0x3ba6298, 0x1611090),
+    (0x3e9d090, 0x156e070),
+    (0x3e9d200, 0x16169d0),
+    (0x3e9d9f0, 0x12cd950),
 ];
 
 /// The family each layout guard protects, by guard address.
