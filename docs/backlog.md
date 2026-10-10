@@ -1,6 +1,6 @@
 # Backlog
 
-What is left to do, as of 1.0.5 (2026-10-10; 1.0.0 was the first public release). Finished and declined items
+What is left to do, as of 1.0.6 (2026-10-11; 1.0.0 was the first public release). Finished and declined items
 are listed at the end for reference.
 
 ## Open
@@ -45,6 +45,15 @@ are listed at the end for reference.
 7. **Translations.** All 17 game languages ship (1.0.0); the wording is
    untested by native speakers except Traditional Chinese, and Hawaiian is
    best-effort. Fix reports go into `probe/lang/<code>.json`.
+
+8. **The game's own frame cost (investigation only, later).** The game
+   runs at a modest frame rate without the mod, also on a PC that runs
+   large 3D games well (user observation, 2026-10-11; not measured). Measure
+   where a frame goes with the mod's features off: the viewer and worker
+   hooks can time the game's own steps, and background matches compete for
+   CPU. Decide afterwards whether anything is worth attempting; a cost in
+   how the game draws is not something a mod can realistically change.
+   Since 1.0.6 a low frame rate no longer slows the match.
 
 ## Done
 
