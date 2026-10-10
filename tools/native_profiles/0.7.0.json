@@ -265,7 +265,7 @@
     }
   },
   "review_notes": "Session, camera, minimap, movement and combat families; evidence in docs/migration-0.7.md. Other families are not reviewed for this executable and are not installed.",
-  "native_game_test": "Session passed with mod 1.1.0, camera and minimap with 1.1.1, on 2026-10-10.",
+  "native_game_test": "Session passed with mod 1.1.0, camera and minimap with 1.1.1, movement and combat with 1.1.2, on 2026-10-10.",
   "minimap": {
     "reviewed": true,
     "map_size": 352,

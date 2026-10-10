@@ -64,8 +64,8 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Session | Enabled in 1.1.0; passed in game 2026-10-10 (hold at start, start, pause, resume, AI hand-back and reclaim, a full match, keys normal) |
 | Camera | Enabled in 1.1.1; passed in game 2026-10-10 (layout, lock and follow, pan, zoom, vision, hand-back) |
 | Minimap | Enabled in 1.1.1 (all 54 operands); passed in game 2026-10-10 |
-| Movement | Enabled in 1.1.2; in-game test pending |
-| Combat | Enabled in 1.1.2; in-game test pending |
+| Movement | Enabled in 1.1.2; passed in game 2026-10-10 |
+| Combat | Enabled in 1.1.2; passed in game 2026-10-10 (attacks, Q/W, stop, hand-back; played the new champion Ferryman) |
 | Outline, Shop, Readers | Open |
 
 ### Session (worker, viewer, input)
