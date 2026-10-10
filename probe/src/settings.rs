@@ -210,6 +210,15 @@ pub static OPTIONS: &[OptionDef] = &[
         default: crate::ui_theme::DEFAULT as f64,
     },
     OptionDef {
+        key: "hud_tooltips",
+        page: 3,
+        section: "Appearance",
+        label: "HUD tooltips",
+        hint: "When skill and item tooltips on the HUD appear. They are hidden while a mouse button is held. The key is set under Key bindings.",
+        control: Control::Choice(&["On hover", "Hold key and hover", "Off"]),
+        default: 0.,
+    },
+    OptionDef {
         key: "low_health_effect",
         page: 3,
         section: "Battlefield feedback",
@@ -420,6 +429,13 @@ pub static BINDINGS: &[BindingDef] = &[
         0
     ),
     bind!("drag_camera", "Control & camera", "Drag camera", 4, 0),
+    bind!(
+        "hud_tooltip",
+        "Control & camera",
+        "HUD tooltip (hold)",
+        0x12,
+        0
+    ),
     bind!("pan_up", "Control & camera", "Pan camera up", 0x49, 0),
     bind!("pan_down", "Control & camera", "Pan camera down", 0x4b, 0),
     bind!("pan_left", "Control & camera", "Pan camera left", 0x4a, 0),

@@ -85,6 +85,17 @@ struct RegisteredItems {
     read_at: Instant,
     items: Option<Arc<crate::native_items::Catalogue>>,
 }
+/// Whether a hovered HUD tile may show its tooltip: setting 0 on hover,
+/// 1 only with the tooltip key held, 2 never; and never while a mouse
+/// button is held (a click or drag passing over the HUD).
+fn tooltip_allowed(setting: f64, key: bool, button: bool) -> bool {
+    !button
+        && match setting.round() as i64 {
+            1 => key,
+            2 => false,
+            _ => true,
+        }
+}
 impl PlayerHud {
     pub fn capture_items(
         &self,
@@ -1052,7 +1063,12 @@ impl HudUi {
         cursor: Option<(f32, f32)>,
         log: &Logger,
     ) {
-        let hovered = cursor.and_then(|cursor| {
+        let allowed = tooltip_allowed(
+            crate::settings::current_shared().number("hud_tooltips"),
+            crate::ui_state::HUD_TOOLTIP_KEY.load(Ordering::Relaxed),
+            crate::ui_state::POINTER_BUTTON.load(Ordering::Relaxed),
+        );
+        let hovered = cursor.filter(|_| allowed).and_then(|cursor| {
             (0..3)
                 .map(|i| (true, i))
                 .chain((0..s.items.len().min(self.allocated_slots)).map(|i| (false, i)))
@@ -2279,6 +2295,17 @@ mod tests {
         assert_eq!(hp_percent(&s), 0.);
         assert_eq!(cooldown(1), "0.1s");
         assert_eq!(cooldown(61), "1.1s");
+    }
+    #[test]
+    fn hud_tooltips_follow_the_setting_and_never_show_with_a_button_held() {
+        // On hover (default), hold key and hover, off.
+        assert!(tooltip_allowed(0., false, false));
+        assert!(!tooltip_allowed(1., false, false));
+        assert!(tooltip_allowed(1., true, false));
+        assert!(!tooltip_allowed(2., true, false));
+        // A click or drag passing over the HUD.
+        assert!(!tooltip_allowed(0., false, true));
+        assert!(!tooltip_allowed(1., true, true));
     }
     #[test]
     fn unlock_levels_override_effect_presence_and_update_on_level_up() {

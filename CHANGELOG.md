@@ -3,6 +3,11 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.11 — 2026-10-11
+
+- Development build for game 0.7.0. "HUD tooltips" (Settings, Interface, Appearance): On hover (default, as before), Hold key and hover, or Off, for the skill and item tooltips of the HUD; the shop window's tooltips are not affected. The key is the new binding "HUD tooltip (hold)", Alt by default. In every mode the tooltip is hidden while a mouse button is held, so a click or drag passing over the HUD does not open it (requested on the Workshop). Translated in all 16 languages.
+- New champions (read-only finding): Gladiator, Ferryman, Bombardier and Hypnotist build all twelve skills from one 0.7.0 effect (apply 0x160da70, 160 bytes) whose byte at +0x98 selects the skill: 0-2 Gladiator, 4/6/7 Ferryman, 8-10 Bombardier, 12/14/15 Hypnotist. Not read yet.
+
 ## 1.1.10 — 2026-10-11
 
 - Development build for game 0.7.0: "Keep pointer in window" carried over from 1.0.7 (released for 0.6.3), unchanged. The frame-rate fix of 1.1.9, the shop filter and the emote volume slider were released for 0.6.3 as 1.0.6.
