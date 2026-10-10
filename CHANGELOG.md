@@ -3,6 +3,11 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.2 — 2026-10-10
+
+- The Background colour field went blank after scrolling the Interface page. Settings rows are a recycled pool: scrolling moved the option into another row slot, whose own native text field was empty, and the empty text was read as typed input. The field now carries its text over when its row slot changes (`hex_step`, tested). The saved colour was never affected.
+- Text fields show keyboard focus as a yellow frame with a lighter fill (Background colour and the four Acquisition fields), replacing the thin yellow underline. No caret is drawn on purpose: the native field draws beneath the window and the game reports no caret position, so a drawn caret would not follow the arrow keys.
+
 ## 1.0.1 — 2026-10-10
 
 - Diagnostics only, no gameplay change. A second match freeze (1.0.0, Riot item mod, tick 6592) was caught by the stall report with `last_step=Outside`: the worker was not in the mod's per-player work or its pacing wait, but the report could not tell the game, another mod or one of our native hooks apart.

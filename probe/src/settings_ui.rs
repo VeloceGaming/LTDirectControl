@@ -747,6 +747,38 @@ pub struct SettingsUi {
     motion: crate::hud_motion::Motion,
     /// The colour field: (option index, its text, the draft colour it shows).
     hex: (Option<usize>, String, u32),
+    /// The row slot showing it; scrolling moves the option between slots.
+    hex_row: String,
+}
+#[derive(Debug, PartialEq)]
+enum HexStep {
+    /// First shown, or the draft changed elsewhere (Reset): show the draft.
+    Show,
+    /// Scrolling moved the option to another row slot, whose own native
+    /// field does not hold the text yet: carry the text over.
+    Moved,
+    Typed,
+    Same,
+}
+fn hex_step(
+    (shown_index, shown_text, shown_colour): &(Option<usize>, String, u32),
+    shown_row: &str,
+    row: &str,
+    index: usize,
+    current: u32,
+    text: &str,
+) -> HexStep {
+    if *shown_index != Some(index) {
+        HexStep::Show
+    } else if shown_row != row {
+        HexStep::Moved
+    } else if text != shown_text {
+        HexStep::Typed
+    } else if current != *shown_colour {
+        HexStep::Show
+    } else {
+        HexStep::Same
+    }
 }
 impl SettingsUi {
     pub fn open(
@@ -767,6 +799,7 @@ impl SettingsUi {
         self.acquisition = acquisition_panel::Panel::new();
         self.emotes = emote_panel::Panel::default();
         self.hex = (None, String::new(), 0);
+        self.hex_row.clear();
         self.bound = Some((key, timing.generation()));
         self.paused_by_me = phase == Phase::Running;
         if self.paused_by_me {
@@ -1847,17 +1880,25 @@ impl SettingsUi {
         self.visible(ctx, &format!("{row}.hex_box"), true);
         let node = format!("{PATH}.window.{row}.hex_box.hex");
         if let Some(text) = ctx.ui_text_edit_text(&node) {
-            if self.hex.0 != Some(index) || (text == self.hex.1 && current != self.hex.2) {
-                // First shown, or reset: show the draft colour.
-                let shown = crate::ui_theme::format(current);
-                ctx.ui_set_text_edit_text(&node, &shown);
-                self.hex = (Some(index), shown, current);
-            } else if text != self.hex.1 {
-                if let Some(rgb) = crate::ui_theme::parse(&text) {
-                    self.draft.set(def.key, f64::from(rgb));
-                    self.hex.2 = rgb;
+            match hex_step(&self.hex, &self.hex_row, row, index, current, &text) {
+                HexStep::Show => {
+                    let shown = crate::ui_theme::format(current);
+                    ctx.ui_set_text_edit_text(&node, &shown);
+                    self.hex = (Some(index), shown, current);
+                    self.hex_row = row.into();
                 }
-                self.hex.1 = text;
+                HexStep::Moved => {
+                    ctx.ui_set_text_edit_text(&node, &self.hex.1);
+                    self.hex_row = row.into();
+                }
+                HexStep::Typed => {
+                    if let Some(rgb) = crate::ui_theme::parse(&text) {
+                        self.draft.set(def.key, f64::from(rgb));
+                        self.hex.2 = rgb;
+                    }
+                    self.hex.1 = text;
+                }
+                HexStep::Same => {}
             }
         }
         let valid = crate::ui_theme::parse(&self.hex.1).is_some();
@@ -1876,8 +1917,8 @@ impl SettingsUi {
         );
         self.props(
             ctx,
-            &format!("{row}.hex_box.hex_focus"),
-            format!("visible: {editing}; color: #fdee00ff;"),
+            &format!("{row}.hex_box.hex_plate"),
+            acquisition_panel::edit_plate(editing),
         );
         self.props(
             ctx,
@@ -2142,6 +2183,34 @@ mod tests {
     }
 
     use super::*;
+    #[test]
+    fn the_colour_text_follows_its_option_to_another_row_slot() {
+        let shown = (Some(7), "#1c1a18".to_owned(), 0x1c1a18);
+        // Scrolled: the new slot's native field is empty and must not be
+        // read as typed text.
+        assert_eq!(
+            hex_step(&shown, "row4", "row2", 7, 0x1c1a18, ""),
+            HexStep::Moved
+        );
+        assert_eq!(
+            hex_step(&shown, "row4", "row4", 7, 0x1c1a18, "#1c1a18"),
+            HexStep::Same
+        );
+        assert_eq!(
+            hex_step(&shown, "row4", "row4", 7, 0x1c1a18, "#1c1a1"),
+            HexStep::Typed
+        );
+        // Reset changed the draft; first shown.
+        assert_eq!(
+            hex_step(&shown, "row4", "row4", 7, 0x202020, "#1c1a18"),
+            HexStep::Show
+        );
+        let none = (None, String::new(), 0);
+        assert_eq!(hex_step(&none, "", "row4", 7, 0x1c1a18, ""), HexStep::Show);
+        // Editing shows as a frame, not a caret.
+        assert!(acquisition_panel::edit_plate(true).contains("fdee00ff"));
+        assert!(!acquisition_panel::edit_plate(false).contains("fdee00ff"));
+    }
     #[test]
     fn resume_only_our_pause_in_the_same_session() {
         let bound = Some(((1, 2, 3), 4));

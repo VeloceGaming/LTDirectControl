@@ -1,6 +1,6 @@
 # Backlog
 
-What is left to do, as of 1.0.1 (2026-10-10; 1.0.0 was the first public release). Finished and declined items
+What is left to do, as of 1.0.2 (2026-10-10; 1.0.0 was the first public release). Finished and declined items
 are listed at the end for reference.
 
 ## Open

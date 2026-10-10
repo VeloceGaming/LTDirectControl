@@ -75,13 +75,16 @@ pub(super) fn edit(name: &str, (x, y, w, h): (i32, i32, i32, i32), placeholder: 
         "Left",
         2009,
     ));
-    s.push_str(&rect(
-        &format!("{name}_focus"),
-        (x + 1, y + h - 2, w - 2, 2),
-        "fdee0000",
-        2010,
-    ));
     s
+}
+/// The plate of an `edit` field: a yellow frame and a lighter fill while it
+/// has keyboard focus. The game reports no caret position, so none is drawn.
+pub(super) fn edit_plate(editing: bool) -> String {
+    if editing {
+        "color: #fdee00ff; back_color: #~3a3836ff; stroke: 2;".into()
+    } else {
+        "color: #~6d6c6aff; back_color: #~242221ff; stroke: 1;".into()
+    }
 }
 fn field_text(text: &str, width: f32) -> String {
     let mut text = text.to_owned();
@@ -637,8 +640,8 @@ impl Panel {
             );
             ui.props(
                 ctx,
-                &format!("acquisition.{name}_focus"),
-                format!("visible: {}; color: #fdee00ff;", shown && editing),
+                &format!("acquisition.{name}_plate"),
+                edit_plate(shown && editing),
             );
         }
         let reach = c
