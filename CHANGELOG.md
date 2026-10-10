@@ -3,6 +3,12 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.4 — 2026-10-10
+
+- Development build for game 0.7.0. The shop listed every item in the game's registry, including the items of an installed mod that is switched off (the Riot item mod: 237 registered items, scrambled icons and raw names, while the match used base items and 4 slots). The reader already took each item's `enabled` flag from the game; the shop now uses it: an item that is not enabled keeps its registry index (the game's build lists refer to it) but is not shown in the grid or the stat filters, and no recipe leads into or out of it (tested).
+- `PLAYER HUD registered items` logs `enabled=` beside `count=`. Whether the game reports those items as not enabled is to be confirmed by that line; if it does not, this build changes nothing visible.
+- Not specific to 0.7.0: 1.0.5 has the same shop code.
+
 ## 1.1.3 — 2026-10-10
 
 - Development build for game 0.7.0: the shop family joins, with the item catalogue reader (moved from the readers family to the shop family, which is its only user). Outlines, native tooltips and skill previews are still off.

@@ -113,7 +113,13 @@ impl PlayerHud {
         let failure = read.as_ref().err().cloned();
         let items = read.ok();
         if items.is_some() || first {
-            log.write(&format!("PLAYER HUD registered items key={key:?} count={} failure={failure:?}; owned copies from live AI callback",items.as_ref().map_or(0,|i| i.len())));
+            // Not every registered item is active in this save.
+            let enabled = items.as_ref().map_or(0, |i| {
+                i.values()
+                    .filter(|spec| spec.get("enabled").and_then(|v| v.as_bool()) != Some(false))
+                    .count()
+            });
+            log.write(&format!("PLAYER HUD registered items key={key:?} count={} enabled={enabled} failure={failure:?}; owned copies from live AI callback",items.as_ref().map_or(0,|i| i.len())));
         }
         *current = Some(RegisteredItems {
             key,
