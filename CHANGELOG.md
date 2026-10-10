@@ -3,6 +3,13 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.4 — 2026-10-10
+
+- The camera jumped back to the champion after the shop closed, and after any pause: it centred whenever the match went from not running to running. It now centres at match start and when control is taken back from the AI only (`centred` in camera.rs, tested); a pause and resume leaves it where it was.
+- Both stats panels disappeared about a second into a pause: the stats reader dropped any sample older than a second, and the simulation samples nothing while paused. It now keeps the last sample while paused, as the HUD and Tab panel already did, and clears at the start of a match.
+- The whole HUD blinked once on resume: for the frames between "running" and the worker's first new sample, the HUD, Tab panel and stats panels applied their staleness rules to samples from before the pause. They now enforce staleness only after the match has been running for 500 ms (`NativeTiming::client_sampling`, tested).
+- Sliders: a drag starts with the press on the slider and lasts until the button is released, wherever the cursor goes (it used to end when the cursor left the slider's 294 x 50 box, whose track sat 6 px from the top). The value follows the cursor along the thumb's real travel, so the ends are exactly the minimum and maximum and the thumb stays under the cursor (`slide_ratio`, tested). A press that starts elsewhere grabs no slider. The track, thumb and number sit on the same centre line as the other controls.
+
 ## 1.0.3 — 2026-10-10
 
 - "Queue whole build" queued an item the build lists twice only once, and skipped it entirely when one copy was owned: it tested "queued or owned" by item, not by count. It now queues each listed copy that an owned or already queued copy does not cover (tested).

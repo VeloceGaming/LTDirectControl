@@ -120,6 +120,7 @@ impl StatsUi {
         ctx: &mut StableClient<'_>,
         battlefield: bool,
         controls: bool,
+        sampling: bool,
         toggle: bool,
         log: &Logger,
     ) -> Vec<Rect> {
@@ -130,7 +131,7 @@ impl StatsUi {
         }
         self.previous_key = toggle;
         let (own, target) = if battlefield {
-            stats_panel::snapshot()
+            stats_panel::snapshot(sampling)
         } else {
             (None, None)
         };

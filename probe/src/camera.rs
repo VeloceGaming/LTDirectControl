@@ -127,7 +127,9 @@ struct State {
     blocked: Vec<Rect>,
     command_blocked: Vec<Rect>,
     engaged: bool,
-    running: bool,
+    /// Centred on the champion since the match started or control was
+    /// last taken; a pause and resume keeps the camera where it is.
+    centred: bool,
     locked: bool,
     toggle_requested: bool,
     previous_y: bool,
@@ -208,7 +210,7 @@ impl CameraControl {
     /// End manual gestures at a handoff while retaining zoom/vision/lock choices.
     pub fn suspend(&self, keys: Keys) {
         if let Ok(mut s) = self.state.lock() {
-            s.running = false;
+            s.centred = false;
             s.drag_active = false;
             s.previous_middle = keys.middle;
             s.previous_y = keys.camera_toggle;
@@ -268,7 +270,7 @@ impl CameraControl {
         }
         let champion = champion.into();
         let mut s = self.state.lock().ok()?;
-        let mut recenter = !s.engaged || running && !s.running;
+        let mut recenter = !s.engaged || running && !s.centred;
         if !s.engaged {
             s.engaged = true;
             s.locked = keys.camera_lock_default;
@@ -402,7 +404,7 @@ impl CameraControl {
         s.previous_y = keys.camera_toggle;
         s.previous_middle = keys.middle;
         s.previous_cursor = keys.cursor;
-        s.running = running;
+        s.centred |= running;
         request
     }
 }
@@ -410,6 +412,34 @@ impl CameraControl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn a_pause_and_resume_keeps_the_camera_where_it_is() {
+        let camera = CameraControl::default();
+        let log = crate::test_support::logger("camera-pause");
+        let f = frame();
+        let keys = Keys {
+            focused: true,
+            ..Keys::default()
+        };
+        let centre = Some(Request::Free((300., 400.)));
+        // Match start centres once; the shop or F11 pause does not again.
+        assert_eq!(
+            camera.step(f, 1, keys, 4, (300_000, 400_000), true, 0.016, &log),
+            centre
+        );
+        for running in [true, false, false, true, true] {
+            assert_ne!(
+                camera.step(f, 1, keys, 4, (300_000, 400_000), running, 0.016, &log),
+                centre
+            );
+        }
+        // Taking control back from the AI still does.
+        camera.suspend(keys);
+        assert_eq!(
+            camera.step(f, 1, keys, 4, (300_000, 400_000), true, 0.016, &log),
+            centre
+        );
+    }
     #[test]
     fn reclaim_recenters_without_replaying_a_drag_or_resetting_vision() {
         let camera = CameraControl::default();

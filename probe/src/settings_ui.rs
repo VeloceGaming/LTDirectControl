@@ -378,10 +378,10 @@ fn row_template(i: usize) -> String {
         &field,
     ));
     // Slider: native input node with drawn track, fill and capsule thumb.
-    c.push_str(&format!("#slider:slider {{ x: {CONTROL_X}px; y: 17px; width: 294px; height: 50px; z: 2006; background: Color {{ prop: {{ color: #00000000; }} }} foreground: Color {{ prop: {{ color: #00000000; }} }} view_min_ratio: 0.0; ratio: 0.0; #track:color {{ y: 6px; width: 100%; height: 6px; color: #~6d6c6aff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2007; }} #fill:color {{ y: 6px; width: 50%; height: 6px; color: #eeececff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2008; }} #thumb:color {{ x: 0px; y: 0px; width: 50px; height: 18px; pivot_x: 0.5; rounding: Uniform {{ rounding: 9; }} color: #eeececff; ignore_event: true; z: 2009; }} }}\n"));
+    c.push_str(&format!("#slider:slider {{ x: {CONTROL_X}px; y: 13px; width: 294px; height: 50px; z: 2006; background: Color {{ prop: {{ color: #00000000; }} }} foreground: Color {{ prop: {{ color: #00000000; }} }} view_min_ratio: 0.0; ratio: 0.0; #track:color {{ y: 22px; width: 100%; height: 6px; color: #~6d6c6aff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2007; }} #fill:color {{ y: 22px; width: 50%; height: 6px; color: #eeececff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2008; }} #thumb:color {{ x: 0px; y: 16px; width: 50px; height: 18px; pivot_x: 0.5; rounding: Uniform {{ rounding: 9; }} color: #eeececff; ignore_event: true; z: 2009; }} }}\n"));
     c.push_str(&label(
         "number",
-        (CONTROL_X + 316, 12, 70, 28),
+        (CONTROL_X + 316, 13, 70, 50),
         21,
         "",
         true,
@@ -749,6 +749,28 @@ pub struct SettingsUi {
     hex: (Option<usize>, String, u32),
     /// The row slot showing it; scrolling moves the option between slots.
     hex_row: String,
+    /// The slider held since the mouse button went down on it (released
+    /// with the button, wherever the cursor is), or a press that began
+    /// elsewhere and so grabs no slider.
+    slide: Option<&'static str>,
+    slide_missed: bool,
+}
+/// Slider geometry in design pixels: the thumb's centre travels between
+/// half a thumb from each end of the track.
+const SLIDER_W: f64 = 294.;
+const THUMB_HALF: f64 = 25.;
+fn thumb_x(ratio: f64) -> f64 {
+    THUMB_HALF + ratio.clamp(0., 1.) * (SLIDER_W - 2. * THUMB_HALF)
+}
+/// The value (0 to 1) that puts the thumb's centre under a cursor at screen
+/// `cursor_x`, for a slider drawn from screen `x` over `width`. Past either
+/// end is exactly 0 or 1.
+fn slide_ratio(cursor_x: f32, x: f32, width: f32) -> f64 {
+    if width <= 0. {
+        return 0.;
+    }
+    let design = f64::from((cursor_x - x) / width) * SLIDER_W;
+    ((design - THUMB_HALF) / (SLIDER_W - 2. * THUMB_HALF)).clamp(0., 1.)
 }
 #[derive(Debug, PartialEq)]
 enum HexStep {
@@ -1433,6 +1455,10 @@ impl SettingsUi {
         } else {
             self.motion.value("scroll", self.scroll, 0.167)
         };
+        let pressed = keys.focused && keys.raw.0[1];
+        if !pressed {
+            (self.slide, self.slide_missed) = (None, false);
+        }
         let (mut rows, mut sections, mut heads) = (0, 0, 0);
         let mut hint = false;
         let mut cursor_ex = false;
@@ -1517,6 +1543,7 @@ impl SettingsUi {
                 _ => {}
             }
         }
+        self.slide_missed |= pressed && self.slide.is_none();
         self.slots = slots;
         self.visible(ctx, "hintbox", hint);
         self.visible(ctx, "cursor_ex", cursor_ex);
@@ -1789,17 +1816,29 @@ impl SettingsUi {
                         );
                         self.props(ctx, &format!("{row}.number"), "visible: true;".into());
                         let node = format!("{PATH}.window.{row}.slider");
-                        let dragging = keys.focused
+                        let hover = self.hovered(ctx, &format!("{row}.slider"), cursor);
+                        if keys.focused
                             && keys.raw.0[1]
+                            && hover
                             && self.drop.is_none()
-                            && self.hovered(ctx, &format!("{row}.slider"), cursor);
+                            && self.slide.is_none()
+                            && !self.slide_missed
+                        {
+                            self.slide = Some(def.key);
+                        }
+                        let dragging = self.slide == Some(def.key);
                         let mut number = value;
                         if dragging {
-                            if let Some(r) = ctx.ui_slider_ratio(&node).filter(|r| r.is_finite()) {
+                            // The cursor's own position, not the native
+                            // slider's: the drag continues outside its box.
+                            if let (Some((cx, _)), Some((x, _, w, _))) =
+                                (cursor, ctx.ui_node_rect(&node))
+                            {
+                                let r = slide_ratio(cx, x, w);
                                 number = if def.key == "cursor_size" {
                                     crate::cursor::size_from_ratio(r) as f64
                                 } else {
-                                    ((lo + r.clamp(0., 1.) * (hi - lo)) / step).round() * step
+                                    ((lo + r * (hi - lo)) / step).round() * step
                                 };
                                 self.draft.set(def.key, number);
                             }
@@ -1811,7 +1850,6 @@ impl SettingsUi {
                         } else {
                             (number - lo) / (hi - lo)
                         };
-                        let hover = self.hovered(ctx, &format!("{row}.slider"), cursor);
                         let thumb = self.tone(
                             &format!("thumb_{}", def.key),
                             hover || dragging,
@@ -1820,15 +1858,12 @@ impl SettingsUi {
                         self.props(
                             ctx,
                             &format!("{row}.slider.fill"),
-                            format!("width: {:.2}%;", ratio * 100.),
+                            format!("width: {:.2}px;", thumb_x(ratio)),
                         );
                         self.props(
                             ctx,
                             &format!("{row}.slider.thumb"),
-                            format!(
-                                "x: {:.2}px; color: #{thumb:08x};",
-                                (ratio * 294.).clamp(25., 269.)
-                            ),
+                            format!("x: {:.2}px; color: #{thumb:08x};", thumb_x(ratio)),
                         );
                         self.text(
                             ctx,
@@ -2183,6 +2218,21 @@ mod tests {
     }
 
     use super::*;
+    #[test]
+    fn a_slider_reaches_both_ends_and_keeps_the_thumb_under_the_cursor() {
+        // Drawn at twice the design size from x = 100.
+        let at = |cursor| slide_ratio(cursor, 100., 588.);
+        assert_eq!(at(-500.), 0.);
+        assert_eq!(at(100.), 0.);
+        assert_eq!(at(150.), 0.);
+        assert_eq!(at(638.), 1.);
+        assert_eq!(at(5000.), 1.);
+        assert!((at(394.) - 0.5).abs() < 1e-6);
+        // The thumb's centre is where the cursor is (design pixels).
+        assert!((thumb_x(at(394.)) - 147.).abs() < 1e-6);
+        assert_eq!((thumb_x(0.), thumb_x(1.)), (25., 269.));
+        assert_eq!(slide_ratio(10., 0., 0.), 0.);
+    }
     #[test]
     fn the_colour_text_follows_its_option_to_another_row_slot() {
         let shown = (Some(7), "#1c1a18".to_owned(), 0x1c1a18);

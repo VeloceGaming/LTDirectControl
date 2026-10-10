@@ -17,7 +17,7 @@ plays (mostly).
 
 ## Status
 
-- Version **1.0.3**, for game version **0.6.3** on Windows x64 only. The mod
+- Version **1.0.4**, for game version **0.6.3** on Windows x64 only. The mod
   checks the game executable's fingerprint and stays inactive on any other
   build; a game update needs a mod update.
 - Single player; one controlled athlete per match.

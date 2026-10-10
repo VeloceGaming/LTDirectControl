@@ -87,6 +87,13 @@ static SHARED: Mutex<Shared> = Mutex::new(Shared {
 });
 static TARGET: AtomicUsize = AtomicUsize::new(usize::MAX);
 
+/// A new match: nothing sampled yet.
+pub fn reset_session() {
+    TARGET.store(usize::MAX, Ordering::Relaxed);
+    if let Ok(mut s) = SHARED.lock() {
+        (s.own, s.target) = (None, None);
+    }
+}
 /// The selected unit (None clears).
 pub fn select(id: Option<usize>) {
     TARGET.store(id.unwrap_or(usize::MAX), Ordering::Relaxed);
@@ -99,11 +106,13 @@ pub fn select(id: Option<usize>) {
 fn target_id() -> Option<usize> {
     Some(TARGET.load(Ordering::Relaxed)).filter(|id| *id != usize::MAX)
 }
-/// Your champion and the selected unit, when sampled within the last second.
-pub fn snapshot() -> (Option<Unit>, Option<Unit>) {
+/// Your champion and the selected unit. While `sampling` (the match runs
+/// and samples arrive) one older than a second is dropped; while paused the
+/// last one stays.
+pub fn snapshot(sampling: bool) -> (Option<Unit>, Option<Unit>) {
     let fresh = |u: &Option<Unit>| {
         u.clone()
-            .filter(|u| u.at.elapsed() < Duration::from_secs(1))
+            .filter(|u| !sampling || u.at.elapsed() < Duration::from_secs(1))
     };
     SHARED
         .lock()

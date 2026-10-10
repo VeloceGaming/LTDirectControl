@@ -10,6 +10,8 @@ pub type MatchKey = (u64, u64, u64);
 /// at full speed, and the mod's per-tick work for it is skipped from the
 /// first step (read lock-free; 0 = none).
 static LEFT_MATCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// After a start or resume, samples from before it are not yet stale.
+const RESUME_GRACE: Duration = Duration::from_millis(500);
 fn key_id(key: MatchKey) -> u64 {
     // Never 0, so 0 can mean "none".
     (key.0 ^ key.1.rotate_left(21) ^ key.2.rotate_left(42)) | 1
@@ -58,6 +60,8 @@ struct State {
     view: Option<usize>,
     began: Instant,
     running: Option<Instant>,
+    /// Whether the client saw the match running last frame, and since when.
+    client_ran: Option<Instant>,
     produced: usize,
     consumed: usize,
     boundary_seen: bool,
@@ -131,6 +135,7 @@ impl NativeTiming {
                 view: None,
                 began: Instant::now(),
                 running: None,
+                client_ran: None,
                 produced: 0,
                 consumed: 0,
                 boundary_seen: false,
@@ -781,6 +786,24 @@ impl NativeTiming {
             s.phase == Phase::Running && s.pending_action.is_none() && Self::client_owned(&s, None)
         })
     }
+    /// Client, once per frame: running, and for long enough that the
+    /// worker's samples are current again. While paused the HUD keeps its
+    /// last samples; without this pause after a resume it would treat them
+    /// as stale and blank for the frames before the first new sample.
+    pub fn client_sampling(&self) -> bool {
+        let Ok(mut s) = self.state.lock() else {
+            return false;
+        };
+        let running = s.phase == Phase::Running
+            && s.battlefield
+            && s.selected
+            && s.client == Some(crate::platform_input::thread_id());
+        if !running {
+            s.client_ran = None;
+            return false;
+        }
+        s.client_ran.get_or_insert_with(Instant::now).elapsed() >= RESUME_GRACE
+    }
     pub fn client_running(&self) -> bool {
         self.state.lock().is_ok_and(|s| {
             s.phase == Phase::Running
@@ -875,6 +898,31 @@ mod tests {
         assert!(left_match((7, 8, 9)));
         assert!(!left_match((7, 8, 10)));
         LEFT_MATCH.store(0, std::sync::atomic::Ordering::Relaxed);
+    }
+    #[test]
+    fn samples_are_not_stale_right_after_a_resume() {
+        let t = active();
+        let set = |phase, since: Option<Duration>| {
+            let mut s = t.state.lock().unwrap();
+            s.phase = phase;
+            (s.battlefield, s.selected) = (true, true);
+            s.client = Some(crate::platform_input::thread_id());
+            if let Some(since) = since {
+                s.client_ran = Some(Instant::now() - since);
+            }
+        };
+        set(Phase::Paused, None);
+        assert!(!t.client_sampling());
+        // Just resumed: running, but the last samples predate the pause.
+        set(Phase::Running, None);
+        assert!(t.client_running() && !t.client_sampling());
+        set(Phase::Running, Some(Duration::from_secs(1)));
+        assert!(t.client_sampling());
+        // The next pause starts the wait over.
+        set(Phase::Paused, None);
+        assert!(!t.client_sampling());
+        set(Phase::Running, None);
+        assert!(!t.client_sampling());
     }
     #[test]
     fn a_running_worker_without_frames_is_reported_once() {

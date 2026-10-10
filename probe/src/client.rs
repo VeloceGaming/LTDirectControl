@@ -265,6 +265,7 @@ impl Client {
             &self.logger,
         );
         let running = self.timing.client_running();
+        let sampling = self.timing.client_sampling();
         let gameplay_active =
             running && session_action.is_none() && !ui_state::SETTINGS_OPEN.load(Ordering::Relaxed);
         let controls = self.timing.client_controls(None);
@@ -273,7 +274,7 @@ impl Client {
             self.resolve_targeting(&mut keys, controls);
         }
         let identity = self.movement.hud_identity();
-        let snapshot = self.hud.snapshot(identity, running);
+        let snapshot = self.hud.snapshot(identity, sampling);
         let artwork = snapshot
             .is_none()
             .then(|| self.hud.artwork(identity))
@@ -288,6 +289,7 @@ impl Client {
             battlefield,
             controls,
             running,
+            sampling,
             dt_micros,
             snapshot,
             artwork,
@@ -427,6 +429,8 @@ struct Frame {
     battlefield: bool,
     controls: bool,
     running: bool,
+    /// Running with current samples (NativeTiming::client_sampling).
+    sampling: bool,
     dt_micros: u64,
     snapshot: Option<player_hud::Snapshot>,
     artwork: Option<player_hud::Artwork>,
@@ -507,6 +511,7 @@ impl Client {
                 self.abilities.reset_session(keys);
                 self.hud.reset_session();
                 self.team.reset_session();
+                stats_panel::reset_session();
                 shop::SHOP.reset_session();
                 self.camera.reset_session(keys);
                 native_adapter::reset_session();
@@ -536,6 +541,7 @@ impl Client {
             battlefield,
             controls,
             running,
+            sampling,
             dt_micros,
             ref snapshot,
             ref artwork,
@@ -584,6 +590,7 @@ impl Client {
                 ctx,
                 battlefield,
                 controls,
+                sampling,
                 keys.stats_panel && keys.focused && !keys.emote_capture,
                 &self.logger,
             ));
@@ -595,7 +602,7 @@ impl Client {
                 } = &mut *observations;
                 let team_active = controls && keys.focused && team_open;
                 let roster = if team_active {
-                    self.team.snapshot(self.timing.match_key(), running)
+                    self.team.snapshot(self.timing.match_key(), sampling)
                 } else {
                     Vec::new()
                 };
