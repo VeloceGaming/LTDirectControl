@@ -69,6 +69,13 @@ are listed at the end for reference.
 12. **Controller support** (idea, 2026-10-12; low priority). The user
     barely uses a controller and would have to tune an input type they do
     not play with.
+13. **Ultra rapid fire mode** (idea the user liked, 2026-10-12). A match
+    option where everyone has almost no cooldowns; the no-cooldown test
+    cheat is most of it.
+14. **Career wall** (idea the user liked, 2026-10-12). A page of the
+    player's manual-control records: kills, pentakills, most-played
+    champion, win streaks. Fits the direction the user named the same day:
+    playing as one athlete, like a sports game's career mode.
 
 ## Done
 
