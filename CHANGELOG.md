@@ -3,6 +3,11 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.16 — 2026-10-11
+
+- Development build for game 0.7.0. Native ability descriptions (1.1.15) passed in game for Crossbowman (three `source=game` results, nothing unresolved).
+- Skill previews: a declared `Native` effect that names one projectile's hit radius is drawn as a strip of that radius over its `range` (the cast range when it has none): Crossbowman Q, W, R and Harpooner Q, W. Other `Native` effects, and ones with several projectiles (Harpooner R), stay not understood. These skills never had a real preview: until 1.1.13 the fallback for a skill that is not understood was an arrow, which looked like a line preview; the crosshair that replaced it showed the gap (user report on Crossbowman).
+
 ## 1.1.15 — 2026-10-11
 
 - Development build for game 0.7.0: native ability descriptions (the tooltips family) are back, so every hook family is now enabled on 0.7.0.

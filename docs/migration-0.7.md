@@ -69,7 +69,7 @@ Hooks install per family (`native_profile::family`, `ENABLED`). Status for
 | Shop (with the item catalogue) | Enabled in 1.1.3; passed in game 2026-10-10 (1.1.5: items that are not enabled are hidden; registry 237, enabled 30) |
 | Outline | Enabled in 1.1.6; passed in game 2026-10-10 |
 | Readers (skill previews) | Known effects passed in game (1.1.8); new 0.7.0 effect `0x160da70` (Hypnotist) open |
-| Tooltips (native ability text) | Enabled in 1.1.15; in-game test pending |
+| Tooltips (native ability text) | Enabled in 1.1.15; passed in game for Crossbowman (1.1.15), wider test pending |
 
 ### Session (worker, viewer, input)
 

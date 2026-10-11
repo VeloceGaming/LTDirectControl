@@ -349,6 +349,20 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
             },
             Placement::Aim,
         ),
+        // A hand-written effect is opaque, but one that names a single
+        // projectile's hit radius is a shot from the caster over its `range`
+        // (the cast range when it has none): Crossbowman, Harpooner Q and W.
+        "Native"
+            if v.get("projectile_count").is_none() && number(v, "projectile_radius").is_some() =>
+        {
+            out.add(
+                Shape::Corridor {
+                    radius: number(v, "projectile_radius").unwrap_or(0.),
+                    length: number(v, "range").unwrap_or(0.),
+                },
+                Placement::Caster,
+            );
+        }
         "Native"
         | "SwitchByBuff"
         | "RandomTarget"
@@ -1972,6 +1986,42 @@ mod tests {
         let enemy = serde_json::json!({"applied_target": "EnemyWithoutTower"});
         assert!(declared_allies(&ally) && !declared_allies(&enemy));
         assert!(targets_allies(4) && !targets_allies(5) && !targets_allies(13));
+    }
+    #[test]
+    fn a_declared_native_shot_is_a_strip_and_other_native_effects_stay_opaque() {
+        let shot = |v: Value| {
+            let spec = serde_json::json!({"skill": {"range": 150000, "effect": {"type": "Combine", "effects": [v]}}});
+            skills(&spec)[0].clone()
+        };
+        // Crossbowman W: radius 6, range 150.
+        let g = shot(
+            serde_json::json!({"type": "Native", "effect_ref": "crossbowman_skill2",
+            "speed": 6000, "range": 150000, "projectile_radius": 6000}),
+        );
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: 6.,
+                length: 150.
+            }
+        );
+        // Harpooner Q has no range of its own: the cast range (length 0).
+        let g = shot(serde_json::json!({"type": "Native", "projectile_radius": 11000}));
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: 11.,
+                length: 0.
+            }
+        );
+        // Several projectiles, or no projectile: not understood.
+        for v in [
+            serde_json::json!({"type": "Native", "projectile_radius": 9000, "projectile_count": 5}),
+            serde_json::json!({"type": "Native", "radius": 60000}),
+        ] {
+            let g = shot(v);
+            assert!(g.footprints.is_empty() && !g.issues.is_empty());
+        }
     }
     #[test]
     fn footprint_world_dimensions_scale_with_camera_and_render_is_bounded() {
