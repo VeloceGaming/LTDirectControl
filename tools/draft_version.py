@@ -17,7 +17,10 @@ relocate) over every address in `probe/src/native_adapter/v<old>/` and in
 
 Statuses: `exact` (the enclosing function is in the function map and aligns
 almost entirely, or a vtable/pointer match with no rival), `likely` (found,
-with less agreement: review), `unknown` (not found).
+with less agreement: review), `unknown` (not found, or the candidate
+function barely aligns). A function found by its code alone may exist in
+several identical copies; the note then says so, and the right copy has to
+be chosen by its caller.
 
 Review aid only: it reads the two executables and writes under research/.
 Nothing in probe/ or tools/native_profiles/ is changed, and "exact" still
@@ -51,8 +54,10 @@ ROOT = Path(__file__).resolve().parents[1]
 BUILDS = ROOT / 'research/game-builds'
 ADAPTER = ROOT / 'probe/src/native_adapter'
 ADDRESS = re.compile(r'\b0x[0-9a-f]{5,}\b')
-BYTES = re.compile(r'\[\s*(?:0x[0-9a-f]{2}\s*,\s*){2,}0x[0-9a-f]{2}\s*,?\s*\]')
+BYTES = re.compile(r'\[\s*(?:0x[0-9a-f]{1,2}\s*,\s*){2,}0x[0-9a-f]{1,2}\s*,?\s*\]')
 ORDER = {'exact': 0, 'likely': 1, 'unknown': 2}
+# Below this share of aligned instructions a candidate function is not a match.
+WEAK = 0.3
 
 
 def folder_name(version):
@@ -130,6 +135,9 @@ class Draft:
                 votes = field_shifts.locate(self.old, self.new, start)
                 if votes and (len(votes) == 1 or votes[0][1] > votes[1][1]):
                     how, target = f'sampled context x{votes[0][1]}', votes[0][0]
+                    # A close second is a similar function: say so.
+                    if len(votes) > 1 and votes[1][1] >= 0.6 * votes[0][1]:
+                        how += f' (runner-up {votes[1][0]:#x} x{votes[1][1]}, choose by caller)'
             if target is None:
                 # An anchor inside this function that the report placed.
                 bounds = self.old.enclosing(start)
@@ -148,9 +156,28 @@ class Draft:
                 equal += block.size
                 for k in range(block.size):
                     mapping[x[block.a + k][0]] = y[block.b + k][0]
+            if how != 'function map':
+                how += self.copies(bounds)
             result = (bounds[0], mapping, how, equal / max(len(x), len(y), 1))
         self.aligned[start, deep] = result
         return result
+
+    def copies(self, bounds):
+        """A note when the new build holds this function more than once.
+
+        The function map tells copies apart by their callers; a match by
+        code alone (sampling, a vtable slot, an anchor's context) cannot.
+        """
+        value, mask = pm.masked_signature(self.new.decoded(bounds), self.new.base, self.new.image_size)
+        if len(value) != bounds[1] - bounds[0]:
+            return ''
+        hits = pm.pattern_hits(self.new.text, value, mask)
+        if not hits:
+            return '; too short to rule out identical copies'
+        starts = [h for h in hits if self.new.by_start.get(self.new.text_rva + h) == self.new.text_rva + h + len(value)]
+        if len(starts) <= 1:
+            return ''
+        return f'; {len(starts)}{"+" if len(hits) >= 33 else ""} identical copies in the new build, choose by caller'
 
     def code(self, rva, deep=True):
         bounds = self.old.enclosing(rva)
@@ -162,10 +189,12 @@ class Draft:
         target, mapping, how, ratio = self.align(bounds[0], deep)
         if target is None:
             return None, 'unknown', how
+        if ratio < WEAK:
+            return None, 'unknown', f'{how}: candidate {target:#x} aligns only {ratio:.2f}'
         where = mapping.get(rva)
         if where is None:
             return None, 'unknown', f'{how}: function {target:#x} found, instruction not aligned'
-        sure = ratio >= 0.9 and (how == 'function map' or how.endswith('(1.00)'))
+        sure = ratio >= 0.9 and (how == 'function map' or how.endswith('(1.00)')) and 'copies' not in how
         return where, 'exact' if sure else 'likely', f'{how}, {ratio:.2f} aligned'
 
     def data(self, rva):
@@ -251,7 +280,7 @@ def draft_source(draft, text, special, records, name):
     for m in BYTES.finditer(text):
         if in_comment(m.start()):
             continue
-        value = bytes(int(b, 16) for b in re.findall(r'0x([0-9a-f]{2})', m.group(0)))
+        value = bytes(int(b, 16) for b in re.findall(r'0x([0-9a-f]{1,2})\b', m.group(0)))
         # The address these bytes sit at: the nearest one before them first.
         ordered = sorted(addresses, key=lambda a: (a[0] > m.start(), abs(m.start() - a[0])))
         homes = list(dict.fromkeys(a for _, a in ordered if draft.old.pe.get_data(a, len(value)) == value))
@@ -349,7 +378,7 @@ def check(records, reviewed, new_image):
     for path in reviewed.glob('*.rs'):
         text = '\n'.join(line.split('//')[0] for line in path.read_text(encoding='utf-8').splitlines())
         truth[path.name] = {int(v, 16) for v in ADDRESS.findall(text)}
-        arrays[path.name] = {bytes(int(b, 16) for b in re.findall(r'0x([0-9a-f]{2})', m.group(0))).hex()
+        arrays[path.name] = {bytes(int(b, 16) for b in re.findall(r'0x([0-9a-f]{1,2})\b', m.group(0))).hex()
                              for m in BYTES.finditer(text)}
     score, wrong = Counter(), []
     for r in records:

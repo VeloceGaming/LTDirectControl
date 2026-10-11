@@ -59,11 +59,25 @@ and the vtable matching, and writes to `research/game-builds/draft-0.7.1/`:
   status under `draft`.
 - `report.json`: every address, its status and how it was found.
 
-Measured on 0.6.3 to 0.7.0 against the reviewed tables: 868 of 909
-addresses and 215 of 240 byte patterns carried, none of them wrong; the
-rest were left as unknown. That run used the function map built during
-the migration. A first run on a new version builds its own map, which
-takes up to 25 minutes and may carry less.
+Measured against the reviewed tables, in both directions:
+
+| Run | Addresses carried | Wrong | Byte patterns carried | Wrong |
+| --- | --- | --- | --- | --- |
+| 0.6.3 to 0.7.0, with the function map built during the migration | 866 of 909 | 0 | 221 of 253 | 0 |
+| 0.7.0 to 0.6.3, from nothing (about one minute) | 888 of 946 | 5 | 215 of 254 | 1 |
+
+Everything wrong was marked REVIEW, nothing marked exact was wrong, and
+what was not carried is listed as unknown. The wrong ones show the two
+traps that code similarity cannot settle:
+
+- An entry with no counterpart. 0.7.0 lists four forms of the
+  single-target projectile and 0.6.3 has one, so three look-alikes were
+  proposed. The note names the runner-up when two candidates are close.
+- A function the mod calls itself, picked among near-identical variants.
+  The outline's two shader parameter setters (`OUTLINE_FLOAT_PARAM`,
+  `OUTLINE_COLOR_PARAM`) have siblings that differ only in stack layout,
+  and the sibling aligned better than the right one. Confirm these two by
+  the function that calls them in the unit renderer, never by similarity.
 
 Then, for what is left:
 
@@ -78,7 +92,8 @@ Then, for what is left:
 
 Lines marked REVIEW are mostly functions the game recompiled. For each,
 check that the instruction at the new address does the same thing and
-that the arguments are set up the same way.
+that the arguments are set up the same way. A note that names a runner-up
+or identical copies means the choice has to be made by the caller.
 
 ## 3. Field offsets
 
