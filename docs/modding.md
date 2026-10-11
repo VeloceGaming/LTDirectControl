@@ -316,6 +316,10 @@ Manual shopping reports itself unavailable.
 
 ## Updating for a new game version
 
+The full checklist, in the order that worked for 0.7.0, is
+[version-migration.md](version-migration.md); `tools/draft_version.py`
+drafts the new version's tables. In short:
+
 0. Run `python tools/prepare_sdk.py` to copy the new game's SDK into `sdk/`
    (it re-adds the mod's two local SDK additions and stops if the SDK
    changed where they go).
