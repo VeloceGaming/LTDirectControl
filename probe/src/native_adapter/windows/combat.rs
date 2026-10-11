@@ -541,6 +541,10 @@ thread_local! {
     static INVENTORIED: std::cell::RefCell<std::collections::HashSet<usize>> =
         std::cell::RefCell::new(std::collections::HashSet::new());
 }
+/// Coverage lines (one per champion of the viewed match) have their own
+/// budget: they are short, and a report needs every match of a session.
+const COVERAGE_LIMIT: usize = 600;
+static COVERAGE_LINES: AtomicUsize = AtomicUsize::new(0);
 unsafe fn inventory(shared: &Shared, entity: usize) {
     let viewed = crate::perf::on_worker_thread();
     let (lines, limit) = if viewed {
@@ -548,7 +552,9 @@ unsafe fn inventory(shared: &Shared, entity: usize) {
     } else {
         (&BACKGROUND_LINES, BACKGROUND_LIMIT)
     };
-    if lines.load(Ordering::Relaxed) >= limit {
+    if lines.load(Ordering::Relaxed) >= limit
+        && (!viewed || COVERAGE_LINES.load(Ordering::Relaxed) >= COVERAGE_LIMIT)
+    {
         return;
     }
     let fresh = INVENTORIED.with(|seen| {
@@ -562,6 +568,29 @@ unsafe fn inventory(shared: &Shared, entity: usize) {
         return;
     };
     let actor = std::ptr::read_unaligned((entity + 0x5b8) as *const usize);
+    // What the reader makes of each skill, for tools/audit_previews.py; the
+    // PREVIEW ROSTER line before it names the actor's champion.
+    if viewed && COVERAGE_LINES.fetch_add(1, Ordering::Relaxed) < COVERAGE_LIMIT {
+        let slots = [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)].map(|(slot, offset)| {
+            let readable = crate::native_preview::dump(base, entity, offset, &|a, n| {
+                super::tooltips::accessible(a, n, false)
+            })
+            .is_some();
+            let summary = if readable {
+                crate::native_preview::read(base, entity, offset).summary()
+            } else {
+                "absent".into()
+            };
+            format!("{slot}={summary}")
+        });
+        shared.logger.write(&format!(
+            "PREVIEW COVERAGE actor={actor} {}",
+            slots.join(" ")
+        ));
+    }
+    if lines.load(Ordering::Relaxed) >= limit {
+        return;
+    }
     for (slot, offset) in [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)] {
         let Some(tree) = crate::native_preview::dump(base, entity, offset, &|a, n| {
             super::tooltips::accessible(a, n, false)

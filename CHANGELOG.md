@@ -3,6 +3,16 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.0.9 — 2026-10-11
+
+Developed and passed in game on the game-0.7 branch (game 0.7.0, builds 1.1.16 to 1.1.19); this build is the same code for game 0.6.3.
+
+- Swap the controlled champion to a teammate during the match: while playing, paused, or with the AI in control (after F12), by Ctrl + 1-5 or from a swap button floating above the pause button, which unfolds a column of the five teammates' portraits (top lane at the top). A pick, Esc, a press elsewhere or the button again folds it away. The controlled player was already decided every tick from the selection, and the pre-match chooser re-bound it under the session gate; the same re-binding is now allowed in the Running, Paused and Ai phases. The previous champion is the game AI's again from its next decision. On a swap the pending commands, the shop queue and the stats panel history are cleared. No swap while the shop or settings window is open.
+- Each own player's HUD snapshot is refreshed once a second (it was taken at tick 1 only), so a swap while paused shows current level, gold, items and cooldowns. Skill previews for the new champion appear after resuming.
+- Skill previews: a declared `Native` effect that names one projectile's hit radius is drawn as a strip of that radius over its `range` (the cast range when it has none): Crossbowman Q, W, R and Harpooner Q, W. These skills never had a real preview; the arrow that used to be the fallback only looked like one.
+- Preview coverage report: `PREVIEW COVERAGE` and `PREVIEW DECLARED` log lines for every champion of a watched match, and tools/audit_previews.py, which lists every champion seen and the skills still not understood.
+- New strip icon `ef_swap`.
+
 ## 1.0.8 — 2026-10-11
 
 All of this was developed and passed in game on the game-0.7 branch (game 0.7.0, builds 1.1.11 to 1.1.14); this build is the same code for game 0.6.3.

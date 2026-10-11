@@ -939,6 +939,16 @@ impl Shop {
             ));
         }
     }
+    /// The controlled champion changed mid-match: its orders are not the
+    /// new champion's. The catalogue and the match stay.
+    pub fn clear_queue(&self) {
+        if let Ok(mut s) = self.0.lock() {
+            s.queue.clear();
+            s.step = None;
+            s.previous_owned = None;
+            self.mirror(&s);
+        }
+    }
     pub fn reset_session(&self) {
         if let Ok(mut s) = self.0.lock() {
             *s = Shop::new()

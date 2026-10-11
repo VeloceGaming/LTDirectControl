@@ -402,6 +402,38 @@ impl Simulation {
         call: Call,
     ) {
         let Call { tick, .. } = call;
+        // A swap to a teammate shows that teammate's HUD at once, also while
+        // paused: each own player refreshes its snapshot once a second from
+        // its own think (a dead player does not think and keeps its last).
+        if origin.kind == 2
+            && tick > 1
+            && tick.is_multiple_of(60)
+            && self.timing.owns_worker(key)
+            && self
+                .movement
+                .own_players()
+                .iter()
+                .any(|p| p.player == call.player_id)
+        {
+            if let Some(p) = sim.get_player(call.player_id) {
+                let c = p.champion();
+                self.hud.observe_prepared(player_hud::Snapshot {
+                    key,
+                    player: p.id(),
+                    champion: c.as_ref().and_then(|c| c.name()).unwrap_or_default(),
+                    level: p.level(),
+                    hp: c.as_ref().map(|c| c.hp()),
+                    alive: p.is_alive(),
+                    respawn: p.respawn_time(),
+                    gold: p.gold(),
+                    kda: (p.kills(), p.deaths(), p.assists()),
+                    cs: p.cs(),
+                    cooldowns: p.cooldowns().map_or([0; 3], |(_, q, w, r)| [q, w, r]),
+                    items: p.item_keys(),
+                    build: self.hud.build(sim, p.id()),
+                });
+            }
+        }
         // Startup tick 1 precedes presentation readiness. Capture roster
         // HUD data here rather than hiding it behind accepts_sample(),
         // whose battlefield gate only opens after startup is held.
@@ -444,6 +476,27 @@ impl Simulation {
                     "PREVIEW ROSTER key={key:?} actors=[{}]",
                     actors.join(", ")
                 ));
+                // What the champion's definition file alone gives, the
+                // fallback when the live effect tree is not understood.
+                for actor in &actors {
+                    let Some((_, name)) = actor.split_once('=') else {
+                        continue;
+                    };
+                    let declared = [0, 1, 2].map(|slot| {
+                        let g = crate::skill_preview::geometry(Some(name), slot);
+                        if g == crate::skill_preview::Geometry::default() {
+                            "absent".into()
+                        } else {
+                            g.summary()
+                        }
+                    });
+                    if declared.iter().any(|d| d != "absent") {
+                        self.logger.write(&format!(
+                            "PREVIEW DECLARED champion={name} Q={} W={} R={}",
+                            declared[0], declared[1], declared[2]
+                        ));
+                    }
+                }
             }
         }
     }

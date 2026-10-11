@@ -290,6 +290,7 @@ impl Movement {
         s.cancel_recall = false;
         s.native_action = None;
         s.attack_range = None;
+        crate::skill_preview::set_attack_range(None);
         s.acquisition_debug = None;
         s.hover_keys = None;
         s.frame_markers = (None, None);

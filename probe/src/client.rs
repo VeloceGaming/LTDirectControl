@@ -476,7 +476,11 @@ impl Client {
             }
         }
     }
-    /// Before Start: switch the controlled athlete (Ctrl + 1-5 or a portrait).
+    /// Switch the controlled athlete to a teammate (Ctrl + 1-5 or a
+    /// portrait): before Start, and during the match while playing, paused or
+    /// with the AI in control. The session gate keeps a simulation step from
+    /// running across the change; the previous champion is the game AI's
+    /// again from its next decision.
     fn choose_prepared_athlete(&self, keys: platform_input::Keys) {
         let prepared_choice = self.observations.lock().ok().and_then(|o| {
             o.session_ui.take_choice(
@@ -485,7 +489,13 @@ impl Client {
                 self.timing.generation(),
             )
         });
-        if self.timing.phase() == Some(native_timing::Phase::Ready) {
+        let phase = self.timing.phase();
+        // Not with the shop or settings window open: the shop shows, and
+        // would queue against, the previous champion's inventory.
+        let window = phase != Some(native_timing::Phase::Ready)
+            && (ui_state::SHOP_OPEN.load(Ordering::Relaxed)
+                || ui_state::SETTINGS_OPEN.load(Ordering::Relaxed));
+        if session_ui::swappable(phase) && !window {
             if let (Some(key), Some(lane)) =
                 (self.timing.match_key(), prepared_choice.or(keys.selection))
             {
@@ -493,6 +503,17 @@ impl Client {
                     if self.movement.choose_prepared(key, lane, keys, &self.logger) {
                         self.abilities.reset_session(keys);
                         self.camera.reset_session(keys);
+                        if phase != Some(native_timing::Phase::Ready) {
+                            // Mid-match: nothing queued or sampled for the
+                            // previous champion carries over.
+                            self.movement.clear_commands();
+                            self.abilities.clear_commands();
+                            shop::SHOP.clear_queue();
+                            stats_panel::reset_session();
+                            if let Ok(o) = self.observations.lock() {
+                                o.session_ui.close_swap();
+                            }
+                        }
                         if let Some(player) = self.movement.selected() {
                             self.hud.select_prepared(key, player);
                         }
@@ -638,6 +659,9 @@ impl Client {
                 keys.left && keys.focused && !keys.emote_capture,
                 &self.logger,
             ));
+            if keys.raw.0[0x1b] {
+                observations.session_ui.close_swap();
+            }
             if observations.session_ui.take_settings() {
                 observations
                     .settings_ui

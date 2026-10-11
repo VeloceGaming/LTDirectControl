@@ -98,7 +98,8 @@
     "ui/bundled/emote_bomber_nice.png": "31d00120f05cd24900a83d11dda1d36c874be134b7a8cb933b07d939b2fc6d10",
     "ui/bundled/emote_clown_son.png": "29afbf836a506b8e8ff3ba40f68fb58149d04dd5168c65d8f4555a021f148291",
     "ui/bundled/emote_ghost_wajaja.png": "4a510c8bcb260d4bfc3ef836d991bd7b6ba232898ac477eab320b307e9495e11",
-    "ui/bundled/emote_monk_no_kills.png": "9d0d165483789164c931e85e9915d20d9956d4c53e400de634b52bd767db1bea"
+    "ui/bundled/emote_monk_no_kills.png": "9d0d165483789164c931e85e9915d20d9956d4c53e400de634b52bd767db1bea",
+    "ui/ef_swap.png": "92b8f1a26c362d0e75a41466d2e49c87efad39a1a3a424ed64994aa92fa89749"
   },
   "palette": "Endfield masks tinted by native UI; full-colour user shop stamp; previous cursor/glyph art retained",
   "rendering": "source paths, palette and typography assets verified; native rendering pending user test"
