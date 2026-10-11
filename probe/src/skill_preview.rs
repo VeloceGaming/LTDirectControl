@@ -380,6 +380,34 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
             },
             Placement::Aim,
         ),
+        // Astrologer (player's description, 1.1.19): Q and R land a circle
+        // at the aim after a delay; W is a line from her toward the aim, as
+        // long as the cast range and `line_width` wide.
+        "Native"
+            if matches!(
+                v.get("effect_ref").and_then(Value::as_str),
+                Some("astrologer_skill1" | "astrologer_ult")
+            ) && number(v, "radius").is_some() =>
+        {
+            out.add(
+                Shape::Circle {
+                    radius: number(v, "radius").unwrap_or(0.),
+                },
+                Placement::Aim,
+            );
+        }
+        "Native"
+            if v.get("effect_ref").and_then(Value::as_str) == Some("astrologer_skill2")
+                && number(v, "line_width").is_some() =>
+        {
+            out.add(
+                Shape::Corridor {
+                    radius: number(v, "line_width").unwrap_or(0.) / 2.,
+                    length: 0.,
+                },
+                Placement::Caster,
+            );
+        }
         // A hand-written effect is opaque, but one that names a single
         // projectile's hit radius is a shot from the caster over its `range`
         // (the cast range when it has none): Crossbowman, Harpooner Q and W.
@@ -2042,6 +2070,24 @@ mod tests {
             g.footprints[0].shape,
             Shape::Corridor {
                 radius: 11.,
+                length: 0.
+            }
+        );
+        // Astrologer: circles at the aim, and a line half its width each side.
+        let g = shot(
+            serde_json::json!({"type": "Native", "effect_ref": "astrologer_ult", "radius": 60000, "delay": 90}),
+        );
+        assert_eq!(
+            (g.footprints[0].shape, g.footprints[0].placement),
+            (Shape::Circle { radius: 60. }, Placement::Aim)
+        );
+        let g = shot(
+            serde_json::json!({"type": "Native", "effect_ref": "astrologer_skill2", "line_width": 32000}),
+        );
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: 16.,
                 length: 0.
             }
         );

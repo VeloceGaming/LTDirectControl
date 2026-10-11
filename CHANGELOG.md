@@ -3,6 +3,16 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.20 — 2026-10-11
+
+- Development build for game 0.7.0. The skills the coverage report listed as not understood (one match by the user with Astrologer, Construct, Lancer, Soldier and Tale; shapes from the data and the user's descriptions):
+  - Migration correction: the single-target projectile. 0.7.0 rewrote the 72-byte form the champions use (apply 0x17c6440, in five vtables; also 0x1804b60), while the 0.6.3 code survives only in two 80-byte forms (0x17d70f0, 0x17cf560). 1.1.8 matched by code and listed only 0x17d70f0, so Soldier Q and W and Construct R showed the fallback on 0.7.0. All four are now "no area".
+  - Astrologer, from her definition file (both game versions): Q and R a circle of `radius` at the aim, W a strip `line_width` wide from her over the cast range.
+  - Lancer W and Tale W (apply 0x16157c0, { effects, speed }): a rush to the clicked unit, drawn as movement to the target.
+  - Swordman R (0x1a88ef0): a strip a champion wide over word 6 (40), passing through; the distance is to be checked in game.
+  - Gambler Q (0x189ab00): a strip of hit radius word 7 (3) over the range word 5 (80) toward the hovered champion.
+  - No area: Vampire Q (0x157d6a0) and the timed statuses 0x164e960 and 0x1a89990 (Tale R and others).
+
 ## 1.1.19 — 2026-10-11
 
 - Development build for game 0.7.0. The mid-match swap (1.1.18) passed in game. Its column, after the user's test: portraits only (the name plates and key numbers are gone), in lane order from the top (top, jungle, mid, bottom, support; it was reversed), and the floating swap button has a light two-pixel frame so it reads against the battlefield; the portrait tiles have a visible grey frame.

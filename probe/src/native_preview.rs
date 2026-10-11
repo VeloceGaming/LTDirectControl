@@ -35,6 +35,16 @@ const DANCER_ULT: usize = 0x1a974f0;
 /// R in that order). Word 0 is the range, 1 a projectile's hit radius, 4 an
 /// area radius, 6 a strip's half width, 12 Bombardier Q's range bonus.
 const CHAMPION_SKILL: usize = 0x160da70;
+/// { applied effects, speed }: the caster rushes to the clicked unit, then
+/// the effects apply (Lancer W, Tale W; player's description).
+const RUSH_TO_TARGET: usize = 0x16157c0;
+/// Swordman R: { name, applied effects, distance, _, _, _, target }, a dash
+/// of a fixed distance through enemies, about a champion wide (player's
+/// description; the distance is word 6, 40).
+const SWORDMAN_ULT: usize = 0x1a88ef0;
+/// Gambler Q: { .., range (word 5), speed, hit radius (word 7) }: shots
+/// toward the hovered champion that stop at the range.
+const GAMBLER_Q: usize = 0x189ab00;
 /// The caster's current stack (stat block `stack`, entity +0x648, just
 /// before its position at +0x658): Dancer R's extra blades. Set by `read`.
 const ENTITY_STACK: usize = 0x648;
@@ -60,8 +70,19 @@ const NO_AREA: &[(usize, usize, &str)] = &[
     (0x1615de0, 8, "Fear"),
     (0x1615550, 8, "BlockAttack"),
     (0x162fef0, 8, "BlockMoveSkill"),
-    // 0.7.0: one more word than in 0.6.3 (72 bytes).
+    // A shot that follows one unit. 0.7.0 rewrote the 72-byte form the
+    // champions use (five vtables hold 0x17c6440; the 0.6.3 code survives
+    // only in two 80-byte forms with one more word), so matching by code
+    // alone missed it: Soldier Q and W, Construct R.
+    (0x17c6440, 72, "TargetProjectile"),
+    (0x1804b60, 72, "TargetProjectile"),
     (0x17d70f0, 80, "TargetProjectile"),
+    (0x17cf560, 80, "TargetProjectile"),
+    // One unit, no area (player's description, 1.1.19): Vampire Q; the
+    // timed statuses in Tale R and others ({ ticks }).
+    (0x157d6a0, 32, "Vampire Q"),
+    (0x164e960, 8, "timed status"),
+    (0x1a89990, 8, "timed status"),
     (0x156f4e0, 48, "Bleed"),
     (0x159de10, 96, "Gunner Q shot"),
     (0x17d7e00, 16, "caster wrapper"),
@@ -487,6 +508,36 @@ unsafe fn payload(
                     Placement::Caster,
                 ),
                 _ => out.issue("invalid native dancer fan"),
+            }
+        }
+        (Some(RUSH_TO_TARGET), 32) => {
+            out.family("native RushToTarget");
+            out.add(Shape::Movement { blink: false }, Placement::Aim);
+        }
+        (Some(SWORDMAN_ULT), 88) => {
+            out.family("native Swordman ult");
+            match distance(word(object + 48) as u64) {
+                Some(length) => out.add(
+                    Shape::Shot {
+                        radius: CHAMPION_RADIUS,
+                        length,
+                        pierce: true,
+                    },
+                    Placement::Caster,
+                ),
+                None => out.issue("invalid native swordman dash"),
+            }
+        }
+        (Some(GAMBLER_Q), 64) => {
+            out.family("native Gambler Q");
+            match (
+                distance(word(object + 56) as u64),
+                distance(word(object + 40) as u64),
+            ) {
+                (Some(radius), Some(length)) => {
+                    out.add(Shape::Corridor { radius, length }, Placement::Caster)
+                }
+                _ => out.issue("invalid native gambler shot"),
             }
         }
         (Some(MOVE_TO_TARGET), 40) => {
