@@ -163,6 +163,48 @@ notes recorded when each build was verified; dates are build dates (UTC+8).
 - Identity and the session family moved to 0.7.0: worker send 0x979089 -> 0x8bf9d0, viewer update 0x877560 -> 0xb194c0, input 0x89fd1d -> 0xa3ac10, pause guard 0xb1960b. The worker and viewer functions equal their 0.6.3 forms instruction for instruction.
 - tools/native_profiles/0.7.0.json reviews the session family only; verify_native_profile.py and verify_build.py compare only the families a profile lists. New tools/compare_functions.py and tools/show_code.py.
 
+The 1.0.6 to 1.0.9 entries below were built for game 0.6.3 from the 1.1.x work above (1.0.6 to 1.0.8 released; 1.0.9 built but not released, superseded by 1.2.0).
+
+## 1.0.9 — 2026-10-11
+
+Developed and passed in game on the game-0.7 branch (game 0.7.0, builds 1.1.16 to 1.1.19); this build is the same code for game 0.6.3.
+
+- Swap the controlled champion to a teammate during the match: while playing, paused, or with the AI in control (after F12), by Ctrl + 1-5 or from a swap button floating above the pause button, which unfolds a column of the five teammates' portraits (top lane at the top). A pick, Esc, a press elsewhere or the button again folds it away. The controlled player was already decided every tick from the selection, and the pre-match chooser re-bound it under the session gate; the same re-binding is now allowed in the Running, Paused and Ai phases. The previous champion is the game AI's again from its next decision. On a swap the pending commands, the shop queue and the stats panel history are cleared. No swap while the shop or settings window is open.
+- Each own player's HUD snapshot is refreshed once a second (it was taken at tick 1 only), so a swap while paused shows current level, gold, items and cooldowns. Skill previews for the new champion appear after resuming.
+- Skill previews: a declared `Native` effect that names one projectile's hit radius is drawn as a strip of that radius over its `range` (the cast range when it has none): Crossbowman Q, W, R and Harpooner Q, W. These skills never had a real preview; the arrow that used to be the fallback only looked like one.
+- Preview coverage report: `PREVIEW COVERAGE` and `PREVIEW DECLARED` log lines for every champion of a watched match, and tools/audit_previews.py, which lists every champion seen and the skills still not understood.
+- New strip icon `ef_swap`.
+
+## 1.0.8 — 2026-10-11
+
+All of this was developed and passed in game on the game-0.7 branch (game 0.7.0, builds 1.1.11 to 1.1.14); this build is the same code for game 0.6.3.
+
+- Shop: several copies of one item queued together are each bought. Each order excludes the copies owned when it was queued; queued together they excluded none, so the first finished copy also satisfied the next order and one order left the queue at every later purchase. The slot that finishes an order is now excluded from the later orders for the same item (tested). Present since 1.0.3.
+- "HUD tooltips" (Settings, Interface, Appearance): On hover (default, as before), Hold key and hover, or Off, for the HUD's skill and item tooltips; the shop window's tooltips are not affected. The key is the new binding "HUD tooltip (hold)", Alt by default. In every mode the tooltip is hidden while a mouse button is held. Translated in all 16 languages.
+- Skill previews restyled; the spearhead arrow is gone.
+  - Line skills: the strip at its true width with a visible fill, yellow edges and small chevrons along it.
+  - Strip ends: trailing edges for a shot known to pass through units, a solid bar for one known to stop at the first, a thin closing edge otherwise (none is known yet for the champions of game 0.6.3).
+  - Dashes and movement: up to three chevrons closing on the landing point, with a faint dotted lead-in; never drawn behind the start.
+  - A skill whose area is not understood: the range ring and a small white crosshair at the aim.
+  - Circles, cones, walls and blinks are unchanged.
+  - preview_style.json: the `arrow_*`, `skillshot_*`, `dash_head` and `dash_wing` keys are gone (overrides of them are ignored); `corridor_*`, `chevron_*`, `guide_*`, `dash_start` and `hover_range_*` are new.
+- An area that affects allies (a heal, a shield) is drawn in the ally colour; enemy, both and unknown stay yellow. Read from the last word of the game's RangeEffect, RangeProjectile, RangePeriodProjectile and ParabolicProjectile and from `target` in declared effects.
+- Hovering a skill slot on the HUD draws its range ring in the skill's colour (was only the faint grey aiming ring).
+- Log: `MANUAL rebound` names the champion chosen before the match starts.
+- The reader for the four champions added in game 0.7.0 is present but never matches in this build.
+
+## 1.0.7 — 2026-10-11
+
+- "Keep pointer in window" (Settings, Camera, Navigation; on by default): while the player controls a running match the pointer is confined to the game window's client area, so edge scrolling works next to a second monitor (reported on the Workshop: the pointer slid onto the other screen in every window mode). The clip is renewed each frame and released when the match is paused, the shop or settings window is open, control is with the AI, the match is over, the game is not the foreground window, or the extension unloads. `POINTER clip on/off` at verbose log detail. Translated in all 16 languages.
+
+## 1.0.6 — 2026-10-11
+
+- Match speed no longer follows the frame rate. The worker was held to one tick ahead of playback and a client frame can only play what is queued, so below 60 fps the match slowed in proportion (30 fps played at half speed; reported on the Workshop). The lead now follows the average client frame time: 1 tick at 60 fps and above (unchanged), up to 4 below, which keeps full speed down to 15 fps. It rises once the match would run more than 5% slow and falls back only when the smaller lead is nearly enough; one long frame or a pause does not raise it (tested). Frames are timed on the wall clock between running viewer calls. `TIMING frame lead a -> b` is logged for the first eight changes of a match, and `TIMING slow playback` when a ten-second window ran under 95% of full speed (which also shows a slow simulation thread, not addressed here). Passed in game on 0.7.0 at 30 and 45 fps (build 1.1.9 of the game-0.7 branch).
+- The shop hides items the game reports as not enabled (an item mod that is installed but switched off for the save), in the grid, the filters, the filter counts and the recipes.
+- An "Emote volume" slider (0 to 100% in steps of 5, 70% by default) replaces the emote sound switch; 0% is silent. The game accepts a playback volume from 0 to 1, so 100% is the level of the sound file, under the game's SFX volume. The built-in sound is generated at a higher level. Settings saved with the old switch off stay silent; with it on they get 70% (tested). Translated in all 16 languages.
+- Stall report: a worker thread that has exited is reported as `WORKER ENDED` (normal when a match finishes), not as a stall, and an unreadable stack says why.
+- All four were developed and passed in game on the game-0.7 branch (game 0.7.0); this build is the same code for game 0.6.3.
+
 ## 1.0.5 — 2026-10-10
 
 - The emote sound plays 25% louder (playback volume 0.3 to 0.375); the sound file is unchanged.
