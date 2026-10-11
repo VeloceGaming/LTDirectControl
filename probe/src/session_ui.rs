@@ -17,6 +17,24 @@ const STRIP_W: f32 = 656.;
 const VISION_X: f32 = 200.;
 const VISION_STEP: f32 = 46.;
 const TAB_X: f32 = 586.;
+/// Champion swap: a button floating above the strip's left end; its column
+/// of teammate tiles unfolds upward from it, a name plate beside each.
+const SWAP_TILE: f32 = 56.;
+const SWAP_GAP: f32 = 4.;
+const SWAP_Y: f32 = -(SWAP_TILE + 8.);
+const SWAP_NAME_W: f32 = 170.;
+/// Tile `lane` of the column when it is `unfold` (0..1) open, in strip units.
+fn swap_tile(lane: usize, unfold: f32) -> (f32, f32, f32, f32) {
+    let y = SWAP_Y - (lane as f32 + 1.) * (SWAP_TILE + SWAP_GAP) * unfold;
+    (0., y, SWAP_TILE, SWAP_TILE)
+}
+/// Phases in which the controlled champion may be changed.
+pub fn swappable(phase: Option<Phase>) -> bool {
+    matches!(
+        phase,
+        Some(Phase::Ready | Phase::Running | Phase::Paused | Phase::Ai)
+    )
+}
 /// Match the three resting button hit rectangles at any HUD scale. Selection
 /// is deliberately absent: hover belongs to the pointer's segment only.
 fn vision_hover_index(
@@ -46,6 +64,8 @@ struct Events {
     settings_open: bool,
     team: bool,
     vision: Option<crate::camera::Vision>,
+    /// The swap column is open (in a match).
+    swap: bool,
 }
 fn button(s: &mut String, name: &str, glyph: &str, x: usize, y: usize) {
     let bg = crate::ui_theme::hex(0xff);
@@ -80,8 +100,12 @@ fn template() -> String {
         ("vision_own", "ef_eye"),
         ("vision_other", "ef_eye"),
         ("vision_all", "ef_eye"),
+        ("swap", "ef_swap"),
     ] {
         button(&mut s, name, glyph, 0, 0);
+    }
+    for lane in 0..5 {
+        s.push_str(&format!("#name{lane}:color {{ x: 60px; y: 0px; width: 0px; height: 56px; z: 1102; color: #{bg}; visible: false; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #text:label {{ @\"asset/base/style/main#bold_label\"; x: 14px; y: 0px; width: 116px; height: 56px; size: 18; align_y: Center; color: #eeececff; ignore_event: true; z: 1104; }} #key:color {{ x: 136px; y: 17px; width: 24px; height: 22px; z: 1104; color: #eeececff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #text:label {{ @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; size: 13; align_x: Center; align_y: Center; color: #393939ff; text: \"{}\"; ignore_event: true; z: 1105; }} }} }}\n", lane + 1));
     }
     s.push_str(r##"#tab_key:color { x: 592px; y: 17px; width: 30px; height: 22px; z: 1104; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @"asset/base/style/main#bold_label"; width: 100%; height: 100%; size: 13; align_x: Center; align_y: Center; color: #393939ff; text: "Tab"; ignore_event: true; z: 1105; } }
     #rule_controls:color { x: 194px; y: 17px; width: 1px; height: 22px; z: 1101; color: #~4b4a49ff; ignore_event: true; }
@@ -129,8 +153,13 @@ impl SessionUi {
         generation: u64,
     ) -> Option<usize> {
         let (bound, bound_generation, lane) = self.events.lock().ok()?.choice.take()?;
-        (phase == Some(Phase::Ready) && key == Some(bound) && generation == bound_generation)
-            .then_some(lane)
+        (swappable(phase) && key == Some(bound) && generation == bound_generation).then_some(lane)
+    }
+    /// Esc, or a swap made by key: the column folds away.
+    pub fn close_swap(&self) {
+        if let Ok(mut e) = self.events.lock() {
+            e.swap = false;
+        }
     }
     fn props(&mut self, ctx: &mut StableClient<'_>, node: &str, text: String) {
         if crate::hud_motion::properties(ctx, &mut self.cache, &format!("{PATH}.{node}"), &text) {
@@ -363,22 +392,44 @@ impl SessionUi {
                     }
                 });
             }
-            for lane in 0..5 {
-                let owner = timing.clone();
-                let events = self.events.clone();
-                let click_path = format!("{PATH}.lane{lane}");
-                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                    if ctx
-                        .ui_current_event()
-                        .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                        && crate::ui_click::once(&click_path)
-                        && owner.phase() == Some(Phase::Ready)
-                    {
-                        if let (Some(key), Ok(mut events)) = (owner.match_key(), events.lock()) {
-                            events.choice = Some((key, owner.generation(), lane));
-                        }
+            let events = self.events.clone();
+            let click_path = format!("{PATH}.swap");
+            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
+                if ctx
+                    .ui_current_event()
+                    .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                    && crate::ui_click::once(&click_path)
+                {
+                    if let Ok(mut e) = events.lock() {
+                        e.swap = !e.swap;
                     }
-                });
+                }
+            });
+            for lane in 0..5 {
+                for node in ["lane", "name"] {
+                    let owner = timing.clone();
+                    let events = self.events.clone();
+                    let click_path = format!("{PATH}.{node}{lane}");
+                    ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
+                        if ctx
+                            .ui_current_event()
+                            .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
+                            && crate::ui_click::once(&click_path)
+                        {
+                            let (Some(key), Ok(mut events)) = (owner.match_key(), events.lock())
+                            else {
+                                return;
+                            };
+                            // Before Start the tiles are the chooser itself;
+                            // in a match they are the open swap column.
+                            let phase = owner.phase();
+                            if phase == Some(Phase::Ready) || swappable(phase) && events.swap {
+                                events.choice = Some((key, owner.generation(), lane));
+                                events.swap = false;
+                            }
+                        }
+                    });
+                }
             }
         }
         ctx.ui_set_visible(PATH, true);
@@ -396,21 +447,80 @@ impl SessionUi {
             format!("visible: {};", phase == Phase::Loading),
         );
         for lane in 0..5 {
-            let p = players.iter().find(|p| p.lane == lane);
-            self.props(
-                ctx,
-                &format!("lane{lane}"),
-                format!(
-                    "visible: {}; ignore_event: {};",
-                    preparing && phase == Phase::Ready,
-                    phase != Phase::Ready || p.is_none()
-                ),
-            );
-            if let Some(p) = p {
+            if let Some(p) = players.iter().find(|p| p.lane == lane) {
                 self.portrait(ctx, &format!("lane{lane}.portrait"), &p.champion, 56.);
             }
         }
         let ai = phase == Phase::Ai;
+        // The swap column: open on its button, closed by a press elsewhere.
+        let in_match = !preparing;
+        let open = in_match && self.events.lock().is_ok_and(|e| e.swap);
+        let unfold = self.motion.value("swap_unfold", f32::from(open), 0.2);
+        let names = self
+            .motion
+            .value("swap_names", f32::from(open && unfold > 0.95), 0.15);
+        let root = ctx.ui_node_rect(PATH);
+        let scaled = |(x, y, w, h): (f32, f32, f32, f32)| {
+            root.map(|(rx, ry, rw, rh)| {
+                let (sx, sy) = (rw / STRIP_W, rh / 56.);
+                Rect {
+                    x: rx + x * sx,
+                    y: ry + y * sy,
+                    w: w * sx,
+                    h: h * sy,
+                }
+            })
+        };
+        let mut swap_bounds = Vec::new();
+        if in_match {
+            swap_bounds.extend(scaled((0., SWAP_Y, SWAP_TILE, SWAP_TILE)));
+            if unfold > 0.02 {
+                let (_, top, _, _) = swap_tile(4, unfold);
+                swap_bounds.extend(scaled((
+                    0.,
+                    top,
+                    SWAP_TILE + SWAP_GAP + SWAP_NAME_W * names,
+                    SWAP_Y - top,
+                )));
+            }
+        }
+        if open && pressed && cursor.is_some_and(|p| !swap_bounds.iter().any(|r| r.contains(p))) {
+            self.close_swap();
+        }
+        for lane in 0..5 {
+            let p = players.iter().find(|p| p.lane == lane).cloned();
+            let shown = in_match && unfold > 0.02 && p.is_some();
+            let (_, y, _, _) = swap_tile(lane, unfold);
+            self.props(
+                ctx,
+                &format!("name{lane}"),
+                format!(
+                    "visible: {}; ignore_event: {}; y: {y:.2}px; width: {:.2}px;",
+                    shown && names > 0.02,
+                    !(shown && open),
+                    SWAP_NAME_W * names
+                ),
+            );
+            let lettered = shown && names > 0.9;
+            self.props(
+                ctx,
+                &format!("name{lane}.text"),
+                format!("visible: {lettered};"),
+            );
+            self.props(
+                ctx,
+                &format!("name{lane}.key"),
+                format!("visible: {lettered};"),
+            );
+            if let Some(p) = p.filter(|_| lettered) {
+                let name = crate::tooltips::champion_name(ctx, &p.champion);
+                let key = format!("name{lane}.text#label");
+                if self.cache.get(&key) != Some(&name) {
+                    ctx.ui_set_text(&format!("{PATH}.name{lane}.text"), &name);
+                    self.cache.insert(key, name);
+                }
+            }
+        }
         if preparing || ai {
             if let Ok(mut e) = self.events.lock() {
                 e.team = false;
@@ -532,6 +642,9 @@ impl SessionUi {
                 26.,
             ),
             ("tab", TAB_X, 6., 68., 44., strip, false, "ef_list", 26.),
+            (
+                "swap", 0., SWAP_Y, SWAP_TILE, SWAP_TILE, in_match, open, "ef_swap", 32.,
+            ),
         ] {
             self.animate(
                 ctx,
@@ -578,15 +691,20 @@ impl SessionUi {
         for lane in 0..5 {
             let p = players.iter().find(|p| p.lane == lane);
             let node = format!("lane{lane}");
+            let (rect, visible) = if preparing {
+                ((lane as f32 * 80., 4., 72., 72.), phase == Phase::Ready)
+            } else {
+                (swap_tile(lane, unfold), unfold > 0.02 && p.is_some())
+            };
             self.animate(
                 ctx,
                 &node,
-                (lane as f32 * 80., 4., 72., 72.),
-                true,
+                rect,
+                preparing,
                 cursor,
                 pressed,
                 p.is_some_and(|p| selected == Some(p.player)),
-                preparing && phase == Phase::Ready,
+                visible && (preparing || p.is_some()),
                 "",
                 56.,
             );
@@ -686,6 +804,7 @@ impl SessionUi {
                 h,
             });
         }
+        bounds.extend(swap_bounds);
         bounds
     }
 }
@@ -724,11 +843,28 @@ mod tests {
             std::fs::write(std::path::Path::new(&dir).join("session.ui"), template()).unwrap();
         }
         let ui = SessionUi::default();
+        // A choice is taken in any phase the champion may be changed in
+        // (the swap column in a match), never while loading or released.
         ui.events.lock().unwrap().choice = Some(((1, 33, 1), 1, 3));
         assert_eq!(
             ui.take_choice(Some(Phase::Running), Some((1, 33, 1)), 1),
-            None
+            Some(3)
         );
+        for phase in [Phase::Loading, Phase::Released, Phase::Armed] {
+            ui.events.lock().unwrap().choice = Some(((1, 33, 1), 1, 3));
+            assert_eq!(ui.take_choice(Some(phase), Some((1, 33, 1)), 1), None);
+            assert!(!swappable(Some(phase)));
+        }
+        assert!([Phase::Ready, Phase::Running, Phase::Paused, Phase::Ai]
+            .into_iter()
+            .all(|p| swappable(Some(p))));
+        // The column: folded onto its button, then one tile and gap per lane upward.
+        assert_eq!(swap_tile(3, 0.), (0., SWAP_Y, SWAP_TILE, SWAP_TILE));
+        assert_eq!(swap_tile(0, 1.).1, SWAP_Y - 60.);
+        assert_eq!(swap_tile(4, 1.).1, SWAP_Y - 300.);
+        ui.events.lock().unwrap().swap = true;
+        ui.close_swap();
+        assert!(!ui.events.lock().unwrap().swap);
         ui.events.lock().unwrap().choice = Some(((1, 33, 1), 1, 3));
         assert_eq!(
             ui.take_choice(Some(Phase::Ready), Some((2, 33, 2)), 1),

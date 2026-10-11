@@ -15,7 +15,8 @@
     "ui/ef_range.png": "247c6bf42e39b6dee16bef69081f740fbf0d51f55b1cc0b80bb7ff5edf4455c6",
     "ui/ef_recall.png": "921fa022d15075f5479a65dc667ab302d4edee2be3be48895e69edaf182ecdfa",
     "ui/ef_check.png": "80953545970ecbbd49dcbac16cb6bf5d9070bc2f06aba827adb52fd546d31107",
-    "ui/ef_unavailable.png": "0808a7d7967f39b9ba83b4fd591fc564fdb2e78189204d2d2e39ae3a5b6db720"
+    "ui/ef_unavailable.png": "0808a7d7967f39b9ba83b4fd591fc564fdb2e78189204d2d2e39ae3a5b6db720",
+    "ui/ef_swap.png": "92b8f1a26c362d0e75a41466d2e49c87efad39a1a3a424ed64994aa92fa89749"
   },
   "sources": {
     "camera": "887876740cb42dda0c645abe3c4d58ca175d7cf78880c9d68e76b7f731df5ae9",
@@ -33,6 +34,7 @@
     "scan-line": "a91107b853ebe84c421b0b252f37b01907482cdd4feec54748abdc854f7baa93",
     "house": "8a15dc7ce0317e30d7eecc5b42846cba53f5a775291e0a0df2aa934f64174e0b",
     "check": "ebbd505dd0d572905f56834802f84fc28dec31693ab15a203970a9d2ba6c8a23",
-    "circle-alert": "b9c00f7c2ad09771dd57a86e78ee5f4ba2930b3294e6f199c498eb6b33877bd1"
+    "circle-alert": "b9c00f7c2ad09771dd57a86e78ee5f4ba2930b3294e6f199c498eb6b33877bd1",
+    "arrow-left-right": "3a850c7a79c561aaf07aaab3f6633aa53c61c5b097419878592ddadc5b5bf799"
   }
 }

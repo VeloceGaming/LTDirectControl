@@ -3,6 +3,15 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.18 — 2026-10-11
+
+- Development build for game 0.7.0. Swap the controlled champion to a teammate during the match: while playing, paused, or with the AI in control (after F12), by Ctrl + 1-5 or from a new swap button floating above the pause button. The button unfolds a column of the five teammates' portraits upward, then a name plate with the key number beside each; a pick, Esc, a press elsewhere or the button again folds it away (the user's layout; design/hud/swap-column-v2.svg).
+- How: the controlled player was already decided every tick from the selection (`hud_identity`), and the pre-match chooser re-bound it under the session gate; the same re-binding is now allowed in the Running, Paused and Ai phases. The previous champion is the game AI's again from its next decision, as after Return to AI (which does no per-champion cleanup either). On a mid-match swap the mod's pending commands, the shop queue and the stats panel history are cleared, and the attack-range used by the reach ring is reset; the no-cooldown test buff already follows the controlled entity.
+- Each own player's HUD snapshot is refreshed once a second (it was taken at tick 1 only), so a swap while paused shows current level, gold, items and cooldowns; a dead teammate keeps its last snapshot until it respawns. Skill previews for the new champion need one simulation step, so they appear after resuming.
+- No swap while the shop or settings window is open (the shop shows, and would queue against, the previous champion's inventory).
+- Read for per-champion state and found to follow the selection each tick: simulation input, shop mode, HUD sampling, inventory, emotes, purchase tracker, test cheat. Not read: every native hook's per-actor statics.
+- New strip icon `ef_swap` (lucide arrow-left-right, as the other strip icons).
+
 ## 1.1.17 — 2026-10-11
 
 - Development build for game 0.7.0. Preview coverage report: for every champion of a watched match the mod logs what its reader made of each skill (`PREVIEW COVERAGE actor=.. Q=.. W=.. R=..`: the shapes, `no-area`, or `unknown:` and the first reason; its own budget of 600 lines a session) and what the champion's definition file alone gives (`PREVIEW DECLARED`). New tools/audit_previews.py joins them with the roster as the mod does (live shape, else declared shape, else no area, else unknown) and prints a table of champions and the list of skills still not understood. It shows whether a shape exists, not whether it is right.
