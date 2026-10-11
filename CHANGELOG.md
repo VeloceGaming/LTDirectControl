@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.19 — 2026-10-11
+
+- Development build for game 0.7.0. The mid-match swap (1.1.18) passed in game. Its column, after the user's test: portraits only (the name plates and key numbers are gone), in lane order from the top (top, jungle, mid, bottom, support; it was reversed), and the floating swap button has a light two-pixel frame so it reads against the battlefield; the portrait tiles have a visible grey frame.
+
 ## 1.1.18 — 2026-10-11
 
 - Development build for game 0.7.0. Swap the controlled champion to a teammate during the match: while playing, paused, or with the AI in control (after F12), by Ctrl + 1-5 or from a new swap button floating above the pause button. The button unfolds a column of the five teammates' portraits upward, then a name plate with the key number beside each; a pick, Esc, a press elsewhere or the button again folds it away (the user's layout; design/hud/swap-column-v2.svg).
