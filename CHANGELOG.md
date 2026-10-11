@@ -3,6 +3,15 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.22 — 2026-10-11
+
+- Development build for game 0.7.0. First step toward one DLL for game 0.6.3 and 0.7.0; no behaviour change intended, and this build still supports 0.7.0 only.
+  - Everything that differs between game versions now sits in one folder per version, `native_adapter/v070/`: `layout.rs` (moved from `windows/`), `identity.rs` (fingerprint, layout guards and enabled families, from `native_profile.rs`), `effects.rs` (the preview reader's apply addresses, from `native_preview.rs`) and `items.rs` (the item reader's anchors and bridge identity, from `native_items.rs`).
+  - The hook code in `native_adapter/windows/` (now with the preview reader, `preview.rs`) names no address and no version. `native_adapter/mod.rs` builds it once per version block against that block's tables, hashes the executable once, installs the copy whose fingerprint matches and routes its public functions to that copy (`hooks!`); an unrecognised executable still gets no hooks.
+  - Inline values moved into the tables: the purchase gate (`SHOP_SLOT_GATE`), the item bridge table and its two methods, the read-only data start used by the effect reader and its tests. The minimap plan takes the version's profile as an argument.
+  - Every hexadecimal value in the version-specific sources was compared with 1.1.21: none added; the only ones gone are the five repeats replaced by references to the tables.
+  - `tools/verify_native_profile.py` checks a profile against its own version folder and refuses an address written in the shared hook code.
+
 ## 1.1.21 — 2026-10-11
 
 - Development build for game 0.7.0. Swordman R: the strip is word 6 (40) wide and word 7 (150) long. 1.1.20 drew word 6 as the length at one champion's width, which was far too short and thin (user screenshots; the proportions now match the area another mod shows for the skill).

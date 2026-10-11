@@ -15,10 +15,18 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EXE = GAME_EXE
 
 
-def adapter_source(root=ROOT):
-    """All native adapter sources (probe/src/native_adapter/**), joined."""
+def tables_folder(profile, root=ROOT):
+    """The folder holding one game version's tables: 0.7.0 -> native_adapter/v070."""
+    return root / 'probe/src/native_adapter' / ('v' + profile['game_version'].replace('.', ''))
+
+
+def adapter_source(profile, root=ROOT):
+    """The hook code shared by every game version, then this version's tables, joined."""
     folder = root / 'probe/src/native_adapter'
-    return '\n'.join(p.read_text(encoding='utf-8') for p in sorted(folder.rglob('*.rs')))
+    shared = [folder / 'mod.rs', *sorted((folder / 'windows').rglob('*.rs'))]
+    tables = sorted(tables_folder(profile, root).glob('*.rs'))
+    assert tables, f'No tables for game {profile["game_version"]}'
+    return '\n'.join(p.read_text(encoding='utf-8') for p in shared + tables)
 
 
 def declaration(source, name):
@@ -38,20 +46,30 @@ def byte_pairs(value):
 
 
 def verify_sources(profile, root=ROOT):
-    adapter = adapter_source(root)
-    identity = (root/'probe/src/native_profile.rs').read_text()
-    items = (root/'probe/src/native_items.rs').read_text()
-    preview = (root/'probe/src/native_preview.rs').read_text()
+    adapter = adapter_source(profile, root)
+    folder = tables_folder(profile, root)
+    identity = (folder/'identity.rs').read_text(encoding='utf-8')
+    items = (folder/'items.rs').read_text(encoding='utf-8')
+    preview = (folder/'effects.rs').read_text(encoding='utf-8')
+    # The hook code may not name an address itself: a copy built for another
+    # game version would use it unchecked.
+    for path in sorted((root/'probe/src/native_adapter/windows').glob('*.rs')):
+        if path.name == 'tests.rs':
+            continue
+        code = '\n'.join(line.split('//')[0] for line in path.read_text(encoding='utf-8').splitlines())
+        found = re.findall(r'\b0x[0-9a-f]{6,7}\b', code)
+        assert not found, f'{path.name} names addresses outside the tables: {found}'
+    assert json.loads(declaration(identity, 'GAME')) == profile['game_version']
     if 'minimap' in profile:
-        minimap = (root/'probe/src/minimap.rs').read_text()
-        assert f'include_str!("../../tools/native_profiles/{profile["game_version"]}.json")' in minimap
+        assert f'include_str!("../../../../tools/native_profiles/{profile["game_version"]}.json")' in identity
+        assert 'crate::minimap::native::plan(MINIMAP_PROFILE, base, constants_address)' in adapter
         assert 'minimap_plan.verify()' in adapter
         assert 'crate::minimap::content_rect(wide, left, custom)' in adapter
     anchors = profile['anchors']
     assert json.loads(declaration(identity, 'EXPECTED_SHA')) == profile['executable_sha256']
     assert numbers(declaration(identity, 'PE_TIMESTAMP')) == [int(profile['timestamp'], 16)]
     assert numbers(declaration(identity, 'IMAGE_SIZE')) == [int(profile['size_of_image'], 16)]
-    assert 'native_profile::verify_layout(base, families)' in adapter
+    assert 'GUARDS.verify(base, families)' in adapter
     byte_names = {
         'WORKER_BYTES':('WORKER_SITE','WORKER_BYTES'), 'VIEW_BYTES':('VIEW_SITE','VIEW_BYTES'),
         'MOVE_BYTES':('MOVE_SITE','MOVE_BYTES'), 'INPUT_BYTES':('INPUT_SITE','INPUT_BYTES'),
@@ -86,7 +104,7 @@ def verify_sources(profile, root=ROOT):
         assert bytes(numbers(declaration(adapter, 'SKILL_BYTES'))[idx*5:(idx+1)*5]).hex() == a['bytes']
         assert bytes(numbers(declaration(adapter, 'SKILL_PROLOGUE'))).hex() == anchors[f'SKILL_{slot}_PROLOGUE']['bytes']
     pairs = {}
-    for source, name in [(adapter,'AIM_WRITES'),(adapter,'SKILL_QUEUE_ANCHORS'),(items,'ANCHORS'),(identity,'LAYOUT_BYTES')]:
+    for source, name in [(adapter,'AIM_WRITES'),(adapter,'SKILL_QUEUE_ANCHORS'),(items,'ITEM_ANCHORS'),(identity,'LAYOUT_BYTES')]:
         pairs.update(byte_pairs(declaration(source, name)))
     for name, a in (anchors | profile['layout_anchors']).items():
         if name.startswith(('ITEM_', 'ENTITY_', 'VISION_', 'VIEW_LAYOUT_')) or name in ('AIM_POINT_WRITE','AIM_DIRECTION_WRITE') or name.endswith('QUEUE_LAYOUT'):

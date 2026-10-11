@@ -1,56 +1,68 @@
-//! Native hooks for the one fingerprinted 0.6.3 executable: patch
-//! installation and shared helpers. Hook families live in the child modules.
+//! Native hooks for one fingerprinted executable: patch installation and
+//! shared helpers. Hook families live in the child modules. This folder is
+//! built once for each supported game version (see the parent module), each
+//! time against that version's tables: `layout`, `identity`, `effects` and
+//! `items`. Nothing here may name an address or a game version itself.
+use super::identity::*;
+use super::items::ITEMS;
+use super::layout::*;
 use super::*;
-use crate::native_profile::{family, EXPECTED_SHA, IMAGE_SIZE, PE_TIMESTAMP};
+use crate::native_profile::family;
 use std::ffi::{c_void, OsString};
 use std::os::windows::ffi::OsStringExt;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
-// One file per hook family; `layout` holds every 0.6.3 address.
+// One file per hook family.
 mod combat;
 mod input;
-mod layout;
 mod movement;
 mod outline;
+mod preview;
 mod shop;
 mod stack;
 #[cfg(test)]
 mod tests;
 mod tooltips;
 mod view;
-pub(super) use combat::attack_ranges;
+pub(in crate::native_adapter) use combat::attack_ranges;
 use combat::*;
 use input::*;
-use layout::*;
 use movement::*;
 use outline::*;
 // Used by the public layer above; explicit, so they win over its own
 // same-named wrappers that `use super::*` brings in.
-pub(super) use outline::SPRITE_DRAWS;
-pub(super) use outline::{clear_outline_targets, outline_status, set_outline_targets};
+pub(in crate::native_adapter) use outline::SPRITE_DRAWS;
+pub(in crate::native_adapter) use outline::{
+    clear_outline_targets, outline_status, set_outline_targets,
+};
 use shop::*;
-pub(super) use shop::{
+pub(in crate::native_adapter) use shop::{
     buyer_anchor_report, item_slot_capacity, native_player, player_build, player_owned_len,
     shop_ready,
 };
-pub(super) use stack::{thread_alive, thread_stack};
-pub(super) use view::reset_session;
+pub(in crate::native_adapter) use stack::{thread_alive, thread_stack};
+pub(in crate::native_adapter) use view::reset_session;
 use view::*;
 
-pub(super) fn verified_base() -> Option<usize> {
+pub(in crate::native_adapter) fn verified_base() -> Option<usize> {
     PATCHES.get()?;
     let base = unsafe { GetModuleHandleW(std::ptr::null()) } as usize;
     (base != 0).then_some(base)
 }
 /// The executable's base when every one of `families` is installed.
-pub(super) fn family_base(families: u32) -> Option<usize> {
+pub(in crate::native_adapter) fn family_base(families: u32) -> Option<usize> {
     let installed = PATCHES.get()?.families;
     (installed & families == families)
         .then(verified_base)
         .flatten()
 }
-pub(super) fn installed(families: u32) -> bool {
+/// The executable's base and what the registered-item reader checks in it,
+/// once the shop family (which that reader belongs to) is installed.
+pub(in crate::native_adapter) fn item_reader() -> Option<(usize, crate::native_items::Addresses)> {
+    Some((family_base(family::SHOP)?, ITEMS))
+}
+pub(in crate::native_adapter) fn installed(families: u32) -> bool {
     PATCHES
         .get()
         .is_some_and(|p| p.families & families == families)
@@ -90,7 +102,7 @@ extern "system" {
     ) -> u16;
 }
 
-pub(super) fn capture_trace(label: &str, logger: &Logger) {
+pub(in crate::native_adapter) fn capture_trace(label: &str, logger: &Logger) {
     let mut frames = [std::ptr::null_mut(); 64];
     let count =
         unsafe { RtlCaptureStackBackTrace(1, 64, frames.as_mut_ptr(), std::ptr::null_mut()) }
@@ -125,7 +137,7 @@ unsafe fn read_call(site: usize) -> [u8; 5] {
     }
     bytes
 }
-pub(super) fn audit_patches() -> Option<bool> {
+pub(in crate::native_adapter) fn audit_patches() -> Option<bool> {
     // These addresses belong to the resident executable, not a transient view.
     PATCHES.get().map(|p| unsafe {
         p.sites.iter().all(|(site, bytes)| {
@@ -155,7 +167,7 @@ extern "system" {
     fn BCryptCloseAlgorithmProvider(handle: *mut c_void, flags: u32) -> i32;
 }
 
-pub(super) fn sha256(bytes: &[u8]) -> Result<String, String> {
+pub(in crate::native_adapter) fn sha256(bytes: &[u8]) -> Result<String, String> {
     let algorithm: Vec<u16> = "SHA256\0".encode_utf16().collect();
     let mut handle = std::ptr::null_mut();
     let mut digest = [0u8; 32];
@@ -228,7 +240,8 @@ unsafe fn relay(site: usize, destination: usize) -> Result<usize, String> {
     relative_call(site, block)?;
     Ok(block)
 }
-pub(super) fn install() -> Result<(), String> {
+/// The SHA-256 of the running executable's file on disk.
+pub(in crate::native_adapter) fn executable_sha() -> Result<String, String> {
     unsafe {
         let module = GetModuleHandleW(std::ptr::null());
         if module.is_null() {
@@ -241,7 +254,18 @@ pub(super) fn install() -> Result<(), String> {
         }
         let bytes = std::fs::read(OsString::from_wide(&path[..length]))
             .map_err(|e| format!("Cannot verify executable: {e}"))?;
-        if sha256(&bytes)? != EXPECTED_SHA {
+        sha256(&bytes)
+    }
+}
+/// `sha` is `executable_sha()`: the parent module computes it once and
+/// offers it to the copy whose game version it names.
+pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
+    unsafe {
+        let module = GetModuleHandleW(std::ptr::null());
+        if module.is_null() {
+            return Err("Executable module unavailable".into());
+        }
+        if sha != EXPECTED_SHA {
             return Err("Executable fingerprint differs; no hooks installed".into());
         }
         let base = module as usize;
@@ -253,7 +277,7 @@ pub(super) fn install() -> Result<(), String> {
         {
             return Err("Loaded PE identity differs; no hooks installed".into());
         }
-        let families = crate::native_profile::ENABLED;
+        let families = ENABLED;
         let on = |family: u32| families & family != 0;
         if !on(family::SESSION) {
             return Err(
@@ -264,7 +288,7 @@ pub(super) fn install() -> Result<(), String> {
         if on(family::COMBAT) && !on(family::MOVEMENT) {
             return Err("Combat hooks need the movement family; no hooks installed".into());
         }
-        if !crate::native_profile::verify_layout(base, families) {
+        if !GUARDS.verify(base, families) {
             return Err("Native layout consumers differ; no hooks installed".into());
         }
         for (family, (rva, expected)) in [
@@ -462,7 +486,8 @@ pub(super) fn install() -> Result<(), String> {
         }
         let minimap_plan = if on(family::MINIMAP) {
             let constants_address = allocate_near(base + VIEW_SITE)?;
-            let minimap_plan = crate::minimap::native::plan(base, constants_address)?;
+            let minimap_plan =
+                crate::minimap::native::plan(MINIMAP_PROFILE, base, constants_address)?;
             if !minimap_plan.verify() {
                 return Err(
                     "Minimap operands or shared source constants differ; no hooks installed".into(),

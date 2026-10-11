@@ -75,7 +75,6 @@ pub fn draw_frame(ctx: &mut StableClient<'_>, camera: &CameraControl) {
 #[cfg(any(test, all(windows, target_arch = "x86_64")))]
 pub(crate) mod native {
     use serde_json::Value;
-    const PROFILE: &str = include_str!("../../tools/native_profiles/0.7.0.json");
     pub struct BytePatch {
         pub site: usize,
         pub expected: Vec<u8>,
@@ -106,8 +105,10 @@ pub(crate) mod native {
         )
         .map_err(|_| "Invalid minimap RVA".into())
     }
-    pub fn plan(base: usize, constants_address: usize) -> Result<Plan, String> {
-        let p: Value = serde_json::from_str(PROFILE).map_err(|e| e.to_string())?;
+    /// `profile` is the game version's reviewed profile
+    /// (tools/native_profiles), which lists the operands.
+    pub fn plan(profile: &str, base: usize, constants_address: usize) -> Result<Plan, String> {
+        let p: Value = serde_json::from_str(profile).map_err(|e| e.to_string())?;
         let map = &p["minimap"];
         if map["reviewed"] != true || map["map_size"] != 352 || map["padding"] != 4 {
             return Err("Unreviewed minimap geometry".into());
@@ -248,19 +249,25 @@ mod tests {
     }
     #[test]
     fn isolated_constants_only_replace_reviewed_operands_and_remain_in_reach() {
-        let base = 0x140000000usize;
-        let constants = base + 0x6000000;
-        let p = native::plan(base, constants).unwrap();
-        assert_eq!(p.patches.len(), 54);
-        assert!(!p.guards.is_empty());
-        assert_eq!(p.constants.len() % 16, 0);
-        assert!(p.constants.len() < 4096);
-        for patch in p.patches {
-            assert_eq!(patch.bytes.len(), patch.expected.len());
-            assert_ne!(patch.bytes, patch.expected);
-            assert!((base..base + 0x52d6000).contains(&patch.site));
+        // Each supported game version: its profile and its image size.
+        for (profile, image) in [(
+            include_str!("../../tools/native_profiles/0.7.0.json"),
+            0x56d8000,
+        )] {
+            let base = 0x140000000usize;
+            let constants = base + 0x6000000;
+            let p = native::plan(profile, base, constants).unwrap();
+            assert_eq!(p.patches.len(), 54);
+            assert!(!p.guards.is_empty());
+            assert_eq!(p.constants.len() % 16, 0);
+            assert!(p.constants.len() < 4096);
+            for patch in p.patches {
+                assert_eq!(patch.bytes.len(), patch.expected.len());
+                assert_ne!(patch.bytes, patch.expected);
+                assert!((base..base + image).contains(&patch.site));
+            }
+            assert!(native::plan(profile, base, usize::MAX & !15).is_err());
+            assert!(native::plan(profile, base, constants + 1).is_err());
         }
-        assert!(native::plan(base, usize::MAX & !15).is_err());
-        assert!(native::plan(base, constants + 1).is_err());
     }
 }

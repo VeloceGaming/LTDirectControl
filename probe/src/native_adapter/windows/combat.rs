@@ -163,7 +163,7 @@ pub(crate) unsafe fn observe_owned_abilities(
         let offsets = [0x4c0, 0x4f8, 0x530];
         let geometry = std::array::from_fn(|slot| {
             if metadata[slot].is_some() {
-                crate::native_preview::read(base, entity, offsets[slot])
+                preview::read(base, entity, offsets[slot])
             } else {
                 crate::skill_preview::Geometry::default()
             }
@@ -574,12 +574,12 @@ unsafe fn inventory(shared: &Shared, entity: usize) {
     // PREVIEW ROSTER line before it names the actor's champion.
     if viewed && COVERAGE_LINES.fetch_add(1, Ordering::Relaxed) < COVERAGE_LIMIT {
         let slots = [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)].map(|(slot, offset)| {
-            let readable = crate::native_preview::dump(base, entity, offset, &|a, n| {
+            let readable = preview::dump(base, entity, offset, &|a, n| {
                 super::tooltips::accessible(a, n, false)
             })
             .is_some();
             let summary = if readable {
-                crate::native_preview::read(base, entity, offset).summary()
+                preview::read(base, entity, offset).summary()
             } else {
                 "absent".into()
             };
@@ -594,7 +594,7 @@ unsafe fn inventory(shared: &Shared, entity: usize) {
         return;
     }
     for (slot, offset) in [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)] {
-        let Some(tree) = crate::native_preview::dump(base, entity, offset, &|a, n| {
+        let Some(tree) = preview::dump(base, entity, offset, &|a, n| {
             super::tooltips::accessible(a, n, false)
         }) else {
             continue;

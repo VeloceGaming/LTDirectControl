@@ -33,7 +33,6 @@ mod minimap;
 mod movement;
 mod native_adapter;
 mod native_items;
-mod native_preview;
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod native_profile;
 mod native_timing;

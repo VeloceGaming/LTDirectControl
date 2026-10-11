@@ -1,4 +1,8 @@
-//! Experimental adapter for ONE fingerprinted executable, not a stable API.
+//! Experimental adapter for the fingerprinted executables listed at the end
+//! of this file, not a stable API. The hook code (windows/) is built once
+//! per supported game version, against that version's tables (v*/); the one
+//! whose fingerprint the running executable has is installed and answers
+//! the calls below, the others stay inert.
 //! Eleven decoded CALLs and one movement-consumer tail JMP are redirected; originals stay
 //! intact. Installing is permitted only at the title screen, before a viewer
 //! or its normal worker exists. No patch is made to the executable on disk.
@@ -25,10 +29,25 @@ static OWNED_STEER_ENTRIES: AtomicUsize = AtomicUsize::new(0);
 static DIRECT_STEPS: AtomicUsize = AtomicUsize::new(0);
 static STEER_POINTER_REJECTIONS: AtomicUsize = AtomicUsize::new(0);
 static DEATH_GREYSCALE: AtomicBool = AtomicBool::new(false);
+/// The game version whose hooks answer: 0 until `install` recognises the
+/// executable, then that version's number in `hooks!`.
+#[cfg(all(windows, target_arch = "x86_64"))]
+static ACTIVE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+/// `hooks!(default, call)`: `call` in the hooks of the running game
+/// version, or `default` while no supported executable is recognised.
+#[cfg(all(windows, target_arch = "x86_64"))]
+macro_rules! hooks {
+    ($default:expr, $($call:tt)+) => {
+        match ACTIVE.load(Ordering::Acquire) {
+            1 => v070::windows::$($call)+,
+            _ => $default,
+        }
+    };
+}
 pub(crate) fn asset_digest(bytes: &[u8]) -> Result<String, String> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::sha256(bytes)
+        host::sha256(bytes)
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -37,10 +56,10 @@ pub(crate) fn asset_digest(bytes: &[u8]) -> Result<String, String> {
     }
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
-/// The executable's base once the shop family (which the item catalogue
-/// reader belongs to) is installed for it.
-pub(crate) fn verified_base() -> Option<usize> {
-    windows::family_base(crate::native_profile::family::SHOP)
+/// The executable's base and the addresses the item catalogue reader
+/// checks, once the shop family (which that reader belongs to) is installed.
+pub(crate) fn item_reader() -> Option<(usize, crate::native_items::Addresses)> {
+    hooks!(None, item_reader())
 }
 pub fn set_death_greyscale(dead: bool) {
     DEATH_GREYSCALE.store(dead, Ordering::Release);
@@ -106,11 +125,14 @@ pub fn set_outline_targets(
     click: Option<(usize, std::time::Instant)>,
 ) {
     #[cfg(all(windows, target_arch = "x86_64"))]
-    windows::set_outline_targets(OutlineTargets {
-        hover,
-        attack,
-        click,
-    });
+    hooks!(
+        (),
+        set_outline_targets(OutlineTargets {
+            hover,
+            attack,
+            click,
+        })
+    );
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     let _ = (hover, attack, click);
 }
@@ -123,7 +145,7 @@ pub fn attack_ranges(
     #[cfg(all(windows, target_arch = "x86_64"))]
     unsafe {
         sim.with_native_context(|state, table| {
-            windows::attack_ranges(state as usize, table as usize, actor)
+            hooks!(None, attack_ranges(state as usize, table as usize, actor))
         })
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
@@ -139,7 +161,7 @@ pub fn player_build(sim: &mod_api_stable::StableSim<'_>, id: usize) -> Option<Ve
     #[cfg(all(windows, target_arch = "x86_64"))]
     unsafe {
         sim.with_native_context(|state, table| {
-            windows::player_build(state as usize, table as usize, id)
+            hooks!(None, player_build(state as usize, table as usize, id))
         })
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
@@ -154,7 +176,7 @@ pub fn player_owned_len(sim: &mod_api_stable::StableSim<'_>, id: usize) -> Optio
     #[cfg(all(windows, target_arch = "x86_64"))]
     unsafe {
         sim.with_native_context(|state, table| {
-            windows::player_owned_len(state as usize, table as usize, id)
+            hooks!(None, player_owned_len(state as usize, table as usize, id))
         })
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
@@ -169,7 +191,7 @@ pub fn native_player(sim: &mod_api_stable::StableSim<'_>, id: usize) -> Option<u
     #[cfg(all(windows, target_arch = "x86_64"))]
     unsafe {
         sim.with_native_context(|state, table| {
-            windows::native_player(state as usize, table as usize, id)
+            hooks!(None, native_player(state as usize, table as usize, id))
         })
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
@@ -185,7 +207,7 @@ pub fn native_player(sim: &mod_api_stable::StableSim<'_>, id: usize) -> Option<u
 pub fn item_slot_capacity() -> Option<usize> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::item_slot_capacity()
+        hooks!(None, item_slot_capacity())
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -197,7 +219,7 @@ pub fn item_slot_capacity() -> Option<usize> {
 pub fn shop_ready() -> bool {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::shop_ready()
+        hooks!(false, shop_ready())
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -210,7 +232,10 @@ pub fn shop_ready() -> bool {
 pub fn buyer_anchor_report() -> Vec<String> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::buyer_anchor_report()
+        hooks!(
+            vec!["SHOP ANCHORS skipped: no supported executable recognised".into()],
+            buyer_anchor_report()
+        )
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -271,7 +296,7 @@ pub fn arm_stop(
 
 pub fn capture_trace(label: &str, logger: &Logger) {
     #[cfg(all(windows, target_arch = "x86_64"))]
-    windows::capture_trace(label, logger);
+    host::capture_trace(label, logger);
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     logger.write(&format!(
         "NATIVE STACK label={label:?} unavailable on this platform"
@@ -283,7 +308,7 @@ pub fn capture_trace(label: &str, logger: &Logger) {
 pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::thread_stack(thread)
+        host::thread_stack(thread)
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -295,7 +320,7 @@ pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
 pub fn thread_alive(thread: u64) -> bool {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::thread_alive(thread)
+        host::thread_alive(thread)
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -310,20 +335,20 @@ pub fn sample_status(logger: &Logger) -> bool {
     let viewer = VIEW_ENTRIES.load(Ordering::Relaxed);
     let input = INPUT_ENTRIES.load(Ordering::Relaxed);
     #[cfg(all(windows, target_arch = "x86_64"))]
-    let patches = windows::audit_patches();
+    let patches = hooks!(None, audit_patches());
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     let patches: Option<bool> = None;
     logger.write(&format!("NATIVE TRAFFIC worker_entries={worker} viewer_entries={viewer} input_entries={input} steering_entries={} owned_steering_entries={} direct_steps={} steering_pointer_rejections={} patch_bytes_match={patches:?} shared_configured={} os_thread={}",
         STEER_ENTRIES.load(Ordering::Relaxed), OWNED_STEER_ENTRIES.load(Ordering::Relaxed), DIRECT_STEPS.load(Ordering::Relaxed), STEER_POINTER_REJECTIONS.load(Ordering::Relaxed), SHARED.get().is_some(), crate::platform_input::thread_id()));
     #[cfg(all(windows, target_arch = "x86_64"))]
-    windows::outline_status(logger);
+    hooks!((), outline_status(logger));
     patches != Some(false)
 }
 /// A unit's drawn centre and body sprites from the last 250 ms (selection).
 pub fn sprite_draw(id: usize) -> Option<((f32, f32), Vec<crate::sprite_art::Drawn>)> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        let draws = windows::SPRITE_DRAWS.lock().ok()?;
+        let draws = hooks!(return None, SPRITE_DRAWS.lock()).ok()?;
         let (_, center, sprites, at) = draws.iter().find(|d| d.0 == id)?;
         (at.elapsed() < std::time::Duration::from_millis(250)).then(|| (*center, sprites.clone()))
     }
@@ -333,10 +358,20 @@ pub fn sprite_draw(id: usize) -> Option<((f32, f32), Vec<crate::sprite_art::Draw
         None
     }
 }
-pub fn install() -> Result<(), String> {
+/// Installs the hooks built for the running executable, recognised by its
+/// fingerprint. On success: the game version and the hook families
+/// installed. An executable no version names gets no hooks.
+pub fn install() -> Result<(&'static str, u32), String> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::install()
+        let sha = host::executable_sha()?;
+        if sha == v070::identity::EXPECTED_SHA {
+            ACTIVE.store(1, Ordering::Release);
+            v070::windows::install(&sha)?;
+            Ok((v070::identity::GAME, v070::identity::ENABLED))
+        } else {
+            Err("Executable fingerprint differs; no hooks installed".into())
+        }
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -349,10 +384,24 @@ pub fn reset_session() {
     set_death_greyscale(false);
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        windows::clear_outline_targets();
-        windows::reset_session();
+        hooks!((), clear_outline_targets());
+        hooks!((), reset_session());
     }
 }
 
+// One block per supported game version: its tables (v*/), and the hook code
+// (windows/) built against them. A new version also needs its number in
+// `hooks!` and its fingerprint in `install`.
 #[cfg(all(windows, target_arch = "x86_64"))]
-mod windows;
+mod v070 {
+    use super::*;
+    mod effects;
+    pub(super) mod identity;
+    mod items;
+    mod layout;
+    #[path = "../windows/mod.rs"]
+    pub(super) mod windows;
+}
+/// Helpers that touch no game address (hashing, stack capture): any copy.
+#[cfg(all(windows, target_arch = "x86_64"))]
+use v070::windows as host;

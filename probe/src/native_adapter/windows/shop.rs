@@ -99,7 +99,7 @@ pub(crate) fn item_slot_capacity() -> Option<usize> {
     installed(family::SHOP).then_some(())?;
     unsafe {
         let base = GetModuleHandleW(std::ptr::null()) as usize;
-        let gate = std::slice::from_raw_parts((base + 0x174ab91) as *const u8, 6);
+        let gate = std::slice::from_raw_parts((base + SHOP_SLOT_GATE) as *const u8, 6);
         // cmp rax, imm8 ; ja rel32
         (gate[..3] == [0x48, 0x83, 0xf8] && gate[4..6] == [0x0f, 0x87] && gate[3] < 64)
             .then(|| gate[3] as usize + 1)

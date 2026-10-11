@@ -1,11 +1,7 @@
-//! Session family (worker, viewer, input): reviewed for 0.7.0. Every other
-//! address below still holds its 0.6.3 value and is used only once its
-//! family is enabled (crate::native_profile::ENABLED).
-//!
-//! Every code address, call site and expected byte pattern the
-//! hooks rely on. Updating the mod for a new game version starts here (and
-//! with tools/native_profiles). Entity field offsets are still inline in
-//! the hook files.
+//! Game 0.7.0: every code address, call site and expected byte pattern the
+//! hooks rely on. Supporting another game version starts with a copy of
+//! this folder (and of its tools/native_profiles file). Entity field
+//! offsets are inline in the hook files (native_adapter/windows).
 
 // 0.7.0: foreground worker send after runner locks; all 420 decoded
 // instructions equal the 0.6.3 function, and the caller aligns with its
@@ -1746,3 +1742,5 @@ pub(super) const TOOLTIP_POINTERS: &[(usize, usize)] = &[
     (0x3f16ae8, 0x1ab4d40),
     (0x3f16af0, 0x1ab4b70),
 ];
+// The purchase gate's slot limit: cmp rax, imm8 ; ja rel32.
+pub(crate) const SHOP_SLOT_GATE: usize = 0x174ab91;

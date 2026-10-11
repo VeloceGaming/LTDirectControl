@@ -456,11 +456,10 @@ impl Client {
                 Some(mod_api_stable::SceneKindV1::Title) => {
                     self.install_attempted.store(true, Ordering::Relaxed);
                     match native_adapter::install() {
-                        Ok(()) => self.timing.installed(
+                        Ok((game, families)) => self.timing.installed(
                             true,
                             &format!(
-                                "verified 0.7.0 SHA256; hook families {:#x} installed at title",
-                                crate::native_profile::ENABLED
+                                "verified {game} SHA256; hook families {families:#x} installed at title"
                             ),
                             &self.logger,
                         ),

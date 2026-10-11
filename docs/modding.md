@@ -238,7 +238,7 @@ can and cannot do is in [preview-drawing.md](preview-drawing.md).
 
 Previews come from the game's own skill data, never per-skill code:
 
-- `native_preview.rs` reads the controlled champion's live effect tree and
+- `native_adapter/windows/preview.rs` reads the controlled champion's live effect tree and
   turns each recognised effect type (identified by its apply function and
   size) into footprints: a shape (circle, corridor, rectangle, cone,
   movement) and a placement (caster, aim, ahead, projectile end, landing).
@@ -283,9 +283,10 @@ Debug › Log detail = Verbose when investigating.
 
 | File | Holds |
 |---|---|
-| `mod.rs` | the safe functions the rest of the mod calls |
+| `mod.rs` | the safe functions the rest of the mod calls; picks the hooks built for the running game version |
+| `v070/` | one folder per supported game version, holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
 | `windows/mod.rs` | fingerprint check, patch installation (`install`), runtime patch audit |
-| `windows/layout.rs` | every 0.6.3 code address, call site and expected byte pattern |
+| `windows/preview.rs` | skill effect tree reader (skill previews) |
 | `windows/movement.rs` | move, steering, stop, recall |
 | `windows/combat.rs` | attacks, Q/W/R, aim, ability reads |
 | `windows/outline.rs` | sprite outlines, death greyscale, each unit's drawn sprites for selection |
@@ -318,11 +319,15 @@ Manual shopping reports itself unavailable.
 0. Run `python tools/prepare_sdk.py` to copy the new game's SDK into `sdk/`
    (it re-adds the mod's two local SDK additions and stops if the SDK
    changed where they go).
-1. Start from the three places that hold version knowledge:
-   - `native_adapter/windows/layout.rs` (hook sites and byte patterns);
-   - `native_profile.rs` (executable identity and layout guards);
-   - `tools/native_profiles/0.6.3.json` (the reviewed profile the tools
-     verify against).
+1. Start from the two places that hold version knowledge. The hook code in
+   `native_adapter/windows/` is built once per supported game version,
+   each time against that version's tables, and names no address itself:
+   - `native_adapter/v070/` (copy the newest folder: hook sites and byte
+     patterns, executable identity and layout guards, effect and item
+     addresses), with a block for the new folder at the end of
+     `native_adapter/mod.rs`;
+   - `tools/native_profiles/0.7.0.json` (the reviewed profile the tools
+     verify that folder against).
 2. Entity and player field offsets are still written inline in the hook
    files (search for `+ 0x`).
 3. Follow [re-mod-migration-guide.md](re-mod-migration-guide.md) and

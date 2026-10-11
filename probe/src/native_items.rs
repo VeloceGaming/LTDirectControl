@@ -5,48 +5,15 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 pub type Catalogue = HashMap<String, Value>;
-#[cfg(all(windows, target_arch = "x86_64"))]
-const ANCHORS: &[(usize, &[u8])] = &[
-    // Native buying/AI consumer: context +8 is the settings owner.
-    // The old +1b8 chain accidentally read the simulation tick.
-    (0xe9599f, &[0x48, 0x8b, 0x42, 0x08]),
-    (0xe93e77, &[0x49, 0x8b, 0x59, 0x08]),
-    (
-        0x31a13d0,
-        &[
-            0x48, 0x85, 0xc9, 0x74, 0x0c, 0x48, 0x8b, 0x41, 0x08, 0x48, 0x8b, 0x80, 0xf8, 0x07,
-            0x00, 0x00, 0xc3,
-        ],
-    ),
-    (
-        0x31a1e05,
-        &[
-            0x48, 0x8b, 0x41, 0x10, 0x48, 0x8b, 0x00, 0x48, 0x8b, 0x80, 0xb8, 0x01, 0x00, 0x00,
-            0xc3,
-        ],
-    ),
-    (
-        0xe93e7d,
-        &[
-            0x48, 0x8b, 0x43, 0x30, 0x48, 0x8b, 0x58, 0x08, 0x4c, 0x8b, 0x70, 0x10,
-        ],
-    ),
-    (
-        0x2364d5b,
-        &[
-            0x4d, 0x8b, 0x77, 0x78, 0x49, 0x8b, 0xb7, 0x90, 0x00, 0x00, 0x00,
-        ],
-    ),
-    (0xe940bd, &[0xff, 0x90, 0x80, 0x00, 0x00, 0x00]),
-    (0x12ce710, &[0x48, 0x8d, 0x41, 0x30, 0xc3]),
-    (0x3184144, &[0xff, 0x53, 0x50]),
-    (0x31841aa, &[0x0f, 0x11, 0x46, 0x30]),
-];
-
-// Getter +0x80 borrows NEXT tiers from wrapper +0x30. Native buying
-// searches these forward edges backward from a goal (ea1730). Wrapper
-// constructor 2e66f50 caches legacy +0x50 there; +0x58 goes to +0x48.
-// Keep the forward direction and derive previous links for diagnostics only.
+/// What the reader checks in one game version's executable before reading:
+/// instruction anchors, and the AI bridge's table with two of its methods
+/// as (offset in the table, method). Listed in native_adapter/v*/items.rs.
+#[derive(Clone, Copy)]
+pub struct Addresses {
+    pub anchors: &'static [(usize, &'static [u8])],
+    pub bridge_table: usize,
+    pub bridge_methods: [(usize, usize); 2],
+}
 fn link_upgrades(items: &mut Catalogue) -> Option<()> {
     for item in items.values_mut() {
         let next = item["next_tier"].as_array_mut()?;
@@ -79,16 +46,18 @@ fn link_upgrades(items: &mut Catalogue) -> Option<()> {
 pub fn read(ctx: &StableAiContext<'_>) -> Result<Catalogue, String> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     unsafe {
-        let base =
-            crate::native_adapter::verified_base().ok_or("native adapter is not installed")?;
-        for (rva, bytes) in ANCHORS {
+        let (base, addresses) =
+            crate::native_adapter::item_reader().ok_or("native adapter is not installed")?;
+        for (rva, bytes) in addresses.anchors {
             if std::slice::from_raw_parts((base + rva) as *const u8, bytes.len()) != *bytes {
                 return Err(format!(
                     "registered item instruction anchor changed at {rva:x}"
                 ));
             }
         }
-        ctx.with_native_context(|state, table| windows::read(base, state as usize, table as usize))
+        ctx.with_native_context(|state, table| {
+            windows::read(base, &addresses, state as usize, table as usize)
+        })
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -209,16 +178,19 @@ mod windows {
     }
     pub(super) unsafe fn read(
         base: usize,
+        addresses: &Addresses,
         state: usize,
         table: usize,
     ) -> Result<Catalogue, String> {
         // Full executable hash and instruction anchors are checked at install.
         // Require the observed native AI bridge, before interpreting its state.
         if state < 0x10000
-            || table != base + 0x407dbf8
+            || table != base + addresses.bridge_table
             || word(table) < 120
-            || word(table + 8) != base + 0x31a13d0
-            || word(table + 48) != base + 0x31a1e00
+            || addresses
+                .bridge_methods
+                .iter()
+                .any(|(slot, method)| word(table + slot) != base + method)
         {
             return Err("AI bridge identity rejected".into());
         }

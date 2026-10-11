@@ -92,12 +92,10 @@ class ProfileTest(unittest.TestCase):
         # The branch's profile reviews the session family only; the other
         # families' constants are not compared (see verify_sources).
         profile=json.loads((verifier.ROOT/'tools/native_profiles/0.7.0.json').read_text())
-        for name in ['native_profile','native_items','native_preview','minimap']:
-            target=self.root/f'probe/src/{name}.rs';target.parent.mkdir(parents=True,exist_ok=True)
-            shutil.copy2(verifier.ROOT/f'probe/src/{name}.rs',target)
+        (self.root/'probe/src').mkdir(parents=True,exist_ok=True)
         shutil.copytree(verifier.ROOT/'probe/src/native_adapter',self.root/'probe/src/native_adapter')
         verifier.verify_sources(profile,self.root)
-        path=self.root/'probe/src/native_adapter/windows/layout.rs'
+        path=self.root/'probe/src/native_adapter/v070/layout.rs'
         original=path.read_text()
         for old,stale in [('WORKER_SITE: usize = 0x979089','WORKER_SITE: usize = 0xbfc77a'),
                           ('VIEW_ORIGINAL: usize = 0xb194c0','VIEW_ORIGINAL: usize = 0x930640')]:
