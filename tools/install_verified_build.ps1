@@ -34,7 +34,12 @@ if ($newRecord.version -ne $Version) { throw 'Version mismatch.' }
 function Assert-Hash([string]$Path, [string]$Expected) {
     if ((Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Expected) { throw "Fingerprint mismatch: $Path" }
 }
-Assert-Hash (Join-Path $gameRoot 'TeamfightManager2.exe') $newRecord.executable_sha256
+# The installed game must be one the build was verified for (a build may
+# carry tables for several game versions: supported_games in its record).
+$gameHash = (Get-FileHash -LiteralPath (Join-Path $gameRoot 'TeamfightManager2.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+$supportedGames = @($newRecord.executable_sha256)
+if ($newRecord.supported_games) { $supportedGames += @($newRecord.supported_games.PSObject.Properties | ForEach-Object { $_.Value }) }
+if ($supportedGames -notcontains $gameHash) { throw 'The installed game is not a version this build was verified for.' }
 foreach ($entry in @(@('lt_direct_control.dll','dll_sha256'),@('mod.mod_info','metadata_sha256'))) {
     Assert-Hash (Join-Path $packageRoot $entry[0]) $newRecord.($entry[1])
     if ($oldRecord) {
