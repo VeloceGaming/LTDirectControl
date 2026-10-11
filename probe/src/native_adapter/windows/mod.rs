@@ -147,52 +147,6 @@ pub(in crate::native_adapter) fn audit_patches() -> Option<bool> {
         })
     })
 }
-#[link(name = "bcrypt")]
-extern "system" {
-    fn BCryptOpenAlgorithmProvider(
-        handle: *mut *mut c_void,
-        algorithm: *const u16,
-        implementation: *const u16,
-        flags: u32,
-    ) -> i32;
-    fn BCryptHash(
-        handle: *mut c_void,
-        secret: *const u8,
-        secret_size: u32,
-        input: *const u8,
-        input_size: u32,
-        output: *mut u8,
-        output_size: u32,
-    ) -> i32;
-    fn BCryptCloseAlgorithmProvider(handle: *mut c_void, flags: u32) -> i32;
-}
-
-pub(in crate::native_adapter) fn sha256(bytes: &[u8]) -> Result<String, String> {
-    let algorithm: Vec<u16> = "SHA256\0".encode_utf16().collect();
-    let mut handle = std::ptr::null_mut();
-    let mut digest = [0u8; 32];
-    let size = u32::try_from(bytes.len()).map_err(|_| "Executable too large")?;
-    unsafe {
-        if BCryptOpenAlgorithmProvider(&mut handle, algorithm.as_ptr(), std::ptr::null(), 0) < 0 {
-            return Err("SHA256 provider unavailable".into());
-        }
-        let result = BCryptHash(
-            handle,
-            std::ptr::null(),
-            0,
-            bytes.as_ptr(),
-            size,
-            digest.as_mut_ptr(),
-            32,
-        );
-        BCryptCloseAlgorithmProvider(handle, 0);
-        if result < 0 {
-            return Err("Executable SHA256 failed".into());
-        }
-    }
-    Ok(digest.iter().map(|b| format!("{b:02x}")).collect())
-}
-
 fn relative_call(site: usize, destination: usize) -> Result<[u8; 5], String> {
     let relative = i32::try_from(destination as i128 - (site as i128 + 5))
         .map_err(|_| "Relay outside CALL rel32 range")?;
@@ -240,24 +194,7 @@ unsafe fn relay(site: usize, destination: usize) -> Result<usize, String> {
     relative_call(site, block)?;
     Ok(block)
 }
-/// The SHA-256 of the running executable's file on disk.
-pub(in crate::native_adapter) fn executable_sha() -> Result<String, String> {
-    unsafe {
-        let module = GetModuleHandleW(std::ptr::null());
-        if module.is_null() {
-            return Err("Executable module unavailable".into());
-        }
-        let mut path = vec![0u16; 32768];
-        let length = GetModuleFileNameW(module, path.as_mut_ptr(), path.len() as u32) as usize;
-        if length == 0 || length >= path.len() {
-            return Err("Executable path unavailable".into());
-        }
-        let bytes = std::fs::read(OsString::from_wide(&path[..length]))
-            .map_err(|e| format!("Cannot verify executable: {e}"))?;
-        sha256(&bytes)
-    }
-}
-/// `sha` is `executable_sha()`: the parent module computes it once and
+/// `sha` is `host::executable_sha()`: the parent module computes it once and
 /// offers it to the copy whose game version it names.
 pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
     unsafe {

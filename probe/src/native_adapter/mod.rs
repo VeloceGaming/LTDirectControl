@@ -34,12 +34,14 @@ static DEATH_GREYSCALE: AtomicBool = AtomicBool::new(false);
 #[cfg(all(windows, target_arch = "x86_64"))]
 static ACTIVE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
 /// `hooks!(default, call)`: `call` in the hooks of the running game
-/// version, or `default` while no supported executable is recognised.
+/// version, or `default` while no supported executable is recognised. (The
+/// stack helpers name no game address; their default is the first copy.)
 #[cfg(all(windows, target_arch = "x86_64"))]
 macro_rules! hooks {
     ($default:expr, $($call:tt)+) => {
         match ACTIVE.load(Ordering::Acquire) {
             1 => v070::windows::$($call)+,
+            2 => v063::windows::$($call)+,
             _ => $default,
         }
     };
@@ -296,7 +298,10 @@ pub fn arm_stop(
 
 pub fn capture_trace(label: &str, logger: &Logger) {
     #[cfg(all(windows, target_arch = "x86_64"))]
-    host::capture_trace(label, logger);
+    hooks!(
+        v070::windows::capture_trace(label, logger),
+        capture_trace(label, logger)
+    );
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     logger.write(&format!(
         "NATIVE STACK label={label:?} unavailable on this platform"
@@ -308,7 +313,7 @@ pub fn capture_trace(label: &str, logger: &Logger) {
 pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        host::thread_stack(thread)
+        hooks!(v070::windows::thread_stack(thread), thread_stack(thread))
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -320,7 +325,7 @@ pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
 pub fn thread_alive(thread: u64) -> bool {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        host::thread_alive(thread)
+        hooks!(v070::windows::thread_alive(thread), thread_alive(thread))
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -369,6 +374,10 @@ pub fn install() -> Result<(&'static str, u32), String> {
             ACTIVE.store(1, Ordering::Release);
             v070::windows::install(&sha)?;
             Ok((v070::identity::GAME, v070::identity::ENABLED))
+        } else if sha == v063::identity::EXPECTED_SHA {
+            ACTIVE.store(2, Ordering::Release);
+            v063::windows::install(&sha)?;
+            Ok((v063::identity::GAME, v063::identity::ENABLED))
         } else {
             Err("Executable fingerprint differs; no hooks installed".into())
         }
@@ -392,6 +401,7 @@ pub fn reset_session() {
 // One block per supported game version: its tables (v*/), and the hook code
 // (windows/) built against them. A new version also needs its number in
 // `hooks!` and its fingerprint in `install`.
+// (clippy: loading windows/ more than once is the point.)
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod v070 {
     use super::*;
@@ -399,9 +409,20 @@ mod v070 {
     pub(super) mod identity;
     mod items;
     mod layout;
+    #[allow(clippy::duplicate_mod)]
     #[path = "../windows/mod.rs"]
     pub(super) mod windows;
 }
-/// Helpers that touch no game address (hashing, stack capture): any copy.
 #[cfg(all(windows, target_arch = "x86_64"))]
-use v070::windows as host;
+mod v063 {
+    use super::*;
+    mod effects;
+    pub(super) mod identity;
+    mod items;
+    mod layout;
+    #[allow(clippy::duplicate_mod)]
+    #[path = "../windows/mod.rs"]
+    pub(super) mod windows;
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod host;

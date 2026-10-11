@@ -3,6 +3,16 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.2.0 — 2026-10-11
+
+- One DLL for game 0.6.3 and game 0.7.0. At the title screen the mod hashes the executable once and installs the hooks built for that game version; any other executable gets no hooks, as before. Release candidate: to be tested in game on both versions.
+  - `native_adapter/v063/` holds the 0.6.3 tables, taken from the released 1.0.x code (`layout.rs`, `native_profile.rs`, `native_preview.rs`, `native_items.rs` on main). Every address was compared with that code: none changed. The values main wrote inline are now named (`ENTITY_GETTER`, `OUTLINE_FLOAT_PARAM`, `OUTLINE_COLOR_PARAM`, `SHOP_SLOT_GATE`, the item bridge table). All hook families are enabled for 0.6.3.
+  - The hook code (`native_adapter/windows/`) is built twice, once per table folder; entity field offsets in it are the same in both games (checked against main). For 0.6.3 players this is the 0.7.0 branch's code path (hooks installed per family) with the released addresses.
+  - 0.6.3 gains what the 0.7.0 development builds added: Astrologer shapes, and five effects carried back with `tools/match_vtables.py` (0.7.0 to 0.6.3): Swordman R 0x18c09e0, Gambler Q 0x18c98a0, Vampire Q 0x14edc50 (similarity 1.00), a timed status 0x1a1e470 (0.98), and the rush to a clicked unit of Lancer W and Tale W 0x1ad97b0 (0.54, the only candidate; no field is read). The second timed status has two equal candidates on 0.6.3 and is left out.
+  - `mod.mod_info` requires base `>=0.6.3` again.
+  - Hashing moved to `native_adapter/host.rs` (it names no game address). The tooltip bridge test fixture is a naked function instead of a global symbol, because the hook tests now build once per game version (455 tests).
+  - `tools/verify_build.py` verifies every profile in `tools/native_profiles` against its own executable (the installed game, and a kept copy under `research/game-builds/` for the other version) and checks the DLL carries each fingerprint.
+
 ## 1.1.22 — 2026-10-11
 
 - Development build for game 0.7.0. First step toward one DLL for game 0.6.3 and 0.7.0; no behaviour change intended, and this build still supports 0.7.0 only.

@@ -310,29 +310,29 @@ mod tests {
     use super::*;
     // Stand-in Rust-register result. The bridge must preserve the four input
     // registers and must not insert a C aggregate-return argument.
-    std::arch::global_asm!(
-        ".globl tooltip_pair_fixture",
-        "tooltip_pair_fixture:",
-        "mov [rsp + 8], rcx",
-        "mov [rsp + 16], rdx",
-        "mov [rsp + 24], r8",
-        "mov [rsp + 32], r9",
-        "mov r10, rsp",
-        "and r10, 15",
-        "cmp r10, 8",
-        "jne tooltip_pair_bad_stack",
-        "mov rax, [rsp + 8]",
-        "add rax, [rsp + 24]",
-        "mov rdx, [rsp + 16]",
-        "add rdx, [rsp + 32]",
-        "ret",
-        "tooltip_pair_bad_stack:",
-        "xor eax, eax",
-        "xor edx, edx",
-        "ret",
-    );
-    extern "system" {
-        fn tooltip_pair_fixture();
+    // A naked function, not a global symbol: these tests are built once
+    // per supported game version.
+    #[unsafe(naked)]
+    unsafe extern "system" fn tooltip_pair_fixture() {
+        std::arch::naked_asm!(
+            "mov [rsp + 8], rcx",
+            "mov [rsp + 16], rdx",
+            "mov [rsp + 24], r8",
+            "mov [rsp + 32], r9",
+            "mov r10, rsp",
+            "and r10, 15",
+            "cmp r10, 8",
+            "jne 2f",
+            "mov rax, [rsp + 8]",
+            "add rax, [rsp + 24]",
+            "mov rdx, [rsp + 16]",
+            "add rdx, [rsp + 32]",
+            "ret",
+            "2:",
+            "xor eax, eax",
+            "xor edx, edx",
+            "ret",
+        )
     }
     #[test]
     fn native_pair_bridge_uses_rax_rdx_without_hidden_sret() {

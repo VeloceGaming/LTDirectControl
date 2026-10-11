@@ -92,6 +92,9 @@ class ProfileTest(unittest.TestCase):
         # The branch's profile reviews the session family only; the other
         # families' constants are not compared (see verify_sources).
         profile=json.loads((verifier.ROOT/'tools/native_profiles/0.7.0.json').read_text())
+        # Every supported game version's tables match its own profile.
+        for other in sorted((verifier.ROOT/'tools/native_profiles').glob('*.json')):
+            verifier.verify_sources(json.loads(other.read_text()))
         (self.root/'probe/src').mkdir(parents=True,exist_ok=True)
         shutil.copytree(verifier.ROOT/'probe/src/native_adapter',self.root/'probe/src/native_adapter')
         verifier.verify_sources(profile,self.root)

@@ -30,7 +30,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--version', required=True)
 parser.add_argument('--probe-tests', type=int, required=True)
 parser.add_argument('--previous-result', default='', help='What the previous build showed in game (optional).')
-parser.add_argument('--native-profile', type=Path, default=root / 'tools/native_profiles/0.7.0.json')
+parser.add_argument('--native-profile', type=Path,
+                    help='Profile of the installed game (default: the one whose fingerprint it has).')
+parser.add_argument('--game-builds', type=Path, default=root / 'research/game-builds',
+                    help='Folder with a copy of every other supported game version, as <version>/TeamfightManager2.exe.')
 args = parser.parse_args()
 
 # Release notes: the bullet lines under "## <version>" in CHANGELOG.md.
@@ -41,9 +44,27 @@ changes = [line[2:].strip() for line in section.group(1).splitlines() if line.st
 assert changes, f'CHANGELOG.md section {args.version} has no "- " entries'
 
 from verify_native_profile import verify
+# The DLL carries one table per supported game version. Each is verified
+# against its own executable: the installed game for its version, a kept
+# copy (--game-builds) for the others.
+installed = digest(GAME_EXE)
+profiles = {p: json.loads(p.read_text(encoding='utf-8'))
+            for p in sorted((root / 'tools/native_profiles').glob('*.json'))}
+if not args.native_profile:
+    match = [p for p, value in profiles.items() if value['executable_sha256'] == installed]
+    assert match, 'The installed game matches no profile in tools/native_profiles'
+    args.native_profile = match[0]
 args.native_profile = args.native_profile.resolve()
 profile = verify(args.native_profile, GAME_EXE)
 expected = profile['executable_sha256']
+supported = {profile['game_version']: expected}
+for path, other in profiles.items():
+    if path.resolve() == args.native_profile:
+        continue
+    executable = args.game_builds / other['game_version'] / 'TeamfightManager2.exe'
+    assert executable.is_file(), f'No copy of game {other["game_version"]} at {executable}: its table cannot be verified'
+    verify(path, executable)
+    supported[other['game_version']] = other['executable_sha256']
 anchors = dict(profile['anchors'])
 anchors.update(profile.get('tooltip_anchors', {}))
 # Include the render/input operands and source data in future migration audits.
@@ -55,7 +76,9 @@ for op in profile.get('minimap', {}).get('operands', []):
 info = json.loads((package / 'mod.mod_info').read_text())
 version = info['version']
 assert version == args.version, f'staged mod.mod_info is {version}, not {args.version}'
-assert expected.encode() in (package / 'lt_direct_control.dll').read_bytes(), 'DLL lacks current executable guard'
+library = (package / 'lt_direct_control.dll').read_bytes()
+for game, sha in supported.items():
+    assert sha.encode() in library, f'DLL lacks the executable guard of game {game}'
 
 # Cursor artwork embedded in the DLL.
 cursor_art = load('cursor-assets.json')
@@ -135,6 +158,7 @@ record = {
     'native_layout_guards': profile['layout_anchors'],
     'native_minimap_operands': profile.get('minimap'),
     'native_families': profile.get('families', ['all']),
+    'supported_games': supported,
     'source_sha256': {p.relative_to(root).as_posix(): digest(p) for p in sources},
     'ui_asset_hashes': ui_art['files'],
     'font_check': font_check,
@@ -144,4 +168,5 @@ record = {
 }
 (root / f'dist/build-{version}.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
 print(json.dumps({k: record[k] for k in ['version', 'dll_sha256', 'metadata_sha256', 'probe_tests', 'dll_load']}, indent=2))
+print(f'Tables verified for game {", ".join(sorted(supported))}, each against its own executable.')
 print(f'All {len(anchors)} native instruction/header anchors verified; ABI 6 and null-host rejection passed.')

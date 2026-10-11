@@ -250,10 +250,16 @@ mod tests {
     #[test]
     fn isolated_constants_only_replace_reviewed_operands_and_remain_in_reach() {
         // Each supported game version: its profile and its image size.
-        for (profile, image) in [(
-            include_str!("../../tools/native_profiles/0.7.0.json"),
-            0x56d8000,
-        )] {
+        for (profile, image) in [
+            (
+                include_str!("../../tools/native_profiles/0.7.0.json"),
+                0x56d8000,
+            ),
+            (
+                include_str!("../../tools/native_profiles/0.6.3.json"),
+                0x52d6000,
+            ),
+        ] {
             let base = 0x140000000usize;
             let constants = base + 0x6000000;
             let p = native::plan(profile, base, constants).unwrap();

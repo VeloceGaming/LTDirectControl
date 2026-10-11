@@ -14,7 +14,7 @@ from trace_pe import PeResearch
 ROOT = Path(__file__).resolve().parents[1]
 EXE = GAME_EXE
 adapter = "\n".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "probe/src/native_adapter").rglob("*.rs")))
-profile = (ROOT / "probe/src/native_profile.rs").read_text(encoding="utf-8")
+profile = (ROOT / "probe/src/native_adapter/v063/identity.rs").read_text(encoding="utf-8")
 sha = re.search(r'const EXPECTED_SHA: &str = "([0-9a-f]+)"', profile)
 assert sha, "Missing native executable fingerprint"
 assert hashlib.sha256(EXE.read_bytes()).hexdigest() == sha[1], "Game executable changed"

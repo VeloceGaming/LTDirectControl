@@ -815,7 +815,7 @@ fn windows_hash_rel32_and_forwarding_abi() {
     }
     assert_eq!(*RECEIVED.lock().unwrap(), vec![1, 2, 3, 4, 5, 6, 7, 8]);
     assert_eq!(
-        sha256(b"abc").unwrap(),
+        asset_digest(b"abc").unwrap(),
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
     );
     assert_eq!(

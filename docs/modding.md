@@ -284,7 +284,7 @@ Debug › Log detail = Verbose when investigating.
 | File | Holds |
 |---|---|
 | `mod.rs` | the safe functions the rest of the mod calls; picks the hooks built for the running game version |
-| `v070/` | one folder per supported game version, holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
+| `v063/`, `v070/` | one folder per supported game version (0.6.3, 0.7.0), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
 | `windows/mod.rs` | fingerprint check, patch installation (`install`), runtime patch audit |
 | `windows/preview.rs` | skill effect tree reader (skill previews) |
 | `windows/movement.rs` | move, steering, stop, recall |
@@ -322,12 +322,15 @@ Manual shopping reports itself unavailable.
 1. Start from the two places that hold version knowledge. The hook code in
    `native_adapter/windows/` is built once per supported game version,
    each time against that version's tables, and names no address itself:
-   - `native_adapter/v070/` (copy the newest folder: hook sites and byte
+   - `native_adapter/v063/` and `v070/` (copy the newest folder: hook sites and byte
      patterns, executable identity and layout guards, effect and item
      addresses), with a block for the new folder at the end of
      `native_adapter/mod.rs`;
-   - `tools/native_profiles/0.7.0.json` (the reviewed profile the tools
-     verify that folder against).
+   - `tools/native_profiles/<version>.json` (the reviewed profile the tools
+     verify that folder against). `tools/verify_build.py` checks every
+     version's folder against its own executable: the installed game for
+     its version, a kept copy under `research/game-builds/<version>/` for
+     the others.
 2. Entity and player field offsets are still written inline in the hook
    files (search for `+ 0x`).
 3. Follow [re-mod-migration-guide.md](re-mod-migration-guide.md) and
