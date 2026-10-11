@@ -444,6 +444,27 @@ impl Simulation {
                     "PREVIEW ROSTER key={key:?} actors=[{}]",
                     actors.join(", ")
                 ));
+                // What the champion's definition file alone gives, the
+                // fallback when the live effect tree is not understood.
+                for actor in &actors {
+                    let Some((_, name)) = actor.split_once('=') else {
+                        continue;
+                    };
+                    let declared = [0, 1, 2].map(|slot| {
+                        let g = crate::skill_preview::geometry(Some(name), slot);
+                        if g == crate::skill_preview::Geometry::default() {
+                            "absent".into()
+                        } else {
+                            g.summary()
+                        }
+                    });
+                    if declared.iter().any(|d| d != "absent") {
+                        self.logger.write(&format!(
+                            "PREVIEW DECLARED champion={name} Q={} W={} R={}",
+                            declared[0], declared[1], declared[2]
+                        ));
+                    }
+                }
             }
         }
     }

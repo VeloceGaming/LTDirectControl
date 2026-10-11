@@ -139,6 +139,37 @@ impl Geometry {
                     )
             })
     }
+    /// One word for a coverage report: the shapes found ("strip+circle"),
+    /// "no-area" when every effect is recognised and none has one, else
+    /// "unknown:" and the first reason.
+    pub fn summary(&self) -> String {
+        if !self.footprints.is_empty() {
+            let mut kinds: Vec<&str> = Vec::new();
+            for f in &self.footprints {
+                let kind = match f.shape {
+                    Shape::Circle { .. } if f.allies => "ally-circle",
+                    Shape::Circle { .. } => "circle",
+                    Shape::Corridor { .. } | Shape::Shot { .. } => "strip",
+                    Shape::Rectangle { .. } => "rectangle",
+                    Shape::Cone { .. } => "cone",
+                    Shape::Segment { .. } => "segment",
+                    Shape::Movement { blink: true } => "blink",
+                    Shape::Movement { blink: false } => "dash",
+                    Shape::Reach { .. } => "reach",
+                    Shape::Fan { .. } => "fan",
+                };
+                if !kinds.contains(&kind) {
+                    kinds.push(kind);
+                }
+            }
+            kinds.join("+")
+        } else if self.known_without_area() {
+            "no-area".into()
+        } else {
+            let reason = self.issues.first().map_or("nothing read", String::as_str);
+            format!("unknown:{}", reason.replace(' ', "_"))
+        }
+    }
     /// Every effect was recognised and none has an area (a self buff, a
     /// single-target shot): no direction guide is drawn for it.
     pub fn known_without_area(&self) -> bool {

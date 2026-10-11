@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.17 — 2026-10-11
+
+- Development build for game 0.7.0. Preview coverage report: for every champion of a watched match the mod logs what its reader made of each skill (`PREVIEW COVERAGE actor=.. Q=.. W=.. R=..`: the shapes, `no-area`, or `unknown:` and the first reason; its own budget of 600 lines a session) and what the champion's definition file alone gives (`PREVIEW DECLARED`). New tools/audit_previews.py joins them with the roster as the mod does (live shape, else declared shape, else no area, else unknown) and prints a table of champions and the list of skills still not understood. It shows whether a shape exists, not whether it is right.
+
 ## 1.1.16 — 2026-10-11
 
 - Development build for game 0.7.0. Native ability descriptions (1.1.15) passed in game for Crossbowman (three `source=game` results, nothing unresolved).
