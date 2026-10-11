@@ -38,9 +38,10 @@ const CHAMPION_SKILL: usize = 0x160da70;
 /// { applied effects, speed }: the caster rushes to the clicked unit, then
 /// the effects apply (Lancer W, Tale W; player's description).
 const RUSH_TO_TARGET: usize = 0x16157c0;
-/// Swordman R: { name, applied effects, distance, _, _, _, target }, a dash
-/// of a fixed distance through enemies, about a champion wide (player's
-/// description; the distance is word 6, 40).
+/// Swordman R: { name, applied effects, width (word 6), distance (word 7),
+/// _, _, target }, a dash of a fixed distance through enemies. 40 wide and
+/// 150 long: the proportions of the game's own area (user screenshots,
+/// 1.1.20, where word 6 drawn as the length was far too short).
 const SWORDMAN_ULT: usize = 0x1a88ef0;
 /// Gambler Q: { .., range (word 5), speed, hit radius (word 7) }: shots
 /// toward the hovered champion that stop at the range.
@@ -516,16 +517,19 @@ unsafe fn payload(
         }
         (Some(SWORDMAN_ULT), 88) => {
             out.family("native Swordman ult");
-            match distance(word(object + 48) as u64) {
-                Some(length) => out.add(
+            match (
+                distance(word(object + 48) as u64),
+                distance(word(object + 56) as u64),
+            ) {
+                (Some(width), Some(length)) => out.add(
                     Shape::Shot {
-                        radius: CHAMPION_RADIUS,
+                        radius: width / 2.,
                         length,
                         pierce: true,
                     },
                     Placement::Caster,
                 ),
-                None => out.issue("invalid native swordman dash"),
+                _ => out.issue("invalid native swordman dash"),
             }
         }
         (Some(GAMBLER_Q), 64) => {

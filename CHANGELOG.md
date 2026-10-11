@@ -3,6 +3,10 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.1.21 — 2026-10-11
+
+- Development build for game 0.7.0. Swordman R: the strip is word 6 (40) wide and word 7 (150) long. 1.1.20 drew word 6 as the length at one champion's width, which was far too short and thin (user screenshots; the proportions now match the area another mod shows for the skill).
+
 ## 1.1.20 — 2026-10-11
 
 - Development build for game 0.7.0. The skills the coverage report listed as not understood (one match by the user with Astrologer, Construct, Lancer, Soldier and Tale; shapes from the data and the user's descriptions):
