@@ -538,3 +538,10 @@ forfeits a pending claim. Takeover, recall and death cannot recreate it. A fresh
 match resets the lifecycle. P remains an independent manual opening action.
 Changelog stays untouched pending user acceptance; revised skill timing and
 collision are unchanged by this fix.
+
+### Derived collision follow-up — 2026-10-13
+
+The read-only trace of four upstream derived-value producers, entity cloning,
+handoff order, limits of that evidence, and the separately testable numerical
+prototype are documented in [investigation-derived-collision-prototype.md](investigation-derived-collision-prototype.md).
+This remains experimental until the in-game measurements are reviewed.
