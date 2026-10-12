@@ -80,20 +80,21 @@ pub(crate) fn template_for_test() -> String {
 }
 fn template() -> String {
     let bg = crate::ui_theme::hex(0xff);
-    let mut s=String::from("lt_session_controls:empty { width: 456px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62px; z: 1100; ignore_event: true;\n");
+    let mut s=String::from("lt_session_controls:empty { width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62px; z: 1100; ignore_event: true;\n");
     for lane in 0..5 {
         s.push_str(&format!("#lane{lane}:color_icon_button {{ x: {}px; y: 4px; width: 72px; height: 72px; z: 1102; btn: {{ color: #~4b4a49ff; back_color: #{bg}; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }} #portrait:image {{ x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; }} }}\n",lane*80));
     }
     s.push_str(&ui_graphics::image(
         "loading",
         "hourglass",
-        212,
+        240,
         24,
         32,
         1104,
     ));
     for (name, glyph) in [
         ("primary", "ef_play"),
+        ("watch", "ef_eye"),
         ("release", "ef_cpu"),
         ("camera", "ef_camera"),
         ("settings", "ef_settings"),
@@ -182,7 +183,7 @@ impl SessionUi {
         let hover = visible
             && cursor.is_some_and(|p| {
                 ctx.ui_node_rect(PATH).is_some_and(|(rx, ry, rw, rh)| {
-                    let sx = rw / if preparing { 456. } else { STRIP_W };
+                    let sx = rw / if preparing { 512. } else { STRIP_W };
                     let sy = rh / if preparing { 80. } else { 56. };
                     Rect {
                         x: rx + x * sx,
@@ -330,7 +331,7 @@ impl SessionUi {
         }
         if !self.registered {
             self.registered = true;
-            for (node, primary) in [("primary", true), ("release", false)] {
+            for (node, primary) in [("primary", true), ("release", false), ("watch", false)] {
                 let owner = timing.clone();
                 let click_path = format!("{PATH}.{node}");
                 ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
@@ -438,9 +439,8 @@ impl SessionUi {
         }
         ctx.ui_set_visible(PATH, true);
         let preparing = matches!(phase, Phase::Loading | Phase::Ready);
-
         let properties = if preparing {
-            format!("width: 456px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: {:.2}px; x: 0px;",-62.)
+            format!("width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: {:.2}px; x: 0px;",-62.)
         } else {
             format!("width: {STRIP_W}px; height: 56px; anchor_x: 0; anchor_y: 1; pivot_x: 0; pivot_y: 1; x: 8px; y: 0px;")
         };
@@ -580,6 +580,17 @@ impl SessionUi {
                 glyph,
                 26.,
             ),
+            (
+                "watch",
+                464.,
+                16.,
+                48.,
+                48.,
+                phase == Phase::Ready,
+                false,
+                "ef_eye",
+                26.,
+            ),
             ("release", 48., 6., 44., 44., strip, false, "ef_cpu", 26.),
             (
                 "camera",
@@ -692,6 +703,7 @@ impl SessionUi {
                     "camera",
                     crate::lang::tr("Lock camera · Y\nHold Space to follow"),
                 ),
+                ("watch", crate::lang::tr("Watch this match")),
                 ("tab", crate::lang::tr("Team details · Tab")),
                 ("release", crate::lang::tr("Return control to AI · F12")),
                 ("settings", crate::lang::tr("Settings")),
@@ -736,7 +748,7 @@ impl SessionUi {
             let (text, lines) = crate::hud_style::wrap(&text, 20., width - 24.);
             let height = lines * 26 + 16;
             let (bx, by, bw, bh) = ctx.ui_node_rect(PATH).unwrap_or((0., 0., 1920., 1080.));
-            let sx = if preparing { 456. } else { STRIP_W } / bw;
+            let sx = if preparing { 512. } else { STRIP_W } / bw;
             let sy = if preparing { 80. } else { 56. } / bh;
             let x =
                 ((tx + tw / 2. - bx) * sx - width / 2.).clamp(-bx * sx, 1920. - bx * sx - width);

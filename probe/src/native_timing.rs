@@ -103,6 +103,8 @@ struct State {
     rate: Option<(Instant, usize)>,
     lead_changes: u32,
     slow_reports: u32,
+    startup_shop_pending: bool,
+    role_fallback: bool,
     boundary_seen: bool,
     bootstrap_applied: bool,
     first_view_seen: bool,
@@ -183,6 +185,8 @@ impl NativeTiming {
                 rate: None,
                 lead_changes: 0,
                 slow_reports: 0,
+                startup_shop_pending: false,
+                role_fallback: false,
                 boundary_seen: false,
                 bootstrap_applied: false,
                 first_view_seen: false,
@@ -230,6 +234,17 @@ impl NativeTiming {
         }
     }
     pub fn heartbeat(&self, battlefield: bool, selected: bool, keys: Keys, log: &Logger) {
+        let auto_start = crate::settings::option("start_mode") == 1.;
+        self.heartbeat_with_start(battlefield, selected, keys, auto_start, log);
+    }
+    fn heartbeat_with_start(
+        &self,
+        battlefield: bool,
+        selected: bool,
+        keys: Keys,
+        auto_start: bool,
+        log: &Logger,
+    ) {
         let Ok(mut s) = self.state.lock() else { return };
         self.wake.notify_all();
         let was_battlefield = s.battlefield;
@@ -263,6 +278,11 @@ impl NativeTiming {
             && selected
         {
             s.phase = Phase::Ready;
+            if auto_start && !s.role_fallback && s.pending_action.is_none() {
+                if let Some(key) = s.key {
+                    s.pending_action = Some((key, Phase::Ready, SessionAction::Start));
+                }
+            }
             log.write(&format!(
                 "NATIVE READY produced={} consumed={} played_tick={} load_ms={}",
                 s.produced,
@@ -302,6 +322,33 @@ impl NativeTiming {
         let s = self.state.lock().ok()?;
         (s.installed && s.battlefield && s.client == Some(crate::platform_input::thread_id()))
             .then_some(s.phase)
+    }
+    /// Claim the one startup opening; AI handoff permanently forfeits it.
+    pub fn claim_startup_shop(&self) -> bool {
+        let Ok(mut s) = self.state.lock() else {
+            return false;
+        };
+        if !s.startup_shop_pending
+            || !Self::client_owned(&s, None)
+            || !matches!(s.phase, Phase::Ready | Phase::Running | Phase::Paused)
+        {
+            return false;
+        }
+        s.startup_shop_pending = false;
+        true
+    }
+    /// The first complete publication has made the tick-one roster available.
+    pub fn roster_ready(&self) -> bool {
+        self.state.lock().is_ok_and(|s| {
+            s.key.is_some() && s.boundary_seen && (s.bootstrap_applied || s.phase == Phase::Ai)
+        })
+    }
+    pub fn mark_role_fallback(&self, key: MatchKey) {
+        if let Ok(mut s) = self.state.lock() {
+            if s.key == Some(key) && matches!(s.phase, Phase::Loading | Phase::Ai) {
+                s.role_fallback = true;
+            }
+        }
     }
     pub fn match_key(&self) -> Option<MatchKey> {
         self.state.lock().ok()?.key
@@ -366,6 +413,8 @@ impl NativeTiming {
         s.lead_changes = 0;
         s.slow_reports = 0;
         s.played_tick = 0;
+        s.startup_shop_pending = false;
+        s.role_fallback = false;
         s.boundary_seen = false;
         s.bootstrap_applied = false;
         s.first_view_seen = false;
@@ -435,6 +484,9 @@ impl NativeTiming {
         match (action, s.phase) {
             (SessionAction::ReturnAi, Phase::Ready | Phase::Running | Phase::Paused) => {
                 s.phase = Phase::Ai;
+                // Watching forfeits startup shopping even if the native build
+                // plan only becomes available after a later takeover/base visit.
+                s.startup_shop_pending = false;
                 s.pending_action = None;
                 s.running.get_or_insert_with(Instant::now);
                 log.write("SESSION AI control; same match/player retained; pacing=1x; F11 reclaims control");
@@ -443,6 +495,9 @@ impl NativeTiming {
             | (SessionAction::Resume, Phase::Paused)
             | (SessionAction::TakeControl, Phase::Ai) => {
                 s.phase = Phase::Running;
+                if action == SessionAction::TakeControl {
+                    s.startup_shop_pending = false;
+                }
                 s.running.get_or_insert_with(Instant::now);
                 log.write(&format!("SESSION {action:?}; full-match pacing=1x"));
             }
@@ -458,6 +513,22 @@ impl NativeTiming {
     }
     /// Called by the stable AI to identify a foreground run, never to wait.
     pub fn observe(&self, key: MatchKey, tick: usize, log: &Logger) {
+        self.observe_start(
+            key,
+            tick,
+            tick == 1 && crate::settings::option("start_mode") == 2.,
+            tick == 1 && crate::settings::option("manual_shop") == 1.,
+            log,
+        );
+    }
+    fn observe_start(
+        &self,
+        key: MatchKey,
+        tick: usize,
+        spectate: bool,
+        manual_shop: bool,
+        log: &Logger,
+    ) {
         if !self.enabled {
             return;
         }
@@ -477,7 +548,12 @@ impl NativeTiming {
         s.key = Some(key);
         s.worker = Some(crate::platform_input::thread_id());
         crate::worker_watch::bind(crate::platform_input::thread_id());
-        s.phase = Phase::Loading;
+        s.phase = if spectate { Phase::Ai } else { Phase::Loading };
+        s.startup_shop_pending = manual_shop && !spectate;
+        if s.phase == Phase::Ai {
+            s.running = Some(Instant::now());
+            log.write("SESSION spectator start; no preparation hold; F11 takes control");
+        }
         s.began = Instant::now();
         s.worker_bind_base = s.worker_calls;
         s.viewer_bind_base = s.viewer_calls;
@@ -573,9 +649,11 @@ impl NativeTiming {
             }
             if !s.boundary_seen {
                 s.boundary_seen = true;
-                log.write(
-                    "NATIVE PUBLISHED first initialization frame; holding before next run_tick_ext",
-                );
+                log.write(if s.phase == Phase::Ai {
+                    "NATIVE PUBLISHED first initialization frame; spectator playback=1x"
+                } else {
+                    "NATIVE PUBLISHED first initialization frame; holding before next run_tick_ext"
+                });
             }
             s.generation
         };
@@ -760,6 +838,11 @@ impl NativeTiming {
                     s.produced, s.consumed
                 ));
             }
+        }
+        // Spectator start consumes its initial frame in Running mode. Record
+        // it so a later F11 takeover/pause never bootstraps a second frame.
+        if mode == ViewMode::Running && used > 0 {
+            s.bootstrap_applied = true;
         }
         if mode == ViewMode::Bootstrap && used > 0 {
             s.bootstrap_applied = true;
@@ -1012,6 +1095,104 @@ mod tests {
         s.client = Some(crate::platform_input::thread_id());
         drop(s);
         t
+    }
+    #[test]
+    fn preparation_auto_start_keeps_shop_eligibility_but_requires_no_role_fallback() {
+        let log = logger("start-modes");
+        for (automatic, fallback, expected) in [
+            (false, false, false),
+            (true, false, true),
+            (true, true, false),
+        ] {
+            let t = active();
+            {
+                let mut s = t.state.lock().unwrap();
+                s.boundary_seen = true;
+                s.bootstrap_applied = true;
+                s.pause_acknowledged = true;
+                s.role_fallback = fallback;
+                s.startup_shop_pending = true;
+            }
+            t.heartbeat_with_start(true, true, Keys::default(), automatic, &log);
+            assert_eq!(t.ui_phase(), Some(Phase::Ready));
+            let action = t.take_action();
+            assert_eq!(action.is_some(), expected);
+            if let Some(action) = action {
+                assert_eq!(action, SessionAction::Start);
+                t.apply_action(action, &log);
+                assert_eq!(t.ui_phase(), Some(Phase::Running));
+                assert!(t.claim_startup_shop());
+                assert!(!t.claim_startup_shop());
+            }
+        }
+    }
+    #[test]
+    fn spectator_start_consumes_initial_frame_once_and_can_take_over_and_pause() {
+        let log = logger("spectator-start");
+        let t = NativeTiming::new(true);
+        {
+            let mut s = t.state.lock().unwrap();
+            s.installed = true;
+            s.client = Some(crate::platform_input::thread_id().wrapping_add(1));
+        }
+        let key = (31, 32, 33);
+        t.observe_start(key, 1, true, true, &log);
+        {
+            let mut s = t.state.lock().unwrap();
+            assert_eq!(s.phase, Phase::Ai);
+            s.client = Some(crate::platform_input::thread_id());
+            s.heartbeat = Some(Instant::now());
+            s.battlefield = true;
+            s.selected = true;
+            s.produced = 1;
+            s.boundary_seen = true;
+        }
+        t.after_view(ViewMode::Running, 1, 0, 1, &log);
+        assert!(t.state.lock().unwrap().bootstrap_applied);
+        t.request_action(true);
+        let a = t.take_action().unwrap();
+        assert_eq!(a, SessionAction::TakeControl);
+        t.apply_action(a, &log);
+        assert!(!t.claim_startup_shop());
+        t.request_action(true);
+        let a = t.take_action().unwrap();
+        assert_eq!(a, SessionAction::Pause);
+        t.apply_action(a, &log);
+        t.after_view(ViewMode::Paused, 0, 0, 1, &log);
+        assert_eq!(t.ui_phase(), Some(Phase::Paused));
+        assert!(t.state.lock().unwrap().pause_acknowledged);
+    }
+    #[test]
+    fn watch_or_handoff_discards_delayed_startup_shop_until_next_match() {
+        let log = logger("startup-shop-handoff");
+        for phase in [Phase::Ready, Phase::Running, Phase::Paused] {
+            let t = active();
+            {
+                let mut s = t.state.lock().unwrap();
+                s.phase = phase;
+                s.battlefield = true;
+                s.selected = true;
+                s.heartbeat = Some(Instant::now());
+                s.startup_shop_pending = true;
+            }
+            t.request_action(false);
+            t.apply_action(t.take_action().unwrap(), &log);
+            assert_eq!(t.ui_phase(), Some(Phase::Ai));
+            t.request_action(true);
+            t.apply_action(t.take_action().unwrap(), &log);
+            assert_eq!(t.ui_phase(), Some(Phase::Running));
+            assert!(!t.claim_startup_shop());
+            // A later pause or a now-ready shop plan cannot recreate the claim.
+            t.state.lock().unwrap().phase = Phase::Paused;
+            assert!(!t.claim_startup_shop());
+            t.state.lock().unwrap().battlefield = false;
+            t.rearm(true, Keys::default(), &log);
+            let key = (91, 92, 93);
+            t.state.lock().unwrap().client =
+                Some(crate::platform_input::thread_id().wrapping_add(1));
+            t.observe_start(key, 1, false, true, &log);
+            assert!(t.state.lock().unwrap().startup_shop_pending);
+        }
     }
     #[test]
     fn a_left_match_is_recognised_by_key_only() {

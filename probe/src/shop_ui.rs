@@ -1302,8 +1302,6 @@ pub struct ShopUi {
     toast: Option<(String, Instant, &'static str)>,
     motion: hud_motion::Motion,
     match_key: Option<crate::native_timing::MatchKey>,
-    /// The match whose shop already opened by itself.
-    auto_opened: Option<crate::native_timing::MatchKey>,
 }
 
 impl ShopUi {
@@ -1556,15 +1554,13 @@ impl ShopUi {
             self.open = false;
         }
         let mut view = shop::SHOP.view();
-        // Manual shopping: open once per match when the game has completed
-        // the build plan (Recommended is then whole); "Pause while open"
-        // applies as for any opening.
+        // The session owns this startup-only claim. Spectator start/Watch/AI
+        // handoff discard it, so a late build plan cannot open the shop at the
+        // first recall/death after takeover. P remains independent of the claim.
         if active
-            && match_key.is_some()
-            && self.auto_opened != match_key
             && view.as_ref().is_some_and(|v| v.manual && v.planned)
+            && timing.claim_startup_shop()
         {
-            self.auto_opened = match_key;
             self.open = true;
             self.recommended = true;
             log.write("SHOP UI opened by itself: build plan complete");

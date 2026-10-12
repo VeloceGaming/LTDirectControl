@@ -159,6 +159,9 @@ impl Movement {
         if choice != state.previous_choice {
             if let Some(lane) = choice.filter(|lane| *lane < 5) {
                 let accepted = pre_match && state.selection.choose(lane);
+                if accepted {
+                    crate::settings::set_option("preferred_role", lane as f64);
+                }
                 state.notice = if accepted {
                     format!(
                         "Selected: your {} | Y lock / Space follow in match",
@@ -194,6 +197,9 @@ impl Movement {
             return;
         }
         if let Ok(mut state) = self.state.lock() {
+            if state.selection.match_key.is_none() && crate::settings::GLOBAL.get().is_some() {
+                state.selection.lane = crate::settings::option("preferred_role") as usize;
+            }
             if state.selection.begin(key) {
                 if let Some(grid) = state.pending_navigation.take() {
                     state.navigation = Some(grid);

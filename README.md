@@ -97,6 +97,14 @@ All bindings can be changed in the mod's Settings window (gear button).
 In a match: pick your athlete with Ctrl + 1–5 while the match waits, then
 press F11 or click Start.
 
+Settings › Advanced › General has **Start mode** and **My role**. The default
+asks each match and remembers your preparation choice. **Always play my role**
+starts automatically with your role selected. Manual shopping opens the shop;
+Pause while open holds play while you buy. **Start spectating** skips
+preparation and automatic shop opening; F11 takes control later. **Watch this match** in preparation does
+that for just one match. An unavailable preferred role waits for confirmation
+on an available teammate. Mid-match champion swaps do not change My role.
+
 Settings are saved in `%LOCALAPPDATA%\LTDirectControl\controls.json`; the log
 is `probe.log` in the same folder (send it with a bug report). Settings ›
 Advanced › Debug › Log detail chooses how much it records (Normal by

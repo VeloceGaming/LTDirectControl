@@ -239,6 +239,7 @@ impl Client {
             );
         }
         acquisition::refresh(ctx, self.timing.generation());
+        self.ensure_available_role(keys);
         self.choose_prepared_athlete(keys);
         test_cheats::update(keys.home_end && battlefield, &self.logger);
         self.timing.heartbeat(
@@ -478,6 +479,36 @@ impl Client {
             }
         }
     }
+    /// Recover only after the initial roster is complete; never silently auto-play a different role.
+    fn ensure_available_role(&self, keys: platform_input::Keys) {
+        if self.movement.selected().is_some() || !self.timing.roster_ready() {
+            return;
+        }
+        if !matches!(
+            self.timing.ui_phase(),
+            Some(native_timing::Phase::Loading | native_timing::Phase::Ai)
+        ) {
+            return;
+        }
+        let (Some(key), Some(player)) = (
+            self.timing.match_key(),
+            self.movement.own_players().into_iter().next(),
+        ) else {
+            return;
+        };
+        if let Ok(_gate) = self.session_gate.write() {
+            if self
+                .movement
+                .choose_prepared(key, player.lane, keys, &self.logger)
+            {
+                self.timing.mark_role_fallback(key);
+                self.abilities.reset_session(keys);
+                self.camera.reset_session(keys);
+                self.hud.select_prepared(key, player.player);
+                self.logger.write("SESSION preferred role unavailable; selected an available teammate; automatic play waits for confirmation");
+            }
+        }
+    }
     /// Switch the controlled athlete to a teammate (Ctrl + 1-5 or a
     /// portrait): before Start, and during the match while playing, paused or
     /// with the AI in control. The session gate keeps a simulation step from
@@ -503,6 +534,9 @@ impl Client {
             {
                 if let Ok(_gate) = self.session_gate.write() {
                     if self.movement.choose_prepared(key, lane, keys, &self.logger) {
+                        if phase == Some(native_timing::Phase::Ready) {
+                            crate::settings::set_option("preferred_role", lane as f64);
+                        }
                         self.abilities.reset_session(keys);
                         self.camera.reset_session(keys);
                         if phase != Some(native_timing::Phase::Ready) {

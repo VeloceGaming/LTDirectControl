@@ -3,6 +3,15 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.2.2 — 2026-10-13
+
+- Start modes (Settings › Advanced › General, section "Match start"): **Ask every match** (as before), **Always play my role**, **Start spectating**. Preparation remembers the role chosen there as **My role**; a mid-match swap does not change it.
+  - Always play my role starts by itself with that role selected. With Manual shopping on, the shop still opens at the start as before. If the preferred role is not available, an available teammate is selected and the match waits for confirmation instead of starting by itself.
+  - Start spectating skips preparation and the start-of-match shop; F11 takes control later.
+  - Preparation has a **Watch this match** button, which does the same for one match.
+  - The start-of-match shop opening is now a claim owned by the session, discarded by a spectator start, Watch and an AI hand-back, so a late build plan cannot open the shop at the first recall or death after taking over. P is unaffected.
+- This is the start-mode half of an unreleased 1.2.1 that also changed how athlete stats act in manually played matches. That half was withdrawn after review (it is kept on a local branch; the research is in `docs/investigation-athlete-stats-manual-control.md`). No native address, hook or game-version table changes in this build.
+
 ## 1.2.0 — 2026-10-11
 
 - One DLL for game 0.6.3 and game 0.7.0. At the title screen the mod hashes the executable once and installs the hooks built for that game version; any other executable gets no hooks, as before. Release candidate: to be tested in game on both versions.
