@@ -17,8 +17,8 @@
 .env.*
 /.claude/settings.local.json
 /local/
-# Instructions for AI agents working in this checkout: private.
-/AGENTS.md
+# This checkout's private working agreement for AI agents (AGENTS.md is public).
+/AGENTS.local.md
 
 # Screenshots and development-process files stay local (only documentation,
 # licenses, disclaimers and the codebase are tracked).
