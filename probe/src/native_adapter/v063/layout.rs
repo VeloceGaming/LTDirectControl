@@ -1,6 +1,7 @@
 //! Game 0.6.3: every code address, call site and expected byte pattern the
 //! hooks rely on, as released in 1.0.x. Entity field offsets are inline in
-//! the hook files (native_adapter/windows) and equal in both game versions.
+//! the hook files (native_adapter/windows) and equal in every supported
+//! version; the viewer fields that differ are below.
 
 // 0.6.3: foreground worker send after runner locks; source/call graph
 // and all 420 decoded instructions reviewed against the 0.6.2 baseline.
@@ -10,6 +11,11 @@ pub(crate) const WORKER_ORIGINAL: usize = 0xd1c2a0;
 // implementation. The alternate dispatch branches are not this hook.
 pub(crate) const VIEW_SITE: usize = 0xcdcce0;
 pub(crate) const VIEW_ORIGINAL: usize = 0x930640;
+// Viewer fields the session and camera hooks write: the frame-time
+// accumulator the viewer adds each frame's dt to, and the camera's pan
+// velocity (x, y). The same in 0.6.3 and 0.7.0; 0.6.4 moved them.
+pub(crate) const VIEW_FRAME_CLOCK: usize = 0x358;
+pub(crate) const VIEW_PAN_VELOCITY: usize = 0x458;
 pub(crate) const MOVE_SITE: usize = 0x11d9154;
 pub(crate) const MOVE_ORIGINAL: usize = 0x1703fa0;
 pub(crate) const STOP_EVENT: usize = 0x13cccc0;

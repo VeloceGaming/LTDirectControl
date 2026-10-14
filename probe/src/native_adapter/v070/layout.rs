@@ -14,6 +14,11 @@ pub(crate) const WORKER_ORIGINAL: usize = 0x8bf9d0;
 // argument (the other callers in that function pass none).
 pub(crate) const VIEW_SITE: usize = 0x877560;
 pub(crate) const VIEW_ORIGINAL: usize = 0xb194c0;
+// Viewer fields the session and camera hooks write: the frame-time
+// accumulator the viewer adds each frame's dt to, and the camera's pan
+// velocity (x, y). The same in 0.6.3 and 0.7.0; 0.6.4 moved them.
+pub(crate) const VIEW_FRAME_CLOCK: usize = 0x358;
+pub(crate) const VIEW_PAN_VELOCITY: usize = 0x458;
 // The simulation table's entity getter (slot +0x48), which the attack-range
 // reader checks before using the table. Holds the ENTITY_BORROW_GETTER guard.
 pub(crate) const ENTITY_GETTER: usize = 0x315ba70;

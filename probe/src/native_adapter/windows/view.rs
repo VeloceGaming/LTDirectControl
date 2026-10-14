@@ -168,7 +168,7 @@ pub(crate) unsafe fn restore_camera(
                 saved.original_vision, saved.original_full_width, saved.original_ui_full_width
             ));
             // Keys released while owned must not revive an old pan velocity.
-            std::ptr::write_unaligned((view + 0x458) as *mut u64, 0);
+            std::ptr::write_unaligned((view + VIEW_PAN_VELOCITY) as *mut u64, 0);
             shared.camera.reset();
             shared
                 .logger
@@ -269,7 +269,7 @@ pub(crate) unsafe fn prepare_camera(
     } else {
         return;
     }
-    std::ptr::write_unaligned((view + 0x458) as *mut u64, 0);
+    std::ptr::write_unaligned((view + VIEW_PAN_VELOCITY) as *mut u64, 0);
     let native_mode = std::ptr::read_unaligned((config + 0x18) as *const u32);
     let request = shared.camera.step(
         frame,
@@ -570,11 +570,11 @@ pub(crate) unsafe fn view_hook_body(
     }
     let actual_dt = match mode {
         ViewMode::Bootstrap => {
-            std::ptr::write_unaligned((view + 0x358) as *mut f32, 0.0);
+            std::ptr::write_unaligned((view + VIEW_FRAME_CLOCK) as *mut f32, 0.0);
             1.0 / tps as f32
         }
         ViewMode::Paused => {
-            std::ptr::write_unaligned((view + 0x358) as *mut f32, 0.0);
+            std::ptr::write_unaligned((view + VIEW_FRAME_CLOCK) as *mut f32, 0.0);
             0.0
         }
         // The viewer plays what is queued; the worker's lead follows the
@@ -610,7 +610,7 @@ pub(crate) unsafe fn view_hook_body(
     let remaining = std::ptr::read_unaligned((view + 0x70) as *const usize);
     let played_after = std::ptr::read_unaligned((view + 0x290) as *const usize);
     if mode != ViewMode::Running {
-        std::ptr::write_unaligned((view + 0x358) as *mut f32, 0.0);
+        std::ptr::write_unaligned((view + VIEW_FRAME_CLOCK) as *mut f32, 0.0);
     }
     if catch_unwind(AssertUnwindSafe(|| {
         shared

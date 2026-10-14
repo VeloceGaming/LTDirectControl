@@ -83,7 +83,7 @@
  "Choose emotes and adjust placement, size and timing. Apply saves your choices.": "Choisissez vos émotes et réglez leur position, leur taille et leur durée. « Appliquer » enregistre vos choix.",
  "Choose how each match starts.": "Choisissez comment commence chaque partie.",
  "Choose how movement, targeting and ability inputs behave.": "Choisissez le fonctionnement des déplacements, du ciblage et des compétences.",
- "Choose which nearby enemy to acquire while moving.": "Choisissez quel ennemi proche cibler pendant le déplacement.",
+ "A → left-click only. Near cursor walks up to the enemy nearest the click; Shift + right-click always takes the enemy nearest you.": "A → clic gauche uniquement. « Près du curseur » marche jusqu'à l'ennemi le plus proche du clic ; Maj + clic droit prend toujours l'ennemi le plus proche de vous.",
  "Chosen path needs a free slot; other components stay in your bag.": "Le chemin choisi demande un emplacement libre ; les autres composants restent dans votre sac.",
  "Chosen path · applies to new purchases": "Chemin choisi · pour les nouveaux achats",
  "Chosen path · completes at your next base visit.": "Chemin choisi · terminé au prochain passage à la base.",

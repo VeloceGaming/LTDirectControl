@@ -48,7 +48,7 @@ pub static OPTIONS: &[OptionDef] = &[
         page: 0,
         section: "Targeting",
         label: "Attack-move target preference",
-        hint: "Choose which nearby enemy to acquire while moving.",
+        hint: "A → left-click only. Near cursor walks up to the enemy nearest the click; Shift + right-click always takes the enemy nearest you.",
         control: Control::Choice(&["Near champion", "Near cursor"]),
         default: 0.,
     },

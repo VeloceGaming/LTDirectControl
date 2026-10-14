@@ -99,8 +99,9 @@ or identical copies means the choice has to be made by the caller.
 
 The hook files use entity, player and view field offsets directly
 (`+ 0x...` in `native_adapter/windows/`). They were equal in 0.6.3 and
-0.7.0. For each hooked function that is not instruction-for-instruction
-equal, run:
+0.7.0; 0.6.4 moved two viewer fields, which are now per-version
+constants ([migration-0.6.4.md](migration-0.6.4.md)). For each hooked
+function that is not instruction-for-instruction equal, run:
 
 ```
 python tools/field_shifts.py --old research/game-builds/0.7.0 --new research/game-builds/0.7.1 OLD=NEW

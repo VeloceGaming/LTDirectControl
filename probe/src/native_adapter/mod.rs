@@ -42,6 +42,7 @@ macro_rules! hooks {
         match ACTIVE.load(Ordering::Acquire) {
             1 => v070::windows::$($call)+,
             2 => v063::windows::$($call)+,
+            3 => v064::windows::$($call)+,
             _ => $default,
         }
     };
@@ -378,6 +379,10 @@ pub fn install() -> Result<(&'static str, u32), String> {
             ACTIVE.store(2, Ordering::Release);
             v063::windows::install(&sha)?;
             Ok((v063::identity::GAME, v063::identity::ENABLED))
+        } else if sha == v064::identity::EXPECTED_SHA {
+            ACTIVE.store(3, Ordering::Release);
+            v064::windows::install(&sha)?;
+            Ok((v064::identity::GAME, v064::identity::ENABLED))
         } else {
             Err("Executable fingerprint differs; no hooks installed".into())
         }
@@ -415,6 +420,17 @@ mod v070 {
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod v063 {
+    use super::*;
+    mod effects;
+    pub(super) mod identity;
+    mod items;
+    mod layout;
+    #[allow(clippy::duplicate_mod)]
+    #[path = "../windows/mod.rs"]
+    pub(super) mod windows;
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod v064 {
     use super::*;
     mod effects;
     pub(super) mod identity;

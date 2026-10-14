@@ -83,7 +83,7 @@
  "Choose emotes and adjust placement, size and timing. Apply saves your choices.": "エモートを選び、位置・サイズ・表示時間を調整します。「適用」で保存されます。",
  "Choose how each match starts.": "各試合の開始方法を選びます。",
  "Choose how movement, targeting and ability inputs behave.": "移動、ターゲット指定、スキル入力の動作を選びます。",
- "Choose which nearby enemy to acquire while moving.": "移動中に捕捉する近くの敵を選びます。",
+ "A → left-click only. Near cursor walks up to the enemy nearest the click; Shift + right-click always takes the enemy nearest you.": "A → 左クリックのみ。「カーソルの近く」はクリック地点に最も近い敵まで歩いて攻撃します。Shift + 右クリックは常に自分に最も近い敵を狙います。",
  "Chosen path needs a free slot; other components stay in your bag.": "選んだルートには空き枠が必要です。他の素材は手持ちのまま残ります。",
  "Chosen path · applies to new purchases": "選んだルート · 新しい購入から適用",
  "Chosen path · completes at your next base visit.": "選んだルート · 次に拠点へ戻ったときに完成します。",

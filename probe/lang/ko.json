@@ -83,7 +83,7 @@
  "Choose emotes and adjust placement, size and timing. Apply saves your choices.": "감정 표현을 고르고 위치, 크기, 표시 시간을 조정합니다. 적용을 눌러야 저장됩니다.",
  "Choose how each match starts.": "각 경기의 시작 방식을 선택합니다.",
  "Choose how movement, targeting and ability inputs behave.": "이동, 대상 지정, 스킬 입력 방식을 선택합니다.",
- "Choose which nearby enemy to acquire while moving.": "이동 중에 탐지할 근처 적을 고릅니다.",
+ "A → left-click only. Near cursor walks up to the enemy nearest the click; Shift + right-click always takes the enemy nearest you.": "A → 왼쪽 클릭에만 적용됩니다. '커서 근처'는 클릭 지점에 가장 가까운 적에게 걸어가 공격합니다. Shift + 오른쪽 클릭은 항상 자신에게 가장 가까운 적을 노립니다.",
  "Chosen path needs a free slot; other components stay in your bag.": "선택한 경로에는 빈 칸이 필요합니다. 다른 재료는 가방에 그대로 남습니다.",
  "Chosen path · applies to new purchases": "선택한 경로 · 새 구매부터 적용",
  "Chosen path · completes at your next base visit.": "선택한 경로 · 다음 귀환 때 완성됩니다.",

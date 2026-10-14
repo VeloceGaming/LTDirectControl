@@ -83,7 +83,7 @@
  "Choose emotes and adjust placement, size and timing. Apply saves your choices.": "เลือกอีโมตและปรับตำแหน่ง ขนาด และระยะเวลา กด “ใช้” เพื่อบันทึก",
  "Choose how each match starts.": "เลือกวิธีเริ่มแต่ละแมตช์",
  "Choose how movement, targeting and ability inputs behave.": "เลือกวิธีการเคลื่อนที่ การเลือกเป้าหมาย และการกดใช้สกิล",
- "Choose which nearby enemy to acquire while moving.": "เลือกศัตรูใกล้ ๆ ที่จะล็อกเป้าระหว่างเคลื่อนที่",
+ "A → left-click only. Near cursor walks up to the enemy nearest the click; Shift + right-click always takes the enemy nearest you.": "เฉพาะ A → คลิกซ้าย \"ใกล้เคอร์เซอร์\" จะเดินไปหาศัตรูที่ใกล้จุดคลิกที่สุด ส่วน Shift + คลิกขวาจะเลือกศัตรูที่ใกล้ตัวคุณที่สุดเสมอ",
  "Chosen path needs a free slot; other components stay in your bag.": "เส้นทางที่เลือกต้องมีช่องว่าง ชิ้นส่วนอื่นยังอยู่ในกระเป๋า",
  "Chosen path · applies to new purchases": "เส้นทางที่เลือก · ใช้กับการซื้อใหม่",
  "Chosen path · completes at your next base visit.": "เส้นทางที่เลือก · จะเสร็จเมื่อกลับฐานครั้งถัดไป",

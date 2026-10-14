@@ -6,7 +6,13 @@ use mod_api_stable::{InputKindV1, InputTargetV1, InputV1};
 pub enum Order {
     Move((u64, u64)),
     Attack(usize),
+    /// Shift + right-click: walks to the point and attacks the enemy nearest
+    /// the champion within his acquisition radius.
     AttackMove((u64, u64)),
+    /// A, then left-click: as `AttackMove`, unless the attack-move target
+    /// preference is "Near cursor": then the enemy nearest the click within
+    /// the acquisition radius around the click is walked up to and attacked.
+    AttackClick((u64, u64)),
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Unit {
@@ -78,18 +84,26 @@ impl Order {
         let target = match self {
             Self::Move(goal) => return (ground(position, goal), None),
             Self::Attack(id) => units.iter().find(|u| u.id == id),
-            Self::AttackMove(goal) => units
-                .iter()
-                .filter(|u| !honor || !champion_only || u.is_champion)
-                .filter(|u| {
-                    attack_range.is_some_and(|range| attack_in_range(position, u.position, range))
-                })
-                .min_by_key(|u| {
-                    (
-                        distance(if near_cursor { goal } else { position }, u.position),
-                        u.id,
-                    )
-                }),
+            Self::AttackMove(goal) | Self::AttackClick(goal) => {
+                let near_cursor = near_cursor && matches!(self, Self::AttackClick(_));
+                let eligible = |u: &&Unit| !honor || !champion_only || u.is_champion;
+                // Enemies within the acquisition radius of `around`, the one
+                // nearest `nearest` first.
+                let pick = |around: (u64, u64), nearest: (u64, u64)| {
+                    units
+                        .iter()
+                        .filter(eligible)
+                        .filter(|u| {
+                            attack_range
+                                .is_some_and(|range| attack_in_range(around, u.position, range))
+                        })
+                        .min_by_key(|u| (distance(nearest, u.position), u.id))
+                };
+                near_cursor
+                    .then(|| pick(goal, goal))
+                    .flatten()
+                    .or_else(|| pick(position, if near_cursor { goal } else { position }))
+            }
         };
         if let Some(target) = target {
             (
@@ -99,7 +113,7 @@ impl Order {
         } else {
             (
                 match self {
-                    Self::AttackMove(goal) => ground(position, goal),
+                    Self::AttackMove(goal) | Self::AttackClick(goal) => ground(position, goal),
                     _ => InputV1::move_to(position.0, position.1),
                 },
                 None,
@@ -405,7 +419,7 @@ mod tests {
         }
     }
     #[test]
-    fn attack_move_cursor_preference_cannot_acquire_an_out_of_range_enemy() {
+    fn near_cursor_a_click_walks_up_to_the_enemy_nearest_the_click() {
         let pos = (200_000, 200_000);
         let near = Unit {
             position: (220_000, 200_000),
@@ -415,11 +429,72 @@ mod tests {
             position: (270_000, 200_000),
             ..units()[1]
         };
-        let (input, _) = Order::AttackMove(far.position).resolve_policy(
+        let click = (280_000, 200_000);
+        // A-click with "Near cursor": the enemy at the click, out of reach,
+        // is the target (the attack input makes the game approach it).
+        let (input, chase) = Order::AttackClick(click).resolve_policy(
             pos,
             &[near, far],
             false,
             false,
+            true,
+            Some(60_000),
+        );
+        assert_eq!(
+            (input.target.target_id, chase),
+            (far.id, Some(far.position))
+        );
+        // Shift + right-click ignores the preference: the enemy in reach.
+        let (input, _) = Order::AttackMove(click).resolve_policy(
+            pos,
+            &[near, far],
+            false,
+            false,
+            true,
+            Some(60_000),
+        );
+        assert_eq!(input.target.target_id, near.id);
+        // A-click with "Near champion" behaves like Shift + right-click.
+        let (input, _) = Order::AttackClick(click).resolve_policy(
+            pos,
+            &[near, far],
+            false,
+            false,
+            false,
+            Some(60_000),
+        );
+        assert_eq!(input.target.target_id, near.id);
+        // Nothing near the click: walk on, attacking what is in reach.
+        let empty_click = (700_000, 200_000);
+        let (input, _) = Order::AttackClick(empty_click).resolve_policy(
+            pos,
+            &[near, far],
+            false,
+            false,
+            true,
+            Some(60_000),
+        );
+        assert_eq!(input.target.target_id, near.id);
+        let (input, _) = Order::AttackClick(empty_click).resolve_policy(
+            pos,
+            &[],
+            false,
+            false,
+            true,
+            Some(60_000),
+        );
+        assert_eq!(input, InputV1::move_to(empty_click.0, empty_click.1));
+        // Champion-only (Honor) also filters the enemies near the click.
+        let minion = Unit {
+            is_champion: false,
+            is_minion: true,
+            ..far
+        };
+        let (input, _) = Order::AttackClick(click).resolve_policy(
+            pos,
+            &[near, minion],
+            true,
+            true,
             true,
             Some(60_000),
         );
@@ -596,7 +671,7 @@ mod tests {
         let pos = (200_000, 200_000);
         let mut list = units();
         list[1].is_champion = false;
-        let order = Order::AttackMove(list[1].position);
+        let order = Order::AttackClick(list[1].position);
         assert_eq!(
             order
                 .resolve_policy(pos, &list, false, true, true, Some(120_000))
@@ -896,7 +971,7 @@ mod tests {
     }
     #[test]
     fn attack_move_preference_selects_near_champion_or_cursor_and_retains_anchor() {
-        let order = Order::AttackMove((305_000, 200_000));
+        let order = Order::AttackClick((305_000, 200_000));
         assert_eq!(
             order
                 .resolve_policy(

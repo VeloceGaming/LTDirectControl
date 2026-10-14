@@ -83,7 +83,7 @@
  "Choose emotes and adjust placement, size and timing. Apply saves your choices.": "E koho i nā manaʻo a hoʻoponopono i ke kūlana, ka nui a me ka manawa. Mālama ʻo “Hoʻohana” i kāu koho.",
  "Choose how each match starts.": "Koho i ke ʻano e hoʻomaka ai kēlā me kēia pāʻani.",
  "Choose how movement, targeting and ability inputs behave.": "E koho i ke ʻano o ka neʻe ʻana, ke koho pahuhopu, a me nā mana.",
- "Choose which nearby enemy to acquire while moving.": "E koho i ka ʻenemi kokoke e hopu ai i ka neʻe ʻana.",
+ "A → left-click only. Near cursor walks up to the enemy nearest the click; Shift + right-click always takes the enemy nearest you.": "No A → kaomi hema wale nō. Hele ʻo «Kokoke i ka pua kuhikuhi» i ka ʻenemi kokoke loa i ke kaomi; lawe mau ʻo Shift + kaomi ʻākau i ka ʻenemi kokoke loa iā ʻoe.",
  "Chosen path needs a free slot; other components stay in your bag.": "Pono ke ala i koho ʻia i kahi wahi kaʻawale; noho nā ʻāpana ʻē aʻe i kāu ʻeke.",
  "Chosen path · applies to new purchases": "Ke ala i koho ʻia · no nā kūʻai hou",
  "Chosen path · completes at your next base visit.": "Ke ala i koho ʻia · paʻa ke hoʻi hou ʻoe i ka hale.",

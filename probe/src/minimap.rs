@@ -256,6 +256,10 @@ mod tests {
                 0x56d8000,
             ),
             (
+                include_str!("../../tools/native_profiles/0.6.4.json"),
+                0x533f000,
+            ),
+            (
                 include_str!("../../tools/native_profiles/0.6.3.json"),
                 0x52d6000,
             ),

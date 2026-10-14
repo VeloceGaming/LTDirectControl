@@ -95,7 +95,7 @@ impl State {
     /// Next point of the walk a direct attack order was laid over, if any.
     fn onward(&mut self, position: (u64, u64)) -> Option<(u64, u64)> {
         let goal = match self.carry? {
-            Order::Move(goal) | Order::AttackMove(goal) => goal,
+            Order::Move(goal) | Order::AttackMove(goal) | Order::AttackClick(goal) => goal,
             Order::Attack(_) => return None,
         };
         let reached = |p: (u64, u64)| {
@@ -460,7 +460,7 @@ impl Movement {
             // goes on with his walk; anyone else has nothing left to do.
             state.target = state.carry.take().filter(|_| free);
             state.marker = state.target.map(|order| match order {
-                Order::Move(goal) | Order::AttackMove(goal) => goal,
+                Order::Move(goal) | Order::AttackMove(goal) | Order::AttackClick(goal) => goal,
                 Order::Attack(_) => position,
             });
             if state.target.is_none() {
@@ -519,7 +519,7 @@ impl Movement {
                 }
                 if in_reach == Some(true) && !attack.ready {
                     let onward = match target {
-                        Order::AttackMove(goal) => Some(goal),
+                        Order::AttackMove(goal) | Order::AttackClick(goal) => Some(goal),
                         _ => state.onward(position),
                     };
                     return Some((
@@ -538,7 +538,10 @@ impl Movement {
         self.state.lock().is_ok_and(|s| {
             s.manual_release.is_some_and(|at| at > since)
                 && s.pending_recall.is_none()
-                && !matches!(s.target, Some(Order::Attack(_) | Order::AttackMove(_)))
+                && !matches!(
+                    s.target,
+                    Some(Order::Attack(_) | Order::AttackMove(_) | Order::AttackClick(_))
+                )
         })
     }
     pub fn observe_position(&self, position: Option<(u64, u64)>) {
@@ -1163,7 +1166,8 @@ impl Movement {
                     }
                 }
             }
-            let attack_move = (s.attack_move_armed && left_click) || (click && keys.attack_click);
+            let attack_click = s.attack_move_armed && left_click;
+            let attack_move = attack_click || (click && keys.attack_click);
             if !click && !attack_move {
                 return;
             }
@@ -1197,6 +1201,8 @@ impl Movement {
                     .flatten();
                 let order = if let Some(id) = hit.filter(|_| !keys.attack_click) {
                     Order::Attack(id)
+                } else if attack_click {
+                    Order::AttackClick(target)
                 } else if attack_move {
                     Order::AttackMove(target)
                 } else {
@@ -1222,7 +1228,10 @@ impl Movement {
                 // A direct attack is laid over the walk in progress; whether
                 // the walk continues beside it is decided each tick.
                 let carried = match (order, s.target) {
-                    (Order::Attack(_), Some(Order::Move(_) | Order::AttackMove(_))) => s.target,
+                    (
+                        Order::Attack(_),
+                        Some(Order::Move(_) | Order::AttackMove(_) | Order::AttackClick(_)),
+                    ) => s.target,
                     (Order::Attack(_), Some(Order::Attack(_))) => s.carry,
                     _ => None,
                 }

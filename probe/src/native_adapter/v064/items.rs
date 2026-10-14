@@ -1,0 +1,54 @@
+//! Game 0.6.4: instruction anchors and the AI bridge identity the
+//! registered-item reader checks before it reads (crate::native_items).
+use crate::native_items::Addresses;
+
+pub(crate) const ITEM_ANCHORS: &[(usize, &[u8])] = &[
+    // Native buying/AI consumer: context +8 is the settings owner.
+    // The old +1b8 chain accidentally read the simulation tick.
+    (0xe2165d, &[0x48, 0x8b, 0x42, 0x08]),
+    (0xe92bb7, &[0x49, 0x8b, 0x59, 0x08]),
+    (
+        0x2ed4700,
+        &[
+            0x48, 0x85, 0xc9, 0x74, 0x0c, 0x48, 0x8b, 0x41, 0x08, 0x48, 0x8b, 0x80, 0xf8, 0x07,
+            0x00, 0x00, 0xc3,
+        ],
+    ),
+    (
+        0x2ed53d5,
+        &[
+            0x48, 0x8b, 0x41, 0x10, 0x48, 0x8b, 0x00, 0x48, 0x8b, 0x80, 0xb8, 0x01, 0x00, 0x00,
+            0xc3,
+        ],
+    ),
+    (
+        0xe92bbd,
+        &[
+            0x48, 0x8b, 0x43, 0x30, 0x48, 0x8b, 0x58, 0x08, 0x4c, 0x8b, 0x70, 0x10,
+        ],
+    ),
+    (
+        0x1df6796,
+        &[
+            0x49, 0x8b, 0x7f, 0x78, 0x49, 0x8b, 0xb7, 0x90, 0x00, 0x00, 0x00,
+        ],
+    ),
+    (0xe92ddd, &[0xff, 0x90, 0x80, 0x00, 0x00, 0x00]),
+    (0x12afca0, &[0x48, 0x8d, 0x41, 0x30, 0xc3]),
+    (0x2e75204, &[0xff, 0x53, 0x50]),
+    (0x2e7526a, &[0x0f, 0x11, 0x46, 0x30]),
+];
+
+// Getter +0x80 borrows NEXT tiers from wrapper +0x30. Native buying
+// searches these forward edges backward from a goal (ea1730). Wrapper
+// constructor 2e66f50 caches legacy +0x50 there; +0x58 goes to +0x48.
+// Keep the forward direction and derive previous links for diagnostics only.
+/// The native AI bridge's table.
+pub(crate) const ITEM_BRIDGE_TABLE: usize = 0x3d65528;
+/// Methods that table must hold, as (offset in the table, method).
+pub(crate) const ITEM_BRIDGE_METHODS: [(usize, usize); 2] = [(8, 0x2ed4700), (48, 0x2ed53d0)];
+pub(crate) const ITEMS: Addresses = Addresses {
+    anchors: ITEM_ANCHORS,
+    bridge_table: ITEM_BRIDGE_TABLE,
+    bridge_methods: ITEM_BRIDGE_METHODS,
+};
