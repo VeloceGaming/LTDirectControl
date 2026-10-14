@@ -633,6 +633,12 @@ impl Shop {
         Some(cat)
     }
 
+    /// Usable again after a panic while one of its locks was held.
+    pub fn recover(&self) {
+        self.0.clear_poison();
+        self.1.clear_poison();
+    }
+
     /// True once per simulation tick of a match.
     pub fn due(&self, key: MatchKey, tick: usize) -> bool {
         let Ok(mut s) = self.0.lock() else {
@@ -992,6 +998,17 @@ mod tests {
     /// Skip the once-per-match game decision (tested on its own below).
     fn plan_done(shop: &Shop) {
         shop.0.lock().unwrap().planned = true;
+    }
+    #[test]
+    fn recover_makes_the_shop_usable_after_a_panic_under_its_lock() {
+        let shop = Shop::default();
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _held = shop.0.lock().unwrap();
+            panic!("test");
+        }));
+        assert!(shop.0.lock().is_err());
+        shop.recover();
+        assert!(shop.0.lock().is_ok());
     }
     #[test]
     fn the_game_decides_once_after_start_before_manual_answers() {

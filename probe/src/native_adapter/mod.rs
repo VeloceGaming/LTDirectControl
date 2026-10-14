@@ -274,8 +274,8 @@ struct StopTicket {
     actor: usize,
     hold: bool,
     cancel_recall: bool,
-    /// An SDK-accepted AA target confirmed in range on this worker tick.
-    attack_target: Option<usize>,
+    /// The input stands in for a basic attack waiting on its cooldown.
+    attack_wait: bool,
 }
 thread_local! {
     static STOP_TICKET: std::cell::Cell<Option<StopTicket>> = const { std::cell::Cell::new(None) };
@@ -285,14 +285,14 @@ pub fn arm_stop(
     actor: Option<usize>,
     hold: bool,
     cancel_recall: bool,
-    attack_target: Option<usize>,
+    attack_wait: bool,
 ) {
     STOP_TICKET.set(actor.map(|actor| StopTicket {
         key,
         actor,
         hold,
         cancel_recall,
-        attack_target,
+        attack_wait,
     }));
 }
 

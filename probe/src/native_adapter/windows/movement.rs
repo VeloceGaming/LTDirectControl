@@ -184,6 +184,12 @@ pub(crate) unsafe extern "system" fn move_hook(entity: usize, x: u64, y: u64, ev
             cancel_recall(shared, entity, ticket.actor, events);
         }
         let action = std::ptr::read_unaligned((entity + 0x70) as *const usize);
+        // While the attack order waits for its cooldown the game used to get
+        // an attack input, which it ignores. Keep the locked attack (wind-up
+        // and backswing) just as untouched: this input does not reach it.
+        if ticket.attack_wait && action == 3 {
+            return true;
+        }
         let goal = (
             std::ptr::read_unaligned((entity + 0x78) as *const u64),
             std::ptr::read_unaligned((entity + 0x80) as *const u64),

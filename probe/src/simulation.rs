@@ -90,6 +90,7 @@ impl StablePlayerAi for Simulation {
             skill_units,
             live_worker,
             attack_in_range,
+            attack_cooldown,
         ) = {
             let sim = ctx.sim()?;
             let Some(origin) = sim.sim_origin() else {
@@ -100,6 +101,30 @@ impl StablePlayerAi for Simulation {
                 return None;
             };
             let key = (sim.seed(), origin.match_id, origin.set_index);
+            // Athletes of the match on screen, for the season correction.
+            if origin.kind == 2 && tick <= 60 {
+                season_fix::observe_athlete(key, player_id, athlete);
+            }
+            // Diagnostic (Verbose only): the latest numbers of the server
+            // pre-simulation (1) and of the match on screen (2).
+            if matches!(origin.kind, 1 | 2)
+                && tick.is_multiple_of(result_audit::RUN_SAMPLE_TICKS)
+                && logging::verbose()
+            {
+                result_audit::observe_run(key, origin.kind, tick, || {
+                    (0..sim.player_count())
+                        .filter_map(|index| sim.player_at(index))
+                        .map(|p| result_audit::RunPlayer {
+                            player: p.id(),
+                            side: p.team(),
+                            kda: (p.kills(), p.deaths(), p.assists()),
+                            cs: p.cs(),
+                            level: p.level(),
+                            gold: p.gold(),
+                        })
+                        .collect()
+                });
+            }
             if crate::native_timing::left_match(key) {
                 return None;
             }
@@ -207,6 +232,11 @@ impl StablePlayerAi for Simulation {
                 self.movement
                     .observe_acquisition_debug(key, player_id, sample);
             }
+            // The game's own attack cooldown, from the official interface.
+            let attack_cooldown = (selected && self.timing.allows_input(key))
+                .then(|| sim.get_player(player_id)?.cooldowns())
+                .flatten()
+                .map(|cooldowns| cooldowns.0);
             step(Step::Combat);
             let candidate = if selected && self.timing.allows_input(key) {
                 current_champion
@@ -222,6 +252,11 @@ impl StablePlayerAi for Simulation {
                             champion.pos(),
                             units,
                             acquisition_range,
+                            combat::AttackState {
+                                actor: Some((key, champion.id())),
+                                range: attack_range,
+                                ready: attack_ready(attack_cooldown),
+                            },
                         )
                     })
             } else {
@@ -250,6 +285,7 @@ impl StablePlayerAi for Simulation {
                 skill_units,
                 origin.kind == 2 && self.timing.owns_worker(key),
                 attack_in_range,
+                attack_cooldown,
             )
         };
         step(Step::Items);
@@ -313,7 +349,7 @@ impl StablePlayerAi for Simulation {
                     || mode != self.last_manual_mode)
                 || candidate.is_none() && self.last_manual)
         {
-            self.logger.verbose(|| format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} attack_in_range={attack_in_range:?} base={_base:?}"));
+            self.logger.verbose(|| format!("MANUAL input tick={tick} player={player_id} mode={mode:?} pos={position:?} request={candidate:?} valid={valid} attack_in_range={attack_in_range:?} attack_cooldown={attack_cooldown:?} base={_base:?}"));
         }
         if valid && live_worker {
             let stamp = skill
@@ -337,9 +373,12 @@ impl StablePlayerAi for Simulation {
                 actor.filter(|_| valid && matches!(mode, Some("hold" | "move" | "attack"))),
                 valid && mode == Some("hold"),
                 valid && self.movement.take_cancel_recall(player_id),
-                candidate
-                    .filter(|_| valid && mode == Some("attack") && attack_in_range == Some(true))
-                    .map(|input| input.target.target_id),
+                // A movement input that still names its enemy is the attack
+                // order waiting for its cooldown.
+                valid
+                    && skill.is_none()
+                    && matches!(mode, Some("hold" | "move"))
+                    && proposal.is_some_and(|(_, enemy)| enemy.is_some()),
             );
         }
         if candidate.is_some() && !valid {
@@ -353,6 +392,15 @@ impl StablePlayerAi for Simulation {
         // or after an explicitly logged failure releases the coordinator.
         candidate.filter(|_| valid)
     }
+}
+
+/// An attack input is sent only when the game will act on it: on cooldown it
+/// is ignored and the previous movement keeps running. One remaining tick
+/// counts as ready, so an attack is never a tick late if the game counts the
+/// cooldown down after this decision; if it does not, that one input is
+/// ignored and changes nothing. An unreadable cooldown never withholds one.
+fn attack_ready(cooldown: Option<usize>) -> bool {
+    cooldown.is_none_or(|ticks| ticks <= 1)
 }
 
 impl Simulation {

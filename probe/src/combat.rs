@@ -107,6 +107,35 @@ impl Order {
         }
     }
 }
+/// What the game knows about the controlled champion's basic attack on this
+/// tick. `ready` false: the attack is on cooldown and the game would ignore an
+/// attack input, leaving the previous movement running.
+#[derive(Clone, Copy, Debug)]
+pub struct AttackState {
+    /// Match and entity of the controlled champion.
+    pub actor: Option<(crate::own_selection::MatchKey, usize)>,
+    /// Current basic attack reach (not the attack-move acquisition radius).
+    pub range: Option<u64>,
+    pub ready: bool,
+}
+impl Default for AttackState {
+    fn default() -> Self {
+        Self {
+            actor: None,
+            range: None,
+            ready: true,
+        }
+    }
+}
+/// The input while an in-reach attack waits for its cooldown. An attack that
+/// locks the champion interrupts his walk, so he stands and waits (League).
+/// An attack that does not lock him runs beside the walk: he keeps going.
+pub fn attack_wait(position: (u64, u64), locks: bool, onward: Option<(u64, u64)>) -> InputV1 {
+    match onward.filter(|_| !locks) {
+        Some(goal) => ground(position, goal),
+        None => InputV1::move_to(position.0, position.1),
+    }
+}
 fn ground(position: (u64, u64), goal: (u64, u64)) -> InputV1 {
     if distance(position, goal) <= 4_000_000 {
         InputV1::move_to(position.0, position.1)

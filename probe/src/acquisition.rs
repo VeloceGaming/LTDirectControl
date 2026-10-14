@@ -9,8 +9,12 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub const BASELINE: f64 = 120.;
+pub const BASELINE: f64 = 80.;
 pub const BUFFER: f64 = 5.;
+/// Champions whose basic attack leaves them free to move. An enemy acquired
+/// beyond their reach would pull them off their walk to approach it, so their
+/// Automatic radius is exactly their reach: no minimum and no buffer.
+const AT_REACH: &[&str] = &["gunner"];
 pub const MAX_RADIUS: f64 = 10_000.;
 
 #[derive(Clone, Default)]
@@ -203,8 +207,13 @@ pub fn migrate_defaults(v: &mut Values) {
         .get("defaults_version")
         .and_then(Value::as_u64)
         .unwrap_or(0);
-    if version >= 3 {
+    if version >= 4 {
         return;
+    }
+    // 120 was the shipped minimum until 1.2.3 and every settings file holds
+    // it written out, so a saved 120 is taken as that default, not a choice.
+    if a.get("baseline_radius").and_then(Value::as_f64) == Some(120.) {
+        a.insert("baseline_radius".into(), json!(BASELINE));
     }
     if version < 2 {
         if a.get("baseline_radius").and_then(Value::as_f64) == Some(120.) {
@@ -219,7 +228,7 @@ pub fn migrate_defaults(v: &mut Values) {
             row.remove("default_baseline_radius");
         }
     }
-    a.insert("defaults_version".into(), json!(3));
+    a.insert("defaults_version".into(), json!(4));
 }
 fn level_cap(v: &Value) -> Option<u64> {
     let a = v.as_array()?;
@@ -289,7 +298,10 @@ fn valid(n: Option<f64>, fallback: f64) -> f64 {
     n.filter(|n| n.is_finite() && (0. ..=MAX_RADIUS).contains(n))
         .unwrap_or(fallback)
 }
-pub fn baseline(v: &Values, _name: &str) -> f64 {
+pub fn baseline(v: &Values, name: &str) -> f64 {
+    if AT_REACH.contains(&name) {
+        return 0.;
+    }
     valid(
         v.0.pointer("/acquisition/baseline_radius")
             .and_then(Value::as_f64),
@@ -313,6 +325,14 @@ pub fn custom(v: &Values, name: &str) -> Option<f64> {
         .get("override_radius")?
         .as_f64()
         .filter(|n| n.is_finite() && (0. ..=MAX_RADIUS).contains(n))
+}
+/// The buffer added to a champion's reach by Automatic.
+pub fn buffer_for(v: &Values, name: &str) -> f64 {
+    if AT_REACH.contains(&name) {
+        0.
+    } else {
+        buffer(v)
+    }
 }
 pub fn buffer(v: &Values) -> f64 {
     valid(
@@ -368,13 +388,13 @@ pub fn register_defaults(v: &mut Values, rows: &[Champion]) {
             .and_then(Value::as_f64),
         BUFFER
     ));
-    v.0["acquisition"]["defaults_version"] = json!(3);
+    v.0["acquisition"]["defaults_version"] = json!(4);
 }
 pub fn radius(v: &Values, name: &str, current: u64, maximum: Option<u64>) -> u64 {
     if let Some(n) = custom(v, name) {
         return ((n * 1000.).round() as u64).max(current);
     }
-    let buffer = (buffer(v) * 1000.).round() as u64;
+    let buffer = (buffer_for(v, name) * 1000.).round() as u64;
     let baseline = (baseline(v, name) * 1000.).round() as u64;
     baseline.max(
         maximum
@@ -393,8 +413,8 @@ mod tests {
             json!({"acquisition":{"baseline_radius":120,"aa_range_buffer":10,"champions":{"soldier":{"default_baseline_radius":120,"override_radius":135},"mod":{"default_baseline_radius":82,"override_radius":45}}}}),
         );
         migrate_defaults(&mut v);
-        assert_eq!(baseline(&v, "soldier"), 120.);
-        assert_eq!(baseline(&v, "mod"), 120.);
+        assert_eq!(baseline(&v, "soldier"), 80.);
+        assert_eq!(baseline(&v, "mod"), 80.);
         assert_eq!(custom(&v, "soldier"), Some(135.));
         assert_eq!(custom(&v, "mod"), Some(45.));
         assert_eq!(v.0["acquisition"]["aa_range_buffer"], 5.);
@@ -426,8 +446,9 @@ mod tests {
             json!({"acquisition":{"defaults_version":2,"baseline_radius":120,"aa_range_buffer":10,"champions":{"ghost":{"default_baseline_radius":70},"soldier":{"override_radius":80}}}}),
         );
         migrate_defaults(&mut v);
-        // Version 2 values may be deliberate edits, even if equal to old defaults.
-        assert_eq!(baseline(&v, "ghost"), 120.);
+        // A version 2 buffer may be a deliberate edit, even if equal to an
+        // old default; a saved 120 minimum is the default shipped until 1.2.3.
+        assert_eq!(baseline(&v, "ghost"), 80.);
         assert_eq!(buffer(&v), 10.);
         assert!(v.0["acquisition"]["champions"]["ghost"]
             .get("default_baseline_radius")
@@ -438,6 +459,11 @@ mod tests {
         assert_eq!(radius(&v, "other", 60_000, Some(93_000)), 101_000);
         assert_eq!(radius(&v, "soldier", 60_000, Some(93_000)), 80_000);
         assert_eq!(radius(&v, "soldier", 100_000, Some(93_000)), 100_000);
+        // Free to move while attacking: exactly his reach, unless customised.
+        assert_eq!(radius(&v, "gunner", 50_000, Some(50_000)), 50_000);
+        set_custom(&mut v, "gunner", Some(64.));
+        assert_eq!(radius(&v, "gunner", 50_000, Some(50_000)), 64_000);
+        set_custom(&mut v, "gunner", None);
         let acquisition = v.0["acquisition"].clone();
         v.set("manual_shop", 0.);
         v.set("acquisition_debug", 1.);
@@ -485,7 +511,8 @@ mod tests {
     fn automatic_uses_maximum_scaling_and_live_bonus_custom_only_floors_at_live_range() {
         let mut v = Values::default();
         assert_eq!(maximum(60_000, 3_000, Some(12)), Some(93_000));
-        assert_eq!(radius(&v, "soldier", 60_000, Some(93_000)), 120_000);
+        assert_eq!(radius(&v, "soldier", 60_000, Some(93_000)), 98_000);
+        assert_eq!(radius(&v, "soldier", 60_000, Some(60_000)), 80_000);
         assert_eq!(radius(&v, "mod", 70_000, Some(150_000)), 155_000);
         assert_eq!(radius(&v, "mod", 180_000, Some(150_000)), 185_000);
         set_custom(&mut v, "mod", Some(80.));

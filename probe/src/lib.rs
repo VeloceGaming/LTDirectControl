@@ -47,6 +47,7 @@ mod purchase_tracker;
 mod result_audit;
 mod runtime_storage;
 mod screen_effect;
+mod season_fix;
 mod session_ui;
 mod settings;
 mod settings_ui;
@@ -84,7 +85,7 @@ use simulation::Simulation;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -119,6 +120,22 @@ impl Logger {
     fn verbose(&self, make: impl FnOnce() -> String) {
         if logging::verbose() {
             self.write(&make());
+        }
+    }
+
+    /// For the panic hook: never waits for the log (the panic may have
+    /// happened while it was held) and applies no level or line limit.
+    fn write_unblocked(&self, text: &str) {
+        let Ok(mut state) = self.0.try_lock() else {
+            return;
+        };
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_or(0, |duration| duration.as_millis());
+        let record = format!("{stamp} {text}\n");
+        if let Some(file) = state.file.as_mut() {
+            let _ = file.write_all(record.as_bytes());
+            state.bytes = state.bytes.saturating_add(record.len());
         }
     }
 
@@ -169,6 +186,21 @@ impl Logger {
     }
 }
 
+/// The game's mod interface catches a panic in a mod callback and carries on
+/// without a word, so record where it happened. Only the first few: a panic
+/// in per-frame code repeats every frame.
+fn log_panics(logger: Arc<Logger>) {
+    static LOGGED: AtomicUsize = AtomicUsize::new(0);
+    let previous = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        if LOGGED.fetch_add(1, Ordering::Relaxed) < 20 {
+            let text = info.to_string().replace(['\r', '\n'], " ");
+            logger.write_unblocked(&format!("PANIC {text}"));
+        }
+        previous(info);
+    }));
+}
+
 fn init(host: &StableHost) -> StableMod {
     let mut declaration = StableMod::new(MOD_ID);
     let (file, directory) = match runtime_storage::open_log() {
@@ -191,6 +223,7 @@ fn init(host: &StableHost) -> StableMod {
         bytes: 0,
         rotating: directory.is_some(),
     })));
+    log_panics(logger.clone());
     let version = host.game_version();
     logger.write(&format!(
         "INIT game={}.{}.{} abi={} probe={}",
@@ -261,6 +294,10 @@ fn init(host: &StableHost) -> StableMod {
         install_attempted: AtomicBool::new(false),
         management_seen: AtomicBool::new(false),
         session_gate: session_gate.clone(),
+    });
+    // Season statistics follow the played match (season_fix.rs).
+    declaration.set_server_extension(season_fix::SeasonServer {
+        logger: logger.clone(),
     });
     declaration.set_match_hook(test_cheats::CooldownHook {
         movement: movement.clone(),

@@ -4,8 +4,125 @@ use mod_api_stable::{ClientSceneKindV1, RecordKindV1, StableClient};
 use serde_json::{json, Value};
 use std::{
     collections::BTreeSet,
+    sync::Mutex,
     time::{Duration, Instant},
 };
+
+// Diagnostic for docs/investigation-played-result.md, at Verbose log detail
+// only: the game simulates a fixture more than once (an AI-only server
+// pre-simulation and the match on screen). Keep every player's latest numbers
+// from each run, and save the management records around a played match, to
+// see which run the season totals follow. Read-only.
+
+/// One player's numbers in one simulation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RunPlayer {
+    pub player: usize,
+    pub side: usize,
+    pub kda: (usize, usize, usize),
+    pub cs: usize,
+    pub level: usize,
+    pub gold: usize,
+}
+/// The latest sample of one simulation of a fixture.
+#[derive(Clone, Debug)]
+struct Run {
+    seed: u64,
+    match_id: u64,
+    set_index: u64,
+    /// `SimOriginKindV1` code: 1 server pre-simulation, 2 the match on screen.
+    kind: u32,
+    tick: usize,
+    players: Vec<RunPlayer>,
+}
+static RUNS: Mutex<Vec<Run>> = Mutex::new(Vec::new());
+const RUN_LIMIT: usize = 256;
+/// Ticks between samples: the final numbers can be this far from the end.
+pub const RUN_SAMPLE_TICKS: usize = 30;
+
+/// Called from any player's `think` of a simulation; `players` is read only
+/// for the first caller of a sampled tick.
+pub fn observe_run(
+    key: MatchKey,
+    kind: u32,
+    tick: usize,
+    players: impl FnOnce() -> Vec<RunPlayer>,
+) {
+    let Ok(mut runs) = RUNS.lock() else { return };
+    let at = runs
+        .iter()
+        .position(|r| (r.seed, r.match_id, r.set_index, r.kind) == (key.0, key.1, key.2, kind));
+    if at.is_some_and(|i| runs[i].tick == tick) {
+        return;
+    }
+    let run = Run {
+        seed: key.0,
+        match_id: key.1,
+        set_index: key.2,
+        kind,
+        tick,
+        players: players(),
+    };
+    match at {
+        Some(i) => runs[i] = run,
+        None => {
+            if runs.len() >= RUN_LIMIT {
+                runs.remove(0);
+            }
+            runs.push(run);
+        }
+    }
+}
+/// Every recorded simulation of the fixture with this seed and match id (the
+/// pre-simulation reports another set index than the match on screen).
+fn runs(key: MatchKey) -> Value {
+    let Ok(runs) = RUNS.lock() else {
+        return Value::Null;
+    };
+    runs.iter()
+        .filter(|r| (r.seed, r.match_id) == (key.0, key.1))
+        .map(|r| {
+            json!({
+                "origin_kind": r.kind, "set_index": r.set_index, "last_sampled_tick": r.tick,
+                "players": r.players.iter().map(|p| json!({
+                    "player": p.player, "side": p.side, "kda": [p.kda.0, p.kda.1, p.kda.2],
+                    "cs": p.cs, "level": p.level, "gold": p.gold,
+                })).collect::<Vec<_>>(),
+            })
+        })
+        .collect()
+}
+/// Whole records of one kind, bounded: `ids`, or every record of the kind.
+fn records(ctx: &StableClient<'_>, kind: RecordKindV1, ids: Option<&[usize]>) -> Value {
+    const COUNT: usize = 32;
+    const BYTES: usize = 12 * 1024 * 1024;
+    let all;
+    let ids = match ids {
+        Some(ids) => ids,
+        None => {
+            all = ctx.record_ids(kind);
+            &all
+        }
+    };
+    let mut bytes = 0;
+    let mut out = serde_json::Map::new();
+    for id in ids.iter().take(COUNT) {
+        let Some(text) = ctx.record_get_json(kind, *id, "") else {
+            continue;
+        };
+        bytes += text.len();
+        if bytes > BYTES {
+            out.insert("truncated".into(), json!(true));
+            break;
+        }
+        out.insert(
+            id.to_string(),
+            serde_json::from_str(&text).unwrap_or(Value::Null),
+        );
+    }
+    out.insert("record_count".into(), json!(ids.len()));
+    Value::Object(out)
+}
 
 #[derive(Default)]
 pub struct ResultAudit {
@@ -18,6 +135,12 @@ pub struct ResultAudit {
     last_report: Option<Value>,
     last_player: Option<Snapshot>,
     result_screen: Option<Value>,
+    /// Own athletes of the audited match, and which record captures are done.
+    athletes: Vec<usize>,
+    started: Option<Instant>,
+    captured_start: bool,
+    captured_during: bool,
+    captured_after: bool,
 }
 fn result_labels(ctx: &StableClient<'_>) -> Value {
     let mut pending = vec![("main.contents".to_owned(), 0)];
@@ -60,6 +183,51 @@ impl ResultAudit {
             }
         }
     }
+    /// Save the own athletes' records (and, unless `light`, the team and the
+    /// league competitions) with every recorded simulation of the fixture.
+    fn capture_records(
+        &self,
+        ctx: &StableClient<'_>,
+        key: MatchKey,
+        label: &str,
+        light: bool,
+        log: &Logger,
+    ) {
+        if !crate::logging::verbose() {
+            return;
+        }
+        let Some(root) = log.directory() else { return };
+        let reports = root.join("research");
+        if std::fs::create_dir_all(&reports).is_err() {
+            return;
+        }
+        let team = ctx.player_team_id();
+        let mut report = json!({
+            "version": env!("CARGO_PKG_VERSION"), "label": label,
+            "controlled_key": {"seed": key.0, "match_id": key.1, "set_index": key.2},
+            "game_time": ctx.game_time().map(|t| json!([t.0, t.1, t.2, t.3, t.4])),
+            "seconds_since_key_bound": self.started.map(|at| at.elapsed().as_secs_f32()),
+            "player_team_id": team,
+            "simulations": runs(key),
+            "athletes": records(ctx, RecordKindV1::Athlete, Some(&self.athletes)),
+        });
+        if !light {
+            report["team"] = records(ctx, RecordKindV1::Team, team.as_slice().into());
+            report["league_competitions"] = records(ctx, RecordKindV1::LeagueCompetition, None);
+        }
+        let path = reports.join(format!(
+            "session-records-{}-set{}-seed{}-{label}.json",
+            key.1, key.2, key.0
+        ));
+        let bytes = serde_json::to_vec(&report).unwrap_or_default();
+        let size = bytes.len();
+        let written = std::fs::write(&path, bytes).is_ok();
+        log.write(&format!(
+            "RESULT RECORDS label={label} file={} written={written} bytes={size} athletes={:?}",
+            path.display(),
+            self.athletes
+        ));
+    }
     #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
@@ -68,6 +236,7 @@ impl ResultAudit {
         generation: u64,
         battlefield: bool,
         last_player: Option<&Snapshot>,
+        own_athletes: &[usize],
         log: &Logger,
     ) {
         // Continue the prior result's bounded polling between battles. A new
@@ -89,12 +258,43 @@ impl ResultAudit {
             self.last_report = None;
             self.last_player = None;
             self.result_screen = None;
+            self.athletes.clear();
+            self.started = Some(Instant::now());
+            self.captured_start = false;
+            self.captured_during = false;
+            self.captured_after = false;
         }
         let key = audit_key;
         self.observe_player(key, battlefield, last_player);
+        // The roster is registered on the match's first tick, just after the
+        // key is bound.
+        if battlefield && !self.captured_start && !own_athletes.is_empty() {
+            self.athletes = own_athletes.to_vec();
+            self.captured_start = true;
+            self.capture_records(ctx, key, "start", false, log);
+        }
+        // One minute in, the pre-simulation has long finished: does the
+        // athlete's record already hold its numbers?
+        if battlefield
+            && !self.captured_during
+            && self
+                .started
+                .is_some_and(|at| at.elapsed() >= Duration::from_secs(60))
+        {
+            self.captured_during = true;
+            self.capture_records(ctx, key, "during", true, log);
+        }
         if self.was_battlefield && !battlefield {
             self.deadline = Some(Instant::now() + Duration::from_secs(30));
             log.write("RESULT AUDIT battlefield exit; read-only history capture pending (authority unverified)");
+            self.capture_records(ctx, key, "exit", false, log);
+        }
+        if !battlefield
+            && !self.captured_after
+            && self.deadline.is_some_and(|at| Instant::now() > at)
+        {
+            self.captured_after = true;
+            self.capture_records(ctx, key, "after", false, log);
         }
         self.was_battlefield = battlefield;
         if battlefield
@@ -192,6 +392,33 @@ impl ResultAudit {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn each_simulation_of_a_fixture_keeps_its_own_latest_numbers() {
+        let sample = |kills| {
+            vec![RunPlayer {
+                player: 7,
+                side: 1,
+                kda: (kills, 0, 0),
+                cs: 0,
+                level: 1,
+                gold: 0,
+            }]
+        };
+        // The pre-simulation reports another set index than the match on screen.
+        observe_run((91, 612, u64::MAX), 1, 30, || sample(2));
+        observe_run((91, 612, 1), 2, 30, || sample(5));
+        observe_run((91, 612, 1), 2, 60, || sample(6));
+        // A second caller on the same tick does not read the players again.
+        observe_run((91, 612, 1), 2, 60, || panic!("sampled twice"));
+        observe_run((92, 613, 1), 2, 30, || sample(9));
+        let found = runs((91, 612, 1));
+        let found = found.as_array().unwrap();
+        assert_eq!(found.len(), 2);
+        assert_eq!(found[0]["origin_kind"], 1);
+        assert_eq!(found[0]["players"][0]["kda"][0], 2);
+        assert_eq!(found[1]["last_sampled_tick"], 60);
+        assert_eq!(found[1]["players"][0]["kda"][0], 6);
+    }
     #[test]
     fn history_references_are_not_inferred_from_unrelated_fields_or_set_indices() {
         assert_eq!(

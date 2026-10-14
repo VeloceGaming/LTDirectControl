@@ -272,27 +272,6 @@ pub(crate) unsafe extern "system" fn auto_attack_hook(entity: usize, input: usiz
     let _watch = crate::worker_watch::hook(crate::worker_watch::Step::Attack);
     attack_hook_from("native-auto", entity, input, events);
 }
-/// Native InputTarget::Target is a POD tag (low dword) and entity ID.
-/// Stop only a matching, in-range manual order. The caller always forwards
-/// the attack afterwards, so native readiness, windup and damage still decide.
-pub(crate) unsafe fn stop_for_manual_attack(
-    entity: usize,
-    input: usize,
-    ticket: StopTicket,
-    events: usize,
-    notify: StopEventFn,
-) -> bool {
-    let Some(target) = ticket.attack_target else {
-        return false;
-    };
-    if input == 0
-        || std::ptr::read_unaligned(input as *const u32) != 0
-        || std::ptr::read_unaligned((input + 8) as *const usize) != target
-    {
-        return false;
-    }
-    stop_movement(entity, ticket.actor, events, notify)
-}
 pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize, events: usize) {
     let _profile = crate::perf::work(crate::perf::Work::AttackInclusive);
     crate::perf::hook(crate::perf::Hook::Attack);
@@ -308,15 +287,10 @@ pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize,
                 .then(|| take_stop_ticket(key, actor))
                 .flatten()
             {
+                // The attack itself is never preceded by a stop: whether the
+                // champion stands is the game's own attack deciding.
                 if ticket.cancel_recall {
                     cancel_recall(shared, entity, actor, events);
-                }
-                let action = std::ptr::read_unaligned((entity + 0x70) as *const usize);
-                let notify: StopEventFn =
-                    std::mem::transmute(NOTIFY_STOP.load(Ordering::Acquire));
-                if stop_for_manual_attack(entity, input, ticket, events, notify) && action == 2 {
-                    let cooldown = std::ptr::read_unaligned((entity + 0xb0) as *const usize);
-                    shared.logger.write(&format!("ATTACK WAIT_STOP actor={actor} target={:?} in_range=true action=2->0 cooldown={cooldown}; native attack attempt follows", ticket.attack_target));
                 }
             }
             Some((
@@ -361,8 +335,30 @@ pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize,
         } else if std::ptr::read_unaligned((entity + 0xb0) as *const usize) > before_cooldown {
             shared.logger.write(&format!("ATTACK OBSERVED source={source} actor={actor} pending-effect-unconfirmed; preserving native animation"));
         }
+        if let Some(locks) = started_attack_locks(entity, previous_len, before_cooldown) {
+            shared
+                .movement
+                .observe_attack_kind(key, actor, locks, &shared.logger);
+        }
         observe_owned_abilities(shared, entity, key, actor);
     }
+}
+/// Whether the basic attack this call started locked the champion in place
+/// (action 3: Ninja) or left him free to move with the effect queued (Gunner).
+/// None when no attack started or the outcome is neither: an ignored call is
+/// not evidence.
+pub(crate) unsafe fn started_attack_locks(
+    entity: usize,
+    previous_len: usize,
+    before_cooldown: usize,
+) -> Option<bool> {
+    if std::ptr::read_unaligned((entity + 0xb0) as *const usize) <= before_cooldown {
+        return None;
+    }
+    if std::ptr::read_unaligned((entity + 0x70) as *const usize) == 3 {
+        return Some(true);
+    }
+    queued_attack_delay(entity, previous_len).map(|_| false)
 }
 /// Hit tick of a BaseAttack that locked action 3 in this call. The native
 /// consumer either locks action 3 without a queue entry or queues a delayed

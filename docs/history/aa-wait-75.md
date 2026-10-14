@@ -1,5 +1,12 @@
 # AA movement stop and attack-move acquisition — 0.75.4
 
+> **Superseded 2026-10-14 (1.2.3).** "Stop before an accepted attack" below
+> is no longer in the mod. The stop covered for sending the attack input on
+> every tick; the attack is now sent only when its cooldown allows, and a
+> champion waiting for it gets an ordinary movement input (stand, or keep
+> walking if his attack does not lock him). See the 1.2.3 entry in
+> `CHANGELOG.md`. The attack-move acquisition rules below still hold.
+
 The user reported that Ice Mage continued moving after an AA order while
 waiting for cooldown. The old session log was no longer available. Static
 review found a gap in 0.74.0: `simulation.rs` issued a hold only when

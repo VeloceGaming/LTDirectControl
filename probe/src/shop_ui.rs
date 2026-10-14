@@ -1514,6 +1514,33 @@ impl ShopUi {
         }
     }
 
+    /// After a panic inside `apply`: close the window, hand back the pause it
+    /// made and free the input it was blocking.
+    pub fn recover(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        timing: &crate::native_timing::NativeTiming,
+        log: &Logger,
+    ) {
+        self.open = false;
+        crate::ui_state::SHOP_OPEN.store(false, Ordering::Relaxed);
+        AREA.clear_poison();
+        if let Ok(mut area) = AREA.lock() {
+            *area = None;
+        }
+        shop::SHOP.recover();
+        if ctx.ui_exists(PATH) {
+            ctx.ui_set_visible(PATH, false);
+        }
+        self.update_pause(timing, false, false, log);
+        static LOGGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+        if !LOGGED.swap(true, Ordering::Relaxed) {
+            log.write(
+                "SHOP UI closed after a panic in its own code; see the PANIC lines (logged once)",
+            );
+        }
+    }
+
     /// Per client frame. `active`: battlefield under direct control.
     #[allow(clippy::too_many_arguments)]
     pub fn apply(

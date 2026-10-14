@@ -38,11 +38,18 @@ struct State {
     notice: String,
     updated: Option<Instant>,
     target: Option<Order>,
+    /// The ground order a direct attack order replaced, with its `route`.
+    /// A champion whose attack does not lock him keeps following it.
+    carry: Option<Order>,
+    /// Whether the controlled champion's last basic attack locked him in
+    /// place (true) or left him free to move (false), learned from the attack
+    /// itself by the native attack hook. None until his first attack.
+    attack_kind: Option<((MatchKey, usize), bool)>,
     command_stamp: Option<crate::input_trace::Stamp>,
     units: Vec<Unit>,
     units_updated: Option<Instant>,
     /// Acquisition range from the same simulation borrow as `units`. AA reach
-    /// is checked separately before stopping movement for a pending attack.
+    /// is checked separately while an attack waits for its cooldown.
     order_range: Option<u64>,
     acquisition_debug: Option<AcquisitionDebug>,
     previous_left: bool,
@@ -83,6 +90,29 @@ static LAST_HOVER: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsi
 pub struct Movement {
     enabled: bool,
     state: Mutex<State>,
+}
+impl State {
+    /// Next point of the walk a direct attack order was laid over, if any.
+    fn onward(&mut self, position: (u64, u64)) -> Option<(u64, u64)> {
+        let goal = match self.carry? {
+            Order::Move(goal) | Order::AttackMove(goal) => goal,
+            Order::Attack(_) => return None,
+        };
+        let reached = |p: (u64, u64)| {
+            position.0.abs_diff(p.0).pow(2) + position.1.abs_diff(p.1).pow(2) <= 4_000_000
+        };
+        while self.route.front().is_some_and(|p| reached(*p)) {
+            self.route.pop_front();
+        }
+        if let Some(waypoint) = self.route.front().copied() {
+            return Some(waypoint);
+        }
+        if reached(goal) {
+            self.carry = None;
+            return None;
+        }
+        Some(goal)
+    }
 }
 impl Movement {
     pub fn new(enabled: bool) -> Self {
@@ -363,8 +393,29 @@ impl Movement {
     }
     #[cfg(test)]
     fn input(&self, player: usize, position: (u64, u64)) -> Option<InputV1> {
-        self.combat_input(player, position, Vec::new(), Some(120_000))
-            .map(|r| r.0)
+        self.combat_input(
+            player,
+            position,
+            Vec::new(),
+            Some(120_000),
+            Default::default(),
+        )
+        .map(|r| r.0)
+    }
+    /// The native attack hook saw a basic attack of the controlled champion
+    /// start: `locks` when it locked him in place, false when it left him
+    /// free to move (Gunner). The latest attack decides.
+    pub fn observe_attack_kind(&self, key: MatchKey, actor: usize, locks: bool, log: &Logger) {
+        if let Ok(mut s) = self.state.lock() {
+            let kind = Some(((key, actor), locks));
+            if s.attack_kind != kind {
+                s.attack_kind = kind;
+                log.write(&format!(
+                    "ATTACK KIND actor={actor} locks_movement={locks}; while an attack waits for cooldown the champion {}",
+                    if locks { "stands" } else { "keeps walking" }
+                ));
+            }
+        }
     }
     pub fn combat_input(
         &self,
@@ -372,6 +423,7 @@ impl Movement {
         position: (u64, u64),
         units: impl IntoIterator<Item = Unit>,
         acquisition_range: Option<u64>,
+        attack: crate::combat::AttackState,
     ) -> Option<(InputV1, Option<(u64, u64)>)> {
         if !self.enabled {
             return None;
@@ -396,11 +448,24 @@ impl Movement {
         {
             return Some((InputV1::return_home(), None));
         }
+        // Learned for another champion (swap) or another match: forget it.
+        if state.attack_kind.map(|kind| kind.0) != attack.actor {
+            state.attack_kind = None;
+        }
+        let locks = state.attack_kind.map(|kind| kind.1);
+        let free = locks == Some(false);
         if matches!(state.target, Some(Order::Attack(id)) if !state.units.iter().any(|u| u.id == id))
         {
-            state.target = None;
-            state.route.clear();
-            state.marker = None;
+            // The target is gone. A champion who was walking and shooting
+            // goes on with his walk; anyone else has nothing left to do.
+            state.target = state.carry.take().filter(|_| free);
+            state.marker = state.target.map(|order| match order {
+                Order::Move(goal) | Order::AttackMove(goal) => goal,
+                Order::Attack(_) => position,
+            });
+            if state.target.is_none() {
+                state.route.clear();
+            }
         }
         if let Some(target) = state.target {
             if let Order::Move(goal) = target {
@@ -431,6 +496,37 @@ impl Movement {
             {
                 state.target = None;
                 state.route.clear();
+            }
+            if let (true, Some(enemy)) = (
+                result.0.kind == mod_api_stable::InputKindV1::Attack.code(),
+                result.1,
+            ) {
+                let in_reach = attack
+                    .range
+                    .map(|range| crate::combat::attack_in_range(position, enemy, range));
+                // A walk only continues beside the attack: it ends when the
+                // champion must approach his target or must stand to attack.
+                if matches!(target, Order::Attack(_))
+                    && (in_reach == Some(false) || (in_reach == Some(true) && locks == Some(true)))
+                {
+                    state.carry = None;
+                    state.route.clear();
+                }
+                // Attack only when it can happen. On cooldown the game would
+                // ignore the input and leave the previous movement running.
+                if in_reach == Some(false) && !attack.ready {
+                    return Some((InputV1::move_to(enemy.0, enemy.1), result.1));
+                }
+                if in_reach == Some(true) && !attack.ready {
+                    let onward = match target {
+                        Order::AttackMove(goal) => Some(goal),
+                        _ => state.onward(position),
+                    };
+                    return Some((
+                        crate::combat::attack_wait(position, !free, onward),
+                        result.1,
+                    ));
+                }
             }
             return Some(result);
         }
@@ -1123,6 +1219,15 @@ impl Movement {
                             .into_iter()
                             .any(|id| Some(id) != s.hover_actor)
                         }));
+                // A direct attack is laid over the walk in progress; whether
+                // the walk continues beside it is decided each tick.
+                let carried = match (order, s.target) {
+                    (Order::Attack(_), Some(Order::Move(_) | Order::AttackMove(_))) => s.target,
+                    (Order::Attack(_), Some(Order::Attack(_))) => s.carry,
+                    _ => None,
+                }
+                .map(|walk| (walk, std::mem::take(&mut s.route)));
+                s.carry = None;
                 s.target = Some(order);
                 s.attack_click = match order {
                     Order::Attack(id) => Some((id, Instant::now())),
@@ -1147,6 +1252,10 @@ impl Movement {
                             log.write("MANUAL MOVE no traversable map route; command ignored");
                         }
                     }
+                }
+                if let Some((walk, route)) = carried {
+                    s.carry = Some(walk);
+                    s.route = route;
                 }
                 s.cancel_recall = true;
                 s.attack_move_armed = false;
@@ -1248,7 +1357,9 @@ mod tests {
             Some(120_000),
             Some(40_000),
         ] {
-            let (input, chase) = m.combat_input(5, pos, vec![enemy], range).unwrap();
+            let (input, chase) = m
+                .combat_input(5, pos, vec![enemy], range, Default::default())
+                .unwrap();
             if range.is_some_and(|r| r >= 60_000) {
                 assert_eq!(input.target.target_id, enemy.id);
                 assert_eq!(chase, Some(enemy.position));
@@ -1278,7 +1389,13 @@ mod tests {
         start(&m, &log, 0);
         let camera = recall_camera();
         m.update_mouse(keys(0, 0), true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![],
+            Some(120_000),
+            Default::default(),
+        );
         let click = Keys {
             attack_click: true,
             cursor: Some((1160., 537.)),
@@ -1302,7 +1419,13 @@ mod tests {
         start(&m, &log, 0);
         let camera = recall_camera();
         m.update_mouse(keys(0, 0), true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![],
+            Some(120_000),
+            Default::default(),
+        );
         for point in [(1160., 537.), (1200., 577.), (1240., 617.)] {
             let hover = Keys {
                 cursor: Some(point),
@@ -1356,7 +1479,13 @@ mod tests {
         start(&m, &log, 0);
         let camera = recall_camera();
         m.update_mouse(keys(0, 0), true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![],
+            Some(120_000),
+            Default::default(),
+        );
         let before = Instant::now();
         std::thread::sleep(Duration::from_millis(2));
         assert!(!m.manual_release_after(before));
@@ -1398,7 +1527,13 @@ mod tests {
         // Automatic hold/chase inputs never create manual intent.
         let idle = Instant::now();
         std::thread::sleep(Duration::from_millis(2));
-        m.combat_input(5, (200_000, 200_000), vec![], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![],
+            Some(120_000),
+            Default::default(),
+        );
         assert!(!m.manual_release_after(idle));
     }
     #[test]
@@ -1419,7 +1554,13 @@ mod tests {
             is_minion: true,
             ..hover_ally()
         };
-        m.combat_input(5, (200_000, 200_000), vec![minion], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![minion],
+            Some(120_000),
+            Default::default(),
+        );
         m.refresh_hover(&camera, true, None);
         assert_eq!(m.cursor_enemy().unwrap().id, 29);
         m.update_mouse(
@@ -1438,7 +1579,13 @@ mod tests {
             is_minion: false,
             ..minion
         };
-        m.combat_input(5, (200_000, 200_000), vec![champion], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![champion],
+            Some(120_000),
+            Default::default(),
+        );
         m.refresh_hover(&camera, true, None);
         assert_eq!(m.cursor_enemy().unwrap().id, 29);
         m.update_mouse(
@@ -1493,6 +1640,7 @@ mod tests {
                 (200_000, 200_000),
                 if friendly { vec![] } else { vec![unit] },
                 Some(120_000),
+                Default::default(),
             );
             m.observe_hover_units((1, 33, 1), 5, 100, &[unit]);
             // A previous ground animation is also cleared by a target click.
@@ -1544,7 +1692,13 @@ mod tests {
         start(&m, &log, 0);
         let camera = recall_camera();
         m.update_mouse(keys(0, 0), true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![],
+            Some(120_000),
+            Default::default(),
+        );
         for (point, minimap) in [((1160., 537.), false), ((1700., 850.), true)] {
             m.update_mouse(keys(0, 0), true, &camera, &log);
             m.update_mouse(
@@ -1623,7 +1777,13 @@ mod tests {
             is_minion: true,
             ..ally
         };
-        m.combat_input(5, (200_000, 200_000), vec![enemy], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![enemy],
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[ally, enemy]);
         assert_eq!(m.refresh_hover(&camera, true, None).0.unwrap().id, enemy.id);
         assert_eq!(m.cursor_enemy().unwrap().id, enemy.id);
@@ -1685,7 +1845,13 @@ mod tests {
             ..keys(0, 0)
         };
         m.update_mouse(hover, true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![pointed, target], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![pointed, target],
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[pointed, target]);
         m.state.lock().unwrap().target = Some(Order::Attack(target.id));
         let (h, a) = m.refresh_hover(&camera, true, None);
@@ -1718,10 +1884,22 @@ mod tests {
         // The new visibility snapshot must beat the still-fresh enemy list.
         m.observe_hover_units((1, 33, 1), 5, 100, &[pointed]);
         assert!(m.refresh_hover(&camera, true, None).1.is_none());
-        m.combat_input(5, (200_000, 200_000), vec![pointed], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![pointed],
+            Some(120_000),
+            Default::default(),
+        );
         assert!(m.state.lock().unwrap().target.is_none());
         m.observe_hover_units((1, 33, 1), 5, 100, &[pointed, target]);
-        m.combat_input(5, (200_000, 200_000), vec![pointed, target], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![pointed, target],
+            Some(120_000),
+            Default::default(),
+        );
         m.state.lock().unwrap().target = Some(Order::Attack(pointed.id));
         assert_eq!(
             m.refresh_hover(&camera, true, None).1.unwrap().id,
@@ -1754,7 +1932,13 @@ mod tests {
             ..hover_ally()
         };
         m.update_mouse(hover, true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![enemy], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![enemy],
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[enemy]);
         let click = Keys {
             right: true,
@@ -1766,7 +1950,13 @@ mod tests {
         assert_eq!(first.0, enemy.id);
         // Held right click and worker attack resolution never restart it.
         m.update_mouse(click, true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![enemy], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![enemy],
+            Some(120_000),
+            Default::default(),
+        );
         m.refresh_hover(&camera, true, None);
         assert_eq!(m.attack_click_feedback(), Some(first));
         // A fresh explicit click on the same target must get a fresh timestamp.
@@ -1811,7 +2001,13 @@ mod tests {
         };
         for reason in 0..5 {
             m.update_mouse(hover, true, &camera, &log);
-            m.combat_input(5, (200_000, 200_000), vec![enemy], Some(120_000));
+            m.combat_input(
+                5,
+                (200_000, 200_000),
+                vec![enemy],
+                Some(120_000),
+                Default::default(),
+            );
             m.observe_hover_units((1, 33, 1), 5, 100, &[enemy]);
             m.update_mouse(
                 Keys {
@@ -1858,7 +2054,13 @@ mod tests {
             ..hover_ally()
         };
         m.update_mouse(keys(0, 0), true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), vec![enemy], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![enemy],
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[enemy]);
         m.update_mouse(
             Keys {
@@ -1891,23 +2093,53 @@ mod tests {
             position: (300_000, 200_000),
             ..first
         };
-        m.combat_input(5, (200_000, 200_000), vec![first, second], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![first, second],
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[first, second]);
         m.state.lock().unwrap().target = Some(Order::AttackMove((400_000, 200_000)));
         assert_eq!(m.refresh_hover(&camera, true, None).1.unwrap().id, first.id);
-        m.combat_input(5, (300_000, 200_000), vec![second], Some(120_000));
+        m.combat_input(
+            5,
+            (300_000, 200_000),
+            vec![second],
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[second]);
         assert_eq!(
             m.refresh_hover(&camera, true, None).1.unwrap().id,
             second.id
         );
         // No enemies acquired: ground attack-move has no target outline.
-        m.combat_input(5, (500_000, 200_000), vec![second], Some(120_000));
+        m.combat_input(
+            5,
+            (500_000, 200_000),
+            vec![second],
+            Some(120_000),
+            Default::default(),
+        );
         assert!(m.refresh_hover(&camera, true, None).1.is_none());
-        m.combat_input(5, (300_000, 200_000), vec![second], Some(120_000));
+        m.combat_input(
+            5,
+            (300_000, 200_000),
+            vec![second],
+            Some(120_000),
+            Default::default(),
+        );
         m.state.lock().unwrap().units_updated = Some(Instant::now() - Duration::from_secs(1));
         assert!(m.refresh_hover(&camera, true, None).1.is_none());
-        m.combat_input(5, (300_000, 200_000), vec![second], Some(120_000));
+        m.combat_input(
+            5,
+            (300_000, 200_000),
+            vec![second],
+            Some(120_000),
+            Default::default(),
+        );
         assert!(m.refresh_hover(&camera, false, None).1.is_none());
         assert!(m.state.lock().unwrap().frame_markers.1.is_none());
         m.state.lock().unwrap().target = Some(Order::Move((600_000, 200_000)));
@@ -1961,7 +2193,13 @@ mod tests {
             ..keys(0, 0)
         };
         m.update_mouse(hover, true, &camera, &log);
-        m.combat_input(5, (200_000, 200_000), Vec::new(), Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            Vec::new(),
+            Some(120_000),
+            Default::default(),
+        );
         m.observe_hover_units((1, 33, 1), 5, 100, &[hover_ally()]);
         for player in 0..10 {
             if player != 5 {
@@ -1980,7 +2218,13 @@ mod tests {
             friendly: false,
             ..hover_ally()
         };
-        m.combat_input(5, (200_000, 200_000), vec![enemy], Some(120_000));
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![enemy],
+            Some(120_000),
+            Default::default(),
+        );
         m.state.lock().unwrap().hover_updated = Some(Instant::now() - Duration::from_secs(1));
         assert!(m.target_markers(&camera).0.is_none());
         // An empty authoritative snapshot is also not an enemy-only fallback.
@@ -2252,7 +2496,7 @@ mod tests {
         };
         movement.update(click, true, false, &log);
         movement.update_mouse(click, true, &camera, &log);
-        movement.combat_input(5, pos, units.clone(), Some(120_000));
+        movement.combat_input(5, pos, units.clone(), Some(120_000), Default::default());
         movement.update_mouse(
             Keys {
                 attack_move: true,
@@ -2274,7 +2518,7 @@ mod tests {
         );
         units[1].position = (500_000, 200_000); // Leaves range and the clicked spot.
         let (request, chase) = movement
-            .combat_input(5, pos, units.clone(), Some(120_000))
+            .combat_input(5, pos, units.clone(), Some(120_000), Default::default())
             .unwrap();
         assert_eq!(request.target.target_id, 9);
         assert_eq!(chase, Some(units[1].position));
@@ -2292,7 +2536,13 @@ mod tests {
         assert_eq!(attack.unwrap().id, 9);
         assert_eq!(
             movement
-                .combat_input(5, pos, units[..1].to_vec(), Some(120_000))
+                .combat_input(
+                    5,
+                    pos,
+                    units[..1].to_vec(),
+                    Some(120_000),
+                    Default::default()
+                )
                 .unwrap()
                 .0,
             InputV1::move_to(pos.0, pos.1)
@@ -2301,7 +2551,7 @@ mod tests {
         // Reappearance must not resurrect a canceled attack.
         assert_eq!(
             movement
-                .combat_input(5, pos, units, Some(120_000))
+                .combat_input(5, pos, units, Some(120_000), Default::default())
                 .unwrap()
                 .0,
             InputV1::move_to(pos.0, pos.1)
@@ -2361,7 +2611,13 @@ mod tests {
         };
         movement.update(click, true, false, &log);
         movement.update_mouse(click, true, &camera, &log);
-        movement.combat_input(5, (200_000, 200_000), units.clone(), Some(120_000));
+        movement.combat_input(
+            5,
+            (200_000, 200_000),
+            units.clone(),
+            Some(120_000),
+            Default::default(),
+        );
         assert_eq!(movement.target_markers(&camera).0.unwrap().id, 9);
         movement.update_mouse(
             Keys {
@@ -2384,7 +2640,13 @@ mod tests {
         );
         assert_eq!(
             movement
-                .combat_input(5, (200_000, 200_000), units.clone(), Some(120_000))
+                .combat_input(
+                    5,
+                    (200_000, 200_000),
+                    units.clone(),
+                    Some(120_000),
+                    Default::default()
+                )
                 .unwrap()
                 .0
                 .target
@@ -2406,7 +2668,13 @@ mod tests {
             movement.target_markers(&camera).0.is_none()
                 && movement.target_markers(&camera).1.is_none()
         );
-        movement.combat_input(5, (200_000, 200_000), units.clone(), Some(120_000));
+        movement.combat_input(
+            5,
+            (200_000, 200_000),
+            units.clone(),
+            Some(120_000),
+            Default::default(),
+        );
         movement.update_mouse(click, false, &camera, &log);
         assert!(movement.target_markers(&camera).0.is_none());
         movement.update_mouse(click, true, &camera, &log);
@@ -2674,7 +2942,7 @@ mod tests {
         let pos = (200_000, 200_000);
         movement.update(keys(0, 0), true, false, &log);
         movement.update_mouse(keys(0, 0), true, &camera, &log);
-        movement.combat_input(5, pos, units.clone(), Some(120_000));
+        movement.combat_input(5, pos, units.clone(), Some(120_000), Default::default());
         let mut click = Keys {
             right: true,
             champion_only: true,
@@ -2684,7 +2952,7 @@ mod tests {
         movement.update_mouse(click, true, &camera, &log);
         assert_eq!(
             movement
-                .combat_input(5, pos, units.clone(), Some(120_000))
+                .combat_input(5, pos, units.clone(), Some(120_000), Default::default())
                 .unwrap()
                 .0
                 .target
@@ -2698,7 +2966,7 @@ mod tests {
         movement.update_mouse(click, true, &camera, &log);
         assert_eq!(
             movement
-                .combat_input(5, pos, units.clone(), Some(120_000))
+                .combat_input(5, pos, units.clone(), Some(120_000), Default::default())
                 .unwrap()
                 .0
                 .target
@@ -2706,7 +2974,13 @@ mod tests {
             2 // No champion-first rule: the more central body (the minion) wins.
         );
         // With no champion at the cursor, the new direct click moves to ground.
-        movement.combat_input(5, pos, units[..1].to_vec(), Some(120_000));
+        movement.combat_input(
+            5,
+            pos,
+            units[..1].to_vec(),
+            Some(120_000),
+            Default::default(),
+        );
         click.right = false;
         click.champion_only = true;
         movement.update_mouse(click, true, &camera, &log);
@@ -2714,7 +2988,13 @@ mod tests {
         movement.update_mouse(click, true, &camera, &log);
         assert_eq!(
             movement
-                .combat_input(5, pos, units[..1].to_vec(), Some(120_000))
+                .combat_input(
+                    5,
+                    pos,
+                    units[..1].to_vec(),
+                    Some(120_000),
+                    Default::default()
+                )
                 .unwrap()
                 .0,
             InputV1::move_to(300_000, 200_000)
@@ -2727,7 +3007,13 @@ mod tests {
         movement.update_mouse(click, true, &camera, &log);
         assert_eq!(
             movement
-                .combat_input(5, pos, units[..1].to_vec(), Some(120_000))
+                .combat_input(
+                    5,
+                    pos,
+                    units[..1].to_vec(),
+                    Some(120_000),
+                    Default::default()
+                )
                 .unwrap()
                 .0,
             InputV1::action(
@@ -3072,7 +3358,7 @@ mod tests {
         let pos = (200_000, 200_000);
         movement.update(keys(0, 0), true, false, &log);
         movement.update_mouse(keys(0, 0), true, &camera, &log);
-        movement.combat_input(5, pos, units.clone(), Some(120_000));
+        movement.combat_input(5, pos, units.clone(), Some(120_000), Default::default());
         let cursor = Some((1160., 527.)); // Enemy sprite, ten UI pixels above its ground point.
         movement.update_mouse(
             Keys {
@@ -3085,7 +3371,7 @@ mod tests {
             &log,
         );
         let attack = movement
-            .combat_input(5, pos, units.clone(), Some(120_000))
+            .combat_input(5, pos, units.clone(), Some(120_000), Default::default())
             .unwrap()
             .0;
         assert_eq!(
@@ -3098,12 +3384,18 @@ mod tests {
         // Explicit attacks do not retarget when their target dies/disappears.
         assert_eq!(
             movement
-                .combat_input(5, pos, units[..1].to_vec(), Some(120_000))
+                .combat_input(
+                    5,
+                    pos,
+                    units[..1].to_vec(),
+                    Some(120_000),
+                    Default::default()
+                )
                 .unwrap()
                 .0,
             InputV1::move_to(pos.0, pos.1)
         );
-        movement.combat_input(5, pos, units.clone(), Some(120_000));
+        movement.combat_input(5, pos, units.clone(), Some(120_000), Default::default());
         let cursor = Some((1220., 527.)); // Ground beside enemy: keep acquisition/retarget behavior.
         movement.update_mouse(
             Keys {
@@ -3129,7 +3421,7 @@ mod tests {
         assert!(!movement.attack_move_armed());
         assert_eq!(
             movement
-                .combat_input(5, pos, units.clone(), Some(120_000))
+                .combat_input(5, pos, units.clone(), Some(120_000), Default::default())
                 .unwrap()
                 .0
                 .target
@@ -3139,7 +3431,13 @@ mod tests {
         // Retarget after the preferred unit dies, then S clears the entire order.
         assert_eq!(
             movement
-                .combat_input(5, pos, units[..1].to_vec(), Some(120_000))
+                .combat_input(
+                    5,
+                    pos,
+                    units[..1].to_vec(),
+                    Some(120_000),
+                    Default::default()
+                )
                 .unwrap()
                 .0
                 .target
@@ -3157,7 +3455,7 @@ mod tests {
         );
         assert_eq!(
             movement
-                .combat_input(5, pos, units.clone(), Some(120_000))
+                .combat_input(5, pos, units.clone(), Some(120_000), Default::default())
                 .unwrap()
                 .0,
             InputV1::move_to(pos.0, pos.1)
@@ -3177,10 +3475,165 @@ mod tests {
         );
         assert_eq!(
             movement
-                .combat_input(5, pos, units, Some(120_000))
+                .combat_input(5, pos, units, Some(120_000), Default::default())
                 .unwrap()
                 .0,
             InputV1::move_to(pos.0, pos.1)
         );
+    }
+
+    const ME: (MatchKey, usize) = ((1, 33, 1), 100);
+    fn attack(ready: bool) -> crate::combat::AttackState {
+        crate::combat::AttackState {
+            actor: Some(ME),
+            range: Some(60_000),
+            ready,
+        }
+    }
+    fn foe(x: u64) -> Unit {
+        Unit {
+            id: 29,
+            position: (x, 200_000),
+            friendly: false,
+            ..hover_ally()
+        }
+    }
+    const HERE: (u64, u64) = (200_000, 200_000);
+    fn attack_input() -> InputV1 {
+        InputV1::action(
+            mod_api_stable::InputKindV1::Attack,
+            mod_api_stable::InputTargetV1::target(29),
+        )
+    }
+    #[test]
+    fn an_attack_is_sent_only_when_ready_and_a_locking_champion_stands_meanwhile() {
+        let goal = (700_000, 200_000);
+        for learned in [None, Some(true)] {
+            let m = movement();
+            let log = logger("attack-wait-stands");
+            start(&m, &log, 0);
+            if let Some(locks) = learned {
+                m.observe_attack_kind(ME.0, ME.1, locks, &log);
+            }
+            m.state.lock().unwrap().target = Some(Order::AttackMove(goal));
+            let wait = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(false));
+            assert_eq!(wait.unwrap().0, InputV1::move_to(HERE.0, HERE.1));
+            let fire = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(true));
+            assert_eq!(fire.unwrap().0, attack_input());
+        }
+    }
+    #[test]
+    fn a_champion_free_to_move_keeps_walking_between_attack_move_shots() {
+        let m = movement();
+        let log = logger("attack-wait-walks");
+        start(&m, &log, 0);
+        let goal = (700_000, 200_000);
+        m.observe_attack_kind(ME.0, ME.1, false, &log);
+        m.state.lock().unwrap().target = Some(Order::AttackMove(goal));
+        let wait = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(false));
+        assert_eq!(wait.unwrap().0, InputV1::move_to(goal.0, goal.1));
+        let fire = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(true));
+        assert_eq!(fire.unwrap().0, attack_input());
+        // Acquired by the wider attack-move radius but outside basic attack
+        // reach: approached, by the attack input once it is ready and by a
+        // plain move while it is not.
+        let far = m.combat_input(5, HERE, vec![foe(290_000)], Some(98_000), attack(true));
+        assert_eq!(far.unwrap().0, attack_input());
+        let far = m.combat_input(5, HERE, vec![foe(290_000)], Some(98_000), attack(false));
+        assert_eq!(far.unwrap().0, InputV1::move_to(290_000, 200_000));
+        // Learned for this champion only: after a swap nothing is assumed.
+        let other = crate::combat::AttackState {
+            actor: Some((ME.0, 101)),
+            ..attack(false)
+        };
+        let swapped = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), other);
+        assert_eq!(swapped.unwrap().0, InputV1::move_to(HERE.0, HERE.1));
+        assert!(m.state.lock().unwrap().attack_kind.is_none());
+    }
+    #[test]
+    fn a_direct_attack_runs_beside_the_walk_only_for_a_champion_free_to_move() {
+        let goal = (700_000, 200_000);
+        let waypoint = (400_000, 300_000);
+        let laid_over = |locks: Option<bool>| {
+            let m = movement();
+            let log = logger("attack-carry");
+            start(&m, &log, 0);
+            if let Some(locks) = locks {
+                m.observe_attack_kind(ME.0, ME.1, locks, &log);
+            }
+            let mut s = m.state.lock().unwrap();
+            s.target = Some(Order::Attack(29));
+            s.carry = Some(Order::Move(goal));
+            s.route = [waypoint].into();
+            drop(s);
+            m
+        };
+        // Free to move: shoots the target in reach and follows his route.
+        let m = laid_over(Some(false));
+        let wait = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(false));
+        assert_eq!(wait.unwrap().0, InputV1::move_to(waypoint.0, waypoint.1));
+        let fire = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(true));
+        assert_eq!(fire.unwrap().0, attack_input());
+        assert_eq!(m.state.lock().unwrap().carry, Some(Order::Move(goal)));
+        // The target dies: the walk is his order again, route included.
+        let on = m.combat_input(5, HERE, vec![], Some(60_000), attack(true));
+        assert_eq!(on.unwrap().0, InputV1::move_to(waypoint.0, waypoint.1));
+        assert_eq!(m.state.lock().unwrap().target, Some(Order::Move(goal)));
+        // The target leaves reach: he approaches it and the walk is dropped.
+        let m = laid_over(Some(false));
+        let chase = m.combat_input(5, HERE, vec![foe(290_000)], Some(60_000), attack(false));
+        assert_eq!(chase.unwrap().0, InputV1::move_to(290_000, 200_000));
+        assert!(m.state.lock().unwrap().carry.is_none());
+        assert!(m.state.lock().unwrap().route.is_empty());
+        // Locking: the attack order interrupts the walk; he stands and waits,
+        // and has nothing left to do once the target is gone.
+        let m = laid_over(Some(true));
+        let wait = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(false));
+        assert_eq!(wait.unwrap().0, InputV1::move_to(HERE.0, HERE.1));
+        assert!(m.state.lock().unwrap().carry.is_none());
+        let idle = m.combat_input(5, HERE, vec![], Some(60_000), attack(true));
+        assert_eq!(idle.unwrap().0, InputV1::move_to(HERE.0, HERE.1));
+        assert!(m.state.lock().unwrap().target.is_none());
+        // Not learned yet: he stands for now but the walk is kept, so a
+        // first attack that leaves him free picks it up.
+        let m = laid_over(None);
+        let wait = m.combat_input(5, HERE, vec![foe(240_000)], Some(60_000), attack(false));
+        assert_eq!(wait.unwrap().0, InputV1::move_to(HERE.0, HERE.1));
+        assert_eq!(m.state.lock().unwrap().carry, Some(Order::Move(goal)));
+    }
+    #[test]
+    fn a_right_click_on_an_enemy_keeps_the_walk_it_replaces() {
+        let m = movement();
+        let log = logger("attack-click-carry");
+        start(&m, &log, 0);
+        let camera = recall_camera();
+        let hover = Keys {
+            cursor: Some((1160., 537.)),
+            ..keys(0, 0)
+        };
+        m.update_mouse(hover, true, &camera, &log);
+        let unit = Unit {
+            id: 29,
+            is_champion: true,
+            friendly: false,
+            ..hover_ally()
+        };
+        m.combat_input(5, HERE, vec![unit], Some(120_000), Default::default());
+        m.observe_hover_units((1, 33, 1), 5, 100, &[unit]);
+        let goal = (700_000, 200_000);
+        {
+            let mut s = m.state.lock().unwrap();
+            s.target = Some(Order::Move(goal));
+            s.route = [(400_000, 300_000)].into();
+        }
+        let click = Keys {
+            right: true,
+            ..hover
+        };
+        m.update_mouse(click, true, &camera, &log);
+        let s = m.state.lock().unwrap();
+        assert_eq!(s.target, Some(Order::Attack(29)));
+        assert_eq!(s.carry, Some(Order::Move(goal)));
+        assert_eq!(s.route.len(), 1);
     }
 }

@@ -683,7 +683,10 @@ impl Panel {
             trf(
                 "Maximum unknown: current AA reach + {buffer}, minimum {minimum}.",
                 &[
-                    ("buffer", &format!("{:.1}", acquisition::buffer(&ui.draft))),
+                    (
+                        "buffer",
+                        &format!("{:.1}", acquisition::buffer_for(&ui.draft, &self.name)),
+                    ),
                     (
                         "minimum",
                         &format!("{:.1}", acquisition::baseline(&ui.draft, &self.name)),
@@ -694,7 +697,10 @@ impl Panel {
             trf(
                 "Automatic uses maximum AA reach + {buffer}, minimum {minimum}.",
                 &[
-                    ("buffer", &format!("{:.1}", acquisition::buffer(&ui.draft))),
+                    (
+                        "buffer",
+                        &format!("{:.1}", acquisition::buffer_for(&ui.draft, &self.name)),
+                    ),
                     (
                         "minimum",
                         &format!("{:.1}", acquisition::baseline(&ui.draft, &self.name)),
@@ -795,7 +801,10 @@ mod tests {
         );
         panel.handle(Action::SharedReset, &mut values);
         assert!(!panel.invalid);
-        assert_eq!(acquisition::baseline(&values, "ghost"), 120.);
+        assert_eq!(
+            acquisition::baseline(&values, "ghost"),
+            acquisition::BASELINE
+        );
         assert_eq!(acquisition::buffer(&values), 5.);
         assert_eq!(acquisition::custom(&values, "ghost"), Some(80.));
         for text in ["", "-1", "NaN", "inf", "10001"] {

@@ -17,6 +17,7 @@ pub(crate) struct ClientObservations {
     pub(crate) shop_ui: shop_ui::ShopUi,
     pub(crate) stats_ui: stats_ui::StatsUi,
     pub(crate) result_audit: result_audit::ResultAudit,
+    pub(crate) season_fix: season_fix::SeasonFix,
     pub(crate) team_ui: team_status::TeamUi,
     pub(crate) early_input: Option<(u64, platform_input::Keys)>,
     pub(crate) screen_effect: screen_effect::Effect,
@@ -159,6 +160,17 @@ impl Client {
         // A new background colour or mod language (applied in Settings, or
         // the game's language changing) rebuilds the windows through their
         // usual missing-node path.
+        // A panic while the interface state was locked would otherwise leave
+        // every window of the mod frozen for the rest of the session.
+        if self.observations.is_poisoned() {
+            self.observations.clear_poison();
+            static LOGGED: AtomicBool = AtomicBool::new(false);
+            if !LOGGED.swap(true, Ordering::Relaxed) {
+                self.logger.write(
+                    "CLIENT interface state recovered after a panic in the mod's own code; see the PANIC lines (logged once)",
+                );
+            }
+        }
         if let Ok(mut o) = self.observations.lock() {
             o.language.update(ctx, &self.logger);
         }
@@ -740,14 +752,14 @@ impl Client {
                                 | native_timing::Phase::Paused
                         )
                     );
-                hud_bounds.extend(shop_ui.apply(
-                    ctx,
-                    keys,
-                    shop_active,
-                    &self.timing,
-                    hud_ui,
-                    &self.logger,
-                ));
+                // Caught here so one failing frame closes the shop instead of
+                // freezing it on screen with the rest of the interface.
+                match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    shop_ui.apply(ctx, keys, shop_active, &self.timing, hud_ui, &self.logger)
+                })) {
+                    Ok(bounds) => hud_bounds.extend(bounds),
+                    Err(_) => shop_ui.recover(ctx, &self.timing, &self.logger),
+                }
             }
             drop(t);
             let t = perf::time(perf::Section::Effect);
@@ -780,12 +792,22 @@ impl Client {
             drop(t);
             let _t = perf::time(perf::Section::Audit);
             let last_player = self.hud.snapshot(self.movement.hud_identity(), false);
+            let own_athletes = self
+                .movement
+                .own_players()
+                .iter()
+                .map(|p| p.athlete)
+                .collect::<Vec<_>>();
+            observations
+                .season_fix
+                .update(ctx, self.timing.match_key(), battlefield, &self.logger);
             observations.result_audit.update(
                 ctx,
                 self.timing.match_key(),
                 self.timing.generation(),
                 battlefield,
                 last_player.as_ref(),
+                &own_athletes,
                 &self.logger,
             );
         }
