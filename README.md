@@ -17,9 +17,10 @@ plays (mostly).
 
 ## Status
 
-- Version **1.0.5**, for game version **0.6.3** on Windows x64 only. The mod
-  checks the game executable's fingerprint and stays inactive on any other
-  build; a game update needs a mod update.
+- Version **1.2.3**, for game versions **0.6.4**, **0.6.3** and the **0.7.0**
+  beta on Windows x64 only. The mod checks the game executable's
+  fingerprint and stays inactive on any other build; a game update needs a
+  mod update.
 - Single player; one controlled athlete per match.
 - Works with the vanilla item set (4 slots) and the Riot item mod (6 slots),
   and with Workshop champions (tested with Leef's Variety, Glimmer's Variety
