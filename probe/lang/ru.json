@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key}: нужен союзник под контролем",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} не применено: неверная цель или применение недоступно",
  "{key} unavailable: current ability data not ready": "{key} недоступно: данные умения ещё не готовы",
- "{key}: Lv {level}": "{key}: ур. {level}"
+ "{key}: Lv {level}": "{key}: ур. {level}",
+ "Athlete stat rules": "Правила характеристик атлета",
+ "Athlete stats": "Характеристики атлета",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Тест: рисует кольца у врагов возле курсора, показывая зону попадания.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Экспериментально: меняет то, как характеристики игрока влияют на игровой процесс. Включение вступает в силу после возврата в главное меню.",
+ "Reaction ceiling": "Верхняя граница реакции",
+ "Reaction floor": "Нижняя граница реакции",
+ "Show hit areas": "Показывать зоны попадания",
+ "Testing: the fastest an enemy can react to your shots.": "Тест: как быстро враг может отреагировать на ваши выстрелы.",
+ "Testing: the slowest an enemy can react to your shots.": "Тест: как медленно враг может отреагировать на ваши выстрелы.",
+ "Collision margin": "Запас столкновения",
+ "Testing: how much extra room your shots get to hit.": "Тест: сколько запаса есть у ваших выстрелов, чтобы попасть.",
+ "Show input delay": "Показывать задержку ввода",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Показывает измеренное время от щелчка или нажатия клавиши до кадра, который его воспроизводит, в среднем по последним командам."
 }

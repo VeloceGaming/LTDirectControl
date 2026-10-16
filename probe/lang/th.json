@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} ต้องมีเพื่อนร่วมทีมที่ติดสถานะควบคุม",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} ไม่ได้ร่าย: เป้าหรือการเล็งไม่ถูกต้อง หรือร่ายไม่ได้",
  "{key} unavailable: current ability data not ready": "{key} ใช้ไม่ได้: ข้อมูลสกิลยังไม่พร้อม",
- "{key}: Lv {level}": "{key}: เลเวล {level}"
+ "{key}: Lv {level}": "{key}: เลเวล {level}",
+ "Athlete stat rules": "กฎค่าสถานะของนักกีฬา",
+ "Athlete stats": "ค่าสถานะของนักกีฬา",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "ทดสอบ: วาดวงแหวนรอบศัตรูใกล้เคอร์เซอร์เพื่อแสดงพื้นที่ที่โดน",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "ทดลอง: ปรับวิธีที่ค่าสถานะของผู้เล่นส่งผลต่อการเล่น เมื่อเปิดใช้ จะมีผลหลังจากกลับไปที่เมนูหลัก",
+ "Reaction ceiling": "เพดานปฏิกิริยา",
+ "Reaction floor": "พื้นปฏิกิริยา",
+ "Show hit areas": "แสดงพื้นที่โดน",
+ "Testing: the fastest an enemy can react to your shots.": "ทดสอบ: ศัตรูตอบสนองต่อกระสุนของคุณได้เร็วที่สุดเท่าไร",
+ "Testing: the slowest an enemy can react to your shots.": "ทดสอบ: ศัตรูตอบสนองต่อกระสุนของคุณได้ช้าที่สุดเท่าไร",
+ "Collision margin": "ระยะเผื่อการชน",
+ "Testing: how much extra room your shots get to hit.": "ทดสอบ: กระสุนของคุณมีที่เผื่อให้โดนเพิ่มเท่าไร",
+ "Show input delay": "แสดงความหน่วงของอินพุต",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "แสดงเวลาที่วัดได้ตั้งแต่คลิกหรือกดปุ่มจนถึงเฟรมที่แสดงผล โดยเฉลี่ยจากคำสั่งล่าสุดของคุณ"
 }

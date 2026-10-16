@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} nécessite un allié sous contrôle",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} non lancé : visée/cible invalide ou lancement impossible",
  "{key} unavailable: current ability data not ready": "{key} indisponible : données de compétence pas encore prêtes",
- "{key}: Lv {level}": "{key} : niv. {level}"
+ "{key}: Lv {level}": "{key} : niv. {level}",
+ "Athlete stat rules": "Règles de statistiques de l'athlète",
+ "Athlete stats": "Statistiques de l'athlète",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Test : dessine des anneaux près du curseur pour montrer la zone de touche.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Expérimental : modifie la façon dont les statistiques du joueur influencent le jeu. L'activation prend effet après le retour au menu principal.",
+ "Reaction ceiling": "Plafond de réaction",
+ "Reaction floor": "Plancher de réaction",
+ "Show hit areas": "Afficher les zones de touche",
+ "Testing: the fastest an enemy can react to your shots.": "Test : la vitesse maximale de réaction d'un ennemi à vos tirs.",
+ "Testing: the slowest an enemy can react to your shots.": "Test : la vitesse minimale de réaction d'un ennemi à vos tirs.",
+ "Collision margin": "Marge de collision",
+ "Testing: how much extra room your shots get to hit.": "Test : la marge supplémentaire dont disposent vos tirs pour toucher.",
+ "Show input delay": "Afficher le délai d'entrée",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Affiche le temps mesuré entre ton clic ou ta touche et l'image qui l'exécute, en moyenne sur tes dernières commandes."
 }

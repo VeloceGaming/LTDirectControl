@@ -191,6 +191,9 @@ def verify(profile_path, executable=DEFAULT_EXE, check_sources=True):
             else:
                 assert op['kind']=='immediate' and len(bytes.fromhex(op['value']))==4,op['name']
                 assert ins.imm_offset<=offset and offset+4<=ins.imm_offset+ins.imm_size,op['name']
+    if 'STATS_SITE_0' in profile['anchors']:
+        import verify_stat_sites
+        verify_stat_sites.verify(profile, image, tables_folder(profile))
     if check_sources:
         verify_sources(profile)
     return profile

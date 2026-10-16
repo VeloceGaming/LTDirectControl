@@ -372,6 +372,101 @@ def draft_profile(draft, profile, tooltip_result, new_version, ident):
     return out
 
 
+def draft_stat_sites(draft, path):
+    """Second pass over a drafted stat_sites.rs: the registers, frame slots
+    and offsets of each site come from the new code (verify_stat_sites
+    works them out the way the verifier checks them), and a census of the
+    new executable says which sites a patch added or removed. Returns the
+    summary lines; the file gets REVIEW lines where a person must look."""
+    import verify_stat_sites as vs
+    text = path.read_text(encoding='utf-8')
+    constants = vs.constants_of(text)
+
+    def parse():
+        blocks, sites = list(re.finditer(r'\n    Site \{.*?\n    \},', text, re.S)), []
+        for m in blocks:
+            block = m.group(0)
+            rva = re.search(r'rva:\s*(0x[0-9a-f]+)', block)
+            old = re.search(r'rva:\s*UNKNOWN_(0x[0-9a-f]+)', block)
+            data = re.search(r'bytes:\s*&\[(.*?)\]', block, re.S)
+            kind = re.search(r'Kind::(\w+)', block)[1]
+            sites.append((int(rva[1], 16) if rva else None, bytes(vs.numbers(data[1])) if data else b'', kind,
+                          vs.squash(block.split('kind:')[1]), int(old[1], 16) if old else None))
+        return blocks, sites
+
+    # Sites alignment could not carry: when the census of the new code has
+    # exactly as many undrafted sites of that kind, take them in address
+    # order. Sites of one kind behave alike, so a swap among them is
+    # harmless; the gates (cross-referenced) are never filled this way.
+    blocks, sites = parse()
+    found = vs.census(draft.new)
+    filled, edits = {}, []
+    for kind, rvas in found.items():
+        if kind in ('Capture', 'Unclassified'):
+            continue
+        missing = sorted((s[4], i) for i, s in enumerate(sites) if s[2] == kind and s[0] is None and s[4])
+        spare = [r for r in rvas if r not in {s[0] for s in sites}]
+        if not missing or len(missing) != len(spare):
+            continue
+        for (old, i), new in zip(missing, spare):
+            count = len(list(draft.old.cs.disasm(sites[i][1], draft.old.base + old)))
+            value = b''.join(bytes(x.bytes) for x in
+                             list(draft.new.cs.disasm(draft.new.pe.get_data(new, 64), draft.new.base + new))[:count])
+            filled[old] = (new, value)
+            block = blocks[i].group(0)
+            block = re.sub(r'rva:\s*UNKNOWN_0x[0-9a-f]+[^\n]*', f'rva: {new:#x},', block)
+            block = re.sub(r'bytes:\s*&\[.*?\][^\n]*', 'bytes: &[' + ', '.join(f'{b:#04x}' for b in value) + '],',
+                           block, flags=re.S)
+            block = (f'\n    // REVIEW stat site {old:#x} not carried by alignment; filled from the census of the'
+                     f' new code by address order ({kind})' + block)
+            edits.append((blocks[i].start(), blocks[i].end(), block))
+    for a, b, replacement in sorted(edits, reverse=True):
+        text = text[:a] + replacement + text[b:]
+    blocks, sites = parse()
+    sites = [s[:4] for s in sites]
+    code = vs.Code(draft.new)
+    edits, changed, failed = [], 0, 0
+    for index, (m, (rva, data, kind, squashed)) in enumerate(zip(blocks, sites)):
+        if rva is None:
+            continue
+        try:
+            fields = vs.site_fields(code, sites, index, constants)
+        except (AssertionError, StopIteration, ValueError, KeyError, IndexError, TypeError) as e:
+            failed += 1
+            reason = str(e) if isinstance(e, AssertionError) and str(e) else f'not a {kind} ({type(e).__name__})'
+            edits.append((m.start(), m.start(), f'\n    // REVIEW stat site {rva:#x}: {reason}'))
+            continue
+        moved = [f'{n} -> {v}' for n, v in fields if f'{n}: {v}' not in squashed]
+        if moved:
+            changed += 1
+            start = m.group(0).index('kind:')
+            kind_text = f'kind: Kind::{kind} {{ ' + ', '.join(f'{n}: {v}' for n, v in fields) + ' },\n    },'
+            edits.append((m.start() + start, m.end(), kind_text))
+            edits.append((m.start(), m.start(),
+                          f'\n    // REVIEW stat fields of {rva:#x} taken from the new code: ' + '; '.join(moved)))
+    for a, b, replacement in sorted(edits, reverse=True):
+        text = text[:a] + replacement + text[b:]
+    lines = [f'{len(sites)} sites: {len(filled)} filled from the census, {changed} with fields re-derived from'
+             f' the new code, {failed} not of their kind, {sum(s[0] is None for s in sites)} without an address']
+    for kind, rvas in found.items():
+        drafted = {s[0] for s in sites if s[2] == kind and s[0] is not None}
+        extra = [hex(r) for r in rvas if r not in drafted]
+        missing = [hex(r) for r in sorted(drafted) if r not in rvas]
+        if kind == 'Capture':
+            lines.append(f'reaction gates: {len(drafted)} drafted; gate-shaped in the executable (not all read'
+                         f' Accuracy, never filled in): {", ".join(hex(r) for r in rvas) or "none"}')
+            continue
+        if kind == 'Unclassified':
+            lines.append(f'{len(rvas)} other Dodging subtractions (neither shape; check they are not hit tests):'
+                         f' {", ".join(hex(r) for r in rvas) or "none"}')
+            continue
+        lines.append(f'{kind}: {len(rvas)} in the executable, {len(drafted)} drafted'
+                     + (f'; not drafted {extra}' if extra else '') + (f'; not found {missing}' if missing else ''))
+    header = ''.join(f'//! STAT CENSUS {line}\n' for line in lines)
+    path.write_text(header + text, encoding='utf-8', newline='')
+    return lines, filled
+
+
 def check(records, reviewed, new_image):
     """Score the drafted values against an already reviewed folder."""
     truth, arrays = defaultdict(set), defaultdict(set)
@@ -463,7 +558,19 @@ def main():
         header = (f'//! DRAFT from {args.old} by tools/draft_version.py: nothing here is reviewed.\n'
                   '//! UNKNOWN_0x... could not be carried; lines marked REVIEW need a look.\n//!\n')
         (out / folder_name(args.new) / path.name).write_text(header + text, encoding='utf-8', newline='')
+    stat_lines, filled = [], {}
+    stat_path = out / folder_name(args.new) / 'stat_sites.rs'
+    if stat_path.exists():
+        print('checking the stat sites against the new code...', flush=True)
+        stat_lines, filled = draft_stat_sites(draft, stat_path)
     drafted = draft_profile(draft, profile, tooltip_result, args.new, after)
+    # The profile's copies of the stat sites the census filled in.
+    for name, a in drafted['anchors'].items():
+        old = int(profile['anchors'][name]['rva'], 16)
+        if name.startswith('STATS_SITE_') and a.get('rva') is None and old in filled:
+            new, value = filled[old]
+            drafted['anchors'][name] = {'rva': hex(new), 'bytes': value.hex()}
+            drafted['draft'][name] = 'likely: filled from the stat census by address order'
     (out / f'{args.new}.json').write_text(json.dumps(drafted, indent=1), encoding='utf-8')
     (out / 'report.json').write_text(json.dumps(records, indent=1), encoding='utf-8')
 
@@ -472,6 +579,8 @@ def main():
         counts = Counter(('bytes ' if 'old_bytes' in r else 'address ') + r['status']
                          for r in records if r['file'] == name)
         print(f'  {name}: ' + ', '.join(f'{n} {k}' for k, n in sorted(counts.items())))
+    for line in stat_lines:
+        print(f'  stat sites: {line}')
     states = Counter(v.split(':')[0] for v in drafted['draft'].values())
     print('  profile anchors: ' + ', '.join(f'{n} {k}' for k, n in sorted(states.items())))
     if tooltip_result:

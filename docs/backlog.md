@@ -1,7 +1,15 @@
 # Backlog
 
-What is left to do, as of 1.2.0 (2026-10-12; 1.0.0 was the first public release). Finished and declined items
+What is left to do, as of 1.2.3 (2026-10-15; 1.0.0 was the first public release). Finished and declined items
 are listed at the end for reference.
+
+Sorting rule for feature ideas (user, 2026-10-15): would a standard MOBA give
+it to every player? If yes, it can be a main feature. If it is an advantage a
+MOBA does not give (information the game hides), it belongs in a clearly
+labelled cheat/fun section and is never promoted as the mod's identity.
+Ideas should serve the match itself (in-game experience), not additions
+around it; the other mod's ping feature is the model of a well-scoped
+addition (not to be copied).
 
 ## Open
 
@@ -22,6 +30,13 @@ are listed at the end for reference.
    show the unbuffed version; dashes that stop at the first unit (Rush) have
    no known end; timed dashes are drawn one body wide.
    Keep the PREVIEW TREE / PREVIEW ROSTER logging until previews are done.
+   **Rethink (2026-10-16, user):** the live reader cannot cover Workshop
+   champions by design (170 custom DLL effects across 30 items; about 25
+   JSON shapes it does not decode), and the user will not describe champions
+   to agents. Findings and a proposed design, not yet decided:
+   [investigation-preview-sources.md](investigation-preview-sources.md)
+   (read champion files first, then watch and learn; unit-targeted skills
+   keep a reticle; no "could not read" crosshair).
 3. **Ability tooltip numbers ("…").** Native descriptions are enabled for
    all champions since 0.69.1, with the old resolver as fallback. Of 204
    localized entries, 6 are confirmed in logs and 198 are unobserved. Needs
@@ -56,26 +71,88 @@ are listed at the end for reference.
 9. **Enemy threat info on hover** (idea, 2026-10-12). Hovering an enemy
    shows which of its skills are on cooldown. Its attack range ring was
    part of the idea, but the other direct-control mod already has that, so
-   the cooldowns are the part that would be new.
+   the cooldowns are the part that would be new. Cheat/fun section by the
+   2026-10-15 rule.
 10. **Mechanical polish** (ideas, 2026-10-12). Input buffering (the next
     skill is queued during an animation and fires on the first possible
     tick); cast at maximum range when the cursor is beyond a skill's range,
     as a setting; spectate a teammate while dead, with a key to cycle. All
-    three lean on the mod's low input delay.
+    three lean on the mod's low input delay. 2026-10-15: buffering and
+    spectate-while-dead are main features (standard MOBA behaviour); see
+    items 16 and 17.
 11. **Practice tool** (idea, 2026-10-12). A sandbox toggle: reset
     cooldowns, set gold and level, refill health, spawn a target dummy.
     The no-cooldown test cheat (Home+End) is the start of it; it would also
-    shorten skill-preview testing after a game patch.
+    shorten skill-preview testing after a game patch. Cheat/fun section.
+    Stage 1 in 1.2.8 (development, 2026-10-16): Advanced > Debug >
+    "Practice tool". Enemies hold still, health and cooldowns refill,
+    Home+Insert lines the enemies up at the cursor, `practice_lineup` in
+    controls.json drafts named champions, and a readout of the last shots
+    (needs the stat rules installed). Declined by the author (2026-10-16):
+    controlling an opponent to test ten champions a match (much of the mod
+    assumes the controlled athlete is on the player's team). Open: a lab
+    room without a save; the game has a `GameTest` scene (`SceneKindV1`
+    5) that the official interface cannot open, so whether a mod can reach
+    it needs native research first. 1.2.10: everyone but the player holds
+    still and pulled enemies are pinned. 1.2.12 (2026-10-16, the author):
+    out of the settings window, a debug tool like no-cooldown; switched on
+    only by `"practice_mode": 1` in controls.json (read at game start), so
+    the lineup still applies from the draft. Kept rough on purpose.
 12. **Controller support** (idea, 2026-10-12; low priority). The user
     barely uses a controller and would have to tune an input type they do
     not play with.
 13. **Ultra rapid fire mode** (idea the user liked, 2026-10-12). A match
     option where everyone has almost no cooldowns; the no-cooldown test
-    cheat is most of it.
+    cheat is most of it. Cheat/fun section.
 14. **Career wall** (idea the user liked, 2026-10-12). A page of the
     player's manual-control records: kills, pentakills, most-played
     champion, win streaks. Fits the direction the user named the same day:
-    playing as one athlete, like a sports game's career mode.
+    playing as one athlete, like a sports game's career mode. Lower
+    priority since 2026-10-15: the match itself comes first.
+15. **Athlete stat rules in manual matches** (the user's first priority;
+    design agreed 2026-10-15, not built). Findings in
+    [investigation-stat-rules-0.6.4.md](investigation-stat-rules-0.6.4.md);
+    the withdrawn 1.2.1 attempt is on the local branch
+    `backup/1.2.1-stat-rules`. Decisions:
+    - **Collision is fixed.** No dynamic collision of any kind in a
+      manually played match: the stat margin is one constant for every shot
+      the player fires, at every kind of target, and the player's own
+      Dodging term is zero. Starting constant 5 game units, the game's own
+      clamp floor; the user wants to see it in game before judging it (draw
+      the registering width in the skill preview; a testing overlay of
+      collision bodies in the cheat section). AI-versus-AI shots stay
+      vanilla.
+    - **Enemy reaction to the player's shots** follows the gap
+      caster Accuracy − dodger Dodging, mapped into a human band. Starting
+      curve: gap −100 → 6..9 ticks, 0 → 10..14, +100 → 16..22 (anything
+      near 400 ms was rejected as a guaranteed hit). Floor and ceiling are
+      Advanced settings while testing; defaults frozen afterwards. The
+      game's deterministic per-projectile choice is kept.
+    - **The player's Dodging** must still matter. The game already uses it
+      in the AI aim roll (investigation, section 4); whether to replace that
+      roll with the same gap is undecided. A telegraph of incoming enemy
+      shots whose lead time scales with Dodging is wanted as an option,
+      behind a toggle, since it changes how the game plays; its value is
+      limited to slow projectiles (section 5). A mix of both is expected.
+    - **Build approach:** intercept the derived values at the producers,
+      not the 21 collision consumers (collision prototype finding); scope
+      every change to the controlled athlete, check identity before any
+      lock, keep an off switch; A/B test with Crossbowman Q as the
+      prototype document describes.
+    - Open before building: whether the learned dodge policy reads the
+      stats directly. (Which collision shape each skill type takes is no
+      longer needed, 2026-10-16: 1.2.11 hooks the 11 shape-A floors as
+      well, so the margin setting reaches every shot; see the 0.6.4
+      investigation, section 7a.)
+16. **Casting bar** (accepted 2026-10-15, with item 10's buffering).
+    A bar under the champion showing the current action's progress with
+    the hit tick marked and a pip for the buffered skill; display only.
+    Guess: skill actions carry the same duration and hit-tick fields the
+    attack hook already reads, to confirm on 0.6.4. What the user finds
+    lacking in today's one-slot, one-second buffer is still to be named.
+17. **Death recap** (2026-10-15). While dead, the damage sources of the
+    last few seconds. A standard MOBA feature, so a main feature; pairs
+    with spectating a teammate while dead (item 10).
 
 ## Done
 

@@ -6,6 +6,7 @@
 use super::identity::*;
 use super::items::ITEMS;
 use super::layout::*;
+use super::stat_sites::*;
 use super::*;
 use crate::native_profile::family;
 use std::ffi::{c_void, OsString};
@@ -21,6 +22,7 @@ mod outline;
 mod preview;
 mod shop;
 mod stack;
+mod stats;
 #[cfg(test)]
 mod tests;
 mod tooltips;
@@ -42,6 +44,10 @@ pub(in crate::native_adapter) use shop::{
     shop_ready,
 };
 pub(in crate::native_adapter) use stack::{thread_alive, thread_stack};
+use stats::{allow_stats, stats_intact};
+pub(in crate::native_adapter) use stats::{
+    install_stats_at_title, stat_rules_report, stats_pending,
+};
 pub(in crate::native_adapter) use view::reset_session;
 use view::*;
 
@@ -144,7 +150,7 @@ pub(in crate::native_adapter) fn audit_patches() -> Option<bool> {
             std::slice::from_raw_parts(*site as *const u8, bytes.len()) == bytes
         }) && p.constants.as_ref().is_none_or(|(address, bytes)| {
             std::slice::from_raw_parts(*address as *const u8, bytes.len()) == bytes
-        })
+        }) && stats_intact().unwrap_or(true)
     })
 }
 fn relative_call(site: usize, destination: usize) -> Result<[u8; 5], String> {
@@ -568,6 +574,11 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
                     Err(e) => format!("SHOP HOOKS unavailable: {e}; Manual shopping disabled, other hooks unaffected"),
                 });
             }
+        }
+        // The stat rules are patched in only while their setting is On, at
+        // this or a later visit to the title screen (`install_stat_rules`).
+        if on(family::STATS) {
+            allow_stats();
         }
         Ok(())
     }

@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} 需要一名受控的友方",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} 未施放：瞄準/目標無效或無法施放",
  "{key} unavailable: current ability data not ready": "{key} 無法使用：技能資料尚未就緒",
- "{key}: Lv {level}": "{key}：{level} 級"
+ "{key}: Lv {level}": "{key}：{level} 級",
+ "Athlete stat rules": "運動員屬性規則",
+ "Athlete stats": "運動員屬性",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "測試：在游標附近的敵人周圍畫出圓環，顯示命中範圍。",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "實驗性：改變玩家屬性對遊戲過程的影響方式。開啟後需返回主選單才會生效。",
+ "Reaction ceiling": "反應上限",
+ "Reaction floor": "反應下限",
+ "Show hit areas": "顯示命中範圍",
+ "Testing: the fastest an enemy can react to your shots.": "測試：敵人對你的攻擊最快能多快反應。",
+ "Testing: the slowest an enemy can react to your shots.": "測試：敵人對你的攻擊最慢能多慢反應。",
+ "Collision margin": "碰撞餘量",
+ "Testing: how much extra room your shots get to hit.": "測試：你的攻擊命中時多出的餘地有多大。",
+ "Show input delay": "顯示輸入延遲",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "顯示從點擊或按鍵到播放該操作的畫面之間的實測時間，取最近幾次指令的平均值。"
 }

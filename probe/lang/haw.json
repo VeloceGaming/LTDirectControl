@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "Pono ʻo {key} i kekahi hoa i hoʻopaʻa ʻia",
  "{key} not cast: invalid aim/target or native cast unavailable": "ʻAʻole i hoʻolei ʻia ʻo {key}: hewa ka pahuhopu",
  "{key} unavailable: current ability data not ready": "ʻAʻole loaʻa ʻo {key}: ʻaʻole mākaukau ka ʻike mana",
- "{key}: Lv {level}": "{key}: Pae {level}"
+ "{key}: Lv {level}": "{key}: Pae {level}",
+ "Athlete stat rules": "Nā lula helu o ka mea pāʻani",
+ "Athlete stats": "Nā helu o ka mea pāʻani",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Hoʻāʻo: huki i nā apo ma ka hoʻokokoke i ke kuhikuhi e hōʻike i ka wahi paʻi.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Hoʻāʻo: hoʻololi i ke ʻano o ka hopena o nā helu o ka mea pāʻani i ka pāʻani. Ke hoʻā ʻia, hoʻomaka kona hopena ma hope o kou hoʻi ʻana i ka papa kuhikuhi nui.",
+ "Reaction ceiling": "Palena kiʻekiʻe o ka pane",
+ "Reaction floor": "Palena haʻahaʻa o ka pane",
+ "Show hit areas": "Hōʻike i nā wahi paʻi",
+ "Testing: the fastest an enemy can react to your shots.": "Hoʻāʻo: ka wikiwiki loa e hiki ai i ka ʻenemi ke pane i kāu mau kī.",
+ "Testing: the slowest an enemy can react to your shots.": "Hoʻāʻo: ka lohi loa e hiki ai i ka ʻenemi ke pane i kāu mau kī.",
+ "Collision margin": "Palena paʻi",
+ "Testing: how much extra room your shots get to hit.": "Hoʻāʻo: ka lumi hou aku no kāu mau kī e paʻi ai.",
+ "Show input delay": "Hōʻike i ka lohi hoʻokomo",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Hōʻike i ka manawa i ana ʻia mai kāu kaomi a pihi paha a hiki i ke kiʻi e pāʻani ana iā ia, ka awelika o kāu mau kauoha hope loa."
 }

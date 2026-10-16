@@ -3,6 +3,190 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.3.0 — 2026-10-17
+
+Release of the 1.2.4 to 1.2.16 development builds below (1.2.6 was uploaded on 2026-10-15 and withdrawn the same day, so the last public build was 1.2.3). One DLL for game 0.6.4 (the live game), 0.6.3 and the 0.7.0 beta, as since 1.2.0.
+
+Seen in game by the author: on 0.7.0 throughout (1.2.7 to 1.2.16), and with 1.2.16 on 0.6.4 (the stat rules install with 33 sites, shape-B hits traced, game speed even when the frame rate dips, the input delay number, the practice tool). Not played for this release: 0.6.3 (the verifier passes; the author no longer tests the stat rules or later changes there), and a shape-A hit on 0.6.4 (seen on 0.7.0 only).
+
+- **Athlete stat rules** (experimental, Off by default; Settings › Advanced › General › Athlete stats). In matches you play yourself, your athlete's stats stop deciding hits behind the scenes:
+  - Your skillshots get a fixed hit margin, **Collision margin** (default 2 game units, 0 to 7), instead of one that grows with your Skillshot Accuracy and shrinks with the enemy's Dodging (read from the code: up to 15 units off a 10-unit body). It applies to every shot of yours, whichever of the game's two kinds of hit test it goes through (1.2.11; the author's tests showed collision size is the biggest factor in whether the AI dodges).
+  - Your own Dodging no longer shrinks your body for enemy shots, and how soon an enemy reacts to your shot follows your Accuracy against its Dodging, between **Reaction floor** (6 ticks) and **Reaction ceiling** (14 ticks).
+  - AI-versus-AI fights and AI shots at you stay as the game made them; Off is the game's own behaviour. Turning it on takes effect after returning to the main menu, where the hooks are installed (33 instruction sites per game version, each checked against its executable).
+  - Skill previews widen projectile corridors by the margin while the rules are in effect. **Show hit areas** (Advanced › Debug) draws the hit bodies of enemies near the cursor.
+- **Show input delay** (Advanced › Debug, Off by default): the measured time from your click or key to the frame that plays it, averaged over your last 20 commands, as a number like `19ms` in the top right corner under the game's header. Windows' input handling and the display itself are not included.
+- **Even game speed just below 60 fps:** the instant speed-ups when the frame rate dipped to 57 to 59 fps are gone (1.2.13). The game's viewer kept time it could not play and paid it back two ticks a frame; owed time now comes back a quarter tick a frame, and beyond 2 ticks it is dropped. No input delay is added.
+- **Settings window:** slider values like "14 ticks" fit on one line in every language (1.2.6).
+- Testing aids outside the settings window, for modders: the practice tool (`"practice_mode": 1` in controls.json: everyone but you holds still, Home+Insert lines the enemies up and pins them, a readout of your shots' hit tests) and Home+End for no cooldowns.
+- For modders: `tools/verify_stat_sites.py` works each stat site's registers and offsets out from the code and lists every stat-site-shaped instruction of an executable; `tools/draft_version.py` uses both to carry `stat_sites.rs` to a new game version (docs/version-migration.md).
+- Tested for this release: formatting, lint with warnings denied, 531 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0, and the author's play listed above.
+
+## 1.2.16 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** The input delay number, placed and set as the author asked.
+
+- Seen in game with 1.2.15 (0.7.0, the author, screenshot): the number overlapped the game's top header (the red team's name) and was not in the mod's font.
+- Now just under the game's header bar, which is 50 px tall across the whole width (read from the game's `ingame.ui`, `#header`): y 56 instead of 10, still right-aligned at the right edge.
+- In the mod's numeric font, `asset/lt_direct_control/font/numeric` (Manrope; it has the letters too, so `ms` and `--` render in the same font), as the team panels' numbers.
+- Tested: formatting, lint with warnings denied, 531 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.15 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** The input delay display as the author asked, like League's ping.
+
+- Seen in game with 1.2.14 (0.7.0, the author): the input delay line shows fine.
+- Now a plain number in the top right corner, `19ms` (`--ms` before a measurement), size 28 instead of 16, right-aligned in the 1920 x 1080 UI space; no box and no label. A dark shadow 2 px down and right keeps it readable on bright ground. Whether it overlaps the game's own top-right UI has not been seen.
+- Tested: formatting, lint with warnings denied, 531 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.14 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** An input delay display, as the author chose (measured average; a setting, Off by default).
+
+- Seen in game with 1.2.13 (0.7.0, the author): "it feels better now". The traced frames after lead changes show no two 2-tick frames in a row (one 2 in 180 frames), owed time up to 0.75 ticks, nothing dropped. A flaw of that diagnostic: a new lead change restarts the trace, and the lead fell back within about 12 frames each time, so only the `2 -> 1` traces completed.
+- **"Show input delay"** (Advanced > Debug, Off by default): a line top left during your matches, `Input delay 19 ms`, the average over your last 20 commands of the measured time from the mod reading the click or key to the client frame that plays the tick carrying it (the existing command traces; with performance capture on, the 1.2.13 log measured 18 to 23 ms on average, about 35 ms usually at most). Not included: Windows before the mod reads the input, and rendering and the display after. Measurements older than 30 s are not shown. While it is on, commands are traced past the usual 300 per session (the trace lines themselves stay Verbose-only). The on-screen line is English only, like the test tags; the setting's label and hint are translated.
+- Tested: formatting, lint with warnings denied, 531 tests (the average and the 30-second window), the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.13 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** The speed bursts near 60 fps, approved by the author (diagnostic and gentle payback).
+
+- **Seen in game** (1.2.12 on 0.7.0, the author): an instant of faster game speed when the frame rate dropped from 60 to 58. The log has 8 `TIMING frame lead 1 -> 2` / `2 -> 1` switches in 30 s, each up when the average frame reached 17.5 to 17.9 ms and down 0.2 to 0.4 s later. The same lines are in the 1.2.9 logs: not caused by the stat hooks.
+- **Read from the code** (viewer update `0xb194c0` on 0.7.0): the viewer adds each frame's time to its clock (`+0x358`) and plays one queued tick per tick of clock; when the queue runs empty the rest stays in the clock, with no bound on the path examined (a flag-gated path at `0xb19c47`..`0xb19c95` that caps the clock was not examined). With the worker one tick ahead (lead 1, kept at up to 5% slow frames for the lowest input delay), owed time piled up (about 1.7 ticks a second at 58 fps) and came back as two ticks in every frame once the lead rose. That this is the burst the author saw is a guess. The diagnostic below records frames after the fix, so it can show that owed time built up (`dropped` above 0) and that no two frames in a row play two ticks; whether the bursts are gone has to be seen in game.
+- **Fix:** before each running frame, whole ticks the clock could not play are held back and paid back at most a quarter tick per frame (at most 25% fast for a few frames), and owed time beyond 2 ticks is dropped (the match then runs slow by at most the 5% the lead already tolerates, as intended, instead of catching up in a burst later). A pause forgets owed time. No input delay is added: the lead rule is unchanged. Tests: the arithmetic, and a 58 fps simulation of a model of the viewer (not the game) in which no two frames in a row play two ticks once the lead has risen.
+- **Diagnostic:** for 60 frames after each of a match's first 8 lead changes, `TIMING after lead a -> b: ticks per frame 1112111...; owed up to x ticks; dropped y ticks`. The ten-second `PACING`/`TIMING slow` lines add the ticks dropped this match.
+- Tested: formatting, lint with warnings denied, 530 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.12 (development build) — 2026-10-16
+
+**Development build, never for the Workshop.** Settings changes asked for by the author, and the migration tools learn the stat sites (runbook plan item 5).
+
+- Seen in game with 1.2.11 (0.7.0, the author): `STATRULE installed sites=33`; Pyromancer Q (kind 3) and Alchemist Q (kind 10, then kind 4) reached shape-A floors (`0x10ca823`, `0x10ca97b`, `0x10ca2c3`, `0x10ca40b`, `0x10ce9c8`, `0x10ceb24`) with margin 7; "looking fine".
+- "Athlete stat rules" hint: turning it on takes effect after returning to the main menu (the hooks install only at the title screen). English and the 15 translations.
+- "Collision margin" defaults to 2 units (was 0), the author's choice as friendlier. A value already saved in controls.json is kept (only development builds wrote one).
+- The practice tool is out of the settings window: a debug tool like no-cooldown, switched on only by `"practice_mode": 1` (or `true`) in controls.json, read at game start, so the lineup still applies from the draft. Its label and hint are removed from the language files. `Settings::hidden_switch` reads it; a test checks it survives a save.
+- **`tools/verify_stat_sites.py`** now works the fields out instead of only comparing them: `site_fields` derives each site's registers, frame slots and sources from its instructions (the same rules as before), `check` lists every disagreement with a reason instead of stopping at the first, and `census` finds every instruction of an executable shaped like a stat site (both consumer shapes, both producers, gate-shaped hashes, other Dodging subtractions). Checked: refuses a wrong field for every kind; on 0.6.3, 0.6.4 and 0.7.0 the census finds exactly the tabled sites, plus one gate-shaped hash per version that reads no Accuracy (open item 5 of the 0.6.4 investigation) and, on 0.6.4, two `1 - frame slot` indexes.
+- **`tools/draft_version.py`** makes a second pass over `stat_sites.rs`: fields rewritten from the new code (with a REVIEW line), sites alignment missed filled from the census when the counts agree (never the gates), and a census summary per kind. Measured: 0.7.0 to 0.6.4, 33 of 33 placed, 0 wrong, and the verifier passes the drafted table as it is (before: 5 unplaced and 4 with stale fields); 0.6.3 to 0.7.0, 29 of 33, 0 wrong, the 4 big-AI gates left. The runbook (`docs/version-migration.md`) describes the pass and adds the Stats family to the play list.
+- Tested: formatting, lint with warnings denied, 528 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.11 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** The shape-A collision floors are hooked, approved by the author after a read-only research pass.
+
+- **Why:** the "Collision margin" setting reached only the 10 shape-B hit tests. The 11 shape-A ones floor the margin at 5 units, so the player's shots that went through them always had 5 units of room, whatever the setting (default 0). The author's tests showed collision size is the biggest factor in whether the AI dodges, and mapping each skill to a shape would never end (modded champions).
+- **What:** a new site kind, `FlooredCollision`, at each shape-A floor's `cmp r, 0x1389`, which comes right after `sub r, [target + 0x6a0]`. For the controlled athlete's marked shot (the register plus the target's Dodging is the marker 5000; Accuracy x 70 never is) the register becomes the chosen margin and the flags read "not below", so the game's floor keeps it. The bridge already saves and restores the flags. Every shot of the controlled athlete now gets the target's body plus the chosen margin, in both shapes (shape A uses the target's scaled body, read from the code). Other athletes' shots are unchanged.
+- **Read from the code** (0.7.0; same instructions at the 0.6.3 and 0.6.4 sites): a search of the whole executable for the pair finds exactly 11 per version; the mark reaches all 11 (they are called from the projectile hit dispatcher with the producer's slot; one site's second call path traced only in part). Stat sites per version: 22 → 33. Counter slots 16 → 32.
+- **Verifier:** each floor must be `cmp output, 0x1389` right after the Dodging `sub` on the target the table names, followed by the floor's `cmovl` (or `cmovge`); for every stat site, no branch in its function may land on a replaced instruction. Checked to refuse a wrong register and a wrong place.
+- **Readout:** names the shape of the first hit test that checked a target against the shot (`shape A (0x...)`, `shape B (0x...)`), or `no hit test`. A hit test runs for each candidate target before the overlap test, so it means "checked", not "hit" (read from the code).
+- **Docs:** the 0.6.4 investigation gets section 7a (the floors), the 1.2.9 and 1.2.10 results, a correction (shape A, not B, scales the body; the old text is kept, marked superseded) and open item 1 superseded; backlog item 15 likewise. Rejected: the guesses that kind 2 is one kind of projectile behaviour.
+- Tested: formatting, lint with warnings denied, 528 tests (marked-shot test at the floor, the flags), the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.10 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** Practice tool fixes to 1.2.9, approved by the author.
+
+- Seen in game with 1.2.9 (0.7.0, the author): Home+Insert works (`PRACTICE pulled 5 enemies` four times), but afterwards one enemy stayed on its spot, three ran back to base, and one was always at base; the author's teammates played normally. Why the enemies left is not known (guess: a route the game planned before the teleport, or a spot off walkable ground).
+- Everyone but you holds still now, teammates included (before: only enemies; that was a design choice not asked about).
+- The pulled enemies are pinned: the match tick puts each one back on its spot whenever it has moved. Knockbacks and pulls on them are undone at once. Turning the tool off releases them.
+- The row is half as wide (12.5 units between enemies).
+- Diagnostic: the `PRACTICE pulled` line lists enemies whose teleport the SDK refused, and about one second later `PRACTICE after 1 s` gives each enemy's spot and the furthest it moved in one tick before being put back.
+- Hint text updated in English and the 15 translations.
+- Tested: formatting, lint with warnings denied, 526 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.9 (development build) — 2026-10-16
+
+**Development build, never for the Workshop.** One fix to 1.2.8.
+
+- Home+Insert (practice tool: line the enemies up at the cursor) did nothing: the mod reads only the keys that a binding uses plus a fixed list, and Insert was not on it (seen in game by the author on 0.7.0 with 1.2.8: no `PRACTICE pulled` line after several presses). The fixed list is now `ALWAYS_POLLED` in `platform_input.rs`, with a test that every key of the fixed chords is on it.
+- Seen in game with 1.2.8 (0.7.0, the author): `PRACTICE ON` from controls.json at start; all five lineup champions were drafted, split between both teams in pick order, as built. The draft hook steers the player's own coach too. Kept as it is by the author (2026-10-16): on 0.7.0 and 0.6.3 the draft does not say which team is picking.
+- Tested: formatting, lint with warnings denied, 525 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.8 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** The practice tool, stage 1 (backlog item 11), as agreed with the author; and better shot attribution in the stat rule trace.
+
+- **Practice tool** (Advanced > Debug, Off by default; it changes the real match, so a tag is drawn). While it is on, in the match on screen:
+  - Every enemy athlete holds still: after the mod's normal step for that player (which also paces every player's tick), its input becomes "move to where you stand", so it neither walks, attacks nor casts.
+  - Every champion's health is refilled each tick (yours too), and the no-cooldown cheat is on for your champion (`test_cheats::active` is on while practising).
+  - Home+Insert lines the enemy champions up in a row at the cursor, 25 units apart (`entity_set_pos`). Not Home+PageUp: the input hook passes PageUp through to the game.
+  - `practice_lineup` in controls.json (comma-separated champion names, e.g. `"crossbowman, pyromancer, harpy"`) is drafted by the game's AI in that order and never banned. The draft hook cannot tell matches apart, so this applies to every AI draft while the tool is on, including the league's other fixtures when days advance; whether it also covers the player's own team's picks is not known (read from the code: the hook decides the AI's picks).
+  - A readout under the tag lists your last 8 shots: the skill cast most recently before the shot and how long before, the projectile kind or action state, and the shape-B hit test reached, or "shape A or missed" after 0.7 s. It needs the stat rule hooks installed; without them it says so.
+  - English-only on screen, like the no-cooldown tag. The setting's label and hint are translated in the 16 language files.
+- **Trace attribution:** `STATRULE trace` lines now name the skill (Q, W or R) whose cooldown restarted most recently and how many ticks before, ignoring basic attacks (`cast=Q 4 ticks before`). Before, `last_used` was usually "attack", because basic attacks restart their cooldown all the time; one reading of the 1.2.7 trace took a skill shot for a basic attack because of it (rejected, see the investigation, section 7).
+- Tested: formatting, lint with warnings denied, 524 tests (lineup parsing, merging one shot's events, attribution), the verifier for 0.6.3, 0.6.4 and 0.7.0.
+
+## 1.2.7 (development build) — 2026-10-16
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** Review fixes to the athlete stat rules and a diagnostic, approved by the author.
+
+- **The stat rule hooks are installed only while "Athlete stat rules" is On, and only at the title screen** (no match runs there, the same reason every other hook is installed there). Off at startup, the game's code is not touched and nothing runs for any match; switched On later, the rules take effect at the next title screen (`STATRULE waiting` names this once in game; `STATRULE installed ... at the title screen`). Switched Off after installing, the hooks stay in and do nothing, as before. Before, the 22 sites were patched at every start and every simulation thread passed through them, setting On or Off (the cost was never measured). The skill preview widens projectile corridors only when the rules are actually in effect.
+  - Read from the code, not verified: that no simulation thread runs at the title screen after quitting a save to it. The first install of a session has always relied on this for the title screen at startup.
+- **No log write inside a hook.** The hooks used to write their first-fire and Verbose lines through the log's lock and file from inside the game's code. They now queue them on their thread, and the controlled player's tick on that same thread writes them. The 1.2.4 note "No lock is taken anywhere in a hook" was wrong until this build (corrected 2026-10-16).
+- **Removed** the one-time move of the 1.2.4/1.2.5 development defaults (On, 22, 5) to the 1.2.6 ones: only the author ran those builds, and the author's file is already moved. A test checks the defaults instead.
+- **Checker:** `tools/verify_stat_sites.py` now also proves, at every reaction gate, that the id the table reads is the one the game looks the caster's Accuracy up with (before, it proved only the register, through a neighbouring field), and that each producer's traced word below is read from the caster's object.
+- **Diagnostic** (`STATRULE trace`, Normal level, each combination once, while the rules are in effect): which hit tests a shot goes through, for docs/investigation-stat-rules-0.6.4.md section 3.
+  - At each of the three Accuracy producers, the word the game switches on next: a projectile's kind (`+0x40`) at the projectile producer, an entity's action state (`+0x300`, niche-encoded) at the two entity producers; for your shots and, separately, anyone else's on your match's thread.
+  - At each shape-B hit test a marked shot reaches, the producer and kind or state it came from. Your lines carry your champion, the slot whose cooldown last restarted (`last_used`: attack, Q, W, R) and the tick.
+  - Shape A is not hooked: a projectile kind that reaches no shape-B test is shape A or missed.
+- Tested: formatting, lint with warnings denied, 522 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0 (and that the two new checks fail on a wrong offset).
+
+## 1.2.6 — 2026-10-15
+
+Release of the 1.2.4 to 1.2.6 development builds below, as tested by the author. Seen in game by the author on 0.6.4 (the live game), 0.6.3 and 0.7.0: the family installs, the rules fire, the settings page and the sliders. One DLL for the three versions, as since 1.2.0.
+
+- **Athlete stat rules (experimental, Off by default).** Settings › Advanced › General › Athlete stats. In matches you play yourself, your athlete's stats stop deciding hits behind the scenes:
+  - Your skillshots have a fixed hit margin instead of one that grows with your Skillshot Accuracy and shrinks with the enemy's Dodging. In the game's own rules an enemy with high Dodging becomes a much smaller target for everyone's shots (read from the code: up to 15 game units off a 10-unit body), which is why a low-Accuracy athlete could not land anything on a good dodger. With the rules on, every enemy is its real body plus the "Collision margin" setting (default 0).
+  - How soon an enemy starts to react to your shot now follows your Accuracy against its Dodging, within a band from "Reaction floor" (default 6 ticks, the fastest, when the enemy's Dodging leads) to "Reaction ceiling" (default 14 ticks, the slowest, when your Accuracy leads). The same shot at the same enemy always gets the same answer. Read from the code: an AI athlete acts only at its own decision moments, paced by its Control Speed (4 to 12 ticks apart), so settings below about 6 ticks make no visible difference.
+  - Everything the AI does on its own stays as the game made it: AI-versus-AI fights, and AI shots at you. Off restores the game's own rules entirely.
+  - Design and reasons: `docs/backlog.md` item 15; the findings behind it: `docs/investigation-stat-rules-0.6.4.md`.
+- **Defaults chosen in play by the author** (Crossbowman Q, 20 shots per row at a fixed spot, against an athlete with Dodging 81, seen in game on 0.6.4): with the game's rules, Accuracy 11 landed 2 and Accuracy 100 landed 6; with a 5-unit margin both landed 14 to 16 whatever the reaction band, so the margin went to 0 and the ceiling from 22 to 14. The rules ship Off because they change how the game plays.
+- **"Show hit areas"** (Advanced › Debug, Off): rings around enemies near the cursor showing the body the hit tests use and the margin on top of it. The body is the game's own collision radius, not the sprite: a champion with a large sprite can have an ordinary ring, which is the game's data.
+- **Skill previews** draw projectile corridors at the width that registers when the rules are on (the skill's radius plus the margin); at margin 0 the width is unchanged.
+- **Settings window:** slider tracks are 24 px shorter and the value column wider, so values like "14 ticks" fit on one line in every language.
+- **Known limits, read from the code and the author's logs:**
+  - Seen in the author's logs on 0.6.4: the shot marker, the own-Dodging rule and the reaction gate all fired. Two of the three places that mark shots, and the two hit tests fed by them, never carried a marked shot (`seen` in the thousands, `marked` 0); whether they handle shots the player never fires or miss the player's is not settled. An earlier reading of the same logs, that the own-Dodging rule never fired, was a search mistake and is withdrawn (2026-10-15).
+  - Eleven of the game's hit tests are not changed, because with the fixed marker they already yield the game's 5-unit margin; shots through them do not follow the Collision margin setting.
+  - Whether the enemy AI's learned movement reads Accuracy or Dodging directly is not known.
+- Tested for this release: formatting, lint with warnings denied, 521 tests, the verifier for 0.6.3, 0.6.4 and 0.7.0 (every hook site decoded against its executable), and the author's play on all three versions.
+
+## 1.2.6 (development build) — 2026-10-15
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** Three changes on top of 1.2.5, as approved by the author:
+
+- New defaults for the athlete stat rules: **Athlete stat rules Off** (it is experimental), Reaction floor 6 (unchanged), **Reaction ceiling 14** (was 22), **Collision margin 0** (was 5). A saved settings file holds every value written out, so a saved On, 22 or 5 is taken as the old default and moved to the new one once (`stat_defaults_version` 1, same approach as the acquisition defaults); any other saved value is the player's own and is kept. Because the author's file holds the old default, the rules must be switched On again after installing. Switched on afterwards, it stays on.
+- Descriptions are short and plain, in English and all 16 language files: the feature hint is "Experimental: reworks how the player's stats affect gameplay."; the floor, ceiling, margin and overlay hints are one sentence each with no internal terms; the overlay's label is now "Show hit areas". The units "ticks" and "units" stay as the slider units.
+  - What the rules do belongs here, not in the hints. Under direct control, with the rules on: the Accuracy producers give the player's shots a fixed hit margin (the marker 5000, turned into the Collision margin setting at the 10 hooked shape-B consumers; the 11 shape-A consumers stay at the game's own 5 units whatever the slider says), the player's own derived Dodging is 0, and the enemy's reaction delay to the player's shots comes from caster Accuracy minus defender Dodging in a band running from the floor (largest Dodging lead) to the ceiling (largest Accuracy lead), the middle scaling with them. Off is the game's own behaviour.
+- Settings window: the slider's value text sat in a 70 px column and wrapped in Traditional Chinese ("14 ticks"). The slider track is now 270 px (was 294) and the value column 110 px wide, right-aligned to the same edge, so the longest value and unit have room; the unit words are unchanged. This narrows every slider in the window by 24 px. **The text width was not measured in the game's fonts (no way to do that here): whether it fits on one line in every language is unverified.**
+- Not verified: everything in game, including the settings page.
+
+## 1.2.5 (development build) — 2026-10-15
+
+**Nothing here has been seen in game. Development build, never for the Workshop.** (An earlier 1.2.5 with producer diagnostics was reverted the same day and is not part of this build.) One change on top of 1.2.4, at the author's request ("margin slider first"):
+
+- New testing setting Advanced › General › Athlete stats › **Collision margin**: a slider from 0 to 7 game units, step 1, default 5 (the 1.2.4 behaviour). It is the fixed hit margin on the controlled athlete's shots.
+  - The Accuracy producers still store the fixed marker 5000, so the value stays unique against natural Accuracy values (multiples of 70; 0 and 7000 would not be unique). At the 10 hooked shape-B consumers, when the marker is seen, the output is the body plus `margin x 1000` internal units: the target's Dodging is added back as before, plus `margin x 1000 - 5000`.
+  - **The 11 shape-A consumers are not hooked and stay at the game's own 5 units whatever the slider says** (with the marker, `max(5000 - avoidance, 5000)` is 5000 there). The slider therefore acts only on paths through the hooked shape-B sites; a shot that reaches only shape-A sites keeps 5 units at every setting. Which skills reach which shape is not known (read from the code: not settled).
+  - The value is copied into an atomic by `configure()` every client frame, like the reaction floor and ceiling; hooks never read the settings store.
+  - The skill preview's extra width and the overlay's yellow ring follow the slider. The preview still adds the margin to the skill's radius on each side, as in 1.2.4; at 0 it shows the old width.
+  - `STATRULE collision` lines (first fire and the Verbose counts) now name the margin in units. The text is translated in the 16 language files.
+- Unchanged: the hint text of "Athlete stat rules", the reaction band defaults (6 and 22), the preview gating, no new diagnostics.
+- Not verified: everything in game. Tests and the verifier show only that the code builds, the margin arithmetic turns the marker into 0..7 units exactly (unit test), and the hook tables match the executables.
+
+## 1.2.4 (development build) — 2026-10-15
+
+**Nothing here has been seen in game. This is a development build for the author's tests and must never go to the Workshop.** Every statement below is marked as read from the code or as a guess. Design: backlog item 15; findings: `docs/investigation-stat-rules-0.6.4.md`.
+
+- New hook family `stats` (athlete stat rules), in `native_adapter/windows/stats.rs` with a table per game version (`v063/`, `v064/`, `v070/` `stat_sites.rs`) and pure logic in `athlete_rules.rs`. 22 sites per version, all checked against their executable: bytes, whole instructions, no `call`/`jmp`/`rip`/`rsp` in the replayed bytes, and every register, frame slot and offset the table names (`tools/verify_stat_sites.py`, run by the profile verifier; a changed register is refused). The family is optional and all or none: if one byte check fails on the installed executable, no site is patched and every other hook still installs (`STATRULE unavailable: ...`).
+- The rules apply only to the controlled athlete (read from the code):
+  - Collision: the three Accuracy producers store 5000 (5 game units) for the controlled athlete's shots, and the 10 shape-B consumers (clamp at zero, `0x1045134`, `0x1045384`, `0x13d2441`, `0x13d2685`, `0x13d2b82`, `0x13d2fa1`, `0x1a5a882`, `0x1a5ae36`, `0x1a5afe6`, `0x1a5b680` on 0.6.4) skip the target's Dodging term when the shot's Accuracy value is exactly 5000. Natural values are multiples of 70, so 5000 marks these shots without a caster lookup at 10 of the 21 consumers. The 11 shape-A consumers are not hooked: `max(5000 - avoidance, 5000)` is 5000 already (decided with the project lead, 2026-10-15). The controlled athlete's own derived Dodging (the input-phase producer) is 0.
+  - Reaction: at the four gates (`0xf27386/0xf27402`, `0xf169e2/0xf16a6b`, `0xf16d4f/0xf16ddc`, `0xe51451/0xe514cd` on 0.6.4) the capture site remembers caster Accuracy, defender Dodging and the game's seed when the caster is the controlled athlete, and the complete site replaces the game's gate by one from the gap (Accuracy - Dodging): bands 6..9 at -100, 10..14 at 0, 16..22 at +100, interpolated linearly; the tick inside the band is the game's own splitmix64 of the pair's seed, so the same situation gives the same gate. The Accuracy "extra" term is dropped. Two gates also mix the projectile's age into the seed; those bits are removed so the choice does not change every tick.
+  - Everything else is untouched: AI-versus-AI fights, AI shots at the player (they keep the AI caster's Accuracy; against the player's body Dodging is 0), and every shot by anyone else.
+- Who is "the controlled athlete": an atomic holds the worker thread and actor id, stamped by the controlled player's `think` every tick and cleared on release, Return to AI, leaving the match and when the setting is turned off (a 600 ms freshness check is the backstop). Every hook first compares the thread (one atomic load), then the actor id read from the instruction's own operands, and returns to the original path before it touches a lock. No lock is taken anywhere in a hook (the 1.2.1 attempt locked the session state on every collision call and was withdrawn). Settings are copied into atomics each client frame; hooks never read the settings store.
+- Settings: Advanced › General › "Athlete stat rules" (on by default in this development build; Off is the game's own behaviour), "Reaction floor" (6) and "Reaction ceiling" (22) in ticks, the middle points scale with them. Advanced › Debug › "Show collision bodies near cursor" (off). All 9 new texts are translated in the 16 language files. The Advanced page now scrolls.
+- Visuals: with the rules on, the skill preview draws projectile corridors (linear projectiles, native projectile skills, Gambler Q, shots, the Dancer fan) with the radius plus 5 units on each side. Dashes, beams and lines keep their old width. The testing overlay draws, around enemies within 260 px of the cursor, the body's collision radius (white) and radius plus 5 units (yellow) on the ground at the unit's position, using the SDK's `radius()` (the radius the hit tests use), not the measured art. Whether the projectile's own radius adds to the hit test is a guess; the preview adds it as the brief says.
+- Logging: `STATRULE installed` and one line the first time each rule fires in a control session (Normal). Verbose: `STATRULE gate caster=... A= D= gap= gate= game_gate= seed=` once per projectile-and-defender pair, and `STATRULE collision site= seen= marked=` every five seconds (consumer runs on the controlled match's thread, and how many carried the marker). The defender's id is not logged: the gate sites hold no cheap defender id, so the pair's seed stands for it.
+- Tried and not done: hooking all 21 consumers and recomputing the radius (the 1.2.1 way), because the shape-A ones need nothing and the lead removed them; a global "controlled match" flag with no caster check, because it also changes shots by others; scoping by actor id alone, because background matches reuse the ids.
+- Not verified: everything in game. Open (from the investigation): which skill types pass through shape-B sites (the Verbose `seen`/`marked` counts will show), whether the producers' value is read anywhere besides the hit tests, and whether the learned dodge policy reads the stats. Tests, the bridge test and the verifier prove only that the code builds, the bridge preserves registers, flags and XMM, and that the tables match the executables.
+
 ## 1.2.3 — 2026-10-14
 
 - Game 0.6.4 (the live branch, 2026-10-14) is supported, alongside 0.6.3 (players can roll back on Steam) and 0.7.0, from the same DLL: a new table folder `native_adapter/v064/` and profile `tools/native_profiles/0.6.4.json`, every hook family enabled. Details and evidence in `docs/migration-0.6.4.md`. Passed in game on 0.6.4 (2026-10-14): the author's full test list, one family after another, and a full match.

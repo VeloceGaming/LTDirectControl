@@ -95,6 +95,51 @@ check that the instruction at the new address does the same thing and
 that the arguments are set up the same way. A note that names a runner-up
 or identical copies means the choice has to be made by the caller.
 
+### The stat sites (`stat_sites.rs`)
+
+The athlete stat rules hook single instructions, and each table entry
+names the registers and frame slots the hook reads, which a recompile
+moves (`rdi` became `r14`, a frame slot `0x2d0` became `0x2d8` between
+0.7.0 and 0.6.4). After carrying the addresses, the draft makes a second
+pass over `stat_sites.rs` with `tools/verify_stat_sites.py`:
+
+- **Fields from the new code.** Each site's registers, frame slots and
+  sources are worked out from the instructions at its new address, the
+  way the verifier checks them; a changed field is rewritten with a
+  `REVIEW stat fields` line saying what moved. A site whose instructions
+  are no longer of its kind gets `REVIEW stat site` with the reason.
+- **Census.** The whole new executable is searched for every instruction
+  shaped like a stat site: the shape-B consumers (`sub r, [e + 0x6a0]`
+  then `test`), the shape-A floors (`sub` then `cmp r, 0x1389`), the
+  Accuracy producers (`imul r, r, 0x46` stored to the frame), the Dodging
+  producer (`imul r, r, 0x96` stored to `+0x6a0`). The summary at the top
+  of the drafted file and in the console gives, per kind, how many the
+  executable has and how many were drafted. A count that differs means
+  the patch added or removed a hit test or a producer: that needs a look
+  before anything else.
+- **Filling from the census.** A site alignment could not carry is taken
+  from the census when the counts of that kind agree, in address order,
+  with a REVIEW line. Two sites of one kind behave alike, so a swap among
+  them does no harm.
+- **The reaction gates are never filled in.** Their constant is a common
+  hash; the census lists the gate-shaped places (each version so far has
+  the 4 hooked ones plus one that reads no Accuracy, `0xf803f6` on 0.7.0).
+  Choose by the Accuracy read (`+ 0x1f0`) before the hash, and keep each
+  `Capture` before its `Complete`.
+- **Other Dodging subtractions** that are neither shape are listed (on
+  0.6.4, two `1 − frame slot` table indexes). Confirm they are not hit
+  tests.
+
+Measured:
+
+| Run | Stat sites placed | Wrong | Left |
+| --- | --- | --- | --- |
+| 0.7.0 to 0.6.4 | 33 of 33 (28 by alignment, 5 from the census; 7 with fields rewritten) | 0 | none: the verifier passes the drafted table as it is |
+| 0.6.3 to 0.7.0 | 29 of 33 (27 by alignment, 2 from the census) | 0 | the 4 gate sites of the big AI function |
+
+The verifier (step 4) then checks every field again, and since 1.2.11
+also refuses a site that a branch of its function jumps to.
+
 ## 3. Field offsets
 
 The hook files use entity, player and view field offsets directly
@@ -136,6 +181,7 @@ the rest is open. The order that worked, and what to play for each:
 | Outline | Hover and target outlines on both teams, death greyscale |
 | Readers | Skill previews. One match per group of champions, then `python tools/audit_previews.py`: it lists every skill the reader did not understand, so not every champion needs playing |
 | Tooltips | Ability numbers on a few champions, including a new one and a mod one |
+| Stats | "Athlete stat rules" On, then back to the main menu: the log says `STATRULE installed sites=33` (`unavailable` names the site that differs). With `"practice_mode": 1` in controls.json, cast a projectile skill and a circle skill at the pinned enemies: the readout names shape B and shape A. One normal match with the rules On |
 
 For skill shapes, a field's meaning is settled by what the game shows, not
 by its position: ask for a screenshot of the skill's real area before

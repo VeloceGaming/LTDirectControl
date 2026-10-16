@@ -259,7 +259,7 @@ unsafe fn payload(
                 // Ferryman Q (stops at the first unit), Hypnotist Q (passes
                 // through): a shot of hit radius word 1 over the range.
                 tag @ (4 | 12) => match (at(1), at(0)) {
-                    (Some(radius), Some(length)) => out.add(
+                    (Some(radius), Some(length)) => out.add_projectile(
                         Shape::Shot {
                             radius,
                             length,
@@ -414,7 +414,7 @@ unsafe fn payload(
                 distance(word(object + 32) as u64),
                 distance(word(object + 40) as u64),
             ) {
-                (Some(length), Some(radius)) if (1..=16).contains(&count) => out.add(
+                (Some(length), Some(radius)) if (1..=16).contains(&count) => out.add_projectile(
                     Shape::Fan {
                         count,
                         radius,
@@ -453,7 +453,7 @@ unsafe fn payload(
                 distance(word(object + 40) as u64),
             ) {
                 (Some(radius), Some(length)) => {
-                    out.add(Shape::Corridor { radius, length }, Placement::Caster)
+                    out.add_projectile(Shape::Corridor { radius, length }, Placement::Caster)
                 }
                 _ => out.issue("invalid native gambler shot"),
             }
@@ -515,7 +515,7 @@ unsafe fn payload(
                     // happen at its end.
                     let hits_in_flight = word(object + 88) > 0;
                     if hits_in_flight {
-                        out.add(
+                        out.add_projectile(
                             Shape::Corridor {
                                 radius: radius as f32 / 1000.,
                                 length,
@@ -1030,6 +1030,7 @@ mod tests {
                 shape: Shape::Circle { radius: 40. },
                 placement: Placement::Forward { offset: 20. },
                 allies: false,
+                projectile: false,
             }]
         );
         // The same area for allies (AllyChampion) is marked for the ally colour.

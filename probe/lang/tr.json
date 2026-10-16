@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} kitle kontrolündeki bir dost gerektirir",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} kullanılmadı: geçersiz nişan/hedef veya kullanım mümkün değil",
  "{key} unavailable: current ability data not ready": "{key} kullanılamıyor: yetenek verisi henüz hazır değil",
- "{key}: Lv {level}": "{key}: Sv. {level}"
+ "{key}: Lv {level}": "{key}: Sv. {level}",
+ "Athlete stat rules": "Atlet istatistik kuralları",
+ "Athlete stats": "Atlet istatistikleri",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Test: imlecin yakınındaki düşmanların etrafına isabet alanını gösteren halkalar çizer.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Deneysel: oyuncunun istatistiklerinin oynanışı nasıl etkilediğini değiştirir. Açtığınızda, ana menüye döndükten sonra etkili olur.",
+ "Reaction ceiling": "Tepki üst sınırı",
+ "Reaction floor": "Tepki alt sınırı",
+ "Show hit areas": "İsabet alanlarını göster",
+ "Testing: the fastest an enemy can react to your shots.": "Test: bir düşmanın atışlarınıza en hızlı ne kadar çabuk tepki verebileceği.",
+ "Testing: the slowest an enemy can react to your shots.": "Test: bir düşmanın atışlarınıza en geç ne kadar yavaş tepki verebileceği.",
+ "Collision margin": "Çarpışma payı",
+ "Testing: how much extra room your shots get to hit.": "Test: atışlarınızın isabet etmek için ek payı ne kadar.",
+ "Show input delay": "Giriş gecikmesini göster",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Tıklamanızdan veya tuşunuzdan onu oynatan kareye kadar ölçülen süreyi, son komutlarınızın ortalaması olarak gösterir."
 }

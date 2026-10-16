@@ -21,8 +21,9 @@ const REDUCTION: i32 = 900;
 static ON: AtomicBool = AtomicBool::new(false);
 static HELD: AtomicBool = AtomicBool::new(false);
 
+/// On by Home+End, or while the practice tool is on.
 pub fn active() -> bool {
-    ON.load(Ordering::Relaxed)
+    ON.load(Ordering::Relaxed) || crate::practice::active()
 }
 /// Client thread: a fresh Home+End press toggles the option.
 pub fn update(home_end: bool, log: &Logger) {
@@ -75,6 +76,9 @@ impl StableMatchHook for CooldownHook {
         };
         if viewed != key {
             return;
+        }
+        if crate::practice::active() {
+            crate::practice::tick(sim, player, key, &self.logger);
         }
         let Some((entity, cooldowns)) = sim.get_player(player).and_then(|p| {
             let entity = p.champion()?.id();

@@ -35,6 +35,8 @@ const SAFETY: &[&str] = &[
 ];
 /// Lines starting with one of these are written only at Verbose.
 const VERBOSE: &[&str] = &[
+    "STATRULE collision site=",
+    "STATRULE gate caster=",
     "ABILITY AIMING",
     "ABILITY CHARGES",
     "ABILITY CONFIRM",

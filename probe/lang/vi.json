@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} cần đồng minh đang bị khống chế",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} không được dùng: ngắm/mục tiêu không hợp lệ hoặc không thể dùng",
  "{key} unavailable: current ability data not ready": "{key} không khả dụng: dữ liệu kỹ năng chưa sẵn sàng",
- "{key}: Lv {level}": "{key}: cấp {level}"
+ "{key}: Lv {level}": "{key}: cấp {level}",
+ "Athlete stat rules": "Quy tắc chỉ số vận động viên",
+ "Athlete stats": "Chỉ số vận động viên",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Thử nghiệm: vẽ vòng quanh kẻ địch gần con trỏ để cho thấy vùng trúng.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Thử nghiệm: thay đổi cách chỉ số của người chơi ảnh hưởng đến lối chơi. Khi bật, tùy chọn có hiệu lực sau khi bạn quay lại menu chính.",
+ "Reaction ceiling": "Trần phản ứng",
+ "Reaction floor": "Sàn phản ứng",
+ "Show hit areas": "Hiện vùng trúng",
+ "Testing: the fastest an enemy can react to your shots.": "Thử nghiệm: kẻ địch có thể phản ứng với đòn bắn của bạn nhanh nhất là bao nhiêu.",
+ "Testing: the slowest an enemy can react to your shots.": "Thử nghiệm: kẻ địch có thể phản ứng với đòn bắn của bạn chậm nhất là bao nhiêu.",
+ "Collision margin": "Biên độ va chạm",
+ "Testing: how much extra room your shots get to hit.": "Thử nghiệm: đòn bắn của bạn có thêm bao nhiêu chỗ để trúng.",
+ "Show input delay": "Hiển thị độ trễ đầu vào",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Hiển thị thời gian đo được từ cú nhấp hoặc phím đến khung hình phát nó, tính trung bình trên các lệnh gần nhất."
 }

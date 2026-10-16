@@ -23,6 +23,9 @@ pub mod family {
     /// Native ability description text.
     pub const TOOLTIPS: u32 = 1 << 8;
     pub const ALL: u32 = (1 << 9) - 1;
+    /// Athlete stat rules for manually played matches (separate from `ALL`:
+    /// a family is enabled by name, and the guards fall back to `ALL`).
+    pub const STATS: u32 = 1 << 9;
 }
 /// A game version's field-consumer guards: instruction bytes and pointer
 /// slots that must hold before its hooks are installed.

@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key}: 行動妨害を受けた味方が必要です",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key}は発動されませんでした: 照準・対象が無効か、発動できません",
  "{key} unavailable: current ability data not ready": "{key}は使用できません: スキル情報がまだ準備できていません",
- "{key}: Lv {level}": "{key}: Lv {level}"
+ "{key}: Lv {level}": "{key}: Lv {level}",
+ "Athlete stat rules": "アスリートのステータスルール",
+ "Athlete stats": "アスリートのステータス",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "テスト：カーソル付近の敵に当たり判定の輪を表示します。",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "実験的：プレイヤーのステータスがゲームプレイに与える影響を作り変えます。オンにした設定は、メインメニューに戻った後に有効になります。",
+ "Reaction ceiling": "反応の上限",
+ "Reaction floor": "反応の下限",
+ "Show hit areas": "当たり判定を表示",
+ "Testing: the fastest an enemy can react to your shots.": "テスト：敵が自分の攻撃に反応できる最短の速さ。",
+ "Testing: the slowest an enemy can react to your shots.": "テスト：敵が自分の攻撃に反応できる最長の遅さ。",
+ "Collision margin": "衝突マージン",
+ "Testing: how much extra room your shots get to hit.": "テスト：自分の攻撃が当たりやすくなる余裕の大きさ。",
+ "Show input delay": "入力遅延を表示",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "クリックやキー入力から、それが反映されるフレームまでの計測時間を、直近のコマンドの平均で表示します。"
 }

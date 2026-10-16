@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key}: 군중 제어에 걸린 아군이 필요합니다",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} 시전 안 됨: 조준/대상이 올바르지 않거나 시전할 수 없습니다",
  "{key} unavailable: current ability data not ready": "{key} 사용 불가: 스킬 정보가 아직 준비되지 않았습니다",
- "{key}: Lv {level}": "{key}: Lv {level}"
+ "{key}: Lv {level}": "{key}: Lv {level}",
+ "Athlete stat rules": "선수 능력치 규칙",
+ "Athlete stats": "선수 능력치",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "테스트: 커서 근처 적에게 적중 범위를 링으로 표시합니다.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "실험적: 플레이어의 능력치가 게임플레이에 미치는 영향을 바꿉니다. 켜면 메인 메뉴로 돌아간 뒤에 적용됩니다.",
+ "Reaction ceiling": "반응 상한",
+ "Reaction floor": "반응 하한",
+ "Show hit areas": "적중 범위 표시",
+ "Testing: the fastest an enemy can react to your shots.": "테스트: 적이 내 공격에 반응할 수 있는 가장 빠른 속도.",
+ "Testing: the slowest an enemy can react to your shots.": "테스트: 적이 내 공격에 반응할 수 있는 가장 느린 속도.",
+ "Collision margin": "충돌 여유",
+ "Testing: how much extra room your shots get to hit.": "테스트: 내 공격이 맞을 수 있는 추가 여유.",
+ "Show input delay": "입력 지연 표시",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "클릭이나 키 입력부터 그것이 반영되는 프레임까지 측정한 시간을 최근 명령의 평균으로 보여줍니다."
 }

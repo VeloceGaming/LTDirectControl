@@ -14,6 +14,7 @@
 mod abilities;
 mod acquisition;
 mod ai_handback;
+mod athlete_rules;
 mod attack_trace;
 mod camera;
 mod client;
@@ -24,6 +25,7 @@ mod emotes;
 mod hud_icons;
 mod hud_motion;
 mod hud_style;
+mod input_delay;
 mod input_trace;
 mod inventory;
 mod lang;
@@ -42,6 +44,7 @@ mod perf;
 mod platform_input;
 mod player_hud;
 mod pointer_clip;
+mod practice;
 mod preview_style;
 mod purchase_tracker;
 mod result_audit;
@@ -249,6 +252,12 @@ fn init(host: &StableHost) -> StableMod {
     emote_library::initialize(directory.as_deref(), &logger);
     let cursor = cursor::Cursor::new(settings.clone());
     logging::set(settings.number("log_level"));
+    athlete_rules::configure(
+        settings.number("athlete_stat_rules") == 1.,
+        settings.number("stat_reaction_floor") as u32,
+        settings.number("stat_reaction_ceiling") as u32,
+        settings.number("stat_collision_margin") as u32,
+    );
     logger.write(&format!("CONTROLS cast_on_release={cast_on_release}; default quickcast; Shift normal cast; Alt self cast"));
     let abilities = Arc::new(abilities::Abilities::new(cast_on_release));
     let hud = Arc::new(player_hud::PlayerHud::default());
@@ -306,6 +315,8 @@ fn init(host: &StableHost) -> StableMod {
         cooldowns: Mutex::default(),
     });
     declaration.add_item_build_hook(purchase_tracker::BuildObserver(hud.clone()));
+    // Practice tool: the lineup the AI drafts while it is on (practice.rs).
+    declaration.add_draft_score_hook(practice::LineupDraft);
     declaration.set_map_customizer(map_path::MapObserver(movement.clone(), logger.clone()));
     declaration.add_player_input_ai(Simulation {
         session_gate,

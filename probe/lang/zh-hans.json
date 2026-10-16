@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} 需要一名受控的友方",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} 未施放：瞄准/目标无效或无法施放",
  "{key} unavailable: current ability data not ready": "{key} 不可用：技能数据尚未就绪",
- "{key}: Lv {level}": "{key}：{level} 级"
+ "{key}: Lv {level}": "{key}：{level} 级",
+ "Athlete stat rules": "运动员属性规则",
+ "Athlete stats": "运动员属性",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "测试：在光标附近的敌人周围画出圆环，显示命中范围。",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "实验性：改变玩家属性对游戏过程的影响方式。开启后需返回主菜单才会生效。",
+ "Reaction ceiling": "反应上限",
+ "Reaction floor": "反应下限",
+ "Show hit areas": "显示命中范围",
+ "Testing: the fastest an enemy can react to your shots.": "测试：敌人对你的攻击最快能多快反应。",
+ "Testing: the slowest an enemy can react to your shots.": "测试：敌人对你的攻击最慢能多慢反应。",
+ "Collision margin": "碰撞余量",
+ "Testing: how much extra room your shots get to hit.": "测试：你的攻击命中时多出的余地有多大。",
+ "Show input delay": "显示输入延迟",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "显示从点击或按键到播放该操作的画面之间的实测时间，取最近几次指令的平均值。"
 }

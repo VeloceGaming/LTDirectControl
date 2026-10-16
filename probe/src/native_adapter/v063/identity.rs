@@ -9,7 +9,7 @@ pub(crate) const EXPECTED_SHA: &str =
 pub(crate) const PE_TIMESTAMP: u32 = 0x6ac5c567;
 pub(crate) const IMAGE_SIZE: u32 = 0x52d6000;
 /// The families reviewed for `EXPECTED_SHA`: all of them.
-pub(crate) const ENABLED: u32 = family::ALL;
+pub(crate) const ENABLED: u32 = family::ALL | family::STATS;
 /// The reviewed minimap operands (tools/native_profiles).
 pub(crate) const MINIMAP_PROFILE: &str =
     include_str!("../../../../tools/native_profiles/0.6.3.json");

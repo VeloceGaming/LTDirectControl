@@ -17,7 +17,8 @@ pub(crate) const ENABLED: u32 = family::SESSION
     | family::SHOP
     | family::OUTLINE
     | family::READERS
-    | family::TOOLTIPS;
+    | family::TOOLTIPS
+    | family::STATS;
 /// The reviewed minimap operands (tools/native_profiles).
 pub(crate) const MINIMAP_PROFILE: &str =
     include_str!("../../../../tools/native_profiles/0.7.0.json");

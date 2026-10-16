@@ -1,0 +1,324 @@
+"""Check the athlete stat rule table of one game version against its executable.
+
+The table (probe/src/native_adapter/v<version>/stat_sites.rs) names, for every
+site, the registers, frame slots and offsets the hook reads and writes. This
+decodes each site in the executable and refuses a table that disagrees with
+the instructions: an `r14` that was `rdi` in another version, a frame slot that
+moved, an operand that is not what the rule assumes.
+
+`site_fields` works those fields out from the instructions, so
+draft_version.py can write them for a new game version, and `census` finds
+every instruction of the executable that has the shape of a stat site, so a
+draft can say which sites a patch added or removed.
+
+Used by verify_native_profile.py and draft_version.py; it never updates or
+installs anything.
+"""
+import re
+
+REGISTERS = {'rax': 'Rax', 'rbx': 'Rbx', 'rcx': 'Rcx', 'rdx': 'Rdx', 'rsi': 'Rsi', 'rdi': 'Rdi', 'rbp': 'Rbp',
+             'r8': 'R8', 'r9': 'R9', 'r10': 'R10', 'r11': 'R11', 'r12': 'R12', 'r13': 'R13', 'r14': 'R14',
+             'r15': 'R15'}
+
+
+def numbers(value):
+    return [int(x, 0) for x in re.findall(r'\b(?:0x[0-9a-f]+|[0-9]+)\b', value)]
+
+
+def squash(text):
+    """The table as rustfmt may lay it out: one line, no trailing commas."""
+    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r',\s*(?=[})\]])', '', text)
+    text = re.sub(r'\{\s*', '{ ', text)
+    return re.sub(r'\s*\}', ' }', text)
+
+
+def parse_table(folder):
+    """The sites of STAT_SITES as (rva, bytes, kind, text of the kind); rva
+    is None for a draft's `UNKNOWN_0x...`."""
+    source = (folder / 'stat_sites.rs').read_text(encoding='utf-8')
+    table = source.split('pub(crate) const STAT_SITES')[1].split('];')[0]
+    sites = []
+    for block in re.split(r'\n    Site \{', table)[1:]:
+        rva = re.search(r'rva:\s*(0x[0-9a-f]+)', block)
+        rva = int(rva[1], 16) if rva else None
+        data = bytes(numbers(re.search(r'bytes:\s*&\[(.*?)\]', block, re.S)[1]))
+        kind = re.search(r'Kind::(\w+)', block)[1]
+        sites.append((rva, data, kind, squash(block.split('kind:')[1])))
+    return sites
+
+
+def constants_of(source):
+    return {m[1]: int(m[2], 16) for m in re.finditer(r'const (STAT_\w+): usize = (0x[0-9a-f]+);', source)}
+
+
+def reg(name):
+    return 'R::' + REGISTERS[name]
+
+
+class Code:
+    """Decoding helpers over one executable (patch_migration.Image)."""
+
+    def __init__(self, image):
+        from capstone.x86 import X86_OP_IMM, X86_OP_MEM, X86_OP_REG
+        self.image, self.IMM, self.MEM, self.REG = image, X86_OP_IMM, X86_OP_MEM, X86_OP_REG
+
+    def around(self, rva):
+        bounds = self.image.enclosing(rva)
+        assert bounds, f'{rva:#x}: not inside a known function'
+        instructions = self.image.decoded(bounds)
+        at = next((n for n, i in enumerate(instructions) if i.address - self.image.base == rva), None)
+        assert at is not None, f'{rva:#x}: not at an instruction boundary'
+        return instructions, at
+
+    def memory(self, i):
+        operands = [o for o in i.operands if o.type == self.MEM]
+        return operands[0] if operands else None
+
+    def base_of(self, i):
+        return self.image.cs.reg_name(self.memory(i).mem.base)
+
+
+def span_of(code, rva, length):
+    """The whole instructions the site replaces, after the relay's checks."""
+    ins, at = code.around(rva)
+    span, size = [], 0
+    while size < length:
+        span.append(ins[at + len(span)])
+        size += span[-1].size
+    assert size == length >= 5, f'{rva:#x}: not whole instructions of at least 5 bytes'
+    for i in span:
+        assert i.mnemonic not in ('call', 'jmp') and 'rip' not in i.op_str and 'rsp' not in i.op_str, \
+            f'{rva:#x}: {i.mnemonic} {i.op_str} cannot be replayed'
+    # No branch of the function lands on a replaced instruction: code
+    # reaching it by a jump would skip the instruction before it, which
+    # the rules assume ran.
+    replaced = {i.address for i in span}
+    for i in ins:
+        if (i.mnemonic.startswith('j') or i.mnemonic == 'call') and i.operands \
+                and i.operands[0].type == code.IMM:
+            assert i.operands[0].imm not in replaced, f'{rva:#x}: branch from {i.address - code.image.base:#x}'
+    return ins, at, span
+
+
+def site_fields(code, sites, index, constants):
+    """[(field, Rust text)] of the site's kind as its instructions say they
+    must be. Raises AssertionError when the instructions are not the kind's."""
+    rva, data, kind, text = sites[index]
+    ins, at, span = span_of(code, rva, len(data))
+    first, memory, base_of = span[0], code.memory, code.base_of
+    where = f'{rva:#x}'
+    if kind == 'Collision':
+        assert first.mnemonic == 'sub' and memory(first) and memory(first).mem.disp == 0x6a0, where
+        out = first.op_str.split(',')[0].strip()
+        previous = ins[at - 1]
+        assert previous.mnemonic == 'add' and previous.op_str.startswith(out + ',') and memory(previous), where
+        source = (code.image.cs.reg_name(memory(previous).mem.base), memory(previous).mem.disp)
+        assert source[0] != out, where
+        assert ins[at + 1].mnemonic == 'test', where
+        return [('output', reg(out)), ('entity', reg(base_of(first))),
+                ('accuracy', f'({reg(source[0])}, {source[1]:#x})')]
+    if kind == 'FlooredCollision':
+        # cmp output, 5001 right after sub output, [entity + Dodging];
+        # then the floor: a cmovl of the output to 5000, or a cmovge of
+        # the output over a register holding 5000.
+        out = first.op_str.split(',')[0].strip()
+        assert first.mnemonic == 'cmp' and first.op_str == f'{out}, 0x1389' and len(span) == 1, where
+        previous = ins[at - 1]
+        assert previous.mnemonic == 'sub' and previous.op_str.startswith(out + ',') \
+            and memory(previous) and memory(previous).mem.disp == 0x6a0, where
+        after = ins[at + 1:at + 3]
+        floor = next(i for i in after if i.mnemonic.startswith('cmov'))
+        target, source = [o.strip() for o in floor.op_str.split(',')]
+        assert (floor.mnemonic == 'cmovl' and target == out) or \
+            (floor.mnemonic == 'cmovge' and source == out), where
+        assert all(i is floor or i.mnemonic == 'mov' and i.op_str.endswith(', 0x1388')
+                   for i in after[:after.index(floor) + 1]), where
+        return [('output', reg(out)), ('entity', reg(base_of(previous)))]
+    if kind == 'AccuracyProducer':
+        assert first.mnemonic == 'imul' and first.op_str.endswith('0x46') and len(span) == 2, where
+        store = span[1]
+        assert store.mnemonic == 'mov' and memory(store) and base_of(store) == 'rbp', where
+        # The caster: the id loaded into rdx for the player lookup.
+        back = [f'{i.mnemonic} {i.op_str}' for i in ins[max(at - 60, 0):at]]
+        found = [m for m in (re.match(r'mov rdx, qword ptr \[(\w+) \+ (0x5b8|0xf8)\]$', t) for t in back) if m]
+        assert found, f'{where}: no caster id loaded for the player lookup'
+        found = found[-1]
+        projectile = found[2] == '0xf8'
+        name = 'STAT_PROJECTILE_CASTER' if projectile else 'STAT_ENTITY_ID'
+        assert constants[name] == int(found[2], 16), where
+        # The traced word: the game reads it from the caster's object (or
+        # a register copied from it) close to the producer.
+        trace = 'STAT_TRACE_PROJECTILE_KIND' if projectile else 'STAT_TRACE_ACTION_STATE'
+        near = [f'{i.mnemonic} {i.op_str}' for i in ins[max(at - 200, 0):at + 12]]
+        # Registers holding the caster's object: copies of copies, also
+        # through a frame slot (0.6.3: rsi -> [rbp + 0x258] -> r14).
+        holders, slots = {found[1]}, set()
+        for _ in range(3):
+            for t in near:
+                pattern = "|".join(holders)
+                if m := re.match(rf'mov (\w+), ({pattern})$', t):
+                    holders.add(m[1])
+                if m := re.match(rf'mov qword ptr (\[rbp \+ 0x[0-9a-f]+\]), ({pattern})$', t):
+                    slots.add(m[1])
+                if (m := re.match(r'mov (\w+), qword ptr (\[rbp \+ 0x[0-9a-f]+\])$', t)) and m[2] in slots:
+                    holders.add(m[1])
+        assert any(re.match(rf'mov \w+, qword ptr \[({"|".join(holders)}) \+ {constants[trace]:#x}\]$', t)
+                   for t in near), f'{where}: the traced word is not read near the producer'
+        return [('frame', f'{memory(store).mem.disp:#x}'),
+                ('caster', f'Caster::Field {{ reg: {reg(found[1])}, offset: {name} }}'), ('trace', trace)]
+    if kind == 'DodgingProducer':
+        assert first.mnemonic == 'imul' and first.op_str.endswith('0x96'), where
+        store = ins[at + 1]
+        assert store.mnemonic == 'mov' and memory(store) and memory(store).mem.disp == 0x6a0, where
+        out = first.op_str.split(',')[0].strip()
+        assert store.op_str.endswith(', ' + out), where
+        return [('output', reg(out)), ('entity', reg(base_of(store)))]
+    if kind == 'Capture':
+        assert first.mnemonic == 'movabs' and first.op_str.endswith('0x9e3779b97f4a7c15'), where
+        end = next((r for r, _, k, t in sites[index + 1:] if k == 'Complete' and f'capture: {index}' in t), None)
+        assert end is not None, f'{where}: no Complete names this capture'
+        forward = ins[at:code.around(end)[1] + 1]
+        squared = next(i for i in forward if i.mnemonic == 'imul' and len(i.operands) == 2
+                       and i.operands[0].type == i.operands[1].type == code.REG
+                       and i.operands[0].reg == i.operands[1].reg)
+        accuracy = {'ecx': 'rcx', 'r8d': 'r8'}[squared.op_str.split(',')[0].strip()]
+        n = next(n for n, i in enumerate(forward) if i.mnemonic == 'shr' and i.op_str.endswith('0x2d'))
+        q = forward[n + 1]
+        assert q.mnemonic == 'imul', where
+        if memory(q):
+            assert base_of(q) == 'rbp' and memory(q).size == 4, where
+            inverse = f'Source::Frame({memory(q).mem.disp:#x})'
+        else:
+            assert q.op_str.startswith('r8d'), where
+            inverse = 'Source::Register(R::R8)'
+        back = [f'{i.mnemonic} {i.op_str}' for i in ins[max(at - 45, 0):at]]
+        expected = None
+        for t, following in zip(back, back[1:] + ['']):
+            m = re.match(r'mov rax, qword ptr \[(\w+) \+ 0xf0\]$', t)
+            if m and following == 'shl rax, 0x14':
+                expected = f'Caster::Field {{ reg: {reg(m[1])}, offset: STAT_PROJECTILE_CASTER }}'
+            m = re.match(r'shl (\w+), 0x14$', t)
+            if m and m[1] != 'rax':
+                mixed = re.match(rf'xor {m[1]}, qword ptr \[(\w+) \+ 0x7f8\]$', following)
+                expected = (f'Caster::Mixed {{ reg: {reg(m[1])}, other: {reg(mixed[1])}, '
+                            f'offset: STAT_PLAYER_SEED, shift: 20 }}' if mixed
+                            else f'Caster::Shifted {{ reg: {reg(m[1])}, shift: 20 }}')
+        assert expected, f'{where}: no caster found before the gate'
+        # The id the hook reads must be the one the game looked the
+        # caster's Accuracy up with: the `rdx` of the call whose result's
+        # +0x1f0 (Accuracy) is read before the capture.
+        read = max(n for n, t in enumerate(back) if t.endswith('+ 0x1f0]'))
+        call = max(n for n in range(read) if back[n].startswith('call '))
+        lookup = next(back[n] for n in range(call - 1, -1, -1) if back[n].startswith('mov rdx, '))
+        if 'Caster::Field' in expected:
+            field = re.match(r'mov rdx, qword ptr \[(\w+) \+ (0x[0-9a-f]+)\]$', lookup)
+            assert field and f'reg: {reg(field[1])}' in expected, where
+            assert int(field[2], 16) == constants['STAT_PROJECTILE_CASTER'], where
+        else:
+            caster = re.search(r'reg: R::(\w+)', expected)[1]
+            assert lookup == f'mov rdx, {caster.lower()}', where
+        age = 'true' if any(t.startswith('shl rax, 0x28') for t in back) else 'false'
+        return [('accuracy', reg(accuracy)), ('inverse_dodge', inverse), ('caster', expected), ('age_mixed', age)]
+    if kind == 'Complete':
+        assert first.mnemonic == 'shr' and first.op_str.endswith('0x11') and len(span) == 2, where
+        out = first.op_str.split(',')[0].strip()
+        wide = 'r' + out[1:]
+        assert span[1].mnemonic == 'add' and span[1].op_str == f'{wide}, rax', where
+        capture = int(re.search(r'capture:\s*(\d+)', text)[1])
+        assert sites[capture][2] == 'Capture', where
+        return [('capture', str(capture)), ('output', reg(wide))]
+    raise AssertionError(f'Unknown stat rule kind {kind}')
+
+
+def check(profile, image, folder):
+    """Every disagreement between the table and the executable, as
+    (rva or None, reason); empty when the table is right."""
+    sites = parse_table(folder)
+    constants = constants_of((folder / 'stat_sites.rs').read_text(encoding='utf-8'))
+    anchors = {int(a['rva'], 16): a for n, a in profile['anchors'].items()
+               if n.startswith('STATS_SITE_') and a.get('rva')}
+    errors = []
+    if len(sites) != len(anchors):
+        errors.append((None, f'{len(sites)} sites in the table, {len(anchors)} in the profile'))
+    code = Code(image)
+    for index, (rva, data, kind, text) in enumerate(sites):
+        if rva is None:
+            errors.append((None, f'site {index} ({kind}) has no address'))
+            continue
+        if rva not in anchors or anchors[rva]['bytes'] != data.hex():
+            errors.append((rva, 'address or bytes differ from the profile'))
+            continue
+        try:
+            for name, value in site_fields(code, sites, index, constants):
+                if f'{name}: {value}' not in text:
+                    errors.append((rva, f'the code says {name}: {value}'))
+        except AssertionError as e:
+            errors.append((rva, str(e) or f'{rva:#x}: not a {kind}'))
+        except (StopIteration, ValueError, KeyError, IndexError, TypeError) as e:
+            errors.append((rva, f'{rva:#x}: not a {kind} ({type(e).__name__})'))
+    return errors
+
+
+def verify(profile, image, folder):
+    errors = check(profile, image, folder)
+    assert not errors, '; '.join(reason if rva is None else f'{rva:#x}: {reason}' for rva, reason in errors)
+    return len(parse_table(folder))
+
+
+def census(image):
+    """{kind: [rva]}: every instruction of the executable shaped like a stat
+    site. `Capture` lists the gate-shaped uses of the gates' hash constant
+    (the constant itself is a common hash; a gate also squares a value, takes
+    `>> 0x2d` and ends in `shr 0x11; add r, rax`), candidates only: not every
+    one reads Accuracy. `Unclassified` lists Dodging subtractions that are
+    neither consumer shape."""
+    code = Code(image)
+    text, start = image.text, image.text_rva
+    patterns = [rb'\xa0\x06\x00\x00',                          # [reg + 0x6a0]
+                rb'[\x48-\x4f]\x6b[\xc0-\xff]\x46',             # imul r64, r64, 0x46
+                rb'[\x48-\x4f]\x69[\xc0-\xff]\x96\x00\x00\x00']  # imul r64, r64, 0x96
+    functions = set()
+    for pattern in patterns:
+        for m in re.finditer(pattern, text):
+            bounds = image.enclosing(start + m.start())
+            if bounds:
+                functions.add(bounds)
+    found = {k: [] for k in ('Collision', 'FlooredCollision', 'AccuracyProducer', 'DodgingProducer',
+                             'Capture', 'Unclassified')}
+    for m in re.finditer(re.escape(bytes.fromhex('157c4a7fb979379e')), text):
+        rva = start + m.start() - 2
+        bounds = image.enclosing(rva)
+        ins = image.decoded(bounds) if bounds else []
+        at = next((n for n, i in enumerate(ins) if i.address - image.base == rva), None)
+        if at is None or ins[at].mnemonic != 'movabs':
+            continue
+        tail = ins[at:at + 60]
+        if any(i.mnemonic == 'shr' and i.op_str.endswith('0x2d') for i in tail) and any(
+                i.mnemonic == 'shr' and i.op_str.endswith('0x11') and n + 1 < len(tail)
+                and tail[n + 1].mnemonic == 'add' and tail[n + 1].op_str.endswith(', rax')
+                for n, i in enumerate(tail)):
+            found['Capture'].append(rva)
+    for bounds in sorted(functions):
+        ins = image.decoded(bounds)
+        for n, i in enumerate(ins):
+            rva = i.address - image.base
+            nxt = ins[n + 1] if n + 1 < len(ins) else None
+            prev = ins[n - 1] if n else None
+            mem = code.memory(i)
+            if i.mnemonic == 'sub' and mem and mem.mem.disp == 0x6a0 and code.image.cs.reg_name(mem.mem.base) != 'rip':
+                out = i.op_str.split(',')[0].strip()
+                if nxt and nxt.mnemonic == 'cmp' and nxt.op_str == f'{out}, 0x1389':
+                    found['FlooredCollision'].append(nxt.address - image.base)
+                elif nxt and nxt.mnemonic == 'test' and prev and prev.mnemonic == 'add' \
+                        and prev.op_str.startswith(out + ','):
+                    found['Collision'].append(rva)
+                else:
+                    found['Unclassified'].append(rva)
+            elif i.mnemonic == 'imul' and i.op_str.endswith(', 0x46') and nxt and nxt.mnemonic == 'mov' \
+                    and code.memory(nxt) and code.base_of(nxt) == 'rbp':
+                found['AccuracyProducer'].append(rva)
+            elif i.mnemonic == 'imul' and i.op_str.endswith(', 0x96') and nxt and nxt.mnemonic == 'mov' \
+                    and code.memory(nxt) and code.memory(nxt).mem.disp == 0x6a0:
+                found['DodgingProducer'].append(rva)
+    return {k: sorted(set(v)) for k, v in found.items()}

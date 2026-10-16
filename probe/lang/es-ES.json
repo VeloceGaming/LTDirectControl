@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} necesita un aliado bajo control de masas",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} no lanzado: objetivo no válido o no se puede lanzar",
  "{key} unavailable: current ability data not ready": "{key} no disponible: datos de la habilidad aún no listos",
- "{key}: Lv {level}": "{key}: nv. {level}"
+ "{key}: Lv {level}": "{key}: nv. {level}",
+ "Athlete stat rules": "Reglas de estadísticas del atleta",
+ "Athlete stats": "Estadísticas del atleta",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Prueba: dibuja anillos junto al cursor para mostrar el área de impacto.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Experimental: cambia cómo influyen las estadísticas del jugador en la partida. Al activarlo, surte efecto tras volver al menú principal.",
+ "Reaction ceiling": "Techo de reacción",
+ "Reaction floor": "Suelo de reacción",
+ "Show hit areas": "Mostrar áreas de impacto",
+ "Testing: the fastest an enemy can react to your shots.": "Prueba: lo más rápido que un enemigo puede reaccionar a tus disparos.",
+ "Testing: the slowest an enemy can react to your shots.": "Prueba: lo más lento que un enemigo puede reaccionar a tus disparos.",
+ "Collision margin": "Margen de colisión",
+ "Testing: how much extra room your shots get to hit.": "Prueba: cuánto margen extra tienen tus disparos para acertar.",
+ "Show input delay": "Mostrar retraso de entrada",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Muestra el tiempo medido desde tu clic o tecla hasta el fotograma que lo reproduce, promediado en tus últimas órdenes."
 }

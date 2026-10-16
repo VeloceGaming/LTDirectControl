@@ -25,6 +25,35 @@ const FRAME_GAP: Duration = Duration::from_millis(250);
 const RATE_WINDOW: Duration = Duration::from_secs(10);
 /// Lead changes and slow-playback windows logged per match at every level.
 const REPORTS: u32 = 8;
+/// Owed playback time is paid back at most this many ticks per frame (the
+/// match then runs at most 25% fast for a few frames instead of playing two
+/// ticks in every frame).
+const PAYBACK: f32 = 0.25;
+/// The most owed playback time kept, in ticks; beyond it the match drops
+/// the time (it ran slow by up to the 5% the lead tolerates).
+const MAX_OWED: f32 = 2.;
+/// Frames whose played ticks are logged after a lead change.
+const TRACE_FRAMES: usize = 60;
+
+/// The game's viewer adds each frame's time to a clock and plays one queued
+/// tick per tick of it; when the queue runs empty the rest stays in the
+/// clock (read from the code), so time owed while the worker was one tick
+/// ahead used to come back as two ticks in every frame once the lead rose.
+/// Given the clock and the owed time (both in ticks) before a running frame:
+/// whole ticks the last frame could not play move to `owed`, owed time
+/// above [`MAX_OWED`] is dropped, and at most [`PAYBACK`] returns to the
+/// clock. Returns (clock, owed, dropped).
+fn smooth(clock: f32, owed: f32) -> (f32, f32, f32) {
+    if !clock.is_finite() || clock < 0. {
+        return (clock, owed, 0.);
+    }
+    let held = clock.floor();
+    let owed = owed + held;
+    let dropped = (owed - MAX_OWED).max(0.);
+    let owed = owed - dropped;
+    let back = owed.min(PAYBACK);
+    (clock - held + back, owed - back, dropped)
+}
 /// How many ticks the worker may run ahead when a client frame lasts
 /// `ticks` ticks on average. One frame can only play what is queued, so
 /// below 60 fps a lead of 1 slows the match in proportion. The lead rises
@@ -97,6 +126,14 @@ struct State {
     /// average client frame time in ticks.
     lead: usize,
     frame_ticks: f32,
+    /// Playback time the viewer could not play yet, held back to be paid
+    /// back gently, and time dropped this match (both in ticks); see
+    /// [`smooth`].
+    owed: f32,
+    dropped: f32,
+    /// After a lead change: ticks played per frame, the most owed and the
+    /// time dropped meanwhile, logged once [`TRACE_FRAMES`] frames are in.
+    lead_trace: Option<LeadTrace>,
     /// The previous running frame; the playback-rate window (start,
     /// frames consumed then); log budgets.
     frame_at: Option<Instant>,
@@ -121,6 +158,12 @@ struct State {
     stalled: Option<Instant>,
     /// When the stalled worker's stack was last logged, and how many times.
     stack_logged: Option<(Instant, u8)>,
+}
+struct LeadTrace {
+    change: (usize, usize),
+    played: Vec<usize>,
+    owed_peak: f32,
+    dropped_from: f32,
 }
 pub struct NativeTiming {
     state: Mutex<State>,
@@ -181,6 +224,9 @@ impl NativeTiming {
                 consumed: 0,
                 lead: 1,
                 frame_ticks: 1.,
+                owed: 0.,
+                dropped: 0.,
+                lead_trace: None,
                 frame_at: None,
                 rate: None,
                 lead_changes: 0,
@@ -219,6 +265,7 @@ impl NativeTiming {
         s.phase = Phase::Released;
         s.pending_action = None;
         s.reason = reason.into();
+        crate::athlete_rules::clear();
         log.write(&format!(
             "NATIVE RELEASE reason={reason} produced={} consumed={} played_tick={} elapsed_ms={}",
             s.produced,
@@ -408,6 +455,9 @@ impl NativeTiming {
         s.consumed = 0;
         s.lead = 1;
         s.frame_ticks = 1.;
+        s.owed = 0.;
+        s.dropped = 0.;
+        s.lead_trace = None;
         s.frame_at = None;
         s.rate = None;
         s.lead_changes = 0;
@@ -484,6 +534,7 @@ impl NativeTiming {
         match (action, s.phase) {
             (SessionAction::ReturnAi, Phase::Ready | Phase::Running | Phase::Paused) => {
                 s.phase = Phase::Ai;
+                crate::athlete_rules::clear();
                 // Watching forfeits startup shopping even if the native build
                 // plan only becomes available after a later takeover/base visit.
                 s.startup_shop_pending = false;
@@ -754,6 +805,7 @@ impl NativeTiming {
         // say nothing about the frame rate.
         let Some(frame) = frame.filter(|d| !d.is_zero() && *d < FRAME_GAP) else {
             s.rate = Some((now, s.consumed));
+            s.owed = 0.;
             return s.lead;
         };
         // One long frame (a hitch) moves the average by less than the 5%
@@ -773,6 +825,14 @@ impl NativeTiming {
                     if s.lead_changes == REPORTS { "; later changes are not logged" } else { "" }
                 ));
             }
+            if s.lead_changes <= REPORTS {
+                s.lead_trace = Some(LeadTrace {
+                    change: (s.lead, lead),
+                    played: Vec::with_capacity(TRACE_FRAMES),
+                    owed_peak: s.owed,
+                    dropped_from: s.dropped,
+                });
+            }
             s.lead = lead;
             self.wake.notify_all();
         }
@@ -783,9 +843,10 @@ impl NativeTiming {
         if window >= RATE_WINDOW {
             let rate = s.consumed.saturating_sub(from) as f32 / window.as_secs_f32();
             let line = format!(
-                "playback {rate:.1} ticks/s of {tps} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms changes={}",
+                "playback {rate:.1} ticks/s of {tps} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms changes={} dropped={:.1} ticks this match",
                 window.as_secs_f32(),
-                s.lead_changes
+                s.lead_changes,
+                s.dropped
             );
             if rate < tps as f32 * 0.95 && s.slow_reports < REPORTS {
                 s.slow_reports += 1;
@@ -796,6 +857,20 @@ impl NativeTiming {
             s.rate = Some((now, s.consumed));
         }
         lead
+    }
+    /// Viewer, before a running frame plays: the game's frame clock (in
+    /// ticks) with whole owed ticks held back and paid back gently.
+    pub fn smooth_clock(&self, clock: f32) -> f32 {
+        let Ok(mut s) = self.state.lock() else {
+            return clock;
+        };
+        let (clock, owed, dropped) = smooth(clock, s.owed);
+        s.owed = owed;
+        s.dropped += dropped;
+        if let Some(trace) = s.lead_trace.as_mut() {
+            trace.owed_peak = trace.owed_peak.max(owed);
+        }
+        clock
     }
     pub fn after_view(
         &self,
@@ -815,6 +890,9 @@ impl NativeTiming {
         s.played_tick = played;
         let used = before.saturating_sub(after);
         s.consumed += used;
+        if mode == ViewMode::Running {
+            Self::trace_lead(&mut s, used, log);
+        }
         let consumed = s.consumed;
         while s
             .traces
@@ -823,6 +901,7 @@ impl NativeTiming {
         {
             let trace = s.traces.pop_front().unwrap();
             crate::perf::playback_latency(trace.stamp.at);
+            crate::input_delay::record(trace.stamp.at.elapsed());
             log.write(&format!("INPUT TRACE played id={} kind={} frame={} played_tick={played} capture_to_playback_us={}; frame playback, not measured movement/projectile onset", trace.stamp.id, trace.stamp.label, trace.frame, trace.stamp.at.elapsed().as_micros()));
         }
         if mode == ViewMode::Running
@@ -861,6 +940,30 @@ impl NativeTiming {
         if used > MAX_LEAD.max(2) || s.consumed > s.produced + 1 {
             Self::release(&mut s, "Unexpected publication/playback frame counts", log);
         }
+    }
+    /// After a lead change: one running frame played `used` ticks.
+    fn trace_lead(s: &mut State, used: usize, log: &Logger) {
+        let dropped = s.dropped;
+        let Some(trace) = s.lead_trace.as_mut() else {
+            return;
+        };
+        trace.played.push(used);
+        if trace.played.len() < TRACE_FRAMES {
+            return;
+        }
+        let played: String = trace
+            .played
+            .iter()
+            .map(|n| (*n).min(9).to_string())
+            .collect();
+        log.write(&format!(
+            "TIMING after lead {} -> {}: ticks per frame {played}; owed up to {:.2} ticks; dropped {:.2} ticks",
+            trace.change.0,
+            trace.change.1,
+            trace.owed_peak,
+            dropped - trace.dropped_from
+        ));
+        s.lead_trace = None;
     }
     /// Viewer, each frame: a running match whose worker has published
     /// nothing for crate::worker_watch::STALL is reported once (not while
@@ -930,7 +1033,9 @@ impl NativeTiming {
         if s.key != Some(key)
             || s.worker != Some(crate::platform_input::thread_id())
             || s.phase != Phase::Running
-            || (s.trace_count >= 300 && !crate::perf::capture_enabled())
+            || (s.trace_count >= 300
+                && !crate::perf::capture_enabled()
+                && !crate::input_delay::shown())
         {
             return;
         }
@@ -1981,6 +2086,46 @@ mod tests {
         assert!(!t.hook_entry(false, &log).0);
     }
 
+    #[test]
+    fn owed_playback_time_comes_back_gently_and_is_bounded() {
+        // A normal remainder is left alone.
+        assert_eq!(smooth(0.4, 0.), (0.4, 0., 0.));
+        // 1.5 ticks left over: one whole tick is held, a quarter returns.
+        let (clock, owed, dropped) = smooth(1.5, 0.);
+        assert!((clock - 0.75).abs() < 1e-6 && (owed - 0.75).abs() < 1e-6 && dropped == 0.);
+        // Owed time beyond the bound is dropped.
+        let (clock, owed, dropped) = smooth(3.2, 1.0);
+        assert!((dropped - 2.0).abs() < 1e-6);
+        assert!((owed - (MAX_OWED - PAYBACK)).abs() < 1e-6 && (clock - 0.45).abs() < 1e-5);
+        // Not a clock: left as it is.
+        assert!(smooth(f32::NAN, 1.).0.is_nan());
+        assert_eq!(smooth(-1., 1.), (-1., 1., 0.));
+    }
+    #[test]
+    fn a_frame_rate_just_under_sixty_never_plays_two_ticks_in_a_row_once_caught_up() {
+        // The viewer: the clock gains each frame's time, one tick is played
+        // per tick of clock while the queue has one. 58 fps (1.034 ticks a
+        // frame); the worker keeps `lead` ticks queued.
+        let simulate = |lead: usize, frames: usize, mut clock: f32, mut owed: f32| {
+            let mut played = Vec::new();
+            for _ in 0..frames {
+                let smoothed = smooth(clock, owed);
+                clock = smoothed.0 + 60. / 58.;
+                owed = smoothed.1;
+                let n = (clock.floor() as usize).min(lead);
+                clock -= n as f32;
+                played.push(n);
+            }
+            (played, clock, owed)
+        };
+        // Ten seconds at a lead of 1: the owed time stays bounded.
+        let (_, clock, owed) = simulate(1, 580, 0., 0.);
+        assert!(owed <= MAX_OWED && clock < 2.);
+        // The lead rises to 2: no two frames in a row play two ticks.
+        let (played, _, owed) = simulate(2, 60, clock, owed);
+        assert!(played.windows(2).all(|w| w != [2, 2]), "{played:?}");
+        assert!(owed < 0.01);
+    }
     #[test]
     fn frame_lead_follows_the_frame_rate_without_flipping_at_a_boundary() {
         // 60 fps and faster: one tick ahead, as before.

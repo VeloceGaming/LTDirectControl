@@ -254,6 +254,18 @@ impl Client {
         self.ensure_available_role(keys);
         self.choose_prepared_athlete(keys);
         test_cheats::update(keys.home_end && battlefield, &self.logger);
+        let pull = (keys.home_insert && battlefield)
+            .then(|| {
+                let frame = self.camera.frame().filter(|f| f.valid())?;
+                frame.unproject(keys.cursor?)
+            })
+            .flatten();
+        practice::configure(
+            self.settings.hidden_switch("practice_mode"),
+            self.settings.text("practice_lineup"),
+            pull,
+            &self.logger,
+        );
         self.timing.heartbeat(
             battlefield,
             self.movement.selected().is_some(),
@@ -383,6 +395,39 @@ impl Client {
                 self.timing.ui_phase() == Some(native_timing::Phase::Paused),
             );
         }
+        if self.settings.number("collision_debug") == 1.
+            && matches!(
+                self.timing.ui_phase(),
+                Some(native_timing::Phase::Running | native_timing::Phase::Paused)
+            )
+        {
+            self.draw_collision_bodies(ctx);
+        }
+        // The measured input delay, while its setting is on and you play:
+        // a number in the top right corner (UI space is 1920 x 1080), just
+        // under the game's 50 px header bar, in the mod's numeric font, with
+        // a dark shadow instead of a box so it reads on any background.
+        if crate::input_delay::shown()
+            && matches!(
+                self.timing.ui_phase(),
+                Some(native_timing::Phase::Running | native_timing::Phase::Paused)
+            )
+        {
+            let text = crate::input_delay::text();
+            for (offset, color, z) in [(2., 0x000000c0, 1000), (0., 0xffffffff, 1001)] {
+                ctx.draw_text(
+                    "UI",
+                    &text,
+                    "asset/lt_direct_control/font/numeric",
+                    (1702. + offset, 56. + offset, 200., 36.),
+                    z,
+                    28.,
+                    color,
+                    mod_api_stable::TextAlignXV1::Right,
+                    mod_api_stable::TextAlignYV1::Center,
+                );
+            }
+        }
         // The no-cooldown test option changes the real match: always shown.
         if test_cheats::active() {
             ctx.draw_rect("UI", 18., 150., 260., 32., 1000, 6., 0x8a1c1cff);
@@ -397,6 +442,47 @@ impl Client {
                 mod_api_stable::TextAlignXV1::Left,
                 mod_api_stable::TextAlignYV1::Center,
             );
+        }
+        // The practice tool changes the real match too: its tag, and the
+        // readout of your last shots (English only, like the test tag).
+        if practice::active()
+            && matches!(
+                self.timing.ui_phase(),
+                Some(native_timing::Phase::Running | native_timing::Phase::Paused)
+            )
+        {
+            let mut lines = vec!["PRACTICE: enemies hold, Home+Insert lines them up".to_owned()];
+            if athlete_rules::in_effect() {
+                lines.extend(practice::readout());
+            } else {
+                lines.push(
+                    "Shot readout: needs Athlete stat rules On (installed at the title screen)"
+                        .to_owned(),
+                );
+            }
+            ctx.draw_rect(
+                "UI",
+                18.,
+                190.,
+                620.,
+                8. + 24. * lines.len() as f32,
+                1000,
+                6.,
+                0x1c3a8acc,
+            );
+            for (i, line) in lines.iter().enumerate() {
+                ctx.draw_text(
+                    "UI",
+                    line,
+                    "asset/base/font/set/regular",
+                    (28., 194. + 24. * i as f32, 600., 24.),
+                    1001,
+                    16.,
+                    0xffffffff,
+                    mod_api_stable::TextAlignXV1::Left,
+                    mod_api_stable::TextAlignYV1::Center,
+                );
+            }
         }
         // Normal status is conveyed by icons. Only exceptional release reasons
         // require text; routine Start/Pause/AI transitions stay silent.
@@ -437,7 +523,14 @@ impl StableExtension for Client {
         );
         let _t = perf::time(perf::Section::Post);
         logging::set(self.settings.number("log_level"));
+        athlete_rules::configure(
+            self.settings.number("athlete_stat_rules") == 1.,
+            self.settings.number("stat_reaction_floor") as u32,
+            self.settings.number("stat_reaction_ceiling") as u32,
+            self.settings.number("stat_collision_margin") as u32,
+        );
         perf::set_capture(self.settings.number("perf_capture") == 1.);
+        crate::input_delay::set_shown(self.settings.number("show_input_delay") == 1.);
         self.post_update_inner(ctx, dt_micros);
     }
     fn post_render(&self, ctx: &mut StableClient<'_>) {
@@ -488,6 +581,23 @@ impl Client {
                     );
                 }
                 _ => {}
+            }
+        }
+        // The athlete stat rules are patched in only while their setting is
+        // On, and only at the title screen (no match runs there).
+        if athlete_rules::enabled() && !athlete_rules::in_effect() {
+            if ctx.scene_kind() == Some(mod_api_stable::SceneKindV1::Title) {
+                if let Some(result) = native_adapter::install_stat_rules() {
+                    self.logger.write(&match result {
+                        Ok(sites) => format!("STATRULE installed sites={sites} at the title screen; rules apply only to the controlled athlete while Athlete stat rules is on"),
+                        Err(e) => format!("STATRULE unavailable: {e}; athlete stat rules off, other hooks unaffected"),
+                    });
+                }
+            } else if ctx.scene_kind() == Some(mod_api_stable::SceneKindV1::InGame)
+                && native_adapter::stat_rules_pending()
+                && !STAT_WAIT_LOGGED.swap(true, Ordering::Relaxed)
+            {
+                self.logger.write("STATRULE waiting: Athlete stat rules is On but not installed this session; it is installed at the title screen");
             }
         }
     }
@@ -861,6 +971,7 @@ impl Client {
         hovered_skill: Option<usize>,
     ) {
         self.abilities.set_hud_hover(hovered_skill);
+        store_cursor(keys.cursor);
         let hover_timer = perf::time(perf::Section::Hover);
         let (hover, attack) = self.movement.refresh_hover(
             &self.camera,
@@ -1012,6 +1123,55 @@ impl Client {
     /// Show selection markers: each unit's selection area. Green: the body
     /// measured from its art and placed from the game's draw data; grey:
     /// the fallback envelope.
+    /// Testing overlay for the stat rules: around each enemy near the cursor,
+    /// the body's collision radius (white) and the radius plus the fixed hit
+    /// margin (yellow), as circles on the ground at the unit's position. The
+    /// radius is the one the game's hit tests use (the SDK's `radius()`), not
+    /// the selection code's measured art.
+    fn draw_collision_bodies(&self, ctx: &mut StableClient<'_>) {
+        const NEAR_PX: f32 = 260.;
+        const SEGMENTS: usize = 48;
+        let Some(frame) = self.camera.frame().filter(|f| f.valid()) else {
+            return;
+        };
+        let Some(cursor) = cursor_point() else {
+            return;
+        };
+        let margin = athlete_rules::margin_units() as f32;
+        for unit in self.movement.hover_units() {
+            if unit.friendly {
+                continue;
+            }
+            let (x, y) = (
+                unit.position.0 as f32 / 1000.,
+                unit.position.1 as f32 / 1000.,
+            );
+            let centre = frame.project_unclipped(x, y);
+            if (centre.0 - cursor.0).hypot(centre.1 - cursor.1) > NEAR_PX {
+                continue;
+            }
+            let body = unit.radius as f32 / 1000.;
+            for (radius, width, color) in
+                [(body, 1.5, 0xffffffdd), (body + margin, 1.5, 0xfdee00ee)]
+            {
+                let point = |i: usize| {
+                    let theta = i as f32 * std::f32::consts::TAU / SEGMENTS as f32;
+                    frame.project_unclipped(x + theta.cos() * radius, y + theta.sin() * radius)
+                };
+                let mut last = point(0);
+                for i in 1..=SEGMENTS {
+                    let next = point(i);
+                    if [last, next]
+                        .into_iter()
+                        .all(|p| frame.viewport.contains(p) && !frame.minimap.contains(p))
+                    {
+                        ctx.draw_line("UI", last.0, last.1, next.0, next.1, width, 989, color);
+                    }
+                    last = next;
+                }
+            }
+        }
+    }
     fn draw_selection_areas(&self, ctx: &mut StableClient<'_>) {
         let Some(frame) = self.camera.frame() else {
             return;
@@ -1033,4 +1193,26 @@ impl Client {
         blockers.push(frame.minimap);
         drawing.render(ctx, frame, &blockers);
     }
+}
+
+/// The "waiting for the title screen" line of the stat rules was logged.
+static STAT_WAIT_LOGGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// The last cursor position the pointer step saw (screen pixels), kept as
+/// two f32 bit patterns so the render step can read it without a lock.
+static CURSOR_BITS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(u64::MAX);
+fn store_cursor(cursor: Option<(f32, f32)>) {
+    let bits = cursor.map_or(u64::MAX, |(x, y)| {
+        u64::from(x.to_bits()) << 32 | u64::from(y.to_bits())
+    });
+    CURSOR_BITS.store(bits, Ordering::Relaxed);
+}
+fn cursor_point() -> Option<(f32, f32)> {
+    let bits = CURSOR_BITS.load(Ordering::Relaxed);
+    (bits != u64::MAX).then(|| {
+        (
+            f32::from_bits((bits >> 32) as u32),
+            f32::from_bits(bits as u32),
+        )
+    })
 }

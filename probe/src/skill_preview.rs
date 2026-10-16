@@ -86,6 +86,9 @@ pub struct Footprint {
     /// The area affects allies (a heal, a shield), not enemies: drawn in
     /// the ally colour. False when it affects enemies, both, or is unknown.
     pub allies: bool,
+    /// A projectile: the stat rules widen its drawn corridor to the width it
+    /// registers (the radius plus the fixed hit margin on each side).
+    pub projectile: bool,
 }
 /// The game's `CastingTarget` codes 0-4 are the ally targets (Ally,
 /// AllyChampion, AllyChampionInCc, AllyNotSelf, AllyOnlySelf); 5-9 enemies,
@@ -103,11 +106,19 @@ impl Geometry {
     pub fn add(&mut self, shape: Shape, placement: Placement) {
         self.add_for(shape, placement, false);
     }
+    /// A shape that is the path of a projectile (see `Footprint::projectile`).
+    pub fn add_projectile(&mut self, shape: Shape, placement: Placement) {
+        self.push(shape, placement, false, true);
+    }
     pub fn add_for(&mut self, shape: Shape, placement: Placement, allies: bool) {
+        self.push(shape, placement, allies, false);
+    }
+    fn push(&mut self, shape: Shape, placement: Placement, allies: bool, projectile: bool) {
         let footprint = Footprint {
             shape,
             placement,
             allies,
+            projectile,
         };
         if !self.footprints.contains(&footprint) && self.footprints.len() < 8 {
             self.footprints.push(footprint);
@@ -337,7 +348,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
             if let (Some(Shape::Circle { radius }), Some(length)) =
                 (declared_shape(v), number(v, "range"))
             {
-                out.add(Shape::Corridor { radius, length }, Placement::Caster);
+                out.add_projectile(Shape::Corridor { radius, length }, Placement::Caster);
             } else {
                 out.issue("unsupported linear projectile shape");
             }
@@ -414,7 +425,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
         "Native"
             if v.get("projectile_count").is_none() && number(v, "projectile_radius").is_some() =>
         {
-            out.add(
+            out.add_projectile(
                 Shape::Corridor {
                     radius: number(v, "projectile_radius").unwrap_or(0.),
                     length: number(v, "range").unwrap_or(0.),
@@ -1212,6 +1223,13 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
         let aiming = aim.unwrap_or(origin);
         let base = placed(origin, aiming, f.placement, range, p.casting);
         let at = project(base);
+        // A projectile registers a hit at its radius plus the stat rules'
+        // fixed margin on each side; the preview shows that width.
+        let margin = if f.projectile {
+            crate::athlete_rules::preview_margin()
+        } else {
+            0.
+        };
         match f.shape {
             Shape::Circle { radius } => {
                 let around_caster = (base.0 - origin.0).hypot(base.1 - origin.1) < 0.5;
@@ -1243,7 +1261,7 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 // projectile is still drawn as a thin line.
                 let length = if length > 0. { length } else { range };
                 let end = project(endpoint(base, aiming, length, true));
-                let half = radius.max(1.5) * sx;
+                let half = (radius.max(1.5) + margin) * sx;
                 corridor_body(&mut out, s, at, end, half, ink, End::Plain);
             }
             Shape::Shot {
@@ -1253,7 +1271,15 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
             } => {
                 let end = project(endpoint(base, aiming, length, true));
                 let cap = if pierce { End::Open } else { End::Capped };
-                corridor_body(&mut out, s, at, end, radius.max(1.5) * sx, ink, cap);
+                corridor_body(
+                    &mut out,
+                    s,
+                    at,
+                    end,
+                    (radius.max(1.5) + margin) * sx,
+                    ink,
+                    cap,
+                );
             }
             Shape::Segment { radius, from, to } => {
                 // Absolute endpoints: no direction of travel is implied.
@@ -1282,7 +1308,15 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                     for offset in fan_offsets(count) {
                         let d = turned(dir, offset);
                         let end = project((base.0 + d.0 * length, base.1 + d.1 * length));
-                        corridor_body(&mut out, s, at, end, radius * sx, ink, End::Plain);
+                        corridor_body(
+                            &mut out,
+                            s,
+                            at,
+                            end,
+                            (radius + margin) * sx,
+                            ink,
+                            End::Plain,
+                        );
                     }
                 }
             }
@@ -1915,6 +1949,7 @@ mod tests {
                 },
                 placement: Placement::Caster,
                 allies: false,
+                projectile: true,
             }
         );
         assert_eq!(
@@ -2142,6 +2177,7 @@ mod tests {
                             },
                             placement: Placement::Caster,
                             allies: false,
+                            projectile: false,
                         }],
                         ..Geometry::default()
                     },

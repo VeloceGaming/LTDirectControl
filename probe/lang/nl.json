@@ -356,5 +356,18 @@
  "{key} needs an ally under crowd control": "{key} heeft een bondgenoot onder crowd control nodig",
  "{key} not cast: invalid aim/target or native cast unavailable": "{key} niet gebruikt: ongeldig doel of casten niet mogelijk",
  "{key} unavailable: current ability data not ready": "{key} niet beschikbaar: vaardigheidsgegevens nog niet klaar",
- "{key}: Lv {level}": "{key}: niv. {level}"
+ "{key}: Lv {level}": "{key}: niv. {level}",
+ "Athlete stat rules": "Statistiekregels van de atleet",
+ "Athlete stats": "Atleetstatistieken",
+ "Testing: draws rings around enemies near the cursor to show the hit area.": "Test: tekent ringen bij vijanden nabij de cursor om het treffergebied te tonen.",
+ "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.": "Experimenteel: verandert hoe de statistieken van de speler het spel beïnvloeden. Aanzetten werkt pas nadat je naar het hoofdmenu bent teruggekeerd.",
+ "Reaction ceiling": "Reactieplafond",
+ "Reaction floor": "Reactievloer",
+ "Show hit areas": "Treffergebieden tonen",
+ "Testing: the fastest an enemy can react to your shots.": "Test: hoe snel een vijand op je schoten kan reageren.",
+ "Testing: the slowest an enemy can react to your shots.": "Test: hoe langzaam een vijand op je schoten kan reageren.",
+ "Collision margin": "Botsingsmarge",
+ "Testing: how much extra room your shots get to hit.": "Test: hoeveel extra ruimte je schoten hebben om te raken.",
+ "Show input delay": "Invoervertraging tonen",
+ "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.": "Toont de gemeten tijd van je klik of toets tot het beeld dat hem afspeelt, gemiddeld over je laatste opdrachten."
 }

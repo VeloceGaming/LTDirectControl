@@ -11,7 +11,8 @@
   "shop",
   "outline",
   "readers",
-  "tooltips"
+  "tooltips",
+  "stats"
  ],
  "executable_sha256": "a1d05045405a12e2bed182daeafcad8c8a40cf29ab68ba6ea5bfd30257439582",
  "timestamp": "0x6acf3112",
@@ -233,6 +234,138 @@
   "ITEM_AI_CONTEXT_SETTINGS": {
    "rva": "0xe2165d",
    "bytes": "488b4208"
+  },
+  "STATS_SITE_0": {
+   "rva": "0xf27386",
+   "bytes": "49ba157c4a7fb979379e"
+  },
+  "STATS_SITE_1": {
+   "rva": "0xf27402",
+   "bytes": "c1e9114801c1"
+  },
+  "STATS_SITE_2": {
+   "rva": "0xf169e2",
+   "bytes": "48ba157c4a7fb979379e"
+  },
+  "STATS_SITE_3": {
+   "rva": "0xf16a6b",
+   "bytes": "c1e9114801c1"
+  },
+  "STATS_SITE_4": {
+   "rva": "0xf16d4f",
+   "bytes": "48ba157c4a7fb979379e"
+  },
+  "STATS_SITE_5": {
+   "rva": "0xf16ddc",
+   "bytes": "c1ea114801c2"
+  },
+  "STATS_SITE_6": {
+   "rva": "0xe51451",
+   "bytes": "49ba157c4a7fb979379e"
+  },
+  "STATS_SITE_7": {
+   "rva": "0xe514cd",
+   "bytes": "c1e9114801c1"
+  },
+  "STATS_SITE_8": {
+   "rva": "0x13da155",
+   "bytes": "486bc146488985a0000000"
+  },
+  "STATS_SITE_9": {
+   "rva": "0x1a59f78",
+   "bytes": "486bc146488985d8020000"
+  },
+  "STATS_SITE_10": {
+   "rva": "0x1a5a0b4",
+   "bytes": "486bc146488985d8020000"
+  },
+  "STATS_SITE_11": {
+   "rva": "0x1741a7f",
+   "bytes": "4969ce96000000"
+  },
+  "STATS_SITE_12": {
+   "rva": "0x1045134",
+   "bytes": "492b9424a0060000"
+  },
+  "STATS_SITE_13": {
+   "rva": "0x1045384",
+   "bytes": "492b9424a0060000"
+  },
+  "STATS_SITE_14": {
+   "rva": "0x13d2441",
+   "bytes": "482b95a0060000"
+  },
+  "STATS_SITE_15": {
+   "rva": "0x13d2685",
+   "bytes": "482b96a0060000"
+  },
+  "STATS_SITE_16": {
+   "rva": "0x13d2b82",
+   "bytes": "492b95a0060000"
+  },
+  "STATS_SITE_17": {
+   "rva": "0x13d2fa1",
+   "bytes": "482b95a0060000"
+  },
+  "STATS_SITE_18": {
+   "rva": "0x1a5a882",
+   "bytes": "492b87a0060000"
+  },
+  "STATS_SITE_19": {
+   "rva": "0x1a5ae36",
+   "bytes": "492b8424a0060000"
+  },
+  "STATS_SITE_20": {
+   "rva": "0x1a5afe6",
+   "bytes": "492b97a0060000"
+  },
+  "STATS_SITE_21": {
+   "rva": "0x1a5b680",
+   "bytes": "492b9424a0060000"
+  },
+  "STATS_SITE_22": {
+   "rva": "0x10457b3",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_23": {
+   "rva": "0x10458fb",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_24": {
+   "rva": "0x1045d13",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_25": {
+   "rva": "0x1045e6b",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_26": {
+   "rva": "0x1046365",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_27": {
+   "rva": "0x1046592",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_28": {
+   "rva": "0x1049bc8",
+   "bytes": "4981fe89130000"
+  },
+  "STATS_SITE_29": {
+   "rva": "0x1049d24",
+   "bytes": "4981fe89130000"
+  },
+  "STATS_SITE_30": {
+   "rva": "0x13db817",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_31": {
+   "rva": "0x13dbbac",
+   "bytes": "4881f989130000"
+  },
+  "STATS_SITE_32": {
+   "rva": "0x13f8f40",
+   "bytes": "483d89130000"
   }
  },
  "layout_anchors": {

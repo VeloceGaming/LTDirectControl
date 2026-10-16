@@ -1,6 +1,9 @@
 # Athlete stats during manual control
 
 Research date: 2026-10-12. Status: research and 1.2.1 implementation; gameplay verification pending.
+2026-10-15: the 1.2.1 stat half was withdrawn (local branch `backup/1.2.1-stat-rules`);
+the sites, the gate's origin and the AI aim rule are re-derived for game 0.6.4 in
+[investigation-stat-rules-0.6.4.md](investigation-stat-rules-0.6.4.md).
 
 Active build: user-installed 0.7.0 beta 1. The final continuation below supersedes
 the earlier unresolved scheduling findings. Historical 0.6.3 addresses remain

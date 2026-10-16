@@ -45,6 +45,8 @@ pub struct Keys {
     pub emote_capture: bool,
     /// Home and End held together (test_cheats; not rebindable).
     pub home_end: bool,
+    /// Home and Insert held together (practice tool; not rebindable).
+    pub home_insert: bool,
     /// Current primary/secondary champion-only binding states.
     pub champion_toggle: [bool; 2],
     /// Session-scoped mode resolved by the client before command acquisition.
@@ -188,8 +190,7 @@ pub fn poll() -> Keys {
                 needed[c.code as usize] = true;
             }
         }
-        // Mouse, modifiers, Esc, and End+Home for the test toggle.
-        for i in [1, 2, 4, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24] {
+        for i in ALWAYS_POLLED {
             needed[i] = true;
         }
         for (i, query) in needed.into_iter().enumerate() {
@@ -201,6 +202,11 @@ pub fn poll() -> Keys {
 
     mapped(raw, focused, cursor)
 }
+
+/// Keys read even when no binding uses them: mouse buttons, modifiers, Esc,
+/// and the keys of the fixed test chords (Home+End, Home+Insert). A chord
+/// key missing here is never seen pressed (1.2.8 shipped without Insert).
+const ALWAYS_POLLED: [usize; 10] = [1, 2, 4, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24, 0x2d];
 
 pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
     let v = crate::settings::current_shared();
@@ -215,6 +221,7 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         focused,
         raw,
         home_end: raw.0[0x24] && raw.0[0x23],
+        home_insert: raw.0[0x24] && raw.0[0x2d],
         cursor,
         mapped: true,
         dx: i8::from(pressed("pan_right")) - i8::from(pressed("pan_left")),
@@ -314,6 +321,17 @@ mod tests {
         assert!(!mapped(raw, true, None).home_end);
         raw.0[0x23] = true;
         assert!(mapped(raw, true, None).home_end);
+    }
+    #[test]
+    fn every_fixed_chord_key_is_polled() {
+        // Home, End (no cooldowns) and Insert (practice pull).
+        for key in [0x24, 0x23, 0x2d] {
+            assert!(ALWAYS_POLLED.contains(&key), "{key:#x}");
+        }
+        let mut raw = Raw::default();
+        raw.0[0x24] = true;
+        raw.0[0x2d] = true;
+        assert!(mapped(raw, true, None).home_insert);
     }
     #[test]
     fn hold_mode_releases_without_a_second_press_and_drops_on_focus_loss() {

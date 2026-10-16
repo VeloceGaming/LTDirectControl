@@ -581,6 +581,11 @@ pub(crate) unsafe fn view_hook_body(
         // frame rate so that a slow client still plays every tick.
         ViewMode::Running => {
             let lead = shared.timing.frame_time(tps, &shared.logger);
+            // Time the last frames could not play (the queue ran empty)
+            // comes back a little each frame, not two ticks at once.
+            let clock = (view + VIEW_FRAME_CLOCK) as *mut f32;
+            let ticks = std::ptr::read_unaligned(clock) * tps as f32;
+            std::ptr::write_unaligned(clock, shared.timing.smooth_clock(ticks) / tps as f32);
             dt.min(lead.max(2) as f32 / tps as f32)
         }
         ViewMode::Native => dt,

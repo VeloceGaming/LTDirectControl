@@ -378,10 +378,10 @@ fn row_template(i: usize) -> String {
         &field,
     ));
     // Slider: native input node with drawn track, fill and capsule thumb.
-    c.push_str(&format!("#slider:slider {{ x: {CONTROL_X}px; y: 13px; width: 294px; height: 50px; z: 2006; background: Color {{ prop: {{ color: #00000000; }} }} foreground: Color {{ prop: {{ color: #00000000; }} }} view_min_ratio: 0.0; ratio: 0.0; #track:color {{ y: 22px; width: 100%; height: 6px; color: #~6d6c6aff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2007; }} #fill:color {{ y: 22px; width: 50%; height: 6px; color: #eeececff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2008; }} #thumb:color {{ x: 0px; y: 16px; width: 50px; height: 18px; pivot_x: 0.5; rounding: Uniform {{ rounding: 9; }} color: #eeececff; ignore_event: true; z: 2009; }} }}\n"));
+    c.push_str(&format!("#slider:slider {{ x: {CONTROL_X}px; y: 13px; width: 270px; height: 50px; z: 2006; background: Color {{ prop: {{ color: #00000000; }} }} foreground: Color {{ prop: {{ color: #00000000; }} }} view_min_ratio: 0.0; ratio: 0.0; #track:color {{ y: 22px; width: 100%; height: 6px; color: #~6d6c6aff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2007; }} #fill:color {{ y: 22px; width: 50%; height: 6px; color: #eeececff; rounding: Uniform {{ rounding: 3; }} ignore_event: true; z: 2008; }} #thumb:color {{ x: 0px; y: 16px; width: 50px; height: 18px; pivot_x: 0.5; rounding: Uniform {{ rounding: 9; }} color: #eeececff; ignore_event: true; z: 2009; }} }}\n"));
     c.push_str(&label(
         "number",
-        (CONTROL_X + 316, 13, 70, 50),
+        (CONTROL_X + 276, 13, 110, 50),
         21,
         "",
         true,
@@ -757,7 +757,7 @@ pub struct SettingsUi {
 }
 /// Slider geometry in design pixels: the thumb's centre travels between
 /// half a thumb from each end of the track.
-const SLIDER_W: f64 = 294.;
+const SLIDER_W: f64 = 270.;
 const THUMB_HALF: f64 = 25.;
 fn thumb_x(ratio: f64) -> f64 {
     THUMB_HALF + ratio.clamp(0., 1.) * (SLIDER_W - 2. * THUMB_HALF)
@@ -2221,16 +2221,16 @@ mod tests {
     #[test]
     fn a_slider_reaches_both_ends_and_keeps_the_thumb_under_the_cursor() {
         // Drawn at twice the design size from x = 100.
-        let at = |cursor| slide_ratio(cursor, 100., 588.);
+        let at = |cursor| slide_ratio(cursor, 100., 540.);
         assert_eq!(at(-500.), 0.);
         assert_eq!(at(100.), 0.);
         assert_eq!(at(150.), 0.);
-        assert_eq!(at(638.), 1.);
+        assert_eq!(at(600.), 1.);
         assert_eq!(at(5000.), 1.);
-        assert!((at(394.) - 0.5).abs() < 1e-6);
+        assert!((at(370.) - 0.5).abs() < 1e-6);
         // The thumb's centre is where the cursor is (design pixels).
-        assert!((thumb_x(at(394.)) - 147.).abs() < 1e-6);
-        assert_eq!((thumb_x(0.), thumb_x(1.)), (25., 269.));
+        assert!((thumb_x(at(370.)) - 135.).abs() < 1e-6);
+        assert_eq!((thumb_x(0.), thumb_x(1.)), (25., 245.));
         assert_eq!(slide_ratio(10., 0., 0.), 0.);
     }
     #[test]
@@ -2328,7 +2328,7 @@ mod tests {
         assert_eq!(combat[2].1, 124.);
         assert_eq!(combat[4], (Entry::Section("Ability casting"), 322.));
         assert_eq!(layout(6), (vec![(Entry::Acquisition, 0.)], 475.));
-        assert_eq!(max_scroll(4), 0.);
+        assert!(max_scroll(4) > 0.); // the stat rule rows make Advanced scroll
         assert!(!combat.iter().any(|(e, _)| *e == Entry::Section("Attacks")));
         assert!(layout(4)
             .0

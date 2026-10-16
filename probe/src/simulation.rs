@@ -58,7 +58,16 @@ impl StablePlayerAi for Simulation {
         1000
     }
 
-    fn think(&mut self, ctx: &mut StableAiContext<'_>, _base: Option<InputV1>) -> Option<InputV1> {
+    fn think(&mut self, ctx: &mut StableAiContext<'_>, base: Option<InputV1>) -> Option<InputV1> {
+        let input = self.decide(ctx, base);
+        // Practice tool: enemies of the match on screen hold still. Asked
+        // after the normal step, which also paces every player's tick.
+        crate::practice::hold(ctx, &self.movement).or(input)
+    }
+}
+
+impl Simulation {
+    fn decide(&mut self, ctx: &mut StableAiContext<'_>, _base: Option<InputV1>) -> Option<InputV1> {
         let _profile = perf::work(perf::Work::Think);
         // The same session lock, held via its own handle so the steps below
         // may borrow `self` mutably.
@@ -201,6 +210,32 @@ impl StablePlayerAi for Simulation {
             }
             if let Some(c) = current_champion.as_ref().filter(|c| c.is_alive()) {
                 self.abilities.observe_units(key, c.id(), &skill_units);
+            }
+            // The stat rules apply to this athlete while it is controlled and
+            // alive (stamped every tick; ended by release and hand-back).
+            if selected && self.timing.allows_input(key) {
+                if let Some(champion) = current_champion.as_ref() {
+                    crate::athlete_rules::stamp(crate::platform_input::thread_id(), champion.id());
+                    if crate::athlete_rules::in_effect() {
+                        if let Some((a, q, w, r)) =
+                            sim.get_player(player_id).and_then(|p| p.cooldowns())
+                        {
+                            crate::athlete_rules::observe_cooldowns([a, q, w, r], tick);
+                        }
+                        let cast = crate::athlete_rules::last_cast(tick);
+                        let context = || {
+                            format!(
+                                "champion={} cast={} tick={tick}",
+                                champion.name().unwrap_or_default(),
+                                cast.map_or("none".to_owned(), |(slot, ago)| format!(
+                                    "{slot} {ago} ticks before"
+                                ))
+                            )
+                        };
+                        let shots = native_adapter::stat_rules_report(&self.logger, &context);
+                        crate::practice::record(&shots, tick, cast);
+                    }
+                }
             }
             step(Step::AttackRange);
             let attack_ranges = current_champion

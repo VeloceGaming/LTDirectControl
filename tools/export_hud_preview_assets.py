@@ -1,9 +1,19 @@
-"""Read original installed artwork for a local-only code-native HUD preview."""
+"""Read original installed artwork for a local-only code-native HUD preview.
+
+    python tools/export_hud_preview_assets.py OUTPUT_FOLDER REFERENCE_PNG
+
+Writes OUTPUT_FOLDER/hud-preview-assets.json; REFERENCE_PNG is a screenshot
+embedded for comparison (never modified).
+"""
 from paths import GAME_DIR
 from pathlib import Path
+import argparse, io, json, struct, base64
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('output', type=Path)
+parser.add_argument('reference', type=Path)
+args = parser.parse_args()
 from PIL import Image
-import io, json, struct, base64
-out = Path(r'C:\Users\j9010\.codex\visualizations\2026\09\30\01a0f24c-b767-73b0-b835-26937b07649e')
+out = args.output
 game = GAME_DIR
 names=['lancer','exorcist','nightmare','circus_blade','archangel','boomerang_hunter','gunner','berserker','ogre','illusionist']
 entries={}
@@ -36,7 +46,7 @@ for name in ['circus_blade','exorcist','lancer','nightmare','boomerang_hunter']:
     assets['skills'][name]=sheet_images('asset/base/aseprite_resources/UI_aseprite/skill_icon',[name+'_'+str(i) for i in range(3)])
 assets['items']=sheet_images('asset/base/aseprite_resources/ingame/item_icons_18x18',['t1_0','t3_0','t4_0'])
 # Compression for embedding only; the reference file is never modified.
-reference=Image.open(r'C:\Users\j9010\AppData\Local\Temp\codex-clipboard-2a30b751-ea94-41d3-a189-adcf6c16ea48.png').convert('RGB')
+reference=Image.open(args.reference).convert('RGB')
 assets['reference']=uri(reference,'JPEG')
 (out/'hud-preview-assets.json').write_text(json.dumps(assets),encoding='utf-8')
 print({k:(list(v) if isinstance(v,dict) else len(v)) for k,v in assets.items()})

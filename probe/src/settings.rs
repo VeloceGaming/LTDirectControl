@@ -107,6 +107,42 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.,
     },
     OptionDef {
+        key: "athlete_stat_rules",
+        page: 4,
+        section: "Athlete stats",
+        label: "Athlete stat rules",
+        hint: "Experimental: reworks how the player's stats affect gameplay. Turning it on takes effect after you return to the main menu.",
+        control: Control::Toggle,
+        default: 0.,
+    },
+    OptionDef {
+        key: "stat_reaction_floor",
+        page: 4,
+        section: "Athlete stats",
+        label: "Reaction floor",
+        hint: "Testing: the fastest an enemy can react to your shots.",
+        control: Control::Slider(1., 40., 1., " ticks"),
+        default: 6.,
+    },
+    OptionDef {
+        key: "stat_reaction_ceiling",
+        page: 4,
+        section: "Athlete stats",
+        label: "Reaction ceiling",
+        hint: "Testing: the slowest an enemy can react to your shots.",
+        control: Control::Slider(1., 60., 1., " ticks"),
+        default: 14.,
+    },
+    OptionDef {
+        key: "stat_collision_margin",
+        page: 4,
+        section: "Athlete stats",
+        label: "Collision margin",
+        hint: "Testing: how much extra room your shots get to hit.",
+        control: Control::Slider(0., 7., 1., " units"),
+        default: 2.,
+    },
+    OptionDef {
         key: "manual_shop",
         page: 4,
         section: "Shopping",
@@ -294,6 +330,15 @@ pub static OPTIONS: &[OptionDef] = &[
         control: Control::Slider(0.25, 6., 0.25, " s"), default: 1.5,
     },
     OptionDef {
+        key: "show_input_delay",
+        page: 5,
+        section: "Debug",
+        label: "Show input delay",
+        hint: "Shows the measured time from your click or key to the frame that plays it, averaged over your last commands.",
+        control: Control::Toggle,
+        default: 0.,
+    },
+    OptionDef {
         key: "perf_capture", page: 5, section: "Debug",
         label: "Capture performance measurements",
         hint: "Aggregates client, simulation, hook and input-to-playback timings every 10 seconds. Adds profiling overhead.",
@@ -316,6 +361,15 @@ pub static OPTIONS: &[OptionDef] = &[
         hint: "Verbose adds per-click and per-second traces for investigations.",
         control: Control::Choice(&["Quiet", "Normal", "Verbose"]),
         default: 1.,
+    },
+    OptionDef {
+        key: "collision_debug",
+        page: 5,
+        section: "Debug",
+        label: "Show hit areas",
+        hint: "Testing: draws rings around enemies near the cursor to show the hit area.",
+        control: Control::Toggle,
+        default: 0.,
     },
     OptionDef {
         key: "selection_debug",
@@ -720,6 +774,25 @@ impl Settings {
     pub fn size(&self) -> u32 {
         self.number("cursor_size") as u32
     }
+    /// A switch only kept in controls.json (no control in the window), such
+    /// as the practice tool's `practice_mode`: on for `1`, `1.0` or `true`.
+    pub fn hidden_switch(&self, key: &str) -> bool {
+        self.values.lock().is_ok_and(|v| {
+            v.0.get(key)
+                .is_some_and(|v| v.as_f64() == Some(1.) || v.as_bool() == Some(true))
+        })
+    }
+    /// A text value only kept in controls.json (no control in the window),
+    /// such as the practice tool's `practice_lineup`.
+    pub fn text(&self, key: &str) -> Option<String> {
+        self.values
+            .lock()
+            .ok()?
+            .0
+            .get(key)?
+            .as_str()
+            .map(str::to_owned)
+    }
     pub fn acquisition_radius(&self, name: &str, current: u64, maximum: Option<u64>) -> u64 {
         self.values.lock().map_or_else(
             |_| crate::acquisition::radius(&Values::default(), name, current, maximum),
@@ -890,7 +963,7 @@ mod tests {
         std::fs::create_dir_all(&root).unwrap();
         std::fs::write(
             root.join("controls.json"),
-            br#"{"cursor_size":49,"low_health_effect":true,"other_mod":{"keep":3}}"#,
+            br#"{"cursor_size":49,"low_health_effect":true,"other_mod":{"keep":3},"practice_mode":1.0,"practice_lineup":"harpy"}"#,
         )
         .unwrap();
         let store = Settings::new(Some(&root));
@@ -912,6 +985,10 @@ mod tests {
         let loaded = Settings::new(Some(&root));
         assert_eq!(loaded.size(), 49);
         assert!(loaded.low_health());
+        // Hidden switches and texts (no control in the window) survive a save.
+        assert!(loaded.hidden_switch("practice_mode"));
+        assert!(!loaded.hidden_switch("not_there"));
+        assert_eq!(loaded.text("practice_lineup").as_deref(), Some("harpy"));
         assert_eq!(loaded.number("champion_mode"), 1.);
         assert_eq!(loaded.number("hover_outline"), 0.);
         assert_eq!(loaded.number("selection_debug"), 1.);
@@ -950,6 +1027,17 @@ mod tests {
         raw[0x51] = true;
         assert!(!v.pressed("q", &raw));
         assert!(v.pressed("preview_q", &raw));
+    }
+    #[test]
+    fn stat_rules_start_off_with_the_tested_defaults() {
+        let fresh = Values(json!({"version": 1}));
+        assert_eq!(fresh.number("athlete_stat_rules"), 0.);
+        assert_eq!(fresh.number("stat_reaction_ceiling"), 14.);
+        assert_eq!(fresh.number("stat_collision_margin"), 2.);
+        assert_eq!(
+            fresh.number("stat_collision_margin"),
+            f64::from(crate::athlete_rules::MARGIN_DEFAULT)
+        );
     }
     #[test]
     fn migration_unknown_and_new_defaults() {

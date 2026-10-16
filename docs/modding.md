@@ -293,6 +293,7 @@ Debug › Log detail = Verbose when investigating.
 | `windows/view.rs` | viewer/worker hooks: pacing, camera, full-screen layout |
 | `windows/input.rs` | blocking game hotkeys during control |
 | `windows/shop.rs` | buyer hooks, item/gold/build reads |
+| `windows/stats.rs` | athlete stat rules for manually played matches: instruction-level sites (a relay replays the displaced bytes, a bridge saves the registers, `adjust` changes one register or frame slot); sites in each version's `stat_sites.rs`, rules in `athlete_rules.rs` |
 | `windows/tooltips.rs` | native ChampionInfo descriptions and allocation ownership; called from the existing viewer hook |
 
 `native_tooltips.rs` outside the adapter holds only owned requests/results.

@@ -392,9 +392,52 @@ pub fn install() -> Result<(&'static str, u32), String> {
         Err("Native adapter requires Windows x64".into())
     }
 }
+/// Patches the athlete stat rules in, once a session, when this game
+/// version supports them. Call only at the title screen, with the setting
+/// On. None when there is nothing to do.
+pub fn install_stat_rules() -> Option<Result<usize, String>> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        hooks!(None, install_stats_at_title())
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        None
+    }
+}
+/// The stat rules are supported here and will be installed at the next title
+/// screen if their setting is On.
+pub fn stat_rules_pending() -> bool {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        hooks!(false, stats_pending())
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        false
+    }
+}
+/// Verbose per-site collision counts of the stat rules (every few seconds).
+/// `context` is appended to each `STATRULE trace` line (who and what). The
+/// controlled athlete's shots the hooks saw since the last call.
+pub fn stat_rules_report(
+    logger: &Logger,
+    context: &dyn Fn() -> String,
+) -> Vec<crate::athlete_rules::ShotEvent> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        hooks!(Vec::new(), stat_rules_report(logger, context))
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        let _ = (logger, context);
+        Vec::new()
+    }
+}
 /// Forget a destroyed viewer's lease without dereferencing its old addresses.
 /// Live release restoration still happens inside the original viewer borrow.
 pub fn reset_session() {
+    crate::athlete_rules::clear();
     set_death_greyscale(false);
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
@@ -414,6 +457,7 @@ mod v070 {
     pub(super) mod identity;
     mod items;
     mod layout;
+    mod stat_sites;
     #[allow(clippy::duplicate_mod)]
     #[path = "../windows/mod.rs"]
     pub(super) mod windows;
@@ -425,6 +469,7 @@ mod v063 {
     pub(super) mod identity;
     mod items;
     mod layout;
+    mod stat_sites;
     #[allow(clippy::duplicate_mod)]
     #[path = "../windows/mod.rs"]
     pub(super) mod windows;
@@ -436,6 +481,7 @@ mod v064 {
     pub(super) mod identity;
     mod items;
     mod layout;
+    mod stat_sites;
     #[allow(clippy::duplicate_mod)]
     #[path = "../windows/mod.rs"]
     pub(super) mod windows;

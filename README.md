@@ -17,7 +17,7 @@ plays (mostly).
 
 ## Status
 
-- Version **1.2.3**, for game versions **0.6.4**, **0.6.3** and the **0.7.0**
+- Version **1.3.0**, for game versions **0.6.4**, **0.6.3** and the **0.7.0**
   beta on Windows x64 only. The mod checks the game executable's
   fingerprint and stays inactive on any other build; a game update needs a
   mod update.
@@ -77,6 +77,16 @@ All bindings can be changed in the mod's Settings window (gear button).
   that match. AI playback stays at 1x so the worker remains synchronized.
   Changing the game speed or pressing View Match Result in AI control hands
   the match fully to the game (it can no longer be reclaimed).
+- **Athlete stat rules** (experimental, off by default; Settings › Advanced
+  › General): in matches you play, your skillshots get a fixed hit margin
+  (*Collision margin*, default 2 units) instead of one decided by your
+  Skillshot Accuracy and the enemy's Dodging, and enemy reactions to your
+  shots follow Accuracy against Dodging within a band you set. AI-versus-AI
+  play is untouched. Turning it on takes effect after returning to the main
+  menu.
+- **Input delay**: *Show input delay* (Settings › Advanced › Debug) shows the
+  measured time from your click or key to the frame that plays it, like a
+  ping number in the top right corner.
 - **Emotes**: five original faces plus four bundled images, shown locally
   above your champion for 2 seconds. Settings › Emotes controls height,
   scale, camera zoom behaviour and cooldown (default 1.5 seconds), with a
@@ -155,7 +165,7 @@ stay in `%LOCALAPPDATA%\LTDirectControl`).
 | Area | Modules |
 |---|---|
 | Entry points | `lib.rs` (logger, start-up wiring), `client.rs` (`Client`: the SDK client extension, one named step per feature each frame), `simulation.rs` (`Simulation`: the per-player AI callback, one step per duty) |
-| Game hooks (game 0.6.3, 0.6.4 and 0.7.0) | `native_adapter/`: `mod.rs` (the safe API the rest of the mod calls), `windows/mod.rs` (patch installation), one file per hook family (`movement`, `combat`, `outline`, `view`, `input`, `shop`, `tooltips`, `preview`), `v063/`, `v064/` and `v070/` (every address and byte pattern of one game version each); `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `worker_watch.rs` (stall report), `ai_handback.rs` |
+| Game hooks (game 0.6.3, 0.6.4 and 0.7.0) | `native_adapter/`: `mod.rs` (the safe API the rest of the mod calls), `windows/mod.rs` (patch installation), one file per hook family (`movement`, `combat`, `outline`, `view`, `input`, `shop`, `tooltips`, `preview`, `stats`), `v063/`, `v064/` and `v070/` (every address and byte pattern of one game version each, `stat_sites.rs` for the stat rules); `athlete_rules.rs` (the stat rules' arithmetic); `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `worker_watch.rs` (stall report), `ai_handback.rs` |
 | Orders and input | `platform_input.rs` (keyboard/mouse), `movement.rs` (orders and movement), `combat.rs` (targets), `acquisition.rs`, `abilities.rs` (casting), `camera.rs`, `wheel.rs`, `map_path.rs` |
 | Picking | `sprite_picking.rs` (body sizes), `own_selection.rs` |
 | HUD and windows | `player_hud.rs`, `stats_panel.rs` / `stats_ui.rs`, `team_status.rs`, `team_info.rs`, `session_ui.rs`, `settings_ui.rs` (+ `settings_ui/`), `shop_ui.rs`, `emotes.rs` / `emote_library.rs`, `minimap.rs`, `screen_effect.rs`, `skill_preview.rs` / `preview_style.rs`, `cursor.rs`, `tooltips.rs`, `hud_*.rs`, `ui_graphics.rs`, `ui_theme.rs` (UI colour), `ui_click.rs` |
