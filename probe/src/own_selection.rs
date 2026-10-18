@@ -89,13 +89,176 @@ impl OwnSelection {
     }
 }
 
+/// The team an athlete's contract record names: `team_id` inside
+/// `InContract` (or `in_contract`), else at the top level. Only that field
+/// is read; every other value is skipped without building a JSON tree, as
+/// this runs for every athlete in the save
+/// (docs/investigation-takeover-cost-2026-10-18.md, section 2).
 pub fn contract_team(json: &str) -> Option<usize> {
-    let value: serde_json::Value = serde_json::from_str(json).ok()?;
-    let contract = value
-        .get("InContract")
-        .or_else(|| value.get("in_contract"))
-        .unwrap_or(&value);
-    usize::try_from(contract.get("team_id")?.as_u64()?).ok()
+    let contract: ContractFields = serde_json::from_str(json).ok()?;
+    let team_id = match (contract.upper, contract.snake) {
+        (Some(inner), _) | (None, Some(inner)) => inner,
+        (None, None) => contract.team_id,
+    };
+    usize::try_from(team_id?).ok()
+}
+
+/// The fields `contract_team` reads; a nested contract object is read the
+/// same way, and only its `team_id` is used.
+#[derive(Default)]
+struct ContractFields {
+    upper: Option<Option<u64>>,
+    snake: Option<Option<u64>>,
+    team_id: Option<u64>,
+}
+impl<'de> serde::Deserialize<'de> for ContractFields {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        struct Fields;
+        impl<'de> serde::de::Visitor<'de> for Fields {
+            type Value = ContractFields;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a contract object")
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut map: A,
+            ) -> Result<ContractFields, A::Error> {
+                let mut fields = ContractFields::default();
+                while let Some(key) = map.next_key::<Key>()? {
+                    match key {
+                        Key::Upper => {
+                            fields.upper = Some(map.next_value::<ContractFields>()?.team_id)
+                        }
+                        Key::Snake => {
+                            fields.snake = Some(map.next_value::<ContractFields>()?.team_id)
+                        }
+                        Key::TeamId => fields.team_id = map.next_value::<Id>()?.0,
+                        Key::Other => {
+                            map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                Ok(fields)
+            }
+        }
+        d.deserialize_map(Fields)
+    }
+}
+/// The object keys `contract_team` looks at, matched without allocating.
+enum Key {
+    Upper,
+    Snake,
+    TeamId,
+    Other,
+}
+impl<'de> serde::Deserialize<'de> for Key {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        struct Name;
+        impl serde::de::Visitor<'_> for Name {
+            type Value = Key;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a key")
+            }
+            fn visit_str<E>(self, key: &str) -> Result<Key, E> {
+                Ok(match key {
+                    "InContract" => Key::Upper,
+                    "in_contract" => Key::Snake,
+                    "team_id" => Key::TeamId,
+                    _ => Key::Other,
+                })
+            }
+        }
+        d.deserialize_identifier(Name)
+    }
+}
+/// A value read as an unsigned id; anything else (negative, fractional,
+/// text, null, a list, an object) is None, as `Value::as_u64` gives.
+struct Id(Option<u64>);
+impl<'de> serde::Deserialize<'de> for Id {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        struct Number;
+        impl<'de> serde::de::Visitor<'de> for Number {
+            type Value = Id;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("an id")
+            }
+            fn visit_u64<E>(self, v: u64) -> Result<Id, E> {
+                Ok(Id(Some(v)))
+            }
+            fn visit_i64<E>(self, v: i64) -> Result<Id, E> {
+                Ok(Id(u64::try_from(v).ok()))
+            }
+            fn visit_f64<E>(self, _: f64) -> Result<Id, E> {
+                Ok(Id(None))
+            }
+            fn visit_bool<E>(self, _: bool) -> Result<Id, E> {
+                Ok(Id(None))
+            }
+            fn visit_str<E>(self, _: &str) -> Result<Id, E> {
+                Ok(Id(None))
+            }
+            fn visit_unit<E>(self) -> Result<Id, E> {
+                Ok(Id(None))
+            }
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(self, mut seq: A) -> Result<Id, A::Error> {
+                while seq.next_element::<serde::de::IgnoredAny>()?.is_some() {}
+                Ok(Id(None))
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(self, mut map: A) -> Result<Id, A::Error> {
+                while map
+                    .next_entry::<serde::de::IgnoredAny, serde::de::IgnoredAny>()?
+                    .is_some()
+                {}
+                Ok(Id(None))
+            }
+        }
+        d.deserialize_any(Number)
+    }
+}
+
+/// Contracts read per client frame while finding your team's athletes.
+pub const SCAN_CHUNK: usize = 50;
+/// Finds which athletes of the save are on your team, reading at most
+/// `SCAN_CHUNK` contracts per frame and keeping the partial result between
+/// frames. It starts over when your team or the save's athlete list changes.
+#[derive(Default)]
+pub struct TeamScan {
+    team: Option<usize>,
+    ids: Vec<usize>,
+    next: usize,
+    found: BTreeSet<usize>,
+}
+impl TeamScan {
+    /// One frame of the scan. `team_of` reads one athlete's contract team.
+    /// Returns your team's athletes once every contract has been read
+    /// (possibly none, while the save's data is not ready); the call after
+    /// that starts a new scan.
+    pub fn step(
+        &mut self,
+        team: usize,
+        ids: &[usize],
+        mut team_of: impl FnMut(usize) -> Option<usize>,
+    ) -> Option<BTreeSet<usize>> {
+        if self.team != Some(team) || self.ids != ids {
+            *self = Self {
+                team: Some(team),
+                ids: ids.to_vec(),
+                ..Self::default()
+            };
+        }
+        let end = (self.next + SCAN_CHUNK).min(self.ids.len());
+        for &id in &self.ids[self.next..end] {
+            if team_of(id) == Some(team) {
+                self.found.insert(id);
+            }
+        }
+        self.next = end;
+        if self.next < self.ids.len() {
+            return None;
+        }
+        self.next = 0;
+        Some(std::mem::take(&mut self.found))
+    }
 }
 
 #[cfg(test)]
@@ -224,5 +387,67 @@ mod tests {
             None
         );
         assert_eq!(contract_team(r#"{"InContract":{"team_id":-1}}"#), None);
+    }
+    #[test]
+    fn contract_team_reads_only_team_id_as_the_full_parse_did() {
+        // InContract wins over in_contract and over a top-level team_id.
+        assert_eq!(
+            contract_team(
+                r#"{"team_id":9,"in_contract":{"team_id":5},"InContract":{"team_id":4}}"#
+            ),
+            Some(4)
+        );
+        assert_eq!(
+            contract_team(r#"{"team_id":9,"in_contract":{"team_id":5}}"#),
+            Some(5)
+        );
+        // A contract without team_id names no team, even with one outside it.
+        assert_eq!(
+            contract_team(r#"{"team_id":9,"InContract":{"salary":1}}"#),
+            None
+        );
+        // Other values of any shape are skipped.
+        assert_eq!(
+            contract_team(
+                r#"{"x":[1,{"team_id":7}],"y":null,"InContract":{"perks":{"a":"b"},"team_id":12}}"#
+            ),
+            Some(12)
+        );
+        for not_an_id in ["1.5", "\"4\"", "null", "true", "[4]", "{\"id\":4}"] {
+            let json = format!(r#"{{"InContract":{{"team_id":{not_an_id}}}}}"#);
+            assert_eq!(contract_team(&json), None, "{json}");
+        }
+        for broken in ["", "4", "\"FreeAgent\"", "{", "[]"] {
+            assert_eq!(contract_team(broken), None, "{broken}");
+        }
+    }
+    #[test]
+    fn the_team_scan_reads_50_contracts_a_frame_and_restarts_on_a_change() {
+        let ids: Vec<usize> = (0..120).collect();
+        let on_team = |id: usize| id.is_multiple_of(40).then_some(7);
+        let mut scan = TeamScan::default();
+        let mut reads = 0;
+        let mut frame = |scan: &mut TeamScan| {
+            scan.step(7, &ids, |id| {
+                reads += 1;
+                on_team(id)
+            })
+        };
+        assert_eq!(frame(&mut scan), None);
+        assert_eq!(frame(&mut scan), None);
+        assert_eq!(frame(&mut scan), Some(BTreeSet::from([0, 40, 80])));
+        assert_eq!(reads, 120);
+        // A different team or save starts over from the first athlete.
+        let mut scan = TeamScan::default();
+        assert_eq!(scan.step(7, &ids, on_team), None);
+        assert_eq!(scan.step(8, &ids, on_team), None);
+        assert_eq!(scan.next, SCAN_CHUNK);
+        let fewer = &ids[..60];
+        assert_eq!(scan.step(8, fewer, on_team), None);
+        assert_eq!(scan.next, SCAN_CHUNK);
+        assert_eq!(scan.step(8, fewer, on_team), Some(BTreeSet::new()));
+        // Done: the next call starts a new scan.
+        assert_eq!(scan.step(8, fewer, on_team), None);
+        assert_eq!(scan.next, SCAN_CHUNK);
     }
 }

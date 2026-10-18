@@ -272,6 +272,18 @@ pub static OPTIONS: &[OptionDef] = &[
         control: Control::Choice(&["On hover", "Hold key and hover", "Off"]),
         default: 0.,
     },
+    // motion: switch. Experimental (design note "HUD motion pass"): one switch for the whole
+    // pass in hud_motion_pass.rs; Off shows the HUD as it was before it.
+    // On by default, for releases too (the author's decision, 1.3.7).
+    OptionDef {
+        key: "hud_motion",
+        page: 3,
+        section: "Appearance",
+        label: "HUD motion",
+        hint: "Small animations on the HUD; Off keeps it still.",
+        control: Control::Toggle,
+        default: 1.,
+    },
     OptionDef {
         key: "low_health_effect",
         page: 3,
@@ -282,12 +294,14 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 0.,
     },
     OptionDef {
+        // 0 Off, 1 Outline (ground rings while another mod holds the unit
+        // renderer), 2 Ground ring (the outline hook is not installed).
         key: "hover_outline",
         page: 3,
         section: "Battlefield feedback",
-        label: "Sprite outlines",
-        hint: "Hover and active attack target; blue allies, red hostiles.",
-        control: Control::Toggle,
+        label: "Unit highlight",
+        hint: "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.",
+        control: Control::Choice(&["Off", "Outline", "Ground ring"]),
         default: 1.,
     },
     OptionDef {
@@ -300,13 +314,41 @@ pub static OPTIONS: &[OptionDef] = &[
         default: 1.,
     },
     OptionDef {
+        key: "skill_ready_sound",
+        page: 3,
+        section: "Sounds",
+        label: "Skill ready sound",
+        hint: "A short chime when one of your skills comes off cooldown.",
+        control: Control::Toggle,
+        default: 0.,
+    },
+    OptionDef {
+        key: "denied_cast_sound",
+        page: 3,
+        section: "Sounds",
+        label: "Denied cast sound",
+        hint: "A short click when a skill press cannot cast.",
+        control: Control::Toggle,
+        default: 1.,
+    },
+    OptionDef {
+        key: "interface_sounds",
+        page: 3,
+        section: "Sounds",
+        label: "Interface sounds",
+        hint: "The game's hover and click sounds in the mod's windows.",
+        control: Control::Toggle,
+        default: 1.,
+    },
+    OptionDef {
         key: "emotes", page: 7, section: "Emotes", label: "Emote wheel",
         hint: "Hold the bound key, choose a direction, then release. Centre selects GG. Local display only.",
         control: Control::Toggle, default: 1.,
     },
     OptionDef {
-        key: "emote_volume", page: 7, section: "Emotes", label: "Emote volume",
-        hint: "Loudness of emote sounds, relative to the game's sound effects. 0% is silent.",
+        // Saved as "emote_volume" since before it governed every mod sound.
+        key: "emote_volume", page: 7, section: "Emotes", label: "Mod sound volume",
+        hint: "Loudness of the mod's sounds, relative to the game's sound effects. 0% is silent.",
         control: Control::Slider(0., 100., 5., "%"), default: 70.,
     },
     OptionDef {

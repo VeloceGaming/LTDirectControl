@@ -68,6 +68,58 @@ addition (not to be copied).
    CPU. Decide afterwards whether anything is worth attempting; a cost in
    how the game draws is not something a mod can realistically change.
    Since 1.0.6 a low frame rate no longer slows the match.
+   **2026-10-17, seen in game (the author):** 240 Hz monitor, vertical
+   sync off, frame limit 144 (read from `config/game/base.json`), yet 58
+   to 80 fps depending on where the camera looks; one core near 100 %,
+   the rest idle; fullscreen a few frames better than borderless. Read
+   from the code: the game draws through SDL 2.26 on its main thread. So
+   the limit is the game's own per-frame drawing work on one thread, not
+   a cap. **Decision (the author): measuring and any improvement are a
+   separate mod**, not part of LT Takeover; this item is closed here.
+   Constraint for that mod: two mods cannot hook the same instruction, so
+   it must not take LT Takeover's viewer or worker hook sites.
+   **Answered 2026-10-17** by a profiler capture (LT Frame Lab,
+   `docs/investigation-frame-profile-2026-10-17.md` there): the game draws
+   with Skia over OpenGL on one thread; the time is spread over hundreds
+   of functions (hottest 0.7 %), the driver (30 %) and the allocator
+   (13 %). Structural, not patchable by a mod. LT Takeover's own cost in a
+   match is 0.7 ms per frame (its capture, same day).
+   **Seen in game 2026-10-17 (Frame Lab 0.3 sampler, all mods on):** LT
+   Takeover is the only mod with a measurable share of the drawing thread
+   in a match, 9–12 % counting the game and Windows work done on its
+   behalf (about 1.4 ms of a 14 ms frame; 2–3 % in its own code). Every
+   other mod's DLL is under 1 %. Two load hitches were charged to LT
+   Takeover: 159 ms entering the management screen (78 % of its samples
+   in LT Takeover's call chain, allocator-heavy) and 99 ms on the title
+   screen (100 %, inside `bcryptprimitives`). Candidate item: find what LT
+   Takeover does at those two moments and move it off the drawing thread.
+   Done in 1.3.7 (background fingerprint, chunked roster scan; seen in
+   game 2026-10-18: title share 100 % → 33 %, management 159 ms at 78 %
+   → 55–66 ms at 0–30 %).
+   **Seen in game 2026-10-18 (Frame Lab 0.6, all threads, all mods):**
+   across the simulation threads LT Takeover's call chains account for
+   0.74 of a core in a match (by-mod rule, so the game's work inside its
+   hooks is included), more than Smarter Combat AI (0.66) or Drakes
+   (0.41); the game itself 2.8 cores of 4.76 sampled. The hot path is
+   known from the PERF lines: the steering hook and its owner fast-reject
+   run about 170,000 times a second on the simulation threads. Candidate
+   item: measure the hooks' own share on those threads (Frame Lab's
+   address file for `other` threads maps to the hook relays) and cut the
+   per-call cost or the call count. Context: with NVIDIA's threaded driver
+   mode, load on other threads costs drawing-thread frames (A/B runs the
+   same day), so this is frame rate, not only CPU.
+   **Closed 2026-10-18 (seen in game, Frame Lab 0.6.2 own-code figure):**
+   of the 0.77 cores by call chain, 0.07 is the mod's own code; the rest
+   is the game's steering and path-finding running inside the hooks,
+   which the game runs with the mod off too. Nothing to cut on the
+   simulation side. The drawing-thread side was compared with the POV
+   mod (0.8 % own code with more UI, against our 2.4 %): the gap is the
+   UI-tree design (about 100 nodes rebuilt as property text every frame).
+   1.3.11 made the unchanged check cheap (seen in game: HUD 379 → about
+   200 µs, strip 199 → about 120 µs per frame); skipping the whole
+   rebuild was declined as unsafe, and moving the HUD to direct draws
+   is a rewrite not worth a 2 % frame gain. The optimisation pass ends
+   here by the author's decision.
 9. **Enemy threat info on hover** (idea, 2026-10-12). Hovering an enemy
    shows which of its skills are on cooldown. Its attack range ring was
    part of the idea, but the other direct-control mod already has that, so
@@ -155,6 +207,20 @@ addition (not to be copied).
     with spectating a teammate while dead (item 10).
 
 ## Done
+
+- Ground ring rollback (1.3.19, 2026-10-18; read from the code, rollback not yet seen in game): restores the original 1.3.16 debug-based ring drawing and click pulse, removes the dedicated redesign module and its tests. Character-shaped outlines, compatibility settings and unrelated HUD changes are preserved. Play checklist: `local/testing/TESTING-1.3.19.md`.
+
+- **Rejected / superseded, 2026-10-18:** both Ground ring redesigns below are removed in 1.3.19 at the author's request. **Seen in game (1.3.18, author; game version not stated):** champion rings too wide and fading behind champions unsuccessful. The old implementation records below are retained as history; their earlier "not seen in game" statements describe their build stages.
+
+- Ground ring readability and finish (1.3.18, 2026-10-18; read from the code, not seen in game): League-inspired tapered front crescent, readable rear arc, pale inner edge, larger attack clamps and cut-corner tower-base brackets. Supersedes the thin four-arc appearance after the author's 1.3.17 feedback; compatibility and picking are unchanged. Play checklist: `local/testing/TESTING-1.3.18.md`.
+
+- Ground ring redesign (1.3.17, 2026-10-18; read from the code, not seen in game): dedicated segmented team-coloured foot halos, a stronger attack marker with side chevrons, fixed-size brightness feedback on clicks and tower-base brackets. Selection/debug geometry and compatibility policy stay separate. Play checklist: `local/testing/TESTING-1.3.17.md`.
+
+- Larger charge marks and one-time ready flash (1.3.10, 2026-10-18; read from the code, not seen in game): centred 10 × 8 px marks and a 400 ms pale-gold inset slot glow. Multi-use skills flash from zero to available uses, not for extra charges while usable. Red refusal feedback takes priority. Play checklist: `local/testing/TESTING-1.3.10.md`.
+
+- Cooldown edge endpoint (1.3.9, 2026-10-18; read from the code, fix not seen in game): the moving line and its trail stop at the ready cue's 2 px inset, preventing the coded backward step when recovery finishes. The author's 1.3.8 report and remaining in-game check are in CHANGELOG.md and `local/testing/TESTING-1.3.9.md`.
+
+- HUD slot feedback and motion pruning (1.3.8, 2026-10-18; read from the code, not seen in game): dark red unavailable-press feedback confined to the bottom skill slots, multi-use charge marks, match-start effects removed, and the shop's opening sweep removed while its fade stays. Author's play checklist: `local/testing/TESTING-1.3.8.md`.
 
 - Public release 1.0.0: mod ID `lt_direct_control`, name "LT Takeover:
   Open-Source Direct Control", author Layton; the game's SDK no longer in

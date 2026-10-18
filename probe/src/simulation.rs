@@ -168,14 +168,17 @@ impl Simulation {
             let collect_units = selected
                 && self.timing.allows_input(key)
                 && current_champion.as_ref().is_some_and(|c| c.is_alive());
+            // Every unit the strip's vision choice shows is playable: hover,
+            // selection, attacks and skill aiming (user, 2026-10-18).
             let skill_units = if collect_units {
                 let _profile = perf::work(perf::Work::Units);
+                let vision = crate::camera::shown_vision();
                 (0..sim.entity_count())
                     .filter_map(|index| {
                         let unit = sim.entity_at(index)?;
                         (unit.is_alive()
                             && unit.is_targetable()
-                            && (unit.team() == side || sim.is_visible(side, unit.id())))
+                            && vision.shows(side, unit.team(), |s| sim.is_visible(s, unit.id())))
                         .then(|| {
                             let name = unit.name();
                             combat::Unit {

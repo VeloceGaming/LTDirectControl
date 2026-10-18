@@ -178,7 +178,7 @@ the rest is open. The order that worked, and what to play for each:
 | Camera, Minimap | Layout, lock and follow, edge pan, zoom, vision; minimap size, clicks, drag |
 | Movement, Combat | Move, attack-move, stop, recall and cancel, attacks, attack cancel, Q/W/R, cast on release |
 | Shop | Open, queue, buy, gold, build, slot count; with an item mod installed |
-| Outline | Hover and target outlines on both teams, death greyscale |
+| Outline | Hover and target outlines on both teams |
 | Readers | Skill previews. One match per group of champions, then `python tools/audit_previews.py`: it lists every skill the reader did not understand, so not every champion needs playing |
 | Tooltips | Ability numbers on a few champions, including a new one and a mod one |
 | Stats | "Athlete stat rules" On, then back to the main menu: the log says `STATRULE installed sites=33` (`unavailable` names the site that differs). With `"practice_mode": 1` in controls.json, cast a projectile skill and a circle skill at the pinned enemies: the readout names shape B and shape A. One normal match with the rules On |

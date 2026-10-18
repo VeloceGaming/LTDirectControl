@@ -1,5 +1,5 @@
-//! Hover/target sprite outlines: the native render-command hook, extra
-//! outline passes and the death greyscale shader hook.
+//! Hover/target sprite outlines: the native render-command hook and extra
+//! outline passes.
 use super::*;
 
 pub(crate) static ORIGINAL_SHADER: AtomicUsize = AtomicUsize::new(0);
@@ -281,7 +281,8 @@ pub(crate) unsafe extern "system" fn outline_hook(
     let original: OutlineRenderFn = std::mem::transmute(ORIGINAL_OUTLINE.load(Ordering::Acquire));
     let result = original(out, view, a3, a4, a5, a6, a7, a8);
     crate::perf::hook(crate::perf::Hook::Outline);
-    if OUTLINE_READY.load(Ordering::Acquire) {
+    // Only while selection can use the draws (an atomic, before any lock).
+    if OUTLINE_READY.load(Ordering::Acquire) && SELECTION_DRAWS.load(Ordering::Acquire) {
         let _ = catch_unwind(AssertUnwindSafe(|| record_draw(out, view)));
     }
     if !OUTLINE_READY.load(Ordering::Acquire) || view < 0x10000 {
@@ -414,21 +415,6 @@ pub(crate) unsafe extern "system" fn outline_hook(
     .fetch_add(1, Ordering::Relaxed);
     result
 }
-pub(crate) unsafe extern "system" fn shader_hook(
-    out: usize,
-    command: usize,
-    name: *const u8,
-    len: usize,
-) -> usize {
-    let original: ShaderFn = std::mem::transmute(ORIGINAL_SHADER.load(Ordering::Acquire));
-    let grey = b"asset/base/shader/greyscale";
-    if DEATH_GREYSCALE.load(Ordering::Acquire) && PATCHES.get().is_some() {
-        original(out, command, grey.as_ptr(), grey.len())
-    } else {
-        original(out, command, name, len)
-    }
-}
-
 /// Each unit's latest drawn placement for selection (crate::sprite_art):
 /// drawn centre and up to four body sprites. Written on the render thread.
 pub(crate) type DrawRecord = (
@@ -448,7 +434,13 @@ unsafe fn record_draw(out: usize, view: usize) {
         return;
     }
     let f32_at = |a: usize| std::ptr::read_unaligned(a as *const f32);
-    let sprites: Vec<crate::sprite_art::Drawn> = (0..commands.length)
+    // Up to four sprites, on the stack; the unit's slot reuses its buffer.
+    let mut sprites = [crate::sprite_art::Drawn {
+        uv: [0.; 4],
+        corner: (0., 0.),
+    }; 4];
+    let mut count = 0;
+    for drawn in (0..commands.length)
         .map(|i| commands.pointer + i * COMMAND_SIZE)
         .filter(|c| command_tag(*c as *const u8) == 3)
         .take(4)
@@ -466,20 +458,31 @@ unsafe fn record_draw(out: usize, view: usize) {
                 .chain([d.corner.0, d.corner.1].iter())
                 .all(|v| v.is_finite())
         })
-        .collect();
+    {
+        sprites[count] = drawn;
+        count += 1;
+    }
+    let sprites = &sprites[..count];
     let id = std::ptr::read_unaligned((view + 0x100) as *const usize);
     let center = (f32_at(view + 0x17c), f32_at(view + 0x180));
     if sprites.is_empty() || !center.0.is_finite() || !center.1.is_finite() {
         return;
     }
     if let Ok(mut draws) = SPRITE_DRAWS.lock() {
-        let entry = (id, center, sprites, std::time::Instant::now());
+        let now = std::time::Instant::now();
+        let refill = |slot: &mut DrawRecord| {
+            slot.0 = id;
+            slot.1 = center;
+            slot.2.clear();
+            slot.2.extend_from_slice(sprites);
+            slot.3 = now;
+        };
         if let Some(slot) = draws.iter_mut().find(|d| d.0 == id) {
-            *slot = entry;
+            refill(slot);
         } else if draws.len() < 512 {
-            draws.push(entry);
+            draws.push((id, center, sprites.to_vec(), now));
         } else if let Some(oldest) = draws.iter_mut().min_by_key(|d| d.3) {
-            *oldest = entry;
+            refill(oldest);
         }
     }
 }

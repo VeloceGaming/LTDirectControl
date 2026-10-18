@@ -1,6 +1,6 @@
 [package]
 name = "lt_direct_control"
-version = "1.3.0"
+version = "1.4.0"
 edition = "2021"
 publish = false
 
@@ -10,6 +10,9 @@ crate-type = ["cdylib"]
 [dependencies]
 mod-api-stable = { path = "../sdk/mod-api-stable" }
 serde_json = "=1.0.151"
+# Already built for serde_json; used directly to read one field of a record
+# without building a JSON tree (own_selection::contract_team).
+serde = "=1.0.229"
 png = "=0.17.16"
 miniz_oxide = "=0.8.9"
 

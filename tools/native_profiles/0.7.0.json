@@ -198,11 +198,6 @@
       "rva": "0xe9599f",
       "bytes": "488b4208"
     },
-    "SHADER_BYTES": {
-      "rva": "0x2440b01",
-      "bytes": "e82a76d6fd",
-      "target": "0x1a8130"
-    },
     "SHADER_PROLOGUE": {
       "rva": "0x1a8130",
       "bytes": "5541574156415541545657534881ec38030000"

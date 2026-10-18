@@ -1109,6 +1109,11 @@ fn template() -> String {
         1531,
     ));
     s.push_str(&format!("#toast:color {{ x: 852px; y: {}px; width: 496px; height: 34px; color: #~1e1e1df2; rounding: Uniform {{ rounding: 4; }} ignore_event: true; visible: false; z: 1530;\n{toast}}}\n", BUY_Y as i32 + 54));
+    // motion: S6 (inside the root, above everything in the window)
+    s.push_str(&crate::hud_motion_pass::s6_shop_nodes(
+        (WINDOW.2 as usize, WINDOW.3 as usize),
+        1590,
+    ));
     s.push_str("}\n");
     crate::hud_style::fonts(s)
 }
@@ -1302,6 +1307,13 @@ pub struct ShopUi {
     toast: Option<(String, Instant, &'static str)>,
     motion: hud_motion::Motion,
     match_key: Option<crate::native_timing::MatchKey>,
+    /// Every clickable node's full path, for the hover sound.
+    hover_paths: Vec<String>,
+    hover: crate::ui_sound::Hover,
+    // motion: pass
+    /// The HUD motion pass (hud_motion_pass.rs); S6 keeps the window's
+    /// shown flag and hide time in it (the window had no show moment).
+    pass: crate::hud_motion_pass::Pass,
 }
 
 impl ShopUi {
@@ -1421,6 +1433,10 @@ impl ShopUi {
         items.extend((0..INTO).map(|i| (format!("into{i}"), Event::Into(i))));
         items.extend((0..SLOTS).map(|i| (format!("slot{i}"), Event::Slot(i))));
         items.extend((0..CHIPS).map(|i| (format!("chip{i}"), Event::Chip(i))));
+        self.hover_paths = items
+            .iter()
+            .map(|(node, _)| format!("{PATH}.{node}"))
+            .collect();
         for (node, event) in items {
             let queue = self.events.clone();
             let click_path = format!("{PATH}.{node}");
@@ -1440,6 +1456,7 @@ impl ShopUi {
     fn buy(&mut self, view: &shop::View, item: usize, log: &Logger) {
         let name = view.cat[item].key.clone();
         if !view.manual {
+            crate::ui_sound::denied();
             self.say(tr(
                 "Manual shopping is off: turn it on in Settings › Combat & casting",
             ));
@@ -1447,10 +1464,12 @@ impl ShopUi {
         }
         match self.purchase_offer(view, item) {
             shop::Offer::Owned => {
+                crate::ui_sound::denied();
                 self.say_tone(tr("This item cannot be bought"), BAD);
                 return;
             }
             shop::Offer::Blocked => {
+                crate::ui_sound::denied();
                 self.say_tone(tr("No free slot: upgrade an item you own instead"), BAD);
                 return;
             }
@@ -1465,6 +1484,8 @@ impl ShopUi {
                 .collect::<Vec<_>>()
         });
         shop::SHOP.buy(order);
+        // Bought or queued (also when gold is short): the order was taken.
+        crate::ui_sound::click();
         log.write(&format!(
             "SHOP UI buy {name} in_base={} paused={} path={path_keys:?}",
             view.in_base, self.paused
@@ -1593,6 +1614,10 @@ impl ShopUi {
             log.write("SHOP UI opened by itself: build plan complete");
         }
         let shown = self.open && !modal && view.is_some();
+        // motion: pass
+        self.pass.frame();
+        // motion: S6
+        let s6 = crate::hud_motion_pass::s6_shop_entrance(&mut self.pass, shown);
         self.update_pause(
             timing,
             shown && crate::settings::option("shop_pause") == 1.,
@@ -1618,6 +1643,7 @@ impl ShopUi {
             });
         }
         let Some(mut view) = view.filter(|_| shown) else {
+            self.hover.update(false, None, None, false);
             if ctx.ui_exists(PATH) {
                 ctx.ui_set_visible(PATH, false);
             }
@@ -1659,6 +1685,7 @@ impl ShopUi {
             self.register(ctx);
         }
         ctx.ui_set_visible(PATH, true);
+        crate::hud_motion_pass::write(ctx, &mut self.cache, PATH, s6); // motion: S6
         let cursor = keys.cursor.filter(|_| keys.focused);
         let (entries, height) = layout(&view.cat, &self.active);
         let events = self
@@ -1846,6 +1873,8 @@ impl ShopUi {
             self.props(ctx, "toast.bar", format!("color: #{tone};"));
             self.text(ctx, "toast.text", &t);
         }
+        let under = crate::ui_sound::under_cursor(ctx, self.hover_paths.iter(), cursor);
+        self.hover.update(true, under, cursor, keys.raw.0[1]);
         vec![Rect {
             x: WINDOW.0,
             y: WINDOW.1,

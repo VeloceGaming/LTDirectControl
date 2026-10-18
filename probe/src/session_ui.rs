@@ -122,6 +122,14 @@ fn template() -> String {
             &format!("#{node}:color_icon_button {{ #hover:color {{ x: 2px; y: 2px; width: 40px; height: 40px; z: 1103; color: #00000000; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }}"),
         );
     }
+    // motion: B8 (inside the root, before the Tab key cap)
+    s = s.replace(
+        "#tab_key:color",
+        &format!(
+            "{}#tab_key:color",
+            crate::hud_motion_pass::b8_nodes(SWAP_Y + SWAP_TILE, SWAP_TILE)
+        ),
+    );
     s = s.replace("#tab_key:color", "#take_label:label { @\"asset/base/style/main#bold_label\"; x: 52px; y: 6px; width: 204px; height: 44px; size: 18; align_y: Center; color: #eeececff; text: \"Take control · F11\"; visible: false; ignore_event: true; z: 1106; } #tab_key:color");
     crate::hud_style::fonts(s)
 }
@@ -135,7 +143,29 @@ pub struct SessionUi {
     attempted: HashMap<String, (String, Instant)>,
     motion: crate::hud_motion::Motion,
     tip: Option<(String, Instant)>,
+    hover: crate::ui_sound::Hover,
+    // motion: pass
+    /// The HUD motion pass (hud_motion_pass.rs).
+    pass: crate::hud_motion_pass::Pass,
 }
+/// The clickable controls, for the hover sound.
+const CLICKABLE: [&str; 15] = [
+    "primary",
+    "release",
+    "watch",
+    "camera",
+    "settings",
+    "tab",
+    "vision_own",
+    "vision_other",
+    "vision_all",
+    "swap",
+    "lane0",
+    "lane1",
+    "lane2",
+    "lane3",
+    "lane4",
+];
 impl SessionUi {
     pub fn take_settings(&self) -> bool {
         self.events
@@ -161,9 +191,7 @@ impl SessionUi {
         }
     }
     fn props(&mut self, ctx: &mut StableClient<'_>, node: &str, text: String) {
-        if crate::hud_motion::properties(ctx, &mut self.cache, &format!("{PATH}.{node}"), &text) {
-            self.cache.insert(node.into(), text);
-        }
+        crate::hud_motion::properties(ctx, &mut self.cache, &format!("{PATH}.{node}"), &text);
     }
     #[allow(clippy::too_many_arguments)]
     fn animate(
@@ -301,10 +329,13 @@ impl SessionUi {
             phase @ (Phase::Loading | Phase::Ready | Phase::Running | Phase::Paused | Phase::Ai),
         ) = timing.ui_phase()
         else {
-            if ctx.ui_exists(PATH) {
+            self.hover.update(false, None, None, false);
+            // Write only on a change (this runs every frame).
+            if ctx.ui_visible(PATH) != Some(false) && ctx.ui_exists(PATH) {
                 ctx.ui_set_visible(PATH, false);
             }
             self.motion.reset();
+            self.pass.reset(); // motion: pass
             if let Ok(mut e) = self.events.lock() {
                 e.team = false;
             }
@@ -437,7 +468,10 @@ impl SessionUi {
                 });
             }
         }
-        ctx.ui_set_visible(PATH, true);
+        // Write only on a change, as the HUD does (not every frame).
+        if ctx.ui_visible(PATH) != Some(true) {
+            ctx.ui_set_visible(PATH, true);
+        }
         let preparing = matches!(phase, Phase::Loading | Phase::Ready);
         let properties = if preparing {
             format!("width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: {:.2}px; x: 0px;",-62.)
@@ -460,6 +494,11 @@ impl SessionUi {
         let in_match = !preparing;
         let open = in_match && self.events.lock().is_ok_and(|e| e.swap);
         let unfold = self.motion.value("swap_unfold", f32::from(open), 0.2);
+        // motion: pass
+        self.pass.frame();
+        // motion: B8
+        let b8 = crate::hud_motion_pass::b8_swap_sweep(&self.pass, in_match, SWAP_TILE);
+        crate::hud_motion_pass::write(ctx, &mut self.cache, PATH, b8);
         let root = ctx.ui_node_rect(PATH);
         let scaled = |(x, y, w, h): (f32, f32, f32, f32)| {
             root.map(|(rx, ry, rw, rh)| {
@@ -681,6 +720,13 @@ impl SessionUi {
                 "",
                 56.,
             );
+            // motion: B8
+            let b8 = crate::hud_motion_pass::b8_swap_stagger(&mut self.pass, lane, open);
+            self.props(
+                ctx,
+                &format!("{node}.portrait"),
+                format!("color: #ffffff{:02x};", (255. * b8).round() as u8),
+            );
         }
         let mut tip = None;
         if let Some(cursor) = cursor {
@@ -764,11 +810,26 @@ impl SessionUi {
                     (255. * fade) as u8
                 ),
             );
-            ctx.ui_set_text(&format!("{PATH}.tooltip.text"), &text);
+            // Write only on a change, not every frame the tip shows.
+            if self.cache.get("text:tooltip").is_none_or(|t| *t != text)
+                && ctx.ui_set_text(&format!("{PATH}.tooltip.text"), &text)
+            {
+                self.cache.insert("text:tooltip".into(), text);
+            }
         } else {
             self.tip = None;
             self.props(ctx, "tooltip", "visible: false;".into());
         }
+        // The Settings window covers the strip; the shop window may.
+        let covered = crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed)
+            || cursor.is_some_and(|p| {
+                crate::shop_ui::AREA
+                    .lock()
+                    .is_ok_and(|area| area.is_some_and(|a| a.contains(p)))
+            });
+        let paths = CLICKABLE.map(|node| format!("{PATH}.{node}"));
+        let under = crate::ui_sound::under_cursor(ctx, paths.iter(), cursor);
+        self.hover.update(true, under, cursor, pressed || covered);
         let mut bounds = Vec::new();
         if let Some((x, y, w, h)) = ctx.ui_node_rect(PATH) {
             bounds.push(Rect {

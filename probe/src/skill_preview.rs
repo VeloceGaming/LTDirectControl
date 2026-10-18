@@ -1203,7 +1203,7 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
             } else {
                 s.orange
             };
-            let (x0, y0, x1, _, _) = crate::combat::screen_area(frame, &target);
+            let (x0, y0, x1, _, _) = crate::combat::body_screen_area(frame, &target);
             target_marker(
                 &mut out,
                 s,

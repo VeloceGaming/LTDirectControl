@@ -50,13 +50,15 @@ pub fn draw_frame(ctx: &mut StableClient<'_>, camera: &CameraControl) {
             crate::ui_theme::tone(0x4b4a49ff),
         );
     }
+    // motion: D2 (restore the corner points without `- out`)
+    let out = crate::hud_motion_pass::d2_minimap_ticks(frame.center);
     for (cx, cy, sx, sy) in [
         (x, y, 1., 1.),
         (x + size, y, -1., 1.),
         (x, y + size, 1., -1.),
         (x + size, y + size, -1., -1.),
     ] {
-        let point = |a: f32, b: f32| (cx + sx * a, cy + sy * b);
+        let point = |a: f32, b: f32| (cx + sx * (a - out), cy + sy * (b - out));
         for (a, b) in [
             ((0.75, 11.5), (0.75, 4.5)),
             ((0.75, 4.5), (4.5, 0.75)),

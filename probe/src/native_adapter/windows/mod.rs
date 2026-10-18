@@ -201,8 +201,11 @@ unsafe fn relay(site: usize, destination: usize) -> Result<usize, String> {
     Ok(block)
 }
 /// `sha` is `host::executable_sha()`: the parent module computes it once and
-/// offers it to the copy whose game version it names.
-pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
+/// offers it to the copy whose game version it names. `skip` lists families
+/// the player turned off (the outline, for ground rings). Returns the
+/// families installed: `ENABLED`, less `skip` and any that stepped aside for
+/// another mod.
+pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, String> {
     unsafe {
         let module = GetModuleHandleW(std::ptr::null());
         if module.is_null() {
@@ -220,8 +223,8 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
         {
             return Err("Loaded PE identity differs; no hooks installed".into());
         }
-        let families = ENABLED;
-        let on = |family: u32| families & family != 0;
+        let enabled = ENABLED & !skip;
+        let on = |family: u32| enabled & family != 0;
         if !on(family::SESSION) {
             return Err(
                 "No hook family is reviewed for this executable; no hooks installed".into(),
@@ -231,10 +234,10 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
         if on(family::COMBAT) && !on(family::MOVEMENT) {
             return Err("Combat hooks need the movement family; no hooks installed".into());
         }
-        if !GUARDS.verify(base, families) {
-            return Err("Native layout consumers differ; no hooks installed".into());
-        }
-        for (family, (rva, expected)) in [
+        // Every function entry and byte pattern the hooks rely on, plus the
+        // outline family's call sites: a family that may step aside drops
+        // out if another mod holds one of its spots (`families_to_install`).
+        let entries = [
             (
                 family::SESSION,
                 (WORKER_ORIGINAL, WORKER_PROLOGUE.as_slice()),
@@ -313,12 +316,28 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
             ),
             (family::COMBAT, AIM_WRITES[0]),
             (family::COMBAT, AIM_WRITES[1]),
-        ] {
-            if on(family)
-                && std::slice::from_raw_parts((base + rva) as *const u8, expected.len()) != expected
-            {
-                return Err("Native entry differs or another mod hooked it".into());
-            }
+        ];
+        let mut spots: Vec<(u32, usize, bool)> = entries
+            .iter()
+            .map(|&(family, (rva, expected))| {
+                let holds = !on(family)
+                    || std::slice::from_raw_parts((base + rva) as *const u8, expected.len())
+                        == expected;
+                (family, rva, holds)
+            })
+            .collect();
+        if on(family::OUTLINE) {
+            spots.extend(OUTLINE_SITES.iter().map(|(rva, expected)| {
+                (family::OUTLINE, *rva, read_call(base + rva) == *expected)
+            }));
+        }
+        let (families, taken) =
+            crate::native_profile::families_to_install(enabled, &spots).map_err(|rva| {
+                format!("Native entry differs or another mod hooked it (rva {rva:#x}); no hooks installed")
+            })?;
+        let on = |family: u32| families & family != 0;
+        if !GUARDS.verify(base, families) {
+            return Err("Native layout consumers differ; no hooks installed".into());
         }
         // (family, call site, its bytes, our hook, tail jump).
         let specs = [
@@ -355,13 +374,6 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
                 ATTACK_SITE,
                 ATTACK_BYTES,
                 attack_hook as *const () as usize,
-                false,
-            ),
-            (
-                family::OUTLINE,
-                SHADER_SITE,
-                SHADER_BYTES,
-                shader_hook as *const () as usize,
                 false,
             ),
             (
@@ -418,11 +430,6 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
         } else {
             &[]
         };
-        for (rva, expected) in outline_sites {
-            if read_call(base + rva) != *expected {
-                return Err("Unit renderer CALL bytes differ; no hooks installed".into());
-            }
-        }
         let mut pinned = std::ptr::null_mut();
         if GetModuleHandleExW(0x05, worker_hook as *const () as *const u16, &mut pinned) == 0 {
             return Err("Cannot pin adapter DLL for process lifetime".into());
@@ -563,7 +570,12 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
             if on(family::MINIMAP) {
                 shared.logger.write("MINIMAP installed content=352 padding=4 wide_origin=1564,724 frame=360; native markers/fog/camera/input scaled; private constants read-only");
             }
-            shared.logger.write(&format!("NATIVE PATCH_READBACK families={families:#x} sites={} worker_rva={WORKER_SITE:x} viewer_rva={VIEW_SITE:x} move_rva={MOVE_SITE:x} input_rva={INPUT_SITE:x} attack_rva={ATTACK_SITE:x} auto_attack_rva={AUTO_ATTACK_SITE:x} shader_rva={SHADER_SITE:x} skill_rvas={SKILL_SITES:x?} steering_rva={STEER_SITE:x} aim_rva={AIM_SITE:x} outline_sites={} verified=true", patches.len(), outline_sites.len()));
+            if !taken.is_empty() {
+                shared.logger.write(&format!(
+                    "NATIVE OUTLINE stepped aside: another mod changed the unit renderer spots {taken:#x?}; hover and target outlines and the attack-click flash are off (ground rings stand in), every other family installed"
+                ));
+            }
+            shared.logger.write(&format!("NATIVE PATCH_READBACK families={families:#x} sites={} worker_rva={WORKER_SITE:x} viewer_rva={VIEW_SITE:x} move_rva={MOVE_SITE:x} input_rva={INPUT_SITE:x} attack_rva={ATTACK_SITE:x} auto_attack_rva={AUTO_ATTACK_SITE:x} skill_rvas={SKILL_SITES:x?} steering_rva={STEER_SITE:x} aim_rva={AIM_SITE:x} outline_sites={} verified=true", patches.len(), outline_sites.len()));
         }
         OUTLINE_READY.store(on(family::OUTLINE), Ordering::Release);
         if shop {
@@ -580,7 +592,7 @@ pub(in crate::native_adapter) fn install(sha: &str) -> Result<(), String> {
         if on(family::STATS) {
             allow_stats();
         }
-        Ok(())
+        Ok(families)
     }
 }
 

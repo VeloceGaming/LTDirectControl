@@ -259,6 +259,20 @@ Previews come from the game's own skill data, never per-skill code:
 
 ### Change hover and click selection
 
+- **Ground ring** uses `Movement::draw_rings` and the shared debug drawing
+  helper `movement::draw_marker`, restored to the 1.3.16 drawing path in
+  1.3.19. **Read from the code:** hover uses the team colour, 2 px width and
+  2 px extra padding; the attack target uses red, 3 px width and 4 px padding.
+  Its existing 120 ms click pulse adds up to 6 px padding and 1.5 px width.
+  Ordinary units use the original `combat::highlight_radii` ellipse; towers
+  use corner brackets around their selection envelope. The helper rejects
+  line endpoints outside the viewport or covered by the HUD/minimap.
+  Off / Outline / Ground ring and the automatic compatibility fallback are
+  unchanged. No dedicated ring renderer remains. **Rejected, 2026-10-18:**
+  the 1.3.17 segmented and 1.3.18 crescent redesigns; the author's 1.3.18
+  game test found champion rings too wide and the behind-champion fading
+  unsuccessful. Their design history remains in CHANGELOG.md.
+
 - `sprite_art.rs` measures each unit kind's body from the installed art at
   start-up (background thread) and places it with the game's own draw data,
   recorded per unit by the outline hook (`native_adapter::sprite_draw`).
@@ -289,7 +303,7 @@ Debug › Log detail = Verbose when investigating.
 | `windows/preview.rs` | skill effect tree reader (skill previews) |
 | `windows/movement.rs` | move, steering, stop, recall |
 | `windows/combat.rs` | attacks, Q/W/R, aim, ability reads |
-| `windows/outline.rs` | sprite outlines, death greyscale, each unit's drawn sprites for selection |
+| `windows/outline.rs` | sprite outlines, each unit's drawn sprites for selection |
 | `windows/view.rs` | viewer/worker hooks: pacing, camera, full-screen layout |
 | `windows/input.rs` | blocking game hotkeys during control |
 | `windows/shop.rs` | buyer hooks, item/gold/build reads |

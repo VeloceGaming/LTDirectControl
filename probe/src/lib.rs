@@ -24,6 +24,9 @@ mod emote_library;
 mod emotes;
 mod hud_icons;
 mod hud_motion;
+// motion: pass
+mod ground_ring;
+mod hud_motion_pass;
 mod hud_style;
 mod input_delay;
 mod input_trace;
@@ -74,6 +77,7 @@ mod tooltip_layout;
 mod tooltips;
 mod ui_click;
 mod ui_graphics;
+mod ui_sound;
 mod ui_state;
 mod ui_theme;
 mod wheel;
@@ -270,7 +274,10 @@ fn init(host: &StableHost) -> StableMod {
         camera.clone(),
         abilities.clone(),
     ) {
-        Ok(()) => true,
+        Ok(()) => {
+            native_adapter::start_fingerprint();
+            true
+        }
         Err(reason) => {
             timing.installed(false, reason, &logger);
             false
@@ -303,6 +310,7 @@ fn init(host: &StableHost) -> StableMod {
         install_attempted: AtomicBool::new(false),
         management_seen: AtomicBool::new(false),
         session_gate: session_gate.clone(),
+        rings: Mutex::default(),
     });
     // Season statistics follow the played match (season_fix.rs).
     declaration.set_server_extension(season_fix::SeasonServer {

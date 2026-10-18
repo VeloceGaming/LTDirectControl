@@ -263,11 +263,14 @@ pub fn picked(
         .iter()
         .filter(|u| !champion_only || u.is_champion)
         .filter_map(|u| {
-            let (x0, y0, x1, y1, margin) = screen_area(frame, u);
-            if cursor.0 < x0 - margin
-                || cursor.0 > x1 + margin
-                || cursor.1 < y0 - margin
-                || cursor.1 > y1 + margin
+            // The padding counts as edge, like the forgiveness: a body hit
+            // still beats a neighbour's padding within the same tier.
+            let (x0, y0, x1, y1, margin) = body_screen_area(frame, u);
+            let reach = margin + SELECTION_PADDING;
+            if cursor.0 < x0 - reach
+                || cursor.0 > x1 + reach
+                || cursor.1 < y0 - reach
+                || cursor.1 > y1 + reach
             {
                 return None;
             }
@@ -300,10 +303,20 @@ pub fn body_world_rect(unit: &Unit) -> Option<[f32; 4]> {
     let side = if unit.is_champion { 3. } else { 0. };
     Some([x0 - side, y0, x1 + side, y1 + 2.])
 }
+/// Screen pixels every selection area reaches past the body on each side,
+/// at any zoom (user, 2026-10-18; replaces 1.3.12's 10 %, which added only
+/// 1-3 px). The 3 px edge forgiveness comes on top.
+pub const SELECTION_PADDING: f32 = 8.;
 /// Screen rectangle (x0, y0, x1, y1) of a unit's selection area and its
 /// edge forgiveness: the measured body when available, otherwise the
-/// bounded envelope.
+/// bounded envelope, padded by `SELECTION_PADDING`.
 pub fn screen_area(frame: crate::camera::CameraFrame, u: &Unit) -> (f32, f32, f32, f32, f32) {
+    let (x0, y0, x1, y1, margin) = body_screen_area(frame, u);
+    let pad = SELECTION_PADDING;
+    (x0 - pad, y0 - pad, x1 + pad, y1 + pad, margin)
+}
+/// The unpadded selection rectangle: the body itself (skill markers sit on it).
+pub fn body_screen_area(frame: crate::camera::CameraFrame, u: &Unit) -> (f32, f32, f32, f32, f32) {
     if let Some([x0, y0, x1, y1]) = body_world_rect(u) {
         let a = frame.project_unclipped(x0, y0);
         let b = frame.project_unclipped(x1, y1);
@@ -566,12 +579,12 @@ mod tests {
                     Some(9)
                 );
             }
-            assert!(clicked_unit(f, f.project_unclipped(312., 190.), &[minion], false).is_none());
+            assert!(!body_hit(f, f.project_unclipped(312., 190.), &minion));
             assert_eq!(
                 clicked_unit(f, f.project_unclipped(300., 145.), &[tower], false),
                 Some(19)
             );
-            assert!(clicked_unit(f, f.project_unclipped(350., 180.), &[tower], false).is_none());
+            assert!(!body_hit(f, f.project_unclipped(350., 180.), &tower));
             let champion = units()[1];
             assert_eq!(
                 clicked_unit(
@@ -652,14 +665,14 @@ mod tests {
                     Some(9)
                 );
             }
-            assert!(clicked_unit(f, f.project_unclipped(300., 210.), &[monster], false).is_none());
+            assert!(!body_hit(f, f.project_unclipped(300., 210.), &monster));
             assert_eq!(
                 clicked_unit(f, f.project_unclipped(300., 210.), &[champion], false),
                 Some(9)
             );
             // The old maximum attack-frame width accepted distant empty ground.
-            assert!(clicked_unit(f, f.project_unclipped(350., 180.), &[monster], false).is_none());
-            assert!(clicked_unit(f, f.project_unclipped(300., 209.), &[small], false).is_none());
+            assert!(!body_hit(f, f.project_unclipped(350., 180.), &monster));
+            assert!(!body_hit(f, f.project_unclipped(300., 209.), &small));
             let m = highlight_radii(f, &monster);
             let s = highlight_radii(f, &small);
             assert!(m.0 > s.0 && m.1 > s.1);
@@ -763,15 +776,57 @@ mod tests {
                 Some(9)
             );
             for point in [(300., 140.), (326., 180.), (300., 222.)] {
-                assert!(
-                    clicked_unit(f, f.project_unclipped(point.0, point.1), &[unit], false)
-                        .is_none()
-                );
+                assert!(!body_hit(f, f.project_unclipped(point.0, point.1), &unit));
             }
             let ring = highlight_radii(f, &unit);
             assert!((ring.0 - (14.6 * sy + 3.)).abs() < 0.001);
             assert!((ring.1 - (43. * 0.18 + 12.) * sy).abs() < 0.001);
         }
+    }
+    /// Inside the unpadded body and its edge forgiveness: the shape the
+    /// body-tuning tests below pin; `SELECTION_PADDING` comes on top.
+    fn body_hit(f: crate::camera::CameraFrame, p: (f32, f32), u: &Unit) -> bool {
+        let (x0, y0, x1, y1, m) = body_screen_area(f, u);
+        p.0 >= x0 - m && p.0 <= x1 + m && p.1 >= y0 - m && p.1 <= y1 + m
+    }
+    #[test]
+    fn the_selection_area_is_the_body_padded_by_8_px_at_every_zoom() {
+        let unit = Unit {
+            body: Some(crate::sprite_picking::Body {
+                width: 24.,
+                height: 40.,
+                art: None,
+            }),
+            ..units()[1]
+        };
+        for extent in [512., 2048.] {
+            let f = frame(extent);
+            let (a0, b0, a1, b1, m) = body_screen_area(f, &unit);
+            assert_eq!(
+                screen_area(f, &unit),
+                (a0 - 8., b0 - 8., a1 + 8., b1 + 8., m)
+            );
+            // Past the old edge and its forgiveness, inside the padding.
+            let p = (a1 + m + 6., (b0 + b1) / 2.);
+            assert_eq!(clicked_unit(f, p, &[unit], false), Some(unit.id));
+            let p = (a1 + m + 9., (b0 + b1) / 2.);
+            assert_eq!(clicked_unit(f, p, &[unit], false), None);
+        }
+        // A body hit beats a neighbour's padding: the cursor 1 px inside one
+        // body and 5 px left of the next one picks the first.
+        let f = frame(1024.);
+        let (a0, b0, a1, b1, _) = body_screen_area(f, &unit);
+        let dx = (a1 - a0 + 4.) * 1024. / 2048.;
+        let next = Unit {
+            id: 12,
+            position: (unit.position.0 + (dx * 1000.) as u64, unit.position.1),
+            ..unit
+        };
+        let p = (a1 - 1., (b0 + b1) / 2.);
+        assert_eq!(
+            clicked_units(f, p, &[next, unit], false),
+            vec![unit.id, next.id]
+        );
     }
     #[test]
     fn heads_and_shoulders_are_pickable_at_each_zoom_without_changing_collision() {
@@ -824,12 +879,12 @@ mod tests {
                 clicked_unit(f, f.project_unclipped(305., 189.), &[minion], false),
                 Some(9)
             );
-            assert!(clicked_unit(f, f.project_unclipped(312., 190.), &[minion], false).is_none());
+            assert!(!body_hit(f, f.project_unclipped(312., 190.), &minion));
             assert_eq!(
                 clicked_unit(f, f.project_unclipped(325., 135.), &[monster], false),
                 Some(9)
             );
-            assert!(clicked_unit(f, f.project_unclipped(350., 150.), &[monster], false).is_none());
+            assert!(!body_hit(f, f.project_unclipped(350., 150.), &monster));
         }
     }
     #[test]

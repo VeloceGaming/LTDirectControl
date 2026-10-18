@@ -131,9 +131,17 @@ fn current() -> usize {
 /// Tests: a window template's braces balance outside its quoted strings
 /// and every string closes, so translated text cannot cut the window short.
 #[cfg(test)]
+/// A spawnable template: braces balance outside strings, and there is
+/// exactly one root node, with nothing after it. (1.3.3 shipped a node
+/// pushed after the session strip's closing brace; the game then built no
+/// strip at all.)
 pub(crate) fn check_template(source: &str) -> Result<(), String> {
     let (mut depth, mut quoted, mut escape) = (0i64, false, false);
+    let mut roots = 0;
     for (at, c) in source.char_indices() {
+        if !quoted && depth == 0 && roots > 0 && !c.is_whitespace() {
+            return Err(format!("content after the root node at byte {at}"));
+        }
         if quoted {
             match (escape, c) {
                 (true, _) => escape = false,
@@ -145,7 +153,12 @@ pub(crate) fn check_template(source: &str) -> Result<(), String> {
         }
         match c {
             '"' => quoted = true,
-            '{' => depth += 1,
+            '{' => {
+                if depth == 0 {
+                    roots += 1;
+                }
+                depth += 1;
+            }
             '}' => {
                 depth -= 1;
                 if depth < 0 {
@@ -157,6 +170,9 @@ pub(crate) fn check_template(source: &str) -> Result<(), String> {
     }
     if quoted || depth != 0 {
         return Err(format!("unbalanced: depth {depth}, open string {quoted}"));
+    }
+    if roots != 1 {
+        return Err(format!("{roots} root nodes"));
     }
     Ok(())
 }

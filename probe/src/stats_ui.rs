@@ -39,6 +39,10 @@ fn frame(s: &mut String, (x, y, w, h): (i32, i32, i32, i32)) {
         crate::ui_theme::shade(5, 0xff)
     ));
 }
+#[cfg(test)]
+pub(crate) fn templates_for_test() -> [String; 2] {
+    [own_template(), target_template()]
+}
 fn own_template() -> String {
     // The HUD's root (bottom-anchored, 1920 wide) 4 px taller, so the panel
     // stays beside the Q slot (HUD y 4, 80 tall) at any resolution. The panel

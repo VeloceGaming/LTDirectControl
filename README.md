@@ -17,15 +17,17 @@ plays (mostly).
 
 ## Status
 
-- Version **1.3.0**, for game versions **0.6.4**, **0.6.3** and the **0.7.0**
+- Version **1.4.0**, for game versions **0.6.4**, **0.6.3** and the **0.7.0**
   beta on Windows x64 only. The mod checks the game executable's
   fingerprint and stays inactive on any other build; a game update needs a
   mod update.
 - Single player; one controlled athlete per match.
 - Works with the vanilla item set (4 slots) and the Riot item mod (6 slots),
   and with Workshop champions (tested with Leef's Variety, Glimmer's Variety
-  Pack and Oppi OC). Skill previews are approximate, especially for modded
-  champions.
+  Pack, Oppi OC and League of Legends Heroes). Skill previews are
+  approximate, especially for modded champions. When another mod already
+  hooks the game's unit drawing (League of Legends Heroes does, on 0.6.4),
+  only the sprite outlines step aside and ground rings take their place.
 - The mod's text follows the game's language (all 17), or any language you
   pick in Settings › Interface › Mod language.
 
@@ -61,9 +63,19 @@ All bindings can be changed in the mod's Settings window (gear button).
   League-style cursors.
 - **HUD**: a bottom strip with portrait, health, skills and items; your
   stats beside the skills (C); a target frame at the top left for any unit
-  you left-click; a Tab scoreboard for all ten players; hover and target
-  outlines on units; an optional low-health screen effect. One UI colour
-  setting recolours every panel.
+  you left-click; a Tab scoreboard for all ten players; skill cooldown
+  numbers, charge marks, a ready cue and chime, and a red flash and sound
+  when a cast is refused; interface sounds; an optional low-health screen
+  effect and a dark veil while you are dead. One UI colour setting
+  recolours every panel.
+- **Unit highlight** (Settings › Interface › Battlefield feedback): the unit
+  under the cursor and your attack target are marked in team colours, as
+  sprite outlines or as rings on the ground under the unit. Ground ring is
+  the more compatible choice: it uses no game hook for drawing units.
+- **Selection**: every unit's clickable area reaches 8 px past its body.
+  Whatever your vision choice shows (your team, the opponent or all) can be
+  hovered, selected, attacked and aimed at, and the vision choice stays
+  when you switch to a teammate.
 - **Shop**: turn on *Manual shopping* (Settings › Advanced › General) and the
   game stops auto-buying for your athlete. Press P to buy anything,
   League-style: the AI's whole build plan as Recommended, an item grid with
@@ -151,8 +163,8 @@ powershell tools/install_verified_build.ps1 -Version <version> -PreviousVersion 
 - `prepare_sdk.py` copies the game's mod SDK (`<game>/mod-sdk-stable`) into
   `sdk/`, which is not in this repository, and adds the mod's two local SDK
   additions. Run it once after cloning and after every game update.
-- The verifier checks the staged DLL against the installed game (555 code
-  anchors), the packaged artwork against `tools/records/`, and takes the
+- The verifier checks the staged DLL against each supported game version's
+  executable (581 code anchors), the packaged artwork against `tools/records/`, and takes the
   release notes from `CHANGELOG.md`.
 - Set `TFM2_GAME_DIR` if the game is not in Steam's default folder.
 
@@ -168,7 +180,7 @@ stay in `%LOCALAPPDATA%\LTDirectControl`).
 | Game hooks (game 0.6.3, 0.6.4 and 0.7.0) | `native_adapter/`: `mod.rs` (the safe API the rest of the mod calls), `windows/mod.rs` (patch installation), one file per hook family (`movement`, `combat`, `outline`, `view`, `input`, `shop`, `tooltips`, `preview`, `stats`), `v063/`, `v064/` and `v070/` (every address and byte pattern of one game version each, `stat_sites.rs` for the stat rules); `athlete_rules.rs` (the stat rules' arithmetic); `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `worker_watch.rs` (stall report), `ai_handback.rs` |
 | Orders and input | `platform_input.rs` (keyboard/mouse), `movement.rs` (orders and movement), `combat.rs` (targets), `acquisition.rs`, `abilities.rs` (casting), `camera.rs`, `wheel.rs`, `map_path.rs` |
 | Picking | `sprite_picking.rs` (body sizes), `own_selection.rs` |
-| HUD and windows | `player_hud.rs`, `stats_panel.rs` / `stats_ui.rs`, `team_status.rs`, `team_info.rs`, `session_ui.rs`, `settings_ui.rs` (+ `settings_ui/`), `shop_ui.rs`, `emotes.rs` / `emote_library.rs`, `minimap.rs`, `screen_effect.rs`, `skill_preview.rs` / `preview_style.rs`, `cursor.rs`, `tooltips.rs`, `hud_*.rs`, `ui_graphics.rs`, `ui_theme.rs` (UI colour), `ui_click.rs` |
+| HUD and windows | `player_hud.rs`, `ground_ring.rs` (Ground ring), `ui_sound.rs`, `stats_panel.rs` / `stats_ui.rs`, `team_status.rs`, `team_info.rs`, `session_ui.rs`, `settings_ui.rs` (+ `settings_ui/`), `shop_ui.rs`, `emotes.rs` / `emote_library.rs`, `minimap.rs`, `screen_effect.rs`, `skill_preview.rs` / `preview_style.rs`, `cursor.rs`, `tooltips.rs`, `hud_*.rs`, `ui_graphics.rs`, `ui_theme.rs` (UI colour), `ui_click.rs` |
 | Text | `lang.rs` (translations, language detection) and `probe/lang/*.json` |
 | Shop logic | `shop.rs` (orders, purchase plans, buyer answers), `shop_recipe.rs` (structural upgrade graph and alternative paths), `purchase_tracker.rs`, `inventory.rs` |
 | Settings and shared state | `settings.rs` (options and key bindings), `ui_state.rs` (which windows are open, read by input and camera code) |

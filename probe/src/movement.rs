@@ -2,7 +2,7 @@
 //! steering toward them, click feedback and own-team athlete selection.
 use super::{
     combat::{Order, Unit},
-    own_selection::{contract_team, MatchKey, OwnSelection, PlayerIdentity},
+    own_selection::{contract_team, MatchKey, OwnSelection, PlayerIdentity, TeamScan},
     platform_input::Keys,
     Logger,
 };
@@ -90,6 +90,41 @@ static LAST_HOVER: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsi
 pub struct Movement {
     enabled: bool,
     state: Mutex<State>,
+    /// Your team as last found, and the scan finding it. Kept across
+    /// matches (`reset_session` clears `state`, not this), so a new match
+    /// re-checks only these athletes; a save exit forgets it.
+    known: Mutex<KnownTeam>,
+}
+#[derive(Default)]
+struct KnownTeam {
+    /// (team, name, athletes) from the last complete scan.
+    team: Option<(usize, String, std::collections::BTreeSet<usize>)>,
+    scan: TeamScan,
+}
+/// The team record's keys are logged once per game session (a diagnostic).
+static TEAM_KEYS_LOGGED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// What `load_own_team` does with a team kept from before this match.
+#[derive(Debug, PartialEq)]
+enum KeptTeam {
+    /// None kept, or another team: scan the save.
+    Scan,
+    /// Every kept athlete still has your team's contract: use it.
+    Keep,
+    /// One has left (or could not be read): forget it and scan.
+    Left,
+}
+fn kept_team(
+    kept: Option<usize>,
+    team: usize,
+    athletes_still_on_team: impl FnOnce() -> bool,
+) -> KeptTeam {
+    if kept != Some(team) {
+        KeptTeam::Scan
+    } else if athletes_still_on_team() {
+        KeptTeam::Keep
+    } else {
+        KeptTeam::Left
+    }
 }
 impl State {
     /// Next point of the walk a direct attack order was laid over, if any.
@@ -119,6 +154,14 @@ impl Movement {
         Self {
             enabled,
             state: Mutex::default(),
+            known: Mutex::default(),
+        }
+    }
+    /// A save exit: the next save may be another career, so the next
+    /// management frame scans every athlete again.
+    pub fn forget_team(&self) {
+        if let Ok(mut known) = self.known.lock() {
+            *known = KnownTeam::default();
         }
     }
     pub fn reset_session(&self, keys: Keys, logger: &Logger) {
@@ -155,25 +198,75 @@ impl Movement {
         let Some(name) = ctx.team_name(team).filter(|name| !name.is_empty()) else {
             return;
         };
-        let athletes = ctx
-            .athlete_ids()
-            .into_iter()
-            .filter(|athlete| {
-                ctx.record_get_json(RecordKindV1::Athlete, *athlete, "contract")
-                    .and_then(|json| contract_team(&json))
-                    == Some(team)
-            })
-            .collect::<std::collections::BTreeSet<_>>();
-        // An incomplete management-data view is not a resolved ownership
-        // snapshot. Keep retrying when the real team and roster become available.
-        if athletes.is_empty() {
-            return;
+        // Diagnostic, once per session: does the team record list its
+        // roster (a cheaper path for a later build)? Not used for logic.
+        if !TEAM_KEYS_LOGGED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+            let keys = ctx
+                .record_get_json(RecordKindV1::Team, team, "")
+                .and_then(|json| serde_json::from_str::<serde_json::Value>(&json).ok())
+                .map(|value| match value.as_object() {
+                    Some(map) => map.keys().cloned().collect::<Vec<_>>().join(","),
+                    None => format!("not an object ({} bytes)", value.to_string().len()),
+                })
+                .unwrap_or_else(|| "unavailable".into());
+            logger.write(&format!(
+                "MANUAL team record keys team={team}: {}",
+                keys.chars().take(300).collect::<String>()
+            ));
         }
+        let contract = |athlete: usize| -> Option<usize> {
+            contract_team(&ctx.record_get_json(RecordKindV1::Athlete, athlete, "contract")?)
+        };
+        // The game is called with no lock held: take the state out, put it back.
+        let Some(mut known) = self.known.lock().ok().map(|mut k| std::mem::take(&mut *k)) else {
+            return;
+        };
+        let kept = known.team.as_ref().map(|(t, _, _)| *t);
+        let outcome = kept_team(kept, team, || {
+            known
+                .team
+                .as_ref()
+                .is_some_and(|(_, _, athletes)| athletes.iter().all(|a| contract(*a) == Some(team)))
+        });
+        let athletes = match outcome {
+            KeptTeam::Keep => known.team.as_ref().map(|(_, _, a)| a.clone()),
+            KeptTeam::Scan | KeptTeam::Left => {
+                if outcome == KeptTeam::Left {
+                    logger.write(&format!(
+                        "MANUAL own_team={team}: a kept athlete left, or their contract could not be read; scanning the save again"
+                    ));
+                }
+                known.team = None;
+                // At most SCAN_CHUNK contracts this frame; None until done.
+                // An empty result (the management data not ready) scans again.
+                let ids = ctx.athlete_ids();
+                known
+                    .scan
+                    .step(team, &ids, contract)
+                    .filter(|found| !found.is_empty())
+            }
+        };
+        if let Some(athletes) = &athletes {
+            known.team = Some((team, name.clone(), athletes.clone()));
+        }
+        let restarted = outcome == KeptTeam::Keep;
+        if let Ok(mut slot) = self.known.lock() {
+            *slot = known;
+        }
+        let Some(athletes) = athletes else {
+            return;
+        };
         if let Ok(mut state) = self.state.lock() {
             if state.selection.resolve_owner(team, name, athletes) {
                 logger.write(&format!(
-                    "MANUAL own_team={team} name={:?} athletes={:?}",
-                    state.selection.team_name, state.selection.athletes
+                    "MANUAL own_team={team} name={:?} athletes={:?}{}",
+                    state.selection.team_name,
+                    state.selection.athletes,
+                    if restarted {
+                        " (kept from the last match; their contracts re-checked)"
+                    } else {
+                        ""
+                    }
                 ));
             }
         }
@@ -976,54 +1069,28 @@ impl Movement {
         drop(s);
         // Both hovered and selected attack-target markers are debug feedback.
         // Picking and the actual attack order remain independent of drawing.
-        for (unit, color, extra) in [
-            (
-                hover,
-                hover.map(crate::combat::hover_color).unwrap_or(0),
+        if let Some(unit) = hover {
+            draw_marker(
+                ctx,
+                camera,
+                frame,
+                unit,
+                crate::combat::hover_color(unit),
                 3.,
-            ),
-            (attack, 0xff7858ff, 7.),
-        ] {
-            let Some(unit) = unit else { continue };
-            let Some(center) = frame.project(unit.position) else {
-                continue;
-            };
-            if unit.is_tower {
-                let (half, height, bottom, margin) =
-                    crate::combat::selection_envelope(frame, &unit);
-                let pad = margin + extra * 0.3;
-                let left = center.0 - half - pad;
-                let right = center.0 + half + pad;
-                let top = center.1 - height - pad;
-                let bottom = center.1 + bottom + pad;
-                let length = ((right - left) * 0.25).clamp(6., 18.);
-                for (x, y, dx, dy) in [
-                    (left, top, 1., 1.),
-                    (right, top, -1., 1.),
-                    (left, bottom, 1., -1.),
-                    (right, bottom, -1., -1.),
-                ] {
-                    for end in [(x + dx * length, y), (x, y + dy * length)] {
-                        if !camera.blocked((x, y)) && !camera.blocked(end) {
-                            crate::abilities::draw_segment(ctx, frame, (x, y), end, color);
-                        }
-                    }
-                }
-                continue;
-            }
-            let (rx, ry) = crate::combat::highlight_radii(frame, &unit);
-            let (rx, ry) = (rx + extra, ry + extra * 0.55);
-            for i in 0..48 {
-                let point = |j: usize| {
-                    let theta = j as f32 * std::f32::consts::TAU / 48.;
-                    (center.0 + theta.cos() * rx, center.1 + theta.sin() * ry)
-                };
-                let (a, b) = (point(i), point(i + 1));
-                if !camera.blocked(a) && !camera.blocked(b) {
-                    crate::abilities::draw_segment(ctx, frame, a, b, color);
-                }
-            }
+                2.,
+            );
         }
+        if let Some(unit) = attack {
+            draw_marker(ctx, camera, frame, unit, 0xff7858ff, 7., 2.);
+        }
+    }
+    /// What Ground ring draws this frame (crate::ground_ring): the hovered
+    /// unit, the attack target and the latest attack-click, from the same
+    /// markers as the outline.
+    pub fn ring_inputs(&self) -> (Option<Unit>, Option<Unit>, Option<(usize, Instant)>) {
+        self.state.lock().map_or((None, None, None), |s| {
+            (s.frame_markers.0, s.frame_markers.1, s.frame_click)
+        })
     }
     pub fn apply_ability_action(&self, action: crate::abilities::ClientAction) {
         if let Ok(mut s) = self.state.lock() {
@@ -1052,6 +1119,16 @@ impl Movement {
             }
             s.native_action = Some((action, Instant::now()));
         }
+    }
+    // motion: A2
+    /// The game reports the controlled athlete recalling (its native action
+    /// 1, the state the RECALL NATIVE_ACTION log line follows), recently.
+    pub fn recalling(&self) -> bool {
+        self.state.lock().is_ok_and(|s| {
+            s.native_action.is_some_and(|(action, at)| {
+                action == 1 && at.elapsed() <= Duration::from_millis(250)
+            })
+        })
     }
     pub fn recall_rejected(&self, log: &Logger) {
         if let Ok(mut s) = self.state.lock() {
@@ -1295,6 +1372,65 @@ impl Movement {
                 ));
             }
         }
+    }
+}
+/// Whether Unit highlight (`hover_outline`: 0 Off, 1 Outline, 2 Ground
+/// ring) draws ground rings: chosen, or standing in for an outline that is
+/// not installed because another mod holds the unit renderer.
+pub fn ground_rings(choice: f64, outline_installed: bool) -> bool {
+    choice == 2. || (choice == 1. && !outline_installed)
+}
+/// A ground marker under `unit`: an ellipse at its feet, `extra` px
+/// outside the highlight radii (corner brackets for towers), drawn outside
+/// the HUD and the minimap.
+fn draw_marker(
+    ctx: &mut StableClient<'_>,
+    camera: &crate::camera::CameraControl,
+    frame: crate::camera::CameraFrame,
+    unit: Unit,
+    color: u32,
+    extra: f32,
+    width: f32,
+) {
+    let Some(center) = frame.project(unit.position) else {
+        return;
+    };
+    let mut line = |a: (f32, f32), b: (f32, f32)| {
+        if [a, b]
+            .into_iter()
+            .all(|p| !camera.blocked(p) && frame.viewport.contains(p) && !frame.minimap.contains(p))
+        {
+            ctx.draw_line("UI", a.0, a.1, b.0, b.1, width, 990, color);
+        }
+    };
+    if unit.is_tower {
+        let (half, height, bottom, margin) = crate::combat::selection_envelope(frame, &unit);
+        let pad = margin + extra * 0.3;
+        let left = center.0 - half - pad;
+        let right = center.0 + half + pad;
+        let top = center.1 - height - pad;
+        let bottom = center.1 + bottom + pad;
+        let length = ((right - left) * 0.25).clamp(6., 18.);
+        for (x, y, dx, dy) in [
+            (left, top, 1., 1.),
+            (right, top, -1., 1.),
+            (left, bottom, 1., -1.),
+            (right, bottom, -1., -1.),
+        ] {
+            for end in [(x + dx * length, y), (x, y + dy * length)] {
+                line((x, y), end);
+            }
+        }
+        return;
+    }
+    let (rx, ry) = crate::combat::highlight_radii(frame, &unit);
+    let (rx, ry) = (rx + extra, ry + extra * 0.55);
+    let point = |j: usize| {
+        let theta = j as f32 * std::f32::consts::TAU / 48.;
+        (center.0 + theta.cos() * rx, center.1 + theta.sin() * ry)
+    };
+    for i in 0..48 {
+        line(point(i), point(i + 1));
     }
 }
 #[cfg(test)]
@@ -1752,6 +1888,12 @@ mod tests {
         assert!(!m.direct_segment((1, 33, 1), 100, from, goal, &log));
         m.observe_position(None);
         assert!(!m.direct_segment((1, 33, 1), 100, from, goal, &log));
+    }
+    #[test]
+    fn ground_rings_are_chosen_or_stand_in_for_a_missing_outline() {
+        assert!(ground_rings(2., true) && ground_rings(2., false));
+        assert!(!ground_rings(1., true) && ground_rings(1., false));
+        assert!(!ground_rings(0., true) && !ground_rings(0., false));
     }
     fn hover_ally() -> Unit {
         Unit {
@@ -2377,6 +2519,27 @@ mod tests {
         let movement = Movement::new(true);
         movement.state.lock().unwrap().selection.athletes.insert(60);
         movement
+    }
+    #[test]
+    fn a_kept_team_is_rechecked_and_rescanned_only_when_someone_left() {
+        let mut checked = false;
+        assert_eq!(kept_team(None, 4, || unreachable!()), KeptTeam::Scan);
+        // Another team (another save or career): scan, without re-checking.
+        assert_eq!(kept_team(Some(3), 4, || unreachable!()), KeptTeam::Scan);
+        assert_eq!(
+            kept_team(Some(4), 4, || {
+                checked = true;
+                true
+            }),
+            KeptTeam::Keep
+        );
+        assert!(checked);
+        assert_eq!(kept_team(Some(4), 4, || false), KeptTeam::Left);
+        // A save exit forgets the kept team.
+        let m = Movement::new(true);
+        m.known.lock().unwrap().team = Some((4, "A".into(), [1].into()));
+        m.forget_team();
+        assert!(m.known.lock().unwrap().team.is_none());
     }
     #[test]
     fn acquisition_debug_uses_selected_live_sample_and_rejects_background_updates() {

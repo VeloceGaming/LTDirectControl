@@ -11,6 +11,28 @@ pub struct TeamInfo {
     info_tooltip_found: bool,
     info_tooltip_reports: usize,
     reported_visibility: Option<bool>,
+    /// The centred scoreboard layout was written since engaging.
+    layout_written: bool,
+}
+/// The scoreboard panel is centred on its parent (within a pixel): the
+/// layout the mod writes. Rectangles are (x, y, width, height).
+fn scoreboard_centred(panel: (f32, f32, f32, f32), parent: (f32, f32, f32, f32)) -> bool {
+    let centre = |(x, y, w, h): (f32, f32, f32, f32)| (x + w / 2., y + h / 2.);
+    let (a, b) = (centre(panel), centre(parent));
+    (a.0 - b.0).abs() <= 1. && (a.1 - b.1).abs() <= 1.
+}
+/// Write the scoreboard's layout: once on engaging, then only when its
+/// rectangle shows the game moved it off centre. Unknown rectangles (a
+/// hidden panel) are not a reason to write again.
+fn scoreboard_needs_write(
+    written: bool,
+    panel: Option<(f32, f32, f32, f32)>,
+    parent: Option<(f32, f32, f32, f32)>,
+) -> bool {
+    !written
+        || panel
+            .zip(parent)
+            .is_some_and(|(panel, parent)| !scoreboard_centred(panel, parent))
 }
 impl TeamInfo {
     pub fn apply(
@@ -113,9 +135,19 @@ impl TeamInfo {
                     ctx.ui_set_visible(path, false);
                 }
             }
-            if !ctx.ui_set_properties(PANEL, "x: 0px; y: 0px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; ignore_event: true; color: #292929ff;") && !self.layout_failure_logged {
-                log.write("HUD centered scoreboard properties rejected");
-                self.layout_failure_logged = true;
+            // Before 1.3.7 this was written every frame. Now: on engaging, and
+            // again only when the game has moved the panel off centre. (The
+            // per-frame write may have been deliberate; to be seen in game.)
+            if scoreboard_needs_write(
+                self.layout_written,
+                ctx.ui_node_rect(PANEL),
+                ctx.ui_node_rect("ingame"),
+            ) {
+                self.layout_written = true;
+                if !ctx.ui_set_properties(PANEL, "x: 0px; y: 0px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; ignore_event: true; color: #292929ff;") && !self.layout_failure_logged {
+                    log.write("HUD centered scoreboard properties rejected");
+                    self.layout_failure_logged = true;
+                }
             }
         } else if self.engaged {
             for path in self.hover_targets.drain(..) {
@@ -124,6 +156,7 @@ impl TeamInfo {
             for (path, visible) in self.hidden.drain(..) {
                 ctx.ui_set_visible(path, visible);
             }
+            self.layout_written = false;
             if let Some((x, y)) = self.original_position.take() {
                 ctx.ui_set_properties(PANEL, &format!("x: {x}px; y: {y}px; anchor_x: 0; pivot_x: 0; anchor_y: 0; pivot_y: 0; ignore_event: false; color: #161721ff;"));
             }
@@ -186,5 +219,22 @@ mod tests {
         let mut info = TeamInfo::default();
         assert_eq!(info.visibility(true, true, true, None), None);
         assert_eq!(info.visibility(false, true, true, Some(true)), None);
+    }
+    #[test]
+    fn the_scoreboard_is_written_on_engaging_and_again_only_when_moved() {
+        let screen = Some((0., 0., 1920., 1080.));
+        let centred = Some((660., 290., 600., 500.));
+        let moved = Some((994., 64., 600., 500.));
+        assert!(scoreboard_needs_write(false, centred, screen));
+        assert!(scoreboard_needs_write(false, None, None));
+        assert!(!scoreboard_needs_write(true, centred, screen));
+        assert!(!scoreboard_needs_write(
+            true,
+            Some((660.6, 289.5, 600., 500.)),
+            screen
+        ));
+        assert!(scoreboard_needs_write(true, moved, screen));
+        // A hidden panel with no rectangle is not rewritten every frame.
+        assert!(!scoreboard_needs_write(true, None, screen));
     }
 }

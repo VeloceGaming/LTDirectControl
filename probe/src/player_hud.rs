@@ -4,7 +4,9 @@ use crate::{
     abilities::HudSkills,
     camera::Rect,
     hud_icons::{self, Icon},
-    native_timing::MatchKey,
+    // motion: pass
+    hud_motion_pass as pass,
+    native_timing::{MatchKey, Phase},
     Logger,
 };
 use mod_api_stable::{SettingTargetV1, StableClient};
@@ -29,20 +31,57 @@ const SKILL_STEP: usize = 88;
 const SKILL_SIZE: usize = 80;
 const ITEM_Y: usize = 100;
 const ITEM_SIZE: usize = 36;
+/// Skill slot cues (design note "HUD cues", 2026-10-17). The drain edge
+/// warms from its white to signal yellow over the last tenth of a cooldown.
+const EDGE_WARM_FROM: f32 = 0.9;
+/// The icon's brightness while a learned, usable skill recovers; it lifts
+/// to full when the skill is ready. Multiplied with the press tint.
+const COOLING_ICON: f32 = 0.75;
+/// At ready, the edge holds signal yellow for one beat (the 83 ms press
+/// step), then fades on the tonal curve over 100 ms while the icon lifts.
+const READY_BEAT: f32 = 0.083;
+const READY_FADE: f32 = 0.1;
+/// One-time whole-slot flash: 100 ms held, then a 300 ms tonal fade.
+const READY_FLASH_HOLD: f32 = 0.1;
+const READY_FLASH_FADE: f32 = 0.3;
+/// Shared top stop for the countdown line and ready cue, inside R's border.
+const READY_EDGE_Y: f32 = 2.;
+/// Shorter cooldowns (and one-frame readiness blips) get no ready cue.
+const READY_CUE_MIN_TICKS: usize = 30;
+/// Only a cooldown of at least 4 s ends with the chime (when it is on), so a
+/// skill that returns every two seconds does not chime all match.
+const READY_CHIME_MIN_TICKS: usize = 240;
 pub static TOOLTIP_SCROLL: AtomicI32 = AtomicI32::new(0);
 /// Overflow panel and its source tile, in screen coordinates, for wheel routing.
 pub static TOOLTIP_SCROLL_AREA: Mutex<Option<(Rect, Rect)>> = Mutex::new(None);
 
-fn death_countdown(alive: bool, ticks: usize) -> String {
-    if alive {
-        String::new()
-    } else if ticks > 0 {
-        crate::lang::trf(
-            "Respawning in {seconds}",
-            &[("seconds", &ticks.div_ceil(60))],
-        )
-    } else {
-        crate::lang::tr("Respawning…").into()
+/// What the state plate under the game's clock shows (design note "HUD
+/// motion, second pass", S1). No words: a glyph, then a key cap or a count.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Plate {
+    /// The match is paused: the pause glyph in signal yellow, then F11.
+    Paused,
+    /// Your athlete is dead: the skull, then whole seconds to respawn
+    /// (simulation ticks, rounded up); None while unknown (the skull alone).
+    Dead(Option<usize>),
+    /// The game's AI drives your athlete: the processor glyph, then F11.
+    Ai,
+}
+/// The plate for this frame: paused over dead over AI; nothing outside a
+/// match you play or watch. The count comes from simulation ticks only, as
+/// the strip's `respawn` label does (no wall-clock extrapolation).
+pub fn plate_state(
+    phase: Option<Phase>,
+    alive: Option<bool>,
+    respawn_ticks: usize,
+) -> Option<Plate> {
+    match phase? {
+        Phase::Paused => Some(Plate::Paused),
+        Phase::Running | Phase::Ai if alive == Some(false) => Some(Plate::Dead(
+            (respawn_ticks > 0).then(|| respawn_ticks.div_ceil(60)),
+        )),
+        Phase::Ai => Some(Plate::Ai),
+        _ => None,
     }
 }
 
@@ -309,15 +348,140 @@ fn hp_percent(s: &Snapshot) -> f32 {
         (hp.min(max) as f64 / max as f64 * 100.) as f32
     })
 }
+/// Tenths below three seconds ("2.4"), whole seconds from three ("12"),
+/// both rounded up so the number never reaches zero before the skill is ready.
 fn cooldown(ticks: usize) -> String {
+    let tenths = ticks.div_ceil(6);
     if ticks == 0 {
         crate::lang::tr("Ready").into()
+    } else if tenths < 30 {
+        format!("{}.{}", tenths / 10, tenths % 10)
     } else {
-        format!("{:.1}s", (ticks as f64 / 6.).ceil() / 10.)
+        ticks.div_ceil(60).to_string()
     }
+}
+/// How far the drain edge has warmed (0 white, 1 signal yellow).
+fn edge_warmth(remaining: usize, peak: usize) -> f32 {
+    let progress = 1. - remaining as f32 / peak.max(1) as f32;
+    ((progress - EDGE_WARM_FROM) / (1. - EDGE_WARM_FROM)).clamp(0., 1.)
+}
+/// Keep the moving edge from passing the ready cue's resting position.
+/// The shade still drains all the way to zero; this only positions the line.
+fn cooldown_edge_y(drain: f32, ready_cue: bool) -> f32 {
+    if ready_cue {
+        READY_EDGE_Y
+    } else {
+        drain.max(READY_EDGE_Y)
+    }
+}
+/// The ready cue `seconds` after the skill became ready: (edge opacity,
+/// icon lift from the cooling brightness, 0 to 1), or None once it is over.
+fn ready_cue(seconds: f32) -> Option<(f32, f32)> {
+    let fade = ((seconds - READY_BEAT) / READY_FADE).clamp(0., 1.);
+    (seconds < READY_BEAT + READY_FADE).then(|| {
+        let eased = crate::hud_motion::easing(fade, true);
+        (1. - eased, eased)
+    })
+}
+fn ready_flash_strength(seconds: f32) -> f32 {
+    1. - crate::hud_motion::easing(
+        ((seconds - READY_FLASH_HOLD) / READY_FLASH_FADE).clamp(0., 1.),
+        true,
+    )
+}
+/// Whether the end of a cooldown that peaked at `peak` ticks asks for the chime.
+fn chimes(peak: usize) -> bool {
+    peak >= READY_CHIME_MIN_TICKS
+}
+/// An opaque grey at `level` (0 black, 1 white), as `rrggbbaa`.
+fn grey(level: f32) -> String {
+    let v = (level.clamp(0., 1.) * 255.).round() as u8;
+    format!("{v:02x}{v:02x}{v:02x}ff")
 }
 fn skill_unavailable(s: &Snapshot, skills: HudSkills, slot: usize) -> bool {
     s.level < UNLOCK_LEVELS[slot] || !s.alive || skills.available[slot] == Some(false)
+}
+
+const CHARGE_MARKS: usize = 6;
+const CHARGE_MARK_W: usize = 10;
+const CHARGE_MARK_H: usize = 8;
+const CHARGE_MARK_Y: usize = 64;
+const CHARGE_MARK_GAP: usize = 2;
+const DENIED_BANDS: usize = 10;
+/// A short held edge warning, then a fade. Repeated presses restart it;
+/// holding a key does not. This is functional feedback, like the ready cue.
+fn denied_strength(seconds: f32) -> f32 {
+    1. - crate::hud_motion::easing(((seconds - 0.08) / 0.22).clamp(0., 1.), true)
+}
+fn charge_mark_x(total: usize, mark: usize) -> usize {
+    let width = total * CHARGE_MARK_W + (total - 1) * CHARGE_MARK_GAP;
+    (SKILL_SIZE - width) / 2 + mark * (CHARGE_MARK_W + CHARGE_MARK_GAP)
+}
+/// Both feedback cues share the same permanent rings. Red takes priority;
+/// gold begins at band 1 (x/y 2), inside R's existing 2 px yellow border.
+fn slot_glow_color(band: usize, denied: f32, ready: f32) -> u32 {
+    let feather = 1. - band as f32 / DENIED_BANDS as f32;
+    let (rgb, alpha) = if denied > 0. {
+        (0x8f162400, 210. * feather * feather * denied)
+    } else {
+        let alpha = match band {
+            0 => 0.,
+            1 | 2 => 230.,
+            _ => 125. * feather * feather,
+        };
+        (0xfff1b300, alpha * ready)
+    };
+    rgb | alpha.round().clamp(0., 255.) as u32
+}
+#[derive(Debug, PartialEq)]
+enum ChargeDisplay {
+    Hidden,
+    Marks { filled: usize, total: usize },
+    Count(String),
+}
+fn charge_display(remaining: Option<usize>, total: Option<usize>) -> ChargeDisplay {
+    let Some(remaining) = remaining else {
+        return ChargeDisplay::Hidden;
+    };
+    match total {
+        Some(total @ 2..=CHARGE_MARKS) => ChargeDisplay::Marks {
+            filled: remaining.min(total),
+            total,
+        },
+        Some(total) if total > CHARGE_MARKS => {
+            ChargeDisplay::Count(format!("{} / {total}", remaining.min(total)))
+        }
+        None => ChargeDisplay::Count(remaining.to_string()),
+        _ => ChargeDisplay::Hidden,
+    }
+}
+/// Code-drawn feathered rings: no bitmap dependency, no change to hit areas.
+fn skill_feedback_nodes() -> String {
+    let mut s = String::from(
+        "#slot_glow:empty { width: 80px; height: 80px; visible: false; ignore_event: true;\n",
+    );
+    for band in 0..DENIED_BANDS {
+        let inset = 1 + band;
+        let size = 78 - 2 * band;
+        for (side, (x, y, w, h)) in [
+            (inset, inset, size, 1),
+            (inset, inset + size - 1, size, 1),
+            (inset, inset + 1, 1, size - 2),
+            (inset + size - 1, inset + 1, 1, size - 2),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            s.push_str(&format!("#b{band}_{side}:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; color: #8f162400; z: 1007; ignore_event: true; }}\n"));
+        }
+    }
+    s.push_str("}\n");
+    for mark in 0..CHARGE_MARKS {
+        let fill_w = CHARGE_MARK_W - 2;
+        let fill_h = CHARGE_MARK_H - 2;
+        s.push_str(&format!("#charge{mark}:color {{ y: {CHARGE_MARK_Y}px; width: {CHARGE_MARK_W}px; height: {CHARGE_MARK_H}px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color {{ x: 1px; y: 1px; width: {fill_w}px; height: {fill_h}px; color: #141311ff; z: 1009; ignore_event: true; }} }}\n"));
+    }
+    s
 }
 fn icon_updates(parent: &str, icon: Option<&Icon>, skill: bool) -> Vec<(String, String)> {
     let target = if skill && icon.is_some_and(|i| i.tag.is_none()) {
@@ -355,7 +519,7 @@ fn label(
     };
     let align = if matches!(
         id,
-        "cooldown" | "respawn" | "level" | "camera_key" | "target_key" | "recall_key"
+        "cooldown" | "uses" | "respawn" | "level" | "camera_key" | "target_key" | "recall_key"
     ) {
         "align_x: Center;"
     } else {
@@ -371,6 +535,11 @@ fn inventory_tile(i: usize) -> String {
 #[cfg(test)]
 pub(crate) fn template_for_test() -> String {
     template()
+}
+/// An inventory tile, spawned on its own when the HUD needs more slots.
+#[cfg(test)]
+pub(crate) fn tile_for_test() -> String {
+    crate::hud_style::fonts(inventory_tile(6))
 }
 fn template() -> String {
     let mut s = format!("lt_player_hud:empty {{ width: {WIDTH}px; height: {HEIGHT}px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true;\n");
@@ -413,13 +582,15 @@ fn template() -> String {
         1005,
     ));
     label(&mut s, "respawn", (953, 106, 56, 24), 22, "ffffffff");
-    s.push_str("#death_banner:color { x: 810px; y: -844px; width: 300px; height: 52px; z: 1120; color: #~1e1e1df0; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; z: 1121; size: 26; align_x: Center; align_y: Center; color: #ffffffff; ignore_event: true; } }\n");
     let inset = crate::ui_theme::shade(5, 0xff);
     for (i, key) in KEYS.iter().enumerate() {
         let x = SKILL_X + i * SKILL_STEP;
         s.push_str(&format!("#skill{i}:color {{ x: {x}px; y: {SKILL_Y}px; width: 80px; height: 80px; z: 1001; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #shadow:color {{ x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; }} #background:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #png:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #shade:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; }} #drain_edge:color {{ x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; }} #keycap:color {{ x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }} "));
-        label(&mut s, "cooldown", (2, 27, 76, 30), 27, "ffffffff");
-        label(&mut s, "uses", (56, 4, 20, 22), 19, "fdee00ff");
+        label(&mut s, "cooldown", (2, 25, 76, 34), 30, "ffffffff");
+        // motion: A3
+        s.push_str(&pass::a3_nodes());
+        label(&mut s, "uses", (4, 61, 72, 18), 15, "fdee00ff");
+        s.push_str(&skill_feedback_nodes());
         s.push_str(&crate::ui_graphics::image("lock", "lock", 28, 28, 24, 1005));
         s.push_str(&format!("#key:label {{ @\"asset/base/style/main#bold_label\"; x: 3px; y: 3px; width: 22px; height: 22px; z: 1006; size: 14; align_x: Center; align_y: Center; color: #393939ff; ignore_event: true; text: {key:?}; }} }}\n"));
     }
@@ -487,6 +658,12 @@ fn template() -> String {
         20,
         1003,
     ));
+    // motion: A2
+    s.push_str(&pass::a2_nodes());
+    // motion: B6
+    s.push_str(&pass::b6_nodes(SKILL_X, SKILL_STEP, SKILL_Y));
+    // motion: D1
+    s.push_str(&pass::d1_nodes());
     s.push_str("#feedback:color { x: 700px; y: -42px; width: 520px; height: 30px; z: 1112; color: #~1e1e1df0; visible: false; ignore_event: true; #text:label { @\"asset/base/style/main#label\"; x: 10px; width: 500px; height: 30px; z: 1113; size: 16; color: #cbc9c7ff; ignore_event: true; } }\n");
     s.push_str(r##"#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #~1e1e1dd9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
         #art:color { x: 16px; y: 24px; width: 48px; height: 48px; z: 1111; color: #00000000; ignore_event: true; #icon:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } #png:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } }
@@ -505,6 +682,174 @@ fn template() -> String {
     crate::hud_style::fonts(s)
 }
 
+/// The state plate's own root: it shows while the AI drives your athlete,
+/// when the HUD strip is hidden, so it cannot live under the strip's root.
+pub const PLATE_PATH: &str = "ingame.lt_state_plate";
+/// Centred under the game's clock (60 x 28 at y 44); its bottom edge (148)
+/// stays above the kill callouts, which start at y 150.
+const PLATE_Y: usize = 100;
+const PLATE_H: usize = 48;
+/// Glyph and key cap (or count): 116 px. The skull alone: 48 px.
+const PLATE_WIDE: usize = 116;
+const PLATE_NARROW: usize = 48;
+/// The glyph is 30 px, inset 9 px from the top; 20 px from the left on the
+/// wide plate (glyph, 10 px gap, 36 px cap, 20 px), 9 px on the narrow one.
+const PLATE_GLYPH: usize = 30;
+const PLATE_PAD_WIDE: usize = 20;
+const PLATE_PAD_NARROW: usize = 9;
+fn plate_template() -> String {
+    let x = WIDTH / 2 - PLATE_WIDE / 2;
+    let mut s = format!("lt_state_plate:color {{ x: {x}px; y: {PLATE_Y}px; width: {PLATE_WIDE}px; height: {PLATE_H}px; z: 1120; color: #~1e1e1df0; visible: false; ignore_event: true; rounding: Uniform {{ rounding: 2; }}\n");
+    s.push_str(&crate::ui_graphics::image(
+        "glyph",
+        "ef_skull",
+        PLATE_PAD_WIDE,
+        (PLATE_H - PLATE_GLYPH) / 2,
+        PLATE_GLYPH,
+        1121,
+    ));
+    // The key cap is drawn like the strip's Tab cap; key names are not translated.
+    s.push_str("#key:color { x: 60px; y: 11px; width: 36px; height: 26px; z: 1121; color: #eeececff; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; size: 14; align_x: Center; align_y: Center; color: #393939ff; text: \"F11\"; ignore_event: true; z: 1122; } }\n");
+    s.push_str("#count:label { @\"asset/base/style/main#bold_label\"; x: 56px; y: 8px; width: 44px; height: 32px; size: 23; align_x: Center; align_y: Center; color: #ffffffff; text: \"\"; visible: false; ignore_event: true; z: 1122; }\n}\n");
+    crate::hud_style::fonts(s)
+}
+#[cfg(test)]
+pub(crate) fn plate_template_for_test() -> String {
+    plate_template()
+}
+/// The state plate (S1): paused, dead or the AI driving, under the game's
+/// clock. A feature, shown with "HUD motion" Off too. It takes no clicks
+/// and is not in the camera's blocked rectangles.
+#[derive(Default)]
+pub struct StatePlate {
+    cache: HashMap<String, String>,
+    spawn_attempted: Option<Instant>,
+    /// The last plate shown, kept while it fades out.
+    last: Option<Plate>,
+    // motion: pass
+    /// The HUD motion pass (hud_motion_pass.rs).
+    pass: pass::Pass,
+}
+impl StatePlate {
+    fn props(&mut self, ctx: &mut StableClient<'_>, node: &str, source: String) {
+        let path = if node.is_empty() {
+            PLATE_PATH.to_owned()
+        } else {
+            format!("{PLATE_PATH}.{node}")
+        };
+        crate::hud_motion::properties(ctx, &mut self.cache, &path, &source);
+    }
+    /// Per client frame. `phase`: the session phase while you play or
+    /// watch (None otherwise); `snapshot`: your athlete, fresh or None.
+    pub fn apply(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        phase: Option<Phase>,
+        snapshot: Option<&Snapshot>,
+        log: &Logger,
+    ) {
+        let state = plate_state(
+            phase,
+            snapshot.map(|s| s.alive),
+            snapshot.map_or(0, |s| s.respawn),
+        );
+        if phase.is_none() {
+            self.last = None;
+            self.pass.reset(); // motion: pass
+        }
+        if state.is_some() {
+            self.last = state;
+        }
+        // motion: pass
+        self.pass.frame();
+        // motion: S1 (restore `let alpha = f32::from(u8::from(state.is_some()));`)
+        let alpha = pass::s1_plate_fade(&mut self.pass, state.is_some());
+        let Some(plate) = self.last.filter(|_| alpha > 0.) else {
+            // Write only on a change (this runs every frame).
+            if ctx.ui_visible(PLATE_PATH) != Some(false) && ctx.ui_exists(PLATE_PATH) {
+                ctx.ui_set_visible(PLATE_PATH, false);
+            }
+            return;
+        };
+        if !ctx.ui_exists(PLATE_PATH) {
+            if self
+                .spawn_attempted
+                .is_some_and(|t| t.elapsed() < Duration::from_secs(1))
+            {
+                return;
+            }
+            self.spawn_attempted = Some(Instant::now());
+            self.cache.clear();
+            let spawned =
+                ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&plate_template()));
+            log.write(&format!(
+                "STATE PLATE spawn={spawned} exists={}",
+                ctx.ui_exists(PLATE_PATH)
+            ));
+            if !spawned || !ctx.ui_exists(PLATE_PATH) {
+                return;
+            }
+        }
+        if ctx.ui_visible(PLATE_PATH) != Some(true) {
+            ctx.ui_set_visible(PLATE_PATH, true);
+        }
+        let (glyph, ink, key, count) = match plate {
+            Plate::Paused => ("ef_pause", 0xfdee00ff, true, None),
+            Plate::Ai => ("ef_cpu", 0xeeececff, true, None),
+            Plate::Dead(seconds) => ("ef_skull", 0xeeececff, false, seconds),
+        };
+        let width = if key || count.is_some() {
+            PLATE_WIDE
+        } else {
+            PLATE_NARROW
+        };
+        // The plate's own alpha (it must not need the motion module).
+        let a = |color: u32| (color & !255) | ((color & 255) as f32 * alpha).round() as u32;
+        self.props(
+            ctx,
+            "",
+            format!(
+                "x: {}px; width: {width}px; color: #~1e1e1d{:02x};",
+                WIDTH / 2 - width / 2,
+                (240. * alpha).round() as u8
+            ),
+        );
+        self.props(
+            ctx,
+            "glyph",
+            format!(
+                "x: {}px; source: \"asset/lt_direct_control/ui/{glyph}\"; color: #{:08x};",
+                if width == PLATE_WIDE {
+                    PLATE_PAD_WIDE
+                } else {
+                    PLATE_PAD_NARROW
+                },
+                a(ink)
+            ),
+        );
+        self.props(
+            ctx,
+            "key",
+            format!("visible: {key}; color: #{:08x};", a(0xeeececff)),
+        );
+        self.props(ctx, "key.text", format!("color: #{:08x};", a(0x393939ff)));
+        self.props(
+            ctx,
+            "count",
+            format!(
+                "visible: {}; color: #{:08x};",
+                count.is_some(),
+                a(0xffffffff)
+            ),
+        );
+        let text = count.map_or(String::new(), |n| n.to_string());
+        let path = format!("{PLATE_PATH}.count");
+        if self.cache.get(&path) != Some(&text) && ctx.ui_set_text(&path, &text) {
+            self.cache.insert(path, text);
+        }
+    }
+}
+
 #[derive(Clone, PartialEq)]
 struct PurchaseInputs {
     key: MatchKey,
@@ -518,7 +863,11 @@ struct PurchaseInputs {
 }
 #[derive(Default)]
 pub struct HudUi {
-    cache: HashMap<String, String>,
+    // motion: pass (restore private: A2 writes from client.rs)
+    pub(crate) cache: HashMap<String, String>,
+    // motion: pass
+    /// The HUD motion pass (hud_motion_pass.rs).
+    pub(crate) pass: pass::Pass,
     failed: bool,
     spawn_attempted: Option<Instant>,
     custom_icons: Option<hud_icons::EnabledAssets>,
@@ -541,6 +890,10 @@ pub struct HudUi {
     tooltip_layout: crate::tooltip_layout::Layout,
     motion: crate::hud_motion::Motion,
     cooldown_peak: [usize; 3],
+    /// Last frame: the slot was learned, usable and recovering a cooldown.
+    cooling: [bool; 3],
+    /// When each slot last became ready, for the edge cue and 400 ms glow.
+    ready_at: [Option<Instant>; 3],
     motion_identity: Option<(MatchKey, usize)>,
     shop_pressed: bool,
     shop_click: bool,
@@ -548,6 +901,91 @@ pub struct HudUi {
     purchase_blank: bool,
 }
 impl HudUi {
+    /// Keep the existing zero-usable-to-ready trigger for both visual cues.
+    /// The return value is the existing optional chime request.
+    fn track_readiness(
+        &mut self,
+        slot: usize,
+        live: bool,
+        ready: bool,
+        remaining: usize,
+        now: Instant,
+    ) -> bool {
+        let recovered = live && ready && self.cooling[slot];
+        let chime = recovered && chimes(self.cooldown_peak[slot]);
+        if recovered {
+            self.ready_at[slot] = Some(now);
+        }
+        if ready {
+            self.cooldown_peak[slot] = 0;
+        } else {
+            self.cooldown_peak[slot] = self.cooldown_peak[slot].max(remaining);
+        }
+        self.cooling[slot] = live && !ready && self.cooldown_peak[slot] >= READY_CUE_MIN_TICKS;
+        chime
+    }
+    fn skill_feedback(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        slot: usize,
+        denied_at: Option<Instant>,
+        ready_flash: f32,
+        charges: ChargeDisplay,
+        log: &Logger,
+    ) {
+        let denied = denied_at.map_or(0., |at| denied_strength(at.elapsed().as_secs_f32()));
+        let shown = denied > 0. || ready_flash > 0.;
+        self.props(
+            ctx,
+            &format!("skill{slot}.slot_glow"),
+            format!("visible: {shown};"),
+            log,
+        );
+        if shown {
+            for band in 0..DENIED_BANDS {
+                let color = slot_glow_color(band, denied, ready_flash);
+                for side in 0..4 {
+                    self.props(
+                        ctx,
+                        &format!("skill{slot}.slot_glow.b{band}_{side}"),
+                        format!("color: #{color:08x};"),
+                        log,
+                    );
+                }
+            }
+        }
+        for mark in 0..CHARGE_MARKS {
+            let (visible, filled, x) = match charges {
+                ChargeDisplay::Marks { filled, total } => {
+                    (mark < total, mark < filled, charge_mark_x(total, mark))
+                }
+                _ => (false, false, 0),
+            };
+            self.props(
+                ctx,
+                &format!("skill{slot}.charge{mark}"),
+                format!("visible: {visible}; x: {x}px;"),
+                log,
+            );
+            if visible {
+                self.props(
+                    ctx,
+                    &format!("skill{slot}.charge{mark}.fill"),
+                    format!("color: #{};", if filled { "fdee00ff" } else { "141311ff" }),
+                    log,
+                );
+            }
+        }
+        self.text(
+            ctx,
+            &format!("skill{slot}.uses"),
+            match charges {
+                ChargeDisplay::Count(text) => text,
+                _ => String::new(),
+            },
+            log,
+        );
+    }
     /// A completed click on the strip's shop button since the last call.
     pub fn take_shop_click(&mut self) -> bool {
         std::mem::take(&mut self.shop_click)
@@ -735,12 +1173,10 @@ impl HudUi {
         // All image children are built with the HUD once. Sheet and PNG
         // skill images use separate permanent nodes; no remove/spawn here.
         for (node, properties) in icon_updates(parent, icon.as_ref(), skill) {
-            let key = format!("properties:{node}");
             if crate::hud_motion::unchanged(&self.cache, &format!("{PATH}.{node}"), &properties) {
                 continue;
             }
-            self.props(ctx, &node, properties.clone(), log);
-            let applied = self.cache.get(&key) == Some(&properties);
+            let applied = self.props(ctx, &node, properties.clone(), log);
             let path = format!("{PATH}.{node}");
             log.write(&format!("PLAYER HUD stable image node={node} applied={applied} exists={} rect={:?} source={properties}",ctx.ui_exists(&path),ctx.ui_node_rect(&path)));
         }
@@ -780,14 +1216,21 @@ impl HudUi {
             }
         }
     }
-    fn props(&mut self, ctx: &mut StableClient<'_>, node: &str, source: String, log: &Logger) {
-        let key = format!("properties:{node}");
-        if crate::hud_motion::properties(ctx, &mut self.cache, &format!("{PATH}.{node}"), &source) {
-            self.cache.insert(key, source);
-        } else if !self.failed {
+    /// True once the host holds `source` (written now or before).
+    fn props(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        node: &str,
+        source: String,
+        log: &Logger,
+    ) -> bool {
+        let applied =
+            crate::hud_motion::properties(ctx, &mut self.cache, &format!("{PATH}.{node}"), &source);
+        if !applied && !self.failed {
             log.write(&format!("PLAYER HUD property failed node={node}"));
             self.failed = true;
         }
+        applied
     }
     fn text(&mut self, ctx: &mut StableClient<'_>, node: &str, text: String, log: &Logger) {
         let key = format!("text:{node}");
@@ -1499,9 +1942,11 @@ impl HudUi {
             self.tooltip_source = None;
             TOOLTIP_SCROLL.store(0, Ordering::Relaxed);
             self.motion.reset();
+            self.pass.reset(); // motion: pass
             self.motion_identity = None;
             self.spawn_attempted = None;
-            if ctx.ui_exists(PATH) {
+            // Write only on a change (this runs every frame).
+            if ctx.ui_visible(PATH) != Some(false) && ctx.ui_exists(PATH) {
                 ctx.ui_set_visible(PATH, false);
             }
             return;
@@ -1531,6 +1976,25 @@ impl HudUi {
             ctx.ui_set_visible(PATH, true);
         }
         self.playing = playing;
+        self.pass.frame(); // motion: pass
+                           // motion: B6, D1
+        let shown = snapshot.filter(|_| playing);
+        if let Some(s) = shown {
+            if self.motion_identity != Some((s.key, s.player)) {
+                self.motion.reset();
+                self.pass.reset(); // motion: pass
+                self.cooldown_peak = [0; 3];
+                self.cooling = [false; 3];
+                self.ready_at = [None; 3];
+                self.motion_identity = Some((s.key, s.player));
+            }
+        }
+        // motion: B6
+        let b6 = pass::b6_death_dim(&mut self.pass, shown.map(|s| s.alive), playing);
+        pass::write(ctx, &mut self.cache, PATH, b6);
+        // motion: D1
+        let d1 = pass::d1_stats_hairline(&mut self.pass, shown.map(|s| s.kda.0), playing);
+        pass::write(ctx, &mut self.cache, PATH, d1);
         for node in [
             "combat",
             "edge",
@@ -1589,7 +2053,6 @@ impl HudUi {
                 "tooltip",
                 "feedback",
                 "respawn",
-                "death_banner",
                 "hourglass",
                 "hp_current",
                 "hp_max",
@@ -1618,7 +2081,6 @@ impl HudUi {
                 self.text(ctx, node, "—".into(), log);
             }
             self.text(ctx, "respawn", String::new(), log);
-            self.props(ctx, "death_banner", "visible: false;".into(), log);
             self.text(ctx, "hp_current", "—".into(), log);
             self.text(ctx, "hp_max", " / —".into(), log);
             self.props(ctx, "hourglass", "visible: false;".into(), log);
@@ -1630,6 +2092,7 @@ impl HudUi {
             self.props(ctx, "health.trail", "width: 0%;".into(), log);
             self.health_ticks(ctx, None, log);
             for i in 0..3 {
+                self.skill_feedback(ctx, i, None, 0., ChargeDisplay::Hidden, log);
                 let icon = artwork.and_then(|a| self.skill_icon(&a.champion, i));
                 self.icon(ctx, &format!("skill{i}"), icon, true, log);
                 self.props(
@@ -1670,11 +2133,6 @@ impl HudUi {
             self.props(ctx, "tooltip", "visible: false;".into(), log);
             return;
         };
-        if self.motion_identity != Some((s.key, s.player)) {
-            self.motion.reset();
-            self.cooldown_peak = [0; 3];
-            self.motion_identity = Some((s.key, s.player));
-        }
         self.refresh_assets(ctx, s, hud, log);
         let count = crate::inventory::slots(
             s.build.as_ref().map(Vec::len),
@@ -1687,24 +2145,27 @@ impl HudUi {
             ("deaths", s.kda.1),
             ("assists", s.kda.2),
             ("cs", s.cs),
-            ("gold", s.gold),
+            // motion: B2 (restore `s.gold`)
+            ("gold", pass::b2_gold_roll(&mut self.pass, s.gold)),
             ("level", s.level),
         ] {
             self.text(ctx, node, value.to_string(), log);
         }
+        // motion: B4
+        let level = pass::b4_level_lift(&mut self.pass, s.level, 0xffffffff);
+        self.props(ctx, "level", format!("color: #{level:08x};"), log);
         self.purchase(ctx, Some(s), log);
         for node in ["coin", "purchase_coin", "purchase_check"] {
-            self.props(ctx, node, "color: #fdee00ff;".into(), log);
+            // motion: A1 (restore one `color: #fdee00ff` for all three)
+            let color = if node == "coin" {
+                0xfdee00ff
+            } else {
+                pass::a1_purchase_breathe(&mut self.pass, self.purchase_ready, 0xfdee00ff)
+            };
+            self.props(ctx, node, format!("color: #{color:08x};"), log);
         }
         self.props(ctx, "hourglass", format!("visible: {};", !s.alive), log);
         self.props(ctx, "respawn", format!("visible: {};", !s.alive), log);
-        self.props(ctx, "death_banner", format!("visible: {};", !s.alive), log);
-        self.text(
-            ctx,
-            "death_banner.text",
-            death_countdown(s.alive, s.respawn),
-            log,
-        );
         self.text(
             ctx,
             "respawn",
@@ -1744,7 +2205,14 @@ impl HudUi {
         );
         let trail = self.motion.value("hp_trail", hp_percent(s), 0.5);
         let trail = if s.alive { trail } else { 0. };
-        self.props(ctx, "health.trail", format!("width: {trail:.2}%;"), log);
+        // motion: B1 (restore the trail write without `color`)
+        let trail_color = pass::b1_damage_chunk(&mut self.pass, hp_percent(s), 0xefe6cfff);
+        self.props(
+            ctx,
+            "health.trail",
+            format!("width: {trail:.2}%; color: #{trail_color:08x};"),
+            log,
+        );
         self.health_ticks(ctx, s.hp.filter(|_| s.alive).map(|(_, max)| max), log);
         for (i, unlock_level) in UNLOCK_LEVELS.into_iter().enumerate() {
             self.icon(
@@ -1758,29 +2226,89 @@ impl HudUi {
             let unavailable = skill_unavailable(s, skills, i);
             let ready = skills.ready[i].unwrap_or(s.cooldowns[i] == 0);
             let remaining = skills.wait[i].unwrap_or(s.cooldowns[i]);
-            if ready {
-                self.cooldown_peak[i] = 0;
-            } else {
-                self.cooldown_peak[i] = self.cooldown_peak[i].max(remaining);
+            let live = learned && !unavailable;
+            if self.track_readiness(i, live, ready, remaining, Instant::now()) {
+                crate::ui_sound::ready();
+            }
+            // motion: B4
+            let (b4_shade, b4_cue) = pass::b4_learned_drain(&mut self.pass, i, learned);
+            if b4_cue && live && ready {
+                self.ready_at[i] = Some(Instant::now());
+            }
+            let ready_age = self.ready_at[i]
+                .filter(|_| live && ready)
+                .map(|at| at.elapsed().as_secs_f32());
+            let cue = ready_age.and_then(ready_cue);
+            let ready_flash = ready_age.map_or(0., ready_flash_strength);
+            if ready_flash <= 0. {
+                self.ready_at[i] = None;
             }
             let drain = if unavailable {
                 78.
             } else {
                 78. * remaining as f32 / self.cooldown_peak[i].max(1) as f32
             };
+            let edge_y = cooldown_edge_y(drain, cue.is_some());
+            let edge = match cue {
+                Some((opacity, _)) => format!("fdee00{:02x}", (opacity * 255.).round() as u8),
+                None => crate::hud_motion::color(
+                    0xffffffff,
+                    0xfdee00ff,
+                    edge_warmth(remaining, self.cooldown_peak[i]),
+                ),
+            };
             self.props(
                 ctx,
                 &format!("skill{i}.drain_edge"),
-                format!("visible: {}; y: {:.2}px;", !unavailable && !ready, drain),
+                // The cue sits just inside the slot's border, which is 2 px
+                // and yellow on a ready R.
+                format!(
+                    "visible: {}; y: {:.2}px; color: #{edge};",
+                    (!unavailable && !ready) || cue.is_some(),
+                    edge_y
+                ),
                 log,
             );
+            // motion: A3
+            let edge = u32::from_str_radix(&edge, 16).unwrap_or(0xffffffff);
+            let a3 = pass::a3_drain_comet(
+                &mut self.pass,
+                i,
+                !unavailable && !ready && cue.is_none(),
+                edge_y,
+                edge,
+            );
+            pass::write(ctx, &mut self.cache, PATH, a3);
+            // motion: C1 (node and hover moved up from the border code below)
+            let node = format!("skill{i}");
+            let hover = self.tile_hover(ctx, &node, cursor);
+            // motion: C1
+            let c1 = pass::c1_slot_hover(&mut self.pass, i, hover);
+            self.props(
+                ctx,
+                &format!("{node}.keycap"),
+                format!(
+                    "color: #{};",
+                    crate::hud_motion::color(0xeeececff, 0xffffffff, c1)
+                ),
+                log,
+            );
+            let brightness = match cue {
+                Some((_, lift)) => COOLING_ICON + (1. - COOLING_ICON) * lift,
+                // motion: B4 (restore `None if live && !ready`)
+                None if live && (!ready || b4_shade.is_some()) => COOLING_ICON,
+                None => 1.,
+            };
+            // motion: B4, C1 (restore the 1.3.2 shade write)
+            let shade = if learned { 0x0a0908cc } else { 0x141311dd };
             self.props(
                 ctx,
                 &format!("skill{i}.shade"),
                 format!(
-                    "visible: {}; height: {drain:.2}px; color: #{};",
-                    unavailable || !ready,
-                    if learned { "0a0908cc" } else { "141311dd" }
+                    "visible: {}; height: {:.2}px; color: #{:08x};",
+                    unavailable || !ready || b4_shade.is_some(),
+                    b4_shade.unwrap_or(drain),
+                    pass::fade(shade, 1. - 0.3 * c1)
                 ),
                 log,
             );
@@ -1798,14 +2326,12 @@ impl HudUi {
                 },
                 log,
             );
-            self.text(
+            self.skill_feedback(
                 ctx,
-                &format!("skill{i}.uses"),
-                if unavailable {
-                    String::new()
-                } else {
-                    skills.uses[i].map_or(String::new(), |n| n.to_string())
-                },
+                i,
+                skills.denied_at[i].filter(|_| s.alive),
+                ready_flash,
+                charge_display(skills.uses[i].filter(|_| !unavailable), skills.uses_max[i]),
                 log,
             );
             self.props(
@@ -1825,8 +2351,6 @@ impl HudUi {
             } else {
                 "~4b4a49ff"
             };
-            let node = format!("skill{i}");
-            let hover = self.tile_hover(ctx, &node, cursor);
             let h = self
                 .motion
                 .tonal(&format!("hover_{node}"), f32::from(hover), 0.1);
@@ -1856,9 +2380,10 @@ impl HudUi {
                 self.props(
                     ctx,
                     &format!("{node}.{art}"),
+                    // The press tint (85 %) on top of the cooldown brightness.
                     format!(
                         "width: 74px; height: 74px; color: #{};",
-                        crate::hud_motion::color(0xffffffff, 0xd9d9d9ff, press)
+                        grey(brightness * (1. - 0.15 * press))
                     ),
                     log,
                 );
@@ -1908,13 +2433,27 @@ impl HudUi {
                 log,
             );
             if i != crate::inventory::PURCHASE {
+                // motion: B5 (restore the 1.3.2 border write)
+                let item = s.items.get(i).map(String::as_str);
+                let (b5_alpha, b5_edge) = pass::b5_item_bought(&mut self.pass, i, item);
+                let border =
+                    crate::hud_motion::color(crate::ui_theme::tone(0x4b4a49ff), 0xffffffff, h);
+                let border = u32::from_str_radix(&border, 16).unwrap_or(0x4b4a49ff);
                 self.props(
                     ctx,
                     &node,
                     format!(
                         "color: #{};",
-                        crate::hud_motion::color(crate::ui_theme::tone(0x4b4a49ff), 0xffffffff, h)
+                        crate::hud_motion::color(border, 0xfdee00ff, b5_edge)
                     ),
+                    log,
+                );
+                // motion: C2, B5
+                let brightness = pass::c2_item_press(&self.pass, press);
+                self.props(
+                    ctx,
+                    &format!("{node}.icon"),
+                    pass::icon_tint(brightness, b5_alpha),
                     log,
                 );
             } else {
@@ -1925,10 +2464,14 @@ impl HudUi {
                 };
                 self.props(ctx, &node, format!("color: #{border};"), log);
                 let opacity = if self.purchase_ready {
-                    255
+                    255.
                 } else {
-                    (140. + 115. * h).round() as u8
+                    140. + 115. * h
                 };
+                // motion: B5 (restore `opacity` as before)
+                let source = self.purchase_icon.as_ref().map(|i| i.source.clone());
+                let b5 = pass::b5_next_item(&mut self.pass, source.as_deref());
+                let opacity = (opacity * b5).round() as u8;
                 self.props(
                     ctx,
                     "next.icon",
@@ -1983,6 +2526,113 @@ fn purchase_requirement(f: &crate::purchase_tracker::Forecast, gold: usize) -> S
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn larger_charge_rows_stay_centred_inside_the_slot_clear_of_the_countdown() {
+        for total in 2..=CHARGE_MARKS {
+            let left = charge_mark_x(total, 0);
+            let right = charge_mark_x(total, total - 1) + CHARGE_MARK_W;
+            assert!(left >= 2 && right <= SKILL_SIZE - 2);
+            assert_eq!(left, SKILL_SIZE - right);
+            for mark in 1..total {
+                assert_eq!(
+                    charge_mark_x(total, mark) - charge_mark_x(total, mark - 1),
+                    CHARGE_MARK_W + CHARGE_MARK_GAP
+                );
+            }
+        }
+        const {
+            assert!(CHARGE_MARK_Y > 25 + 34); // Cooldown label's bottom edge.
+            assert!(CHARGE_MARK_Y + CHARGE_MARK_H <= SKILL_SIZE - 2);
+        }
+    }
+    #[test]
+    fn ready_flash_fades_once_and_red_feedback_keeps_priority() {
+        assert_eq!(ready_flash_strength(0.), 1.);
+        assert_eq!(ready_flash_strength(0.1), 1.);
+        assert!(ready_flash_strength(0.25) > 0. && ready_flash_strength(0.25) < 1.);
+        assert_eq!(ready_flash_strength(0.41), 0.);
+        assert_eq!(slot_glow_color(0, 0., 1.) & 255, 0); // Inside R's border.
+        assert!(slot_glow_color(1, 0., 1.) & 255 > slot_glow_color(8, 0., 1.) & 255);
+        for band in 0..DENIED_BANDS {
+            assert_eq!(
+                slot_glow_color(band, 0.5, 1.),
+                slot_glow_color(band, 0.5, 0.)
+            );
+            assert_eq!(slot_glow_color(band, 0., ready_flash_strength(1.)) & 255, 0);
+        }
+        // The existing line/icon cue can finish before the new slot glow.
+        assert!(ready_cue(0.25).is_none());
+        assert!(ready_flash_strength(0.25) > 0.);
+    }
+    #[test]
+    fn slot_flash_tracks_zero_to_usable_and_does_not_replay_for_extra_charges() {
+        let mut hud = HudUi::default();
+        let now = Instant::now();
+        assert!(!hud.track_readiness(0, true, true, 0, now));
+        assert!(hud.ready_at[0].is_none()); // Already ready at first sight.
+        assert!(!hud.track_readiness(0, true, false, 120, now)); // Zero usable charges.
+        hud.track_readiness(0, true, false, 6, now);
+        assert!(!hud.track_readiness(0, true, true, 0, now)); // One charge, no long-cooldown chime.
+        assert_eq!(hud.ready_at, [Some(now), None, None]);
+        let later = now + Duration::from_millis(200);
+        hud.track_readiness(0, true, true, 0, later); // Extra charge, still usable.
+        assert_eq!(hud.ready_at[0], Some(now));
+        hud.ready_at[0] = None; // Render finished the cue.
+        hud.track_readiness(0, true, true, 0, later);
+        assert!(hud.ready_at[0].is_none()); // No repeated ready glow.
+        hud.track_readiness(1, true, false, 300, now);
+        assert!(hud.track_readiness(1, true, true, 0, later)); // Existing 4 s chime gate.
+        hud.track_readiness(2, true, false, 120, now);
+        hud.track_readiness(2, false, true, 0, later); // Dead/unavailable.
+        assert!(hud.ready_at[2].is_none());
+    }
+    #[test]
+    fn unavailable_cue_fades_and_charge_marks_handle_empty_unknown_and_large_counts() {
+        assert_eq!(denied_strength(0.), 1.);
+        assert_eq!(denied_strength(0.08), 1.);
+        assert!(denied_strength(0.19) > 0. && denied_strength(0.19) < 1.);
+        assert_eq!(denied_strength(0.31), 0.);
+        assert_eq!(
+            charge_display(Some(0), Some(3)),
+            ChargeDisplay::Marks {
+                filled: 0,
+                total: 3
+            }
+        );
+        assert_eq!(
+            charge_display(Some(2), Some(3)),
+            ChargeDisplay::Marks {
+                filled: 2,
+                total: 3
+            }
+        );
+        assert_eq!(
+            charge_display(Some(99), Some(3)),
+            ChargeDisplay::Marks {
+                filled: 3,
+                total: 3
+            }
+        );
+        assert_eq!(
+            charge_display(Some(7), Some(8)),
+            ChargeDisplay::Count("7 / 8".into())
+        );
+        assert_eq!(
+            charge_display(Some(2), None),
+            ChargeDisplay::Count("2".into())
+        );
+        assert_eq!(charge_display(None, Some(3)), ChargeDisplay::Hidden);
+        assert_eq!(charge_display(Some(1), Some(1)), ChargeDisplay::Hidden);
+    }
+    #[test]
+    fn hud_has_no_match_start_effect_nodes() {
+        let source = template();
+        for removed in ["b7_veil", "s4_left", "s4_right"] {
+            assert!(!source.contains(removed));
+        }
+        assert!(source.contains("#slot_glow:empty") && source.contains("#charge5:color"));
+        assert!(source.contains("#d1_line")); // Kill feedback stays.
+    }
     #[test]
     fn purchase_branch_shortfall_is_compact_and_updates_with_held_gold() {
         use crate::purchase_tracker::{Forecast, Purchase};
@@ -2047,12 +2697,51 @@ mod tests {
         }
     }
     #[test]
-    fn death_banner_uses_simulation_ticks_without_inventing_missing_countdown() {
-        assert_eq!(death_countdown(false, 601), "Respawning in 11");
-        assert_eq!(death_countdown(false, 60), "Respawning in 1");
-        assert_eq!(death_countdown(false, 0), "Respawning…");
-        assert_eq!(death_countdown(true, 600), "");
-        assert!(template().contains("#death_banner:color"));
+    fn state_plate_prefers_paused_then_dead_then_ai_and_counts_from_ticks() {
+        use Phase::*;
+        // Paused wins over dead (and over everything else).
+        assert_eq!(
+            plate_state(Some(Paused), Some(false), 600),
+            Some(Plate::Paused)
+        );
+        assert_eq!(
+            plate_state(Some(Paused), Some(true), 0),
+            Some(Plate::Paused)
+        );
+        // Dead wins over AI; whole seconds rounded up from ticks.
+        assert_eq!(
+            plate_state(Some(Ai), Some(false), 601),
+            Some(Plate::Dead(Some(11)))
+        );
+        assert_eq!(
+            plate_state(Some(Running), Some(false), 60),
+            Some(Plate::Dead(Some(1)))
+        );
+        // An unknown count is not invented: the skull alone.
+        assert_eq!(
+            plate_state(Some(Running), Some(false), 0),
+            Some(Plate::Dead(None))
+        );
+        assert_eq!(plate_state(Some(Ai), Some(true), 0), Some(Plate::Ai));
+        assert_eq!(plate_state(Some(Ai), None, 0), Some(Plate::Ai));
+        // Playing and alive, or not in a match: no plate.
+        for (phase, alive) in [
+            (Some(Running), Some(true)),
+            (Some(Running), None),
+            (Some(Ready), Some(false)),
+            (Some(Loading), None),
+            (None, Some(false)),
+        ] {
+            assert_eq!(plate_state(phase, alive, 300), None);
+        }
+        assert!(!template().contains("death_banner"));
+        let plate = plate_template();
+        assert!(plate.contains("#key:color") && plate.contains("text: \"F11\""));
+        // Lower and bigger (1.3.6): still centred, still clear of the kill callouts.
+        assert!(plate.contains("x: 902px; y: 100px; width: 116px; height: 48px;"));
+        assert!(plate.contains("width: 36px; height: 26px;"));
+        const { assert!(PLATE_Y + PLATE_H < 150) };
+        const { assert!(PLATE_PAD_WIDE * 2 + PLATE_GLYPH + 10 + 36 == PLATE_WIDE) };
     }
     #[test]
     fn prepared_hud_switches_identity_without_reusing_previous_stats_or_next_set_data() {
@@ -2293,8 +2982,59 @@ mod tests {
         s.alive = false;
         s.hp = Some((900, 1000));
         assert_eq!(hp_percent(&s), 0.);
-        assert_eq!(cooldown(1), "0.1s");
-        assert_eq!(cooldown(61), "1.1s");
+        assert_eq!(cooldown(1), "0.1");
+        assert_eq!(cooldown(6), "0.1");
+        assert_eq!(cooldown(61), "1.1");
+        // Tenths until the rounded-up value reaches three seconds.
+        assert_eq!(cooldown(174), "2.9");
+        assert_eq!(cooldown(175), "3");
+        assert_eq!(cooldown(180), "3");
+        assert_eq!(cooldown(181), "4");
+        assert_eq!(cooldown(720), "12");
+    }
+    #[test]
+    fn cooldown_edge_never_steps_back_when_recovery_becomes_the_ready_cue() {
+        // Ten-second cooldown, including its final sampled ticks and the
+        // ready frame (whose observed cooldown peak has already been reset).
+        let mut previous = 78.;
+        for remaining in [600, 300, 60, 12, 6, 1, 0] {
+            let y = cooldown_edge_y(78. * remaining as f32 / 600., remaining == 0);
+            assert!(
+                y <= previous,
+                "edge moved down at {remaining} ticks: {previous} -> {y}"
+            );
+            assert!(y >= READY_EDGE_Y);
+            previous = y;
+        }
+        assert_eq!(previous, READY_EDGE_Y);
+        assert_eq!(cooldown_edge_y(39., false), 39.); // Mid-cycle position stays.
+        assert_eq!(cooldown_edge_y(0., false), READY_EDGE_Y); // Short cycle, no ready cue.
+        assert_eq!(cooldown_edge_y(0., true), READY_EDGE_Y);
+        // At a low frame rate the last sample may still be above the stop;
+        // becoming ready can only move toward the top, never back down.
+        assert!(cooldown_edge_y(0., true) <= cooldown_edge_y(7.8, false));
+    }
+    #[test]
+    fn drain_edge_warms_over_the_last_tenth_and_the_ready_cue_holds_then_fades() {
+        assert_eq!(edge_warmth(100, 100), 0.);
+        assert_eq!(edge_warmth(10, 100), 0.);
+        assert!((edge_warmth(5, 100) - 0.5).abs() < 1e-4);
+        assert_eq!(edge_warmth(0, 100), 1.);
+        assert_eq!(edge_warmth(3, 0), 0.);
+        // One beat of full yellow with the icon still at its cooling level.
+        assert_eq!(ready_cue(0.), Some((1., 0.)));
+        assert_eq!(ready_cue(0.08), Some((1., 0.)));
+        let (edge, lift) = ready_cue(0.133).unwrap();
+        assert!(edge > 0. && edge < 1. && (edge + lift - 1.).abs() < 1e-5);
+        assert_eq!(ready_cue(0.183), None);
+        // The chime: cooldowns of 4 s (240 ticks) or more only.
+        assert!(!chimes(READY_CUE_MIN_TICKS));
+        assert!(!chimes(120));
+        assert!(!chimes(239));
+        assert!(chimes(240));
+        assert!(chimes(3600));
+        assert_eq!(grey(1.), "ffffffff");
+        assert_eq!(grey(COOLING_ICON * 0.85), "a3a3a3ff");
     }
     #[test]
     fn hud_tooltips_follow_the_setting_and_never_show_with_a_button_held() {

@@ -3,7 +3,8 @@
 //! change), and the rebuild registers again: the game then calls both
 //! callbacks for one click, so a toggle (a select menu, a checkbox, camera
 //! lock) opens and closes in the same instant. Callbacks pass through
-//! `once`, which lets a node's click through only once per 50 ms.
+//! `once`, which lets a node's click through only once per 50 ms. Every
+//! click it lets through asks for the interface click sound.
 use std::{
     collections::HashMap,
     sync::Mutex,
@@ -26,6 +27,7 @@ pub fn once(path: &str) -> bool {
         return false;
     }
     map.insert(path.to_owned(), now);
+    crate::ui_sound::click();
     true
 }
 

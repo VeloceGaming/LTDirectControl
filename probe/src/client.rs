@@ -11,6 +11,7 @@ pub(crate) struct ClientObservations {
     pub(crate) playback_states: String,
     pub(crate) info: team_info::TeamInfo,
     pub(crate) hud_ui: player_hud::HudUi,
+    pub(crate) state_plate: player_hud::StatePlate,
     pub(crate) targeting: platform_input::ChampionOnlyToggle,
     pub(crate) session_ui: session_ui::SessionUi,
     pub(crate) settings_ui: settings_ui::SettingsUi,
@@ -23,6 +24,7 @@ pub(crate) struct ClientObservations {
     pub(crate) screen_effect: screen_effect::Effect,
     pub(crate) ai_handback: ai_handback::AiHandback,
     pub(crate) emotes: emotes::Emotes,
+    pub(crate) sounds: ui_sound::Sounds,
     pub(crate) language: lang::Probe,
 }
 
@@ -41,6 +43,8 @@ pub(crate) struct Client {
     pub(crate) install_attempted: AtomicBool,
     pub(crate) management_seen: AtomicBool,
     pub(crate) session_gate: Arc<RwLock<()>>,
+    /// Ground ring fades and lock-on across frames.
+    pub(crate) rings: Mutex<ground_ring::GroundRings>,
 }
 
 impl Drop for Client {
@@ -57,6 +61,36 @@ impl Drop for Client {
 }
 
 impl Client {
+    /// Unit highlight as ground rings: chosen, or standing in for an outline
+    /// that stepped aside for another mod holding the unit renderer.
+    /// Ground rings while the match runs; frozen as they were while paused;
+    /// forgotten otherwise.
+    fn draw_ground_rings(&self, ctx: &mut StableClient<'_>) {
+        let Ok(mut rings) = self.rings.lock() else {
+            return;
+        };
+        let paused = self.timing.ui_phase() == Some(native_timing::Phase::Paused);
+        if !self.ground_rings() || !(paused || self.timing.client_running()) {
+            rings.clear();
+            return;
+        }
+        let Some(frame) = self.camera.frame() else {
+            return;
+        };
+        let marks = if paused {
+            rings.paused()
+        } else {
+            let (hover, attack, click) = self.movement.ring_inputs();
+            rings.update(hover, attack, click)
+        };
+        ground_ring::draw(ctx, frame, &marks);
+    }
+    fn ground_rings(&self) -> bool {
+        movement::ground_rings(
+            self.settings.number("hover_outline"),
+            native_adapter::outline_installed(),
+        )
+    }
     fn resolve_targeting(&self, keys: &mut platform_input::Keys, controls: bool) {
         if let Ok(mut o) = self.observations.lock() {
             let before = o.targeting.enabled;
@@ -72,6 +106,7 @@ impl Client {
         }
     }
     fn gameplay_input(&self, keys: platform_input::Keys, active: bool) {
+        camera::publish_vision(self.camera.vision());
         let action = self
             .abilities
             .update(keys, active, &self.camera, &self.logger);
@@ -290,6 +325,12 @@ impl Client {
                 ) {
                     self.camera.suspend(keys);
                 }
+                if matches!(
+                    action,
+                    native_timing::SessionAction::Pause | native_timing::SessionAction::Resume
+                ) {
+                    ui_sound::click();
+                }
                 self.timing.apply_action(action, &self.logger);
             }
         }
@@ -314,9 +355,7 @@ impl Client {
             .is_none()
             .then(|| self.hud.artwork(identity))
             .flatten();
-        native_adapter::set_death_greyscale(
-            controls && snapshot.as_ref().is_some_and(|s| !s.alive),
-        );
+        native_adapter::set_selection_draws(controls && battlefield);
         let skills = self.abilities.hud_skills();
         let status = self.abilities.feedback().unwrap_or_default();
         let mut frame = Frame {
@@ -368,6 +407,16 @@ impl Client {
         }
         self.abilities.draw(ctx, &self.camera);
         minimap::draw_frame(ctx, &self.camera);
+        // motion: S2
+        hud_motion_pass::s2_pause_brackets(
+            ctx,
+            self.timing.phase() == Some(native_timing::Phase::Paused),
+        );
+        // motion: S7
+        let target_panel = (ctx.ui_visible(stats_ui::TARGET) == Some(true))
+            .then(|| ctx.ui_node_rect(&format!("{}.panel", stats_ui::TARGET)))
+            .flatten();
+        hud_motion_pass::s7_target_brackets(ctx, target_panel, stats_panel::target_id());
         if self.timing.client_running() {
             self.movement.draw_attack_range(ctx, &self.camera);
             self.movement.draw_targets(
@@ -383,6 +432,7 @@ impl Client {
             }
             cursor::draw_clicks(ctx, &self.camera, &self.movement.click_feedback());
         }
+        self.draw_ground_rings(ctx);
         if self.settings.number("acquisition_debug") == 1.
             && matches!(
                 self.timing.ui_phase(),
@@ -559,13 +609,24 @@ impl Client {
     fn install_once(&self, ctx: &mut StableClient<'_>) {
         if self.native_enabled && !self.install_attempted.load(Ordering::Relaxed) {
             match ctx.scene_kind() {
-                Some(mod_api_stable::SceneKindV1::Title) => {
+                // The fingerprint is hashed in the background from load; at
+                // the title, install on the first frame it is ready.
+                Some(mod_api_stable::SceneKindV1::Title) if native_adapter::fingerprint_ready() => {
                     self.install_attempted.store(true, Ordering::Relaxed);
-                    match native_adapter::install() {
+                    // Unit highlight "Ground ring" leaves the unit renderer
+                    // to other mods: the outline hook is not installed.
+                    let rings = self.settings.number("hover_outline") == 2.;
+                    let skip = if rings {
+                        crate::native_profile::family::OUTLINE
+                    } else {
+                        0
+                    };
+                    match native_adapter::install(skip) {
                         Ok((game, families)) => self.timing.installed(
                             true,
                             &format!(
-                                "verified {game} SHA256; hook families {families:#x} installed at title"
+                                "verified {game} SHA256; hook families {families:#x} installed at title{}",
+                                if rings { "; outline hook skipped (Unit highlight: Ground ring)" } else { "" }
                             ),
                             &self.logger,
                         ),
@@ -625,7 +686,7 @@ impl Client {
             {
                 self.timing.mark_role_fallback(key);
                 self.abilities.reset_session(keys);
-                self.camera.reset_session(keys);
+                self.camera.reset_for_swap(keys);
                 self.hud.select_prepared(key, player.player);
                 self.logger.write("SESSION preferred role unavailable; selected an available teammate; automatic play waits for confirmation");
             }
@@ -656,11 +717,14 @@ impl Client {
             {
                 if let Ok(_gate) = self.session_gate.write() {
                     if self.movement.choose_prepared(key, lane, keys, &self.logger) {
+                        ui_sound::click();
+                        // motion: B8
+                        hud_motion_pass::b8_swap_landed();
                         if phase == Some(native_timing::Phase::Ready) {
                             crate::settings::set_option("preferred_role", lane as f64);
                         }
                         self.abilities.reset_session(keys);
-                        self.camera.reset_session(keys);
+                        self.camera.reset_for_swap(keys);
                         if phase != Some(native_timing::Phase::Ready) {
                             // Mid-match: nothing queued or sampled for the
                             // previous champion carries over.
@@ -697,6 +761,9 @@ impl Client {
             if let Ok(_gate) = self.session_gate.write() {
                 self.logger.next_session();
                 self.movement.reset_session(keys, &self.logger);
+                if save_exit {
+                    self.movement.forget_team();
+                }
                 self.abilities.reset_session(keys);
                 self.hud.reset_session();
                 self.team.reset_session();
@@ -707,6 +774,7 @@ impl Client {
                 if let Ok(mut observations) = self.observations.lock() {
                     observations.targeting = Default::default();
                     observations.hud_ui = Default::default();
+                    observations.state_plate = Default::default();
                     observations.team_ui = Default::default();
                     if save_exit {
                         observations.result_audit = Default::default();
@@ -774,6 +842,26 @@ impl Client {
             {
                 hovered_skill = observations.hud_ui.hovered_skill(ctx, keys.cursor);
             }
+            // motion: A2
+            let a2 = hud_motion_pass::a2_recall_progress(
+                &mut observations.hud_ui.pass,
+                self.movement.recalling(),
+                controls && snapshot.as_ref().is_some_and(|s| s.alive),
+            );
+            hud_motion_pass::write(ctx, &mut observations.hud_ui.cache, player_hud::PATH, a2);
+            // The state plate under the game's clock (paused, dead, AI). The
+            // worker keeps sampling in AI control, but the frame's snapshot
+            // skips the freshness check outside Running; the plate applies it
+            // in AI control so a stale dead state or count cannot stick.
+            let phase = self.timing.phase();
+            let plate_snapshot = if phase == Some(native_timing::Phase::Ai) {
+                self.hud.snapshot(self.movement.hud_identity(), true)
+            } else {
+                snapshot.clone()
+            };
+            observations
+                .state_plate
+                .apply(ctx, phase, plate_snapshot.as_ref(), &self.logger);
             hud_bounds = observations.hud_ui.bounds(ctx);
             hud_bounds.extend(observations.stats_ui.apply(
                 ctx,
@@ -899,6 +987,12 @@ impl Client {
             observations
                 .screen_effect
                 .apply(ctx, &self.camera, &self.logger);
+            observations.sounds.flush(
+                ctx,
+                ui_sound::Config::from_values(&settings::current_shared()),
+                snapshot.as_ref().is_some_and(|s| s.alive),
+                &self.logger,
+            );
             drop(t);
             let _t = perf::time(perf::Section::Audit);
             let last_player = self.hud.snapshot(self.movement.hud_identity(), false);

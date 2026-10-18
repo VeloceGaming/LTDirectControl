@@ -103,7 +103,9 @@ pub fn select(id: Option<usize>) {
         }
     }
 }
-fn target_id() -> Option<usize> {
+// motion: S7 (restore private)
+/// The selected unit's entity id, if any.
+pub(crate) fn target_id() -> Option<usize> {
     Some(TARGET.load(Ordering::Relaxed)).filter(|id| *id != usize::MAX)
 }
 /// Your champion and the selected unit. While `sampling` (the match runs
@@ -124,10 +126,12 @@ pub fn snapshot(sampling: bool) -> (Option<Unit>, Option<Unit>) {
 pub fn sample(sim: &StableSim<'_>, own: Option<&StableEntity<'_, '_>>, log: &Logger) {
     let side = own.map(|c| c.team());
     let own_unit = own.filter(|c| c.is_alive()).map(|c| read(sim, c, side));
-    // The selected unit, while it lives and your team can see it.
+    // The selected unit, while it lives and the vision choice shows it.
     let target = target_id().and_then(|id| {
         let e = sim.get_entity(id)?;
-        let seen = side.is_none_or(|team| e.team() == team || sim.is_visible(team, id));
+        let seen = side.is_none_or(|side| {
+            crate::camera::shown_vision().shows(side, e.team(), |s| sim.is_visible(s, id))
+        });
         (e.is_alive() && seen).then(|| read(sim, &e, side))
     });
     if target_id().is_some() && target.is_none() {

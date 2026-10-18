@@ -10,19 +10,49 @@ use std::{
     time::{Duration, Instant},
 };
 const PATH: &str = "ingame.lt_screen_effect";
+pub(crate) fn template() -> String {
+    let mut source = String::from(
+        "lt_screen_effect:empty { width: 100%; height: 100%; anchor_x: 0; anchor_y: 0; pivot_x: 0; pivot_y: 0; z: 990; ignore_event: true;\n",
+    );
+    for i in 0..BANDS {
+        source.push_str(&format!(
+            "#band{i}:color {{ z: 990; visible: false; ignore_event: true; }}\n"
+        ));
+    }
+    source.push('}');
+    source
+}
 const BANDS: usize = 196;
+/// The battlefield veil while your athlete is dead, League-like without a
+/// greyscale filter (the author, 2026-10-18; the greyscale composite hook
+/// was removed in 1.3.16): a cool slate tint over the battlefield (18 %;
+/// 15 % black before 1.3.16, 40 % before 1.3.5) so the fight stays
+/// watchable, and a vignette darkening the edges, faded in over
+/// `DEATH_FADE`. The strip's own death veil is the motion pass's B6.
+const DEATH_TINT: u32 = 0x141a2400;
+const DEATH_TINT_ALPHA: f32 = 46.;
+const DEATH_EDGE: u32 = 0x05080e00;
+/// Extra darkness at the outermost edge band (on top of the tint).
+const DEATH_EDGE_ALPHA: f32 = 112.;
+const DEATH_FADE: Duration = Duration::from_millis(350);
 #[derive(Default)]
 pub struct Effect {
     strength: f32,
     dead: bool,
+    /// 0 to 1 while dead, over `DEATH_FADE`.
+    death: f32,
     cache: HashMap<String, String>,
     attempted: Option<Instant>,
     reported: Option<u8>,
     failed: bool,
+    // motion: pass
+    /// The HUD motion pass (hud_motion_pass.rs).
+    pass: crate::hud_motion_pass::Pass,
 }
 impl Effect {
     pub fn update(&mut self, enabled: bool, active: bool, snapshot: Option<&Snapshot>, dt: u64) {
         self.dead = active && snapshot.is_some_and(|s| !s.alive);
+        self.death = death_fade(self.death, self.dead, dt);
         let target = if enabled && active && snapshot.is_some_and(|s| s.alive) {
             snapshot
                 .filter(|s| s.alive)
@@ -33,7 +63,8 @@ impl Effect {
             self.strength = 0.;
             0.
         };
-        // No oscillation or flashing; render rate does not change the transition.
+        // No flashing; render rate does not change the transition. (The HUD
+        // motion pass, S5, may breathe the drawn strength; see apply.) motion: S5
         self.strength +=
             (target - self.strength) * (1. - (-(dt.min(100_000) as f32) / 180_000.).exp());
         if self.strength < 0.001 {
@@ -41,6 +72,11 @@ impl Effect {
         }
     }
     pub fn apply(&mut self, ctx: &mut StableClient<'_>, camera: &CameraControl, log: &Logger) {
+        // motion: pass
+        self.pass.frame();
+        // motion: S5 (restore `self.strength` in the bands below)
+        let strength =
+            crate::hud_motion_pass::s5_low_health_heartbeat(&mut self.pass, self.strength);
         let mode = if self.dead {
             2
         } else if self.strength > 0. {
@@ -67,16 +103,7 @@ impl Effect {
                 return;
             }
             self.attempted = Some(Instant::now());
-            let mut source = String::from(
-                "lt_screen_effect:empty { width: 100%; height: 100%; anchor_x: 0; anchor_y: 0; pivot_x: 0; pivot_y: 0; z: 990; ignore_event: true;\n",
-            );
-            for i in 0..BANDS {
-                source.push_str(&format!(
-                    "#band{i}:color {{ z: 990; visible: false; ignore_event: true; }}\n"
-                ));
-            }
-            source.push('}');
-            let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&source));
+            let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
             log.write(&format!(
                 "SCREEN EFFECT native UI spawn={ok} exists={}",
                 ctx.ui_exists(PATH)
@@ -96,56 +123,14 @@ impl Effect {
             w: m.w + 8.,
             h: m.h + 8.,
         };
-        let mut pieces = Vec::new();
-        if self.dead {
-            pieces.extend(
-                subtract(v, excluded)
-                    .into_iter()
-                    .map(|r| (r, 0x00000066u32)),
-            );
+        let pieces = if self.dead {
+            death_pieces(v, excluded, self.death)
         } else {
-            let depth = 128f32.min(v.w / 4.).min(v.h / 4.);
-            for i in 0..12 {
-                let d = depth * i as f32 / 12.;
-                let step = depth / 12.;
-                let alpha = (112. * self.strength * (1. - i as f32 / 12.).powi(2)).round() as u32;
-                if alpha == 0 {
-                    continue;
-                }
-                for band in [
-                    Rect {
-                        x: v.x + d,
-                        y: v.y + d,
-                        w: v.w - 2. * d,
-                        h: step,
-                    },
-                    Rect {
-                        x: v.x + d,
-                        y: v.y + v.h - d - step,
-                        w: v.w - 2. * d,
-                        h: step,
-                    },
-                    Rect {
-                        x: v.x + d,
-                        y: v.y + d + step,
-                        w: step,
-                        h: v.h - 2. * (d + step),
-                    },
-                    Rect {
-                        x: v.x + v.w - d - step,
-                        y: v.y + d + step,
-                        w: step,
-                        h: v.h - 2. * (d + step),
-                    },
-                ] {
-                    pieces.extend(
-                        subtract(band, excluded)
-                            .into_iter()
-                            .map(|r| (r, 0x9e253600u32 | alpha)),
-                    );
-                }
-            }
-        }
+            edge_bands(v, excluded, 128., |i| {
+                let alpha = (112. * strength * (1. - i as f32 / 12.).powi(2)).round() as u32;
+                (alpha > 0).then_some(0x9e253600 | alpha)
+            })
+        };
         let (ox, oy, _, _) = ctx.ui_node_rect("ingame").unwrap_or((0., 0., 1920., 1080.));
         for i in 0..BANDS {
             let props = pieces.get(i).map_or_else(|| "visible: false;".into(), |(r, color)| {
@@ -171,6 +156,75 @@ impl Effect {
             self.reported = Some(mode);
         }
     }
+}
+/// The death veil's fade after `dt` µs: rising to 1 over `DEATH_FADE`
+/// while dead, back to 0 at once on revival.
+fn death_fade(fade: f32, dead: bool, dt: u64) -> f32 {
+    if dead {
+        (fade + dt as f32 / DEATH_FADE.as_micros() as f32).min(1.)
+    } else {
+        0.
+    }
+}
+/// The death veil at `fade` (0 to 1): the tint over the viewport, then
+/// the vignette bands, all outside `excluded` (the minimap).
+fn death_pieces(v: Rect, excluded: Rect, fade: f32) -> Vec<(Rect, u32)> {
+    let tint = (DEATH_TINT_ALPHA * fade).round() as u32;
+    let mut pieces: Vec<(Rect, u32)> = subtract(v, excluded)
+        .into_iter()
+        .map(|r| (r, DEATH_TINT | tint))
+        .collect();
+    pieces.extend(edge_bands(v, excluded, 240., |i| {
+        let alpha = (DEATH_EDGE_ALPHA * fade * (1. - i as f32 / 12.).powi(2)).round() as u32;
+        (alpha > 0).then_some(DEATH_EDGE | alpha)
+    }));
+    pieces
+}
+/// Twelve nested frames along the viewport's edges, `depth` px deep at
+/// most (a quarter of the viewport), outermost first; `color(i)` is ring
+/// i's colour, None to skip it.
+fn edge_bands(
+    v: Rect,
+    excluded: Rect,
+    depth: f32,
+    color: impl Fn(usize) -> Option<u32>,
+) -> Vec<(Rect, u32)> {
+    let depth = depth.min(v.w / 4.).min(v.h / 4.);
+    let step = depth / 12.;
+    let mut pieces = Vec::new();
+    for i in 0..12 {
+        let Some(color) = color(i) else { continue };
+        let d = depth * i as f32 / 12.;
+        for band in [
+            Rect {
+                x: v.x + d,
+                y: v.y + d,
+                w: v.w - 2. * d,
+                h: step,
+            },
+            Rect {
+                x: v.x + d,
+                y: v.y + v.h - d - step,
+                w: v.w - 2. * d,
+                h: step,
+            },
+            Rect {
+                x: v.x + d,
+                y: v.y + d + step,
+                w: step,
+                h: v.h - 2. * (d + step),
+            },
+            Rect {
+                x: v.x + v.w - d - step,
+                y: v.y + d + step,
+                w: step,
+                h: v.h - 2. * (d + step),
+            },
+        ] {
+            pieces.extend(subtract(band, excluded).into_iter().map(|r| (r, color)));
+        }
+    }
+    pieces
 }
 fn severity(hp: usize, max: usize) -> f32 {
     if max == 0 {
@@ -255,6 +309,39 @@ mod tests {
             assert!(!pieces.iter().any(|r| r.contains(p)));
         }
         assert!(pieces.iter().any(|r| r.contains((1559., 1079.))));
+    }
+    #[test]
+    fn the_death_veil_tints_darkens_the_edges_fades_in_and_spares_the_minimap() {
+        let v = Rect {
+            x: 0.,
+            y: 0.,
+            w: 1920.,
+            h: 1080.,
+        };
+        let cut = Rect {
+            x: 1556.,
+            y: 716.,
+            w: 368.,
+            h: 368.,
+        };
+        let pieces = death_pieces(v, cut, 1.);
+        assert!(pieces.len() <= BANDS);
+        let alpha_at = |p: (f32, f32)| -> u32 {
+            pieces
+                .iter()
+                .filter(|(r, _)| r.contains(p))
+                .map(|(_, c)| c & 0xff)
+                .sum()
+        };
+        // The centre gets the tint only; the outermost edge the most.
+        assert_eq!(alpha_at((960., 540.)), 46);
+        assert_eq!(alpha_at((2., 540.)), 46 + 112);
+        assert!(alpha_at((100., 540.)) < alpha_at((2., 540.)));
+        assert_eq!(alpha_at((1700., 900.)), 0);
+        // Fades in from nothing over DEATH_FADE, and resets on revival.
+        assert!((death_fade(0., true, 175_000) - 0.5).abs() < 0.01);
+        assert_eq!(death_fade(0.5, true, 400_000), 1.);
+        assert_eq!(death_fade(1., false, 16_667), 0.);
     }
     #[test]
     fn disabled_or_released_effect_clears_without_leaking_into_other_scenes() {

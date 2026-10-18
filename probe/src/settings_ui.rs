@@ -716,6 +716,8 @@ fn template() -> String {
         2052,
         "",
     ));
+    // motion: S6 (inside the window, above everything in it)
+    s.push_str(&crate::hud_motion_pass::s6_nodes((1360, 850), 2090));
     s.push_str("}\n}");
     crate::hud_style::fonts(s)
 }
@@ -754,6 +756,13 @@ pub struct SettingsUi {
     /// elsewhere and so grabs no slider.
     slide: Option<&'static str>,
     slide_missed: bool,
+    /// Every clickable node's full path, for the hover sound.
+    hover_paths: Vec<String>,
+    hover: crate::ui_sound::Hover,
+    // motion: pass
+    /// The HUD motion pass (hud_motion_pass.rs); S6 keeps the window's
+    /// shown flag and hide time in it (the window had no show moment).
+    pass: crate::hud_motion_pass::Pass,
 }
 /// Slider geometry in design pixels: the thumb's centre travels between
 /// half a thumb from each end of the track.
@@ -1120,6 +1129,10 @@ impl SettingsUi {
         }
         items.extend(acquisition_panel::events());
         items.extend(emote_panel::events());
+        self.hover_paths = items
+            .iter()
+            .map(|(node, _)| format!("{PATH}.window.{node}"))
+            .collect();
         for (node, event) in items {
             let queue = self.events.clone();
             let click_path = format!("{PATH}.window.{node}");
@@ -1156,7 +1169,12 @@ impl SettingsUi {
             w: 1920.,
             h: 1080.,
         }];
+        // motion: pass
+        self.pass.frame();
+        // motion: S6
+        let s6 = crate::hud_motion_pass::s6_window_entrance(&mut self.pass, self.open, 1360.);
         if !self.open {
+            self.hover.update(false, None, None, false);
             if ctx.ui_exists(PATH) {
                 ctx.ui_set_visible(PATH, false);
             }
@@ -1185,6 +1203,8 @@ impl SettingsUi {
             self.register(ctx);
         }
         ctx.ui_set_visible(PATH, true);
+        // motion: S6
+        crate::hud_motion_pass::write(ctx, &mut self.cache, &format!("{PATH}.window"), s6);
         if active_page(self.page, self.advanced) == 6 {
             self.acquisition.sync(ctx, &mut self.draft);
         }
@@ -1233,6 +1253,20 @@ impl SettingsUi {
         self.render_content(ctx, cursor, keys);
         self.render_popup(ctx, cursor, log);
         self.render_conflict(ctx, cursor);
+        // Rows scrolled under the header or footer masks keep their
+        // rectangles. A held button (dragging a slider) makes no hover sound.
+        let masked = ["mask_top", "mask_bottom"]
+            .iter()
+            .any(|mask| self.hovered(ctx, mask, cursor));
+        let rows = format!("{PATH}.window.row");
+        let under = crate::ui_sound::under_cursor(
+            ctx,
+            self.hover_paths
+                .iter()
+                .filter(|path| !(masked && path.starts_with(&rows))),
+            cursor,
+        );
+        self.hover.update(true, under, cursor, self.pointer_down);
         full
     }
     fn render_frame(&mut self, ctx: &mut StableClient<'_>, cursor: Option<(f32, f32)>) {
@@ -2198,16 +2232,25 @@ fn bit(bits: [u64; 4], i: usize) -> bool {
 #[cfg(test)]
 mod tests {
     #[test]
+    /// Every template the mod spawns, in every language: balanced braces
+    /// and exactly one root node with nothing outside it.
     fn every_window_template_stays_whole_in_every_language() {
         for (i, (code, _)) in crate::lang::LANGS.iter().enumerate() {
             crate::lang::set_for_test(Some(i));
+            let [stats_own, stats_target] = crate::stats_ui::templates_for_test();
             for (name, source) in [
                 ("settings", super::template()),
                 ("shop", crate::shop_ui::template_for_test()),
                 ("session", crate::session_ui::template_for_test()),
                 ("hud", crate::player_hud::template_for_test()),
+                ("hud item tile", crate::player_hud::tile_for_test()),
                 ("emotes", crate::emotes::template_for_test()),
                 ("team", crate::team_status::template_for_test()),
+                ("team item tile", crate::team_status::tile_for_test()),
+                ("stats", stats_own.clone()),
+                ("stats target", stats_target.clone()),
+                ("screen effect", crate::screen_effect::template()),
+                ("state plate", crate::player_hud::plate_template_for_test()),
             ] {
                 if let Err(e) = crate::lang::check_template(&source) {
                     panic!("{code} {name}: {e}");
@@ -2215,6 +2258,15 @@ mod tests {
             }
         }
         crate::lang::set_for_test(None);
+    }
+    #[test]
+    fn the_template_check_refuses_a_node_outside_the_root() {
+        assert!(crate::lang::check_template("root:empty { #a:color { } }").is_ok());
+        assert!(crate::lang::check_template("root:empty { } #a:color { }").is_err());
+        assert!(crate::lang::check_template("root:empty { }\n#a:color { }").is_err());
+        assert!(crate::lang::check_template("root:empty { text: \"}\"; }").is_ok());
+        assert!(crate::lang::check_template("#a:color { x: 1px; }").is_ok());
+        assert!(crate::lang::check_template("").is_err());
     }
 
     use super::*;
@@ -2358,8 +2410,10 @@ mod tests {
         assert!(max_scroll(0) > 0.);
         assert_eq!(max_scroll(2), 0.);
         // Emotes have a fixed body; Interface retains its scrolling viewport.
-        // + 90 for the HUD tooltips row.
-        assert_eq!(max_scroll(3), 57. + 142. + 90.);
+        // + 90 for the HUD tooltips row; + 238 for the Sounds section (a
+        // heading and three switches); + 62 for the HUD motion switch (motion: switch);
+        // + 28 for Unit highlight, a three-way choice instead of a switch.
+        assert_eq!(max_scroll(3), 57. + 142. + 90. + 238. + 62. + 28.);
         assert_eq!(max_scroll(PAGE_EMOTES), 0.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);

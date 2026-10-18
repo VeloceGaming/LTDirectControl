@@ -120,6 +120,36 @@ impl Vision {
             Self::All => 2,
         }
     }
+    pub fn from_index(index: usize) -> Self {
+        match index {
+            1 => Self::Other,
+            2 => Self::All,
+            _ => Self::Own,
+        }
+    }
+    /// Whether this choice shows a unit of `team` to the player on `side`;
+    /// `seen(s)` says whether side `s` sees it. Your own team and what it
+    /// sees always count.
+    pub fn shows(self, side: usize, team: usize, seen: impl Fn(usize) -> bool) -> bool {
+        if team == side || seen(side) {
+            return true;
+        }
+        match self {
+            Self::Own => false,
+            Self::Other => side < 2 && (team == 1 - side || seen(1 - side)),
+            Self::All => true,
+        }
+    }
+}
+/// The strip's vision choice (`Vision::index`), published by the client
+/// each frame for the simulation workers: every unit it shows can be
+/// hovered, selected, attacked and aimed at (user, 2026-10-18).
+static SHOWN: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+pub fn publish_vision(vision: Vision) {
+    SHOWN.store(vision.index(), std::sync::atomic::Ordering::Relaxed);
+}
+pub fn shown_vision() -> Vision {
+    Vision::from_index(SHOWN.load(std::sync::atomic::Ordering::Relaxed))
 }
 #[derive(Default)]
 struct State {
@@ -197,12 +227,22 @@ impl CameraControl {
             *s = State::default();
         }
     }
+    /// A new match or a save exit: everything, vision back to your side.
     pub fn reset_session(&self, keys: Keys) {
+        self.reset_keeping(keys, Vision::Own);
+    }
+    /// Another champion of your team: the camera starts over on it, the
+    /// vision choice stays (user, 2026-10-18).
+    pub fn reset_for_swap(&self, keys: Keys) {
+        self.reset_keeping(keys, self.vision());
+    }
+    fn reset_keeping(&self, keys: Keys, vision: Vision) {
         if let Ok(mut s) = self.state.lock() {
             *s = State {
                 previous_y: keys.camera_toggle,
                 previous_middle: keys.middle,
                 interrupted_space: keys.space,
+                vision,
                 ..State::default()
             };
         }
@@ -480,8 +520,28 @@ mod tests {
         assert_eq!(Vision::Own.native(2), None);
         let camera = CameraControl::default();
         camera.set_vision(Vision::Other);
+        // A teammate swap keeps the choice; a new match resets it.
+        camera.reset_for_swap(Keys::default());
+        assert_eq!(camera.vision(), Vision::Other);
         camera.reset_session(Keys::default());
         assert_eq!(camera.vision(), Vision::Own);
+    }
+    #[test]
+    fn each_vision_choice_shows_what_that_side_sees() {
+        // A player on side 0; `seen` lists the sides that see the unit.
+        let shows =
+            |v: Vision, team: usize, seen: &[usize]| v.shows(0, team, |s| seen.contains(&s));
+        for v in [Vision::Own, Vision::Other, Vision::All] {
+            assert!(shows(v, 0, &[])); // your team
+            assert!(shows(v, 1, &[0])); // an enemy your team sees
+        }
+        // An enemy and a monster in your fog.
+        assert!(!shows(Vision::Own, 1, &[1]));
+        assert!(shows(Vision::Other, 1, &[]));
+        assert!(shows(Vision::Other, 2, &[1]));
+        assert!(!shows(Vision::Other, 2, &[]));
+        assert!(shows(Vision::All, 2, &[]));
+        assert_eq!(Vision::from_index(Vision::All.index()), Vision::All);
     }
     #[test]
     fn minimap_projection_is_independent_of_camera_pan_and_zoom() {

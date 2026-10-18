@@ -28,7 +28,9 @@ static STEER_ENTRIES: AtomicUsize = AtomicUsize::new(0);
 static OWNED_STEER_ENTRIES: AtomicUsize = AtomicUsize::new(0);
 static DIRECT_STEPS: AtomicUsize = AtomicUsize::new(0);
 static STEER_POINTER_REJECTIONS: AtomicUsize = AtomicUsize::new(0);
-static DEATH_GREYSCALE: AtomicBool = AtomicBool::new(false);
+/// The outline hook records each unit's drawn sprites only while selection
+/// can use them: you control an athlete on the battlefield.
+static SELECTION_DRAWS: AtomicBool = AtomicBool::new(false);
 /// The game version whose hooks answer: 0 until `install` recognises the
 /// executable, then that version's number in `hooks!`.
 #[cfg(all(windows, target_arch = "x86_64"))]
@@ -64,8 +66,11 @@ pub(crate) fn asset_digest(bytes: &[u8]) -> Result<String, String> {
 pub(crate) fn item_reader() -> Option<(usize, crate::native_items::Addresses)> {
     hooks!(None, item_reader())
 }
-pub fn set_death_greyscale(dead: bool) {
-    DEATH_GREYSCALE.store(dead, Ordering::Release);
+/// Client, once per frame: whether selection reads drawn sprites (you
+/// control an athlete on the battlefield). While false, the outline hook
+/// records nothing (docs/investigation-takeover-cost-2026-10-18.md, 3.6).
+pub fn set_selection_draws(active: bool) {
+    SELECTION_DRAWS.store(active, Ordering::Release);
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum OutlineRole {
@@ -364,32 +369,97 @@ pub fn sprite_draw(id: usize) -> Option<((f32, f32), Vec<crate::sprite_art::Draw
         None
     }
 }
-/// Installs the hooks built for the running executable, recognised by its
-/// fingerprint. On success: the game version and the hook families
-/// installed. An executable no version names gets no hooks.
-pub fn install() -> Result<(&'static str, u32), String> {
+/// The running executable's SHA-256, computed once per session. Reading and
+/// hashing the 87 MB file took about 100 ms on the client thread at the
+/// title screen (docs/investigation-takeover-cost-2026-10-18.md, section 1),
+/// so it runs on a background thread started when the mod loads. It touches
+/// no game address. Nothing is cached across runs: every session hashes the
+/// whole file again.
+#[cfg(all(windows, target_arch = "x86_64"))]
+static FINGERPRINT: OnceLock<Result<String, String>> = OnceLock::new();
+/// The background fingerprint thread is running or has finished.
+static FINGERPRINT_STARTED: AtomicBool = AtomicBool::new(false);
+/// Start hashing the executable in the background (once). If the thread
+/// cannot be started, `install` hashes on the client thread as before.
+pub fn start_fingerprint() {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        let sha = host::executable_sha()?;
+        if FINGERPRINT_STARTED.swap(true, Ordering::AcqRel) {
+            return;
+        }
+        let spawned = std::thread::Builder::new()
+            .name("lt-fingerprint".into())
+            .spawn(|| {
+                let sha = std::panic::catch_unwind(host::executable_sha)
+                    .unwrap_or_else(|_| Err("Executable fingerprint failed".into()));
+                let _ = FINGERPRINT.set(sha);
+            })
+            .is_ok();
+        if !spawned {
+            FINGERPRINT_STARTED.store(false, Ordering::Release);
+        }
+    }
+}
+/// `install` can run without waiting: the background fingerprint is done,
+/// or none was started (then `install` hashes itself).
+pub fn fingerprint_ready() -> bool {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        fingerprint_settled(
+            FINGERPRINT_STARTED.load(Ordering::Acquire),
+            FINGERPRINT.get().is_some(),
+        )
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        true
+    }
+}
+/// Ready when the result is there, or when no background hash runs.
+#[cfg_attr(not(all(windows, target_arch = "x86_64")), allow(dead_code))]
+fn fingerprint_settled(started: bool, done: bool) -> bool {
+    done || !started
+}
+/// Installs the hooks built for the running executable, recognised by its
+/// fingerprint, except the families in `skip` (`native_profile::family`).
+/// On success: the game version and the hook families installed. An
+/// executable no version names gets no hooks.
+pub fn install(skip: u32) -> Result<(&'static str, u32), String> {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        let sha = FINGERPRINT.get_or_init(host::executable_sha).clone()?;
         if sha == v070::identity::EXPECTED_SHA {
             ACTIVE.store(1, Ordering::Release);
-            v070::windows::install(&sha)?;
-            Ok((v070::identity::GAME, v070::identity::ENABLED))
+            let families = v070::windows::install(&sha, skip)?;
+            Ok((v070::identity::GAME, families))
         } else if sha == v063::identity::EXPECTED_SHA {
             ACTIVE.store(2, Ordering::Release);
-            v063::windows::install(&sha)?;
-            Ok((v063::identity::GAME, v063::identity::ENABLED))
+            let families = v063::windows::install(&sha, skip)?;
+            Ok((v063::identity::GAME, families))
         } else if sha == v064::identity::EXPECTED_SHA {
             ACTIVE.store(3, Ordering::Release);
-            v064::windows::install(&sha)?;
-            Ok((v064::identity::GAME, v064::identity::ENABLED))
+            let families = v064::windows::install(&sha, skip)?;
+            Ok((v064::identity::GAME, families))
         } else {
             Err("Executable fingerprint differs; no hooks installed".into())
         }
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
+        let _ = skip;
         Err("Native adapter requires Windows x64".into())
+    }
+}
+/// The outline hook is installed (not skipped, nor stepped aside for
+/// another mod that holds the unit renderer).
+pub fn outline_installed() -> bool {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        hooks!(false, installed(crate::native_profile::family::OUTLINE))
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        false
     }
 }
 /// Patches the athlete stat rules in, once a session, when this game
@@ -438,7 +508,6 @@ pub fn stat_rules_report(
 /// Live release restoration still happens inside the original viewer borrow.
 pub fn reset_session() {
     crate::athlete_rules::clear();
-    set_death_greyscale(false);
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
         hooks!((), clear_outline_targets());
@@ -488,3 +557,14 @@ mod v064 {
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod host;
+#[cfg(test)]
+mod fingerprint_tests {
+    #[test]
+    fn install_waits_only_while_the_background_hash_runs() {
+        // Running: wait at the title. Done: install. Never started (the
+        // thread could not be spawned): install hashes itself, as before.
+        assert!(!super::fingerprint_settled(true, false));
+        assert!(super::fingerprint_settled(true, true));
+        assert!(super::fingerprint_settled(false, false));
+    }
+}

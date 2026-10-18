@@ -103,7 +103,7 @@ bundled_emotes = load('bundled-emotes.json')
 assert digest(root / bundled_emotes['source']) == bundled_emotes['source_sha256']
 assert digest(root / bundled_emotes['catalogue']) == bundled_emotes['catalogue_sha256']
 assert len(bundled_emotes['entries']) == len(bundled_emotes['files']) == 4
-assert len(ui_art['files']) == 99  # 88 existing + five faces + optional sound + four bundled faces + the swap icon
+assert len(ui_art['files']) == 101  # 88 existing + five faces + optional sound + four bundled faces + the swap icon + the ready chime and denied cast clip
 stamp = load('shop-stamp.json')
 assert digest(root / stamp['source']) == stamp['source_sha256']
 assert stamp['rotation_degrees_clockwise'] == -7.5

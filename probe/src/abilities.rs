@@ -100,6 +100,9 @@ pub struct HudSkills {
     pub aiming: Option<usize>,
     pub available: [Option<bool>; 3],
     pub uses: [Option<usize>; 3],
+    pub uses_max: [Option<usize>; 3],
+    /// Presentation event only: never changes validation or queued commands.
+    pub denied_at: [Option<Instant>; 3],
     pub ready: [Option<bool>; 3],
     pub wait: [Option<usize>; 3],
 }
@@ -137,7 +140,8 @@ struct State {
     native: Option<(usize, [Option<Charges>; 3], Instant)>,
     wait_state: Option<(u64, Option<usize>, bool)>,
     attack_cycle: Option<(usize, usize, Instant)>, // hit tick, starting cooldown, start; no native pointers
-    last_uses: [Option<(usize, Instant)>; 3],
+    last_uses: [Option<(usize, usize, Instant)>; 3],
+    denied_at: [Option<Instant>; 3],
     units: Option<(Vec<Unit>, Instant)>,
     geometry: Option<([crate::skill_preview::Geometry; 3], Instant)>,
     geometry_reports: usize,
@@ -342,6 +346,7 @@ impl Abilities {
         if let Ok(mut s) = self.0.lock() {
             s.cancel();
             s.message = None;
+            s.denied_at = [None; 3];
         }
     }
     pub fn interaction_busy(&self) -> bool {
@@ -367,10 +372,26 @@ impl Abilities {
                     .map(|c| c.multi().then(|| c.remaining(s.cooldowns[i])))
                     .unwrap_or_else(|| {
                         s.last_uses[i]
-                            .filter(|(_, at)| at.elapsed() <= Duration::from_secs(1))
-                            .map(|(n, _)| n)
+                            .filter(|(_, _, at)| at.elapsed() <= Duration::from_secs(1))
+                            .map(|(n, _, _)| n)
                     })
             }),
+            uses_max: std::array::from_fn(|i| {
+                s.native
+                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
+                    .and_then(|(_, c, _)| c[i])
+                    .map(|c| c.multi().then_some(c.uses))
+                    .unwrap_or_else(|| {
+                        s.last_uses[i]
+                            .filter(|(_, _, at)| at.elapsed() <= Duration::from_secs(1))
+                            .map(|(_, total, _)| total)
+                    })
+            }),
+            denied_at: if s.active && s.focused {
+                s.denied_at
+            } else {
+                [None; 3]
+            },
             ready: std::array::from_fn(|i| {
                 s.native
                     .filter(|(_, _, at)| at.elapsed() <= FRESH)
@@ -451,6 +472,7 @@ impl Abilities {
                 "attack-move"
             };
             s.cancel_logged(reason, log);
+            s.denied_at = [None; 3];
             return action;
         }
         let ability_pressed = edges.into_iter().any(|edge| edge);
@@ -463,6 +485,23 @@ impl Abilities {
         for (slot, edge) in edges.into_iter().enumerate() {
             if !edge {
                 continue;
+            }
+            // A normal-cast press can enter aiming without reaching the worker.
+            // Give unavailable presses the same visual cue; leave input alone.
+            let unlearned = s.level.is_some_and(|l| l < [1, 3, 5][slot]);
+            let no_effect = s
+                .metadata
+                .as_ref()
+                .is_some_and(|m| m.at.elapsed() <= FRESH && m.skills[slot].is_none());
+            let ready = s
+                .native
+                .filter(|(_, _, at)| at.elapsed() <= FRESH)
+                .and_then(|(_, c, _)| c[slot])
+                .map_or(s.cooldowns[slot] == 0, |c| {
+                    c.remaining(s.cooldowns[slot]) > 0
+                });
+            if unlearned || no_effect || !ready {
+                s.denied_at[slot] = Some(Instant::now());
             }
             let preview = if keys.mapped {
                 keys.previews[slot] || keys.cast_modes[slot] != 0
@@ -592,6 +631,7 @@ impl Abilities {
                 s.native = None;
                 s.attack_cycle = None;
                 s.last_uses = [None; 3];
+                s.denied_at = [None; 3];
                 s.units = None;
                 s.geometry = None;
             }
@@ -684,7 +724,7 @@ impl Abilities {
                     if let Some(c) = c {
                         s.last_uses[i] = c
                             .multi()
-                            .then(|| (c.remaining(s.cooldowns[i]), Instant::now()));
+                            .then(|| (c.remaining(s.cooldowns[i]), c.uses, Instant::now()));
                     }
                 }
                 if action != 3 {
@@ -962,12 +1002,19 @@ impl Abilities {
             if !retain {
                 s.wait_state = None;
                 s.message = Some((message, Instant::now()));
+                if result.is_none() {
+                    s.denied_at[request.slot] = Some(Instant::now());
+                }
             }
             if result.is_some() {
                 s.dispatched = Some(request);
             }
         } else {
             return None;
+        }
+        if !retain && result.is_none() && learned {
+            // Lock-free: the client frame plays the denied sound.
+            crate::ui_sound::cast_denied();
         }
         if !retain {
             log.write(&format!(
@@ -1038,6 +1085,8 @@ impl Abilities {
                 NAMES[slot], request.stamp.id
             ));
         } else {
+            crate::ui_sound::cast_denied();
+            s.denied_at[slot] = Some(Instant::now());
             s.message = Some((
                 crate::lang::trf("{key} could not start", &[("key", &NAMES[slot])]),
                 Instant::now(),
@@ -1763,6 +1812,7 @@ mod tests {
             );
             let hud = a.hud_skills();
             assert_eq!(hud.uses[0], Some(uses));
+            assert_eq!(hud.uses_max[0], Some(3));
             assert_eq!(hud.ready[0], Some(ready));
             assert_eq!(hud.wait[0], Some(wait));
         }
@@ -1818,6 +1868,48 @@ mod tests {
         assert!(take(&a, &[], |_| true, &log).is_none());
         a.set_hud_hover(None);
         assert!(!a.preview_data().unwrap().1);
+    }
+    #[test]
+    fn unavailable_press_cues_only_its_slot_without_changing_normal_cast_or_repeating_on_hold() {
+        let (a, camera, log) = setup(2, 5);
+        a.observe_level((1, 33, 1), 7, 5);
+        a.observe_actor((1, 33, 1), Some(7), Some((200_000, 200_000)), [60, 0, 0]);
+        a.update(keys(true, true), true, &camera, &log);
+        let first = a.hud_skills().denied_at;
+        assert!(first[0].is_some());
+        assert_eq!(&first[1..], &[None, None]);
+        assert_eq!(a.hud_skills().aiming, Some(0));
+        assert!(take(&a, &[], |_| true, &log).is_none());
+        a.update(keys(true, true), true, &camera, &log);
+        assert_eq!(a.hud_skills().denied_at, first);
+        a.update(keys(false, true), true, &camera, &log);
+        a.update(keys(true, true), true, &camera, &log);
+        assert!(a.hud_skills().denied_at[0] >= first[0]);
+        a.update(
+            Keys {
+                focused: false,
+                ..keys(false, false)
+            },
+            true,
+            &camera,
+            &log,
+        );
+        assert_eq!(a.hud_skills().denied_at, [None; 3]);
+        a.observe_actor((1, 33, 1), Some(8), Some((200_000, 200_000)), [0; 3]);
+        assert_eq!(a.0.lock().unwrap().denied_at, [None; 3]);
+    }
+    #[test]
+    fn remaining_charge_is_usable_and_does_not_cue_a_denial() {
+        let (a, camera, log) = setup(2, 5);
+        a.observe_level((1, 33, 1), 7, 5);
+        budget(&a, 0);
+        a.observe_actor((1, 33, 1), Some(7), Some((200_000, 200_000)), [240, 0, 0]);
+        a.update(keys(true, false), true, &camera, &log);
+        assert_eq!(a.hud_skills().uses[0], Some(1));
+        assert_eq!(a.hud_skills().denied_at, [None; 3]);
+        assert!(take(&a, &[], |_| true, &log).is_some());
+        a.acknowledge_native((1, 33, 1), 7, 0, false, 0, &log);
+        assert!(a.hud_skills().denied_at[0].is_some());
     }
     #[test]
     fn hud_hover_clears_on_leave_and_requires_fresh_alive_focused_state() {
