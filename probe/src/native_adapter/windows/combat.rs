@@ -277,6 +277,7 @@ pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize,
     crate::perf::hook(crate::perf::Hook::Attack);
     if let Some(shared) = SHARED.get() {
         let _ = catch_unwind(AssertUnwindSafe(|| inventory(shared, entity)));
+        let _ = catch_unwind(AssertUnwindSafe(|| record_shapes(shared, entity)));
     }
     let original: AttackFn = std::mem::transmute(ORIGINAL_ATTACK.load(Ordering::Acquire));
     let selected = SHARED.get().and_then(|shared| {
@@ -604,6 +605,32 @@ unsafe fn inventory(shared: &Shared, entity: usize) {
             ));
         }
     }
+}
+/// Every champion's decoded Q/W/R, once per champion, for the shape table
+/// (`crate::shape_record`). Only skills whose effect tree is readable are
+/// decoded, as for the coverage lines above.
+unsafe fn record_shapes(shared: &Shared, entity: usize) {
+    let Some(base) = family_base(family::READERS) else {
+        return;
+    };
+    let actor = std::ptr::read_unaligned((entity + 0x5b8) as *const usize);
+    let Some(name) = crate::shape_record::wanted(actor) else {
+        return;
+    };
+    let skills = [0x4c0, 0x4f8, 0x530].map(|offset| {
+        let readable = preview::dump(base, entity, offset, &|a, n| {
+            super::tooltips::accessible(a, n, false)
+        })
+        .is_some();
+        if readable {
+            preview::read(base, entity, offset)
+        } else {
+            let mut absent = crate::skill_preview::Geometry::default();
+            absent.issue("effect tree not readable");
+            absent
+        }
+    });
+    crate::shape_record::record(name, skills, &shared.logger);
 }
 /// Background trees: each shape (the tree without payload words) twice.
 fn new_background_shape(tree: &str) -> bool {

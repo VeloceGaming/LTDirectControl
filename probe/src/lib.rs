@@ -58,6 +58,7 @@ mod season_fix;
 mod session_ui;
 mod settings;
 mod settings_ui;
+mod shape_record;
 mod shop;
 mod shop_recipe;
 mod shop_trace;
@@ -240,6 +241,10 @@ fn init(host: &StableHost) -> StableMod {
         version.patch,
         host.abi_level(),
         env!("CARGO_PKG_VERSION")
+    ));
+    shape_record::set_game(format!(
+        "{}.{}.{}",
+        version.major, version.minor, version.patch
     ));
     sprite_picking::initialize(&logger);
     preview_style::load(&logger);

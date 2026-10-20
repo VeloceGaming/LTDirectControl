@@ -110,6 +110,16 @@ impl Simulation {
                 return None;
             };
             let key = (sim.seed(), origin.match_id, origin.set_index);
+            // Champion names by actor for the shape table: the combat hook
+            // on this thread sees the actors but not their names.
+            crate::shape_record::observe_roster(key, || {
+                (0..sim.player_count())
+                    .filter_map(|i| {
+                        let c = sim.player_at(i)?.champion()?;
+                        Some((c.id(), c.name()?))
+                    })
+                    .collect()
+            });
             // Athletes of the match on screen, for the season correction.
             if origin.kind == 2 && tick <= 60 {
                 season_fix::observe_athlete(key, player_id, athlete);

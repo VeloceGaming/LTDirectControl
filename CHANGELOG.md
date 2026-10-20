@@ -3,6 +3,16 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.5.0-dev8 (development build) — 2026-10-21
+
+**Played by the author 2026-10-21 (two matches). Read from its log (`probe=1.5.0-dev8`) and table: 67 champions recorded (52 base, 15 mod), 201 skills; 16 base champions not yet seen. 65 skills unread by the live reader, 17 of them covered by champion files, 48 still unread; several share one effect type (the homing shot `1705150` in 5, effect `1670c60` in 4). Recording works across threads and background matches. Development build, never for the Workshop.** Step 1 of the agreed skill-preview plan (the author, 2026-10-21; docs/backlog.md item 2): record every champion's skill shapes once, so the published build can later ship them as a table instead of the live reader.
+
+- **Read from the code:** the skill range, cast style and target type come live from the combat hook (`native_adapter/windows/combat.rs`), which stays; only the shapes come from the live reader. So the table holds shapes only, and ranges keep their in-game patched values.
+- **New `shape_record.rs`:** the simulation callback stores, per thread, which champion each actor is; the combat hook, which runs for every champion of every simulation including the game's background matches, decodes a champion's Q, W and R with the live reader the first time it sees that champion (`record_shapes`, with the same readability check as the coverage lines) and adds them to `%LOCALAPPDATA%\LTDirectControl\research\skill-shapes.json`: per skill its shapes (kind, sizes in world units, where it sits, allies, projectile), "no area", or why it could not be read, marked `source: live`, with the game version. A `SHAPE RECORD champion=… Q=… W=… R=… recorded=N` line is logged per champion. Earlier sessions' champions are kept when the game version is the same.
+- Nothing changes on screen.
+- Tests: one recording per actor and match, names from the roster, a new match starts over; skills written as shapes, no area or unread.
+- Verified: formatting, Clippy with warnings denied, 588 passing tests (one existing translation-export helper intentionally ignored), release build (staging confirmed the DLL carries 1.5.0-dev8), all 581 native instruction/header anchors across game 0.6.3 / 0.6.4 / 0.7.0, DLL interface/null-host refusal and the 103-file package. Installed over verified 1.5.0-dev7; installed DLL, metadata and all 101 assets match, and the installed DLL carries 1.5.0-dev8. Record: `dist/build-1.5.0-dev8.json`. Not verified: anything in game, including that the combat hook runs on the same thread as each match's simulation callback (otherwise nothing is recorded). Not committed, pushed or uploaded.
+
 ## 1.5.0-dev7 (development build) — 2026-10-20
 
 **Seen in game 2026-10-20 by the author: "Test passed". Development build, never for the Workshop.** A visible, League-like range indicator in a sibling of the skill's colour, approved by the author on 2026-10-20 ("cream").

@@ -45,7 +45,19 @@ addition (not to be copied).
    author's option A): a skill not understood shows only its cast style,
    an arrow toward the aim or a landing ring, instead of a crosshair.
    Also 1.5.0-dev3: dashes follow the skill's main purpose.
-   **Later, with its tradeoff:** replace the live reader for the 60
+   **Agreed order (author, 2026-10-21):** 1 record every champion's decoded
+   shapes (development build, background matches too) into a table;
+   2 a standalone viewer that draws every skill from the table and the
+   champion files, for quick review; 3 fill the unread skills (Harpooner R
+   and about 11 more) in a starter list keyed by champion and skill, which
+   also serves custom-code Workshop skills; 4 ship the table, the live
+   reader only in development builds; 5 research reading the active
+   in-game patch (the author expects a small hook). Read from the code:
+   skill range, cast style and target type come live from the combat hook
+   (`native_adapter/windows/combat.rs`), which stays, so ranges keep their
+   patched values without the live reader; only a few radius or width
+   values would miss patches.
+   **Earlier note, superseded by the order above:** replace the live reader for the 60
    compiled base champions (about 37 version-specific entries per game
    version, 7 anchors and about 30 effect addresses on 0.6.4) with a table
    generated once from the live reader (shape kinds and sizes) plus the
