@@ -78,6 +78,19 @@ pub enum Shape {
         radius: f32,
         length: f32,
     },
+    /// `count` lines from the caster spread evenly over `degrees` in total,
+    /// each with hit radius `radius` over `length` (0: the cast range);
+    /// from the author's skill assignments (Harpooner R, Boomerang Hunter W).
+    Spread {
+        count: usize,
+        radius: f32,
+        length: f32,
+        degrees: f32,
+    },
+    /// A jump straight back, away from the aim, `length` long (Archer W).
+    Backstep {
+        length: f32,
+    },
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Footprint {
@@ -101,6 +114,13 @@ pub struct Geometry {
     pub footprints: Vec<Footprint>,
     pub issues: Vec<String>,
     pub families: Vec<String>,
+    /// Draw nothing for this skill, not even its range (the author's "no
+    /// preview" assignment: passives and instant triggers).
+    pub hidden: bool,
+    /// An assignment that adds its shapes to what the game reads instead of
+    /// replacing it (the author, 2026-10-21: Zook W keeps its read blast
+    /// around Zook and adds the jump away the game cannot be read for).
+    pub adds: bool,
 }
 impl Geometry {
     pub fn add(&mut self, shape: Shape, placement: Placement) {
@@ -147,6 +167,8 @@ impl Geometry {
                             | Shape::Cone { .. }
                             | Shape::Movement { .. }
                             | Shape::Fan { .. }
+                            | Shape::Spread { .. }
+                            | Shape::Backstep { .. }
                     )
             })
     }
@@ -167,7 +189,8 @@ impl Geometry {
                     Shape::Movement { blink: true } => "blink",
                     Shape::Movement { blink: false } => "dash",
                     Shape::Reach { .. } => "reach",
-                    Shape::Fan { .. } => "fan",
+                    Shape::Fan { .. } | Shape::Spread { .. } => "fan",
+                    Shape::Backstep { .. } => "backstep",
                 };
                 if !kinds.contains(&kind) {
                     kinds.push(kind);
@@ -275,6 +298,162 @@ pub fn initialize(log: &Logger) {
         .count();
     log.write(&format!("PREVIEW declared_slots={count}; runtime effect geometry preferred; input and footprint independent"));
     let _ = SHAPES.set(shapes);
+    let _ = OVERRIDES.set(load_overrides(log));
+}
+/// The author's skill assignments (step 3 of the preview plan, 2026-10-21):
+/// `%LOCALAPPDATA%\LTDirectControl\skill-overrides.json`, written by the
+/// viewer (`tools/preview_viewer.py`). Keyed "<champion> <Q|W|R>".
+static OVERRIDES: OnceLock<HashMap<(String, usize), Geometry>> = OnceLock::new();
+fn load_overrides(log: &Logger) -> HashMap<(String, usize), Geometry> {
+    let path = std::env::var_os("LOCALAPPDATA").map(|root| {
+        std::path::PathBuf::from(root)
+            .join("LTDirectControl")
+            .join("skill-overrides.json")
+    });
+    let Some(value) = path
+        .and_then(|p| std::fs::read(p).ok())
+        .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
+    else {
+        return HashMap::new();
+    };
+    let mut out = HashMap::new();
+    let mut refused = 0;
+    for (key, entry) in value
+        .get("skills")
+        .and_then(Value::as_object)
+        .into_iter()
+        .flatten()
+    {
+        let parsed = key.rsplit_once(' ').and_then(|(champion, slot)| {
+            let slot = ["Q", "W", "R"].iter().position(|s| *s == slot)?;
+            Some(((champion.to_owned(), slot), assigned(entry)?))
+        });
+        match parsed {
+            Some((k, g)) => {
+                out.insert(k, g);
+            }
+            None => refused += 1,
+        }
+    }
+    log.write(&format!(
+        "PREVIEW OVERRIDES skills={} refused={refused}",
+        out.len()
+    ));
+    out
+}
+/// One assignment as a preview: a type and its values in world units.
+pub fn assigned(v: &Value) -> Option<Geometry> {
+    let n = |name: &str| {
+        v.get(name)
+            .and_then(Value::as_f64)
+            .filter(|n| n.is_finite() && *n >= 0. && *n <= 10_000.)
+            .map(|n| n as f32)
+    };
+    let allies = v.get("allies").and_then(Value::as_bool).unwrap_or(false);
+    let mut g = Geometry::default();
+    g.family("override");
+    g.adds = v.get("add").and_then(Value::as_bool).unwrap_or(false);
+    match v.get("type")?.as_str()? {
+        "no_preview" => g.hidden = true,
+        "unit_target" => {
+            if let Some(radius) = n("area_radius").filter(|r| *r > 0.) {
+                g.add_for(Shape::Circle { radius }, Placement::Aim, allies);
+            }
+        }
+        "self_circle" => g.add_for(
+            Shape::Circle {
+                radius: n("radius")?,
+            },
+            Placement::Caster,
+            allies,
+        ),
+        "aim_circle" => g.add_for(
+            Shape::Circle {
+                radius: n("radius")?,
+            },
+            Placement::Aim,
+            allies,
+        ),
+        "aim_rectangle" => g.add_for(
+            Shape::Rectangle {
+                width: n("width")?,
+                height: n("depth")?,
+            },
+            Placement::Aim,
+            allies,
+        ),
+        "line" => g.add_for(
+            Shape::Corridor {
+                radius: n("width")? / 2.,
+                length: n("length").unwrap_or(0.),
+            },
+            Placement::Caster,
+            allies,
+        ),
+        "fan" => g.add_for(
+            Shape::Spread {
+                count: n("count")?.round().clamp(1., 16.) as usize,
+                radius: n("width")? / 2.,
+                length: n("length").unwrap_or(0.),
+                degrees: n("spread")?.min(360.),
+            },
+            Placement::Caster,
+            allies,
+        ),
+        "cone" => g.add_for(
+            Shape::Cone {
+                radius: n("radius")?,
+                cosine: (n("angle")?.min(360.) / 2.).to_radians().cos(),
+            },
+            Placement::Caster,
+            allies,
+        ),
+        "dash" => {
+            let blink = v.get("blink").and_then(Value::as_bool).unwrap_or(false);
+            let placement = match n("distance").filter(|d| *d > 0.) {
+                Some(length) => Placement::End { length },
+                None => Placement::Aim,
+            };
+            g.add(Shape::Movement { blink }, placement);
+        }
+        "jump_back" => g.add(
+            Shape::Backstep {
+                length: n("distance")?,
+            },
+            Placement::Caster,
+        ),
+        _ => return None,
+    }
+    Some(g)
+}
+/// The author's assignment for this champion's skill, if any.
+pub fn assignment(name: Option<&str>, slot: usize) -> Option<Geometry> {
+    OVERRIDES.get()?.get(&(name?.to_owned(), slot)).cloned()
+}
+/// The skill's preview with the author's assignment applied: a replacing
+/// assignment wins over everything read (a deliberate correction); an
+/// adding one is drawn on top of what `read` gives.
+pub fn with_assignment(
+    name: Option<&str>,
+    slot: usize,
+    read: impl FnOnce() -> Geometry,
+) -> Geometry {
+    combine(assignment(name, slot), read)
+}
+fn combine(assigned: Option<Geometry>, read: impl FnOnce() -> Geometry) -> Geometry {
+    match assigned {
+        Some(a) if a.adds => {
+            let mut g = read();
+            for f in a.footprints {
+                g.push(f.shape, f.placement, f.allies, f.projectile);
+            }
+            g.family("override");
+            g.hidden |= a.hidden;
+            g
+        }
+        Some(a) => a,
+        None => read(),
+    }
 }
 pub fn geometry(name: Option<&str>, slot: usize) -> Geometry {
     name.and_then(|n| SHAPES.get()?.get(n)?.get(slot).cloned())
@@ -1351,7 +1530,7 @@ fn beyond(d: &mut Drawing, s: &Style, end: Point, aim: Point, ready: bool) {
 }
 pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let mut out = Drawing::default();
-    if !frame.valid() {
+    if !frame.valid() || p.geometry.hidden {
         return out;
     }
     let s = style();
@@ -1510,6 +1689,29 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                     }
                 }
             }
+            Shape::Spread {
+                count,
+                radius,
+                length,
+                degrees,
+            } => {
+                let length = if length > 0. { length } else { range };
+                if let Some(dir) = unit_vector(base, aiming) {
+                    for offset in spread_offsets(count, degrees) {
+                        let d = turned(dir, offset);
+                        let end = project((base.0 + d.0 * length, base.1 + d.1 * length));
+                        let half = (radius.max(1.5) + margin) * sx;
+                        corridor_body(&mut out, s, at, end, half, ink, End::Plain);
+                    }
+                }
+            }
+            Shape::Backstep { length } => {
+                // Straight away from the aim (the target of a unit cast).
+                if let Some(dir) = unit_vector(aiming, origin) {
+                    let end = (origin.0 + dir.0 * length, origin.1 + dir.1 * length);
+                    dash(&mut out, s, center, project(end), ink);
+                }
+            }
             Shape::Movement { blink: false } => dash(&mut out, s, center, at, ink),
         }
     }
@@ -1542,6 +1744,17 @@ pub(crate) fn fan_offsets(count: usize) -> Vec<f32> {
             / 1000.)
         .collect()
 }
+/// `count` lines spread evenly over `degrees` in total, centred on the aim.
+pub(crate) fn spread_offsets(count: usize, degrees: f32) -> Vec<f32> {
+    let count = count.clamp(1, 16);
+    if count == 1 {
+        return vec![0.];
+    }
+    let step = degrees / (count - 1) as f32;
+    (0..count)
+        .map(|i| -degrees / 2. + step * i as f32)
+        .collect()
+}
 /// `v` turned by `degrees`, clockwise on screen (y grows downward).
 fn turned(v: Point, degrees: f32) -> Point {
     let (s, c) = degrees.to_radians().sin_cos();
@@ -1551,7 +1764,7 @@ fn turned(v: Point, degrees: f32) -> Point {
 /// areas only; never orient a shot toward the icon or reuse a previous aim.
 pub fn hover_drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let mut out = Drawing::default();
-    if !frame.valid() {
+    if !frame.valid() || p.geometry.hidden {
         return out;
     }
     let s = style();
@@ -2209,6 +2422,117 @@ mod tests {
         range_ring(&mut d, st, (960., 540.), 100., st.range_ready);
         assert_eq!(d.discs.len(), 1);
         assert_eq!(rgb(d.discs[0].color), st.range_ready);
+    }
+    #[test]
+    fn an_adding_assignment_keeps_what_the_game_reads() {
+        // Zook W: the game reads the 32-unit blast around Zook; the jump
+        // away is the mod's own code, added by the author.
+        let read = || {
+            let mut g = Geometry::default();
+            g.add(Shape::Circle { radius: 32. }, Placement::Caster);
+            g
+        };
+        let add = assigned(&serde_json::json!({"type": "jump_back", "distance": 26, "add": true}));
+        let g = main_purpose(combine(add, read), true);
+        assert_eq!(
+            g.footprints.iter().map(|f| f.shape).collect::<Vec<_>>(),
+            [
+                Shape::Circle { radius: 32. },
+                Shape::Backstep { length: 26. }
+            ]
+        );
+        // Without "add", the assignment replaces what is read.
+        let replace = assigned(&serde_json::json!({"type": "jump_back", "distance": 26}));
+        assert_eq!(combine(replace, read).footprints.len(), 1);
+        // No assignment: what is read.
+        assert_eq!(combine(None, read), read());
+    }
+    #[test]
+    fn every_preview_type_becomes_its_shape() {
+        let one = |v: serde_json::Value| assigned(&v).map(|g| g.footprints);
+        // Harpooner R: 5 harpoons over 36 degrees, 18 wide, the cast range.
+        assert_eq!(
+            one(serde_json::json!({"type": "fan", "count": 5, "width": 18, "spread": 36})).unwrap()
+                [0]
+            .shape,
+            Shape::Spread {
+                count: 5,
+                radius: 9.,
+                length: 0.,
+                degrees: 36.
+            }
+        );
+        // Archer W: a 30-unit jump back.
+        assert_eq!(
+            one(serde_json::json!({"type": "jump_back", "distance": 30})).unwrap()[0].shape,
+            Shape::Backstep { length: 30. }
+        );
+        // Chef W: a heal around herself, in the ally colour.
+        let heal =
+            one(serde_json::json!({"type": "self_circle", "radius": 50, "allies": true})).unwrap();
+        assert_eq!(
+            (heal[0].placement, heal[0].allies),
+            (Placement::Caster, true)
+        );
+        // Barrier Magician R: a ring on the target; a plain unit target has no area.
+        assert_eq!(
+            one(serde_json::json!({"type": "unit_target", "area_radius": 60})).unwrap()[0]
+                .placement,
+            Placement::Aim
+        );
+        let plain = assigned(&serde_json::json!({"type": "unit_target"})).unwrap();
+        assert!(plain.known_without_area());
+        // Soldier Q (passive), Spirit Caller R (instant): nothing at all,
+        // not even the range.
+        let hidden = assigned(&serde_json::json!({"type": "no_preview"})).unwrap();
+        assert!(hidden.hidden && hidden.footprints.is_empty());
+        let none = drawing(
+            frame(),
+            Preview {
+                origin: (480000, 480000),
+                aim: Some((520000, 480000)),
+                casting: 1,
+                self_target: false,
+                allies: false,
+                range: 90000,
+                ready: true,
+                geometry: hidden,
+                target: None,
+            },
+        );
+        assert!(none.strokes.is_empty() && none.discs.is_empty());
+        for (v, shape) in [
+            (
+                serde_json::json!({"type": "aim_circle", "radius": 40}),
+                "circle",
+            ),
+            (
+                serde_json::json!({"type": "aim_rectangle", "width": 60, "depth": 30}),
+                "rectangle",
+            ),
+            (
+                serde_json::json!({"type": "line", "width": 20, "length": 90}),
+                "strip",
+            ),
+            (
+                serde_json::json!({"type": "cone", "radius": 70, "angle": 90}),
+                "cone",
+            ),
+            (serde_json::json!({"type": "dash", "distance": 50}), "dash"),
+            (serde_json::json!({"type": "dash", "blink": true}), "blink"),
+        ] {
+            assert_eq!(assigned(&v).unwrap().summary(), shape, "{v}");
+        }
+        // Unknown types, missing values and nonsense numbers are refused.
+        for v in [
+            serde_json::json!({"type": "spiral"}),
+            serde_json::json!({"type": "aim_circle"}),
+            serde_json::json!({"type": "aim_circle", "radius": -5}),
+        ] {
+            assert!(assigned(&v).is_none(), "{v}");
+        }
+        assert_eq!(spread_offsets(5, 36.), vec![-18., -9., 0., 9., 18.]);
+        assert_eq!(spread_offsets(1, 36.), vec![0.]);
     }
     #[test]
     fn a_skill_not_understood_shows_only_its_cast_style() {

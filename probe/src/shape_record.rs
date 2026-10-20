@@ -70,8 +70,20 @@ pub fn wanted(actor: usize) -> Option<String> {
         .is_some_and(|t| t.champions.contains_key(&name));
     (!recorded).then_some(name)
 }
-/// Combat hook: store `name`'s decoded Q/W/R and rewrite the file.
-pub fn record(name: String, skills: [Geometry; 3], log: &Logger) {
+/// How a skill is cast, as the game holds it: the casting type (0 a unit,
+/// 1 a point, 2 a direction, 3 none), the target type (mod-api-stable
+/// `CastingTargetV1`), and the range with its growth per level, in
+/// thousandths of a world unit. Recorded for the viewer only.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Cast {
+    pub casting: u32,
+    pub target: u32,
+    pub range: u64,
+    pub growth: u64,
+}
+/// Combat hook: store `name`'s decoded Q/W/R, how each is cast, and what
+/// its champion file declares (if any), then rewrite the file.
+pub fn record(name: String, skills: [Geometry; 3], casts: [Cast; 3], log: &Logger) {
     let Ok(mut guard) = TABLE.lock() else {
         return;
     };
@@ -90,7 +102,21 @@ pub fn record(name: String, skills: [Geometry; 3], log: &Logger) {
         skills[2].summary(),
         table.champions.len() + 1
     ));
-    table.champions.insert(name, skills.map(|g| skill(&g)));
+    let slots = [0, 1, 2].map(|slot| {
+        let mut entry = skill(&skills[slot]);
+        let c = casts[slot];
+        entry["cast"] = json!({"casting": c.casting, "target": c.target,
+            "range": c.range as f64 / 1000., "growth": c.growth as f64 / 1000.});
+        // The champion file's own declaration, the preview's fallback.
+        let declared = crate::skill_preview::geometry(Some(&name), slot);
+        if !declared.footprints.is_empty() || declared.known_without_area() {
+            let mut file = skill(&declared);
+            file["source"] = json!("file");
+            entry["file"] = file;
+        }
+        entry
+    });
+    table.champions.insert(name, slots);
     write(table, log);
 }
 /// Champions recorded by earlier sessions on the same game version, so the
@@ -107,7 +133,8 @@ fn earlier(log: &Logger, game: &str) -> BTreeMap<String, [Value; 3]> {
             champions
                 .into_iter()
                 .filter_map(|(name, slots)| {
-                    let slot = |s: &str| slots.get(s).cloned();
+                    // Entries from 1.5.0-dev8 lack `cast`: record them again.
+                    let slot = |s: &str| slots.get(s).filter(|v| v.get("cast").is_some()).cloned();
                     Some((name, [slot("Q")?, slot("W")?, slot("R")?]))
                 })
                 .collect()
@@ -126,7 +153,7 @@ fn write(table: &Table, log: &Logger) {
         .map(|(name, [q, w, r])| (name.clone(), json!({"Q": q, "W": w, "R": r})))
         .collect();
     let report = json!({
-        "about": "Skill shapes as the live reader decoded them (source live). Sizes in world units; range, cast style and target type are read live and not stored.",
+        "about": "Skill shapes as the live reader decoded them (source live) and, under `file`, as the champion file declares them. Sizes in world units. `cast` is how the game casts the skill (casting 0 unit, 1 point, 2 direction, 3 none; target: mod-api-stable CastingTargetV1; range at level 1 and growth per level); at play these stay live.",
         "game": table.game,
         "mod": env!("CARGO_PKG_VERSION"),
         "champions": champions,
@@ -172,6 +199,14 @@ fn footprint(f: &Footprint) -> Value {
             radius,
             length,
         } => json!({"kind": "fan", "count": count, "radius": r(radius), "length": r(length)}),
+        Shape::Spread {
+            count,
+            radius,
+            length,
+            degrees,
+        } => json!({"kind": "spread", "count": count, "radius": r(radius), "length": r(length),
+            "degrees": r(degrees)}),
+        Shape::Backstep { length } => json!({"kind": "backstep", "length": r(length)}),
     };
     v["at"] = match f.placement {
         Placement::Caster => json!("caster"),

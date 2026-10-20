@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Skill preview viewer</title>
+<style>
+:root{--bg:#f4f3ef;--card:#fff;--text:#1f1e1c;--muted:#6b6a65;--line:#d9d7cf;--accent:#0b6e4f;--warn:#9a5b00;--bad:#b3261e;--chip:#ecebe6}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--text:#ecebe6;--muted:#a3a19a;--line:#3a3935;--accent:#5fc9a0;--warn:#e0a54a;--bad:#f2867d;--chip:#33322e}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,"Microsoft JhengHei",sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.row+.row{margin-top:8px}
+h1{font-size:16px;margin:0;font-weight:600}
+main{padding:12px 16px 40px}
+input,select,button{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+button{cursor:pointer}button:hover{border-color:var(--muted)}
+button.primary{border-color:var(--accent);color:var(--accent);font-weight:600}
+button.primary.dirty{background:var(--accent);color:var(--card)}
+.muted{color:var(--muted)}.small{font-size:13px}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.banner{border:1px solid var(--warn);color:var(--warn);border-radius:8px;padding:8px 12px;margin:0 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.help{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0 0 12px}
+.help ol{margin:4px 0 4px 18px;padding:0}.help p{margin:4px 0}
+.legend span{display:inline-flex;align-items:center;gap:4px;margin-right:12px}
+.sw{display:inline-block;width:14px;height:10px;border-radius:3px}
+.champ{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.champ h2{font-size:15px;font-weight:600;margin:0 0 8px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.skills{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.skill{min-width:0}
+.skill canvas{width:100%;aspect-ratio:1;border-radius:8px;display:block;cursor:crosshair}
+.title{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;margin-top:4px}
+.key{font-weight:700}
+.chip{display:inline-block;font-size:13px;padding:0 7px;border-radius:5px;background:var(--chip)}
+.chip.need{background:var(--bad);color:var(--card)}.chip.mine{background:var(--warn);color:var(--card)}
+.chip.type{font-weight:600}
+.desc{font-size:13px;color:var(--muted);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.desc.open{display:block}
+.edit{margin-top:6px;display:flex;flex-direction:column;gap:5px}
+.edit .fields{display:flex;flex-wrap:wrap;gap:6px 10px}
+.edit label{font-size:13px;color:var(--muted);display:flex;gap:4px;align-items:center}
+.edit input[type=number]{width:96px}.edit input.invalid{border-color:var(--bad)}
+.edit .note{font-size:13px}
+details{font-size:13px;color:var(--muted);margin-top:4px}summary{cursor:pointer}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+</style></head><body>
+<header>
+  <div class="row">
+    <h1>Skill preview viewer</h1>
+    <span id="progress" class="small muted"></span>
+    <span style="flex:1"></span>
+    <span id="saveState" class="small"></span>
+    <button id="save" class="primary" title="Write your assignments for the mod (Ctrl+S)">Save</button>
+    <button id="helpButton">How to use</button>
+  </div>
+  <div class="row">
+    <input id="find" type="search" placeholder="Search champion, skill or mod" style="min-width:220px">
+    <select id="status" title="Which skills to show"></select>
+    <select id="type" title="Preview type"></select>
+    <select id="mod" title="Where the champion comes from"></select>
+    <label class="small">Level <input id="level" type="range" min="1" max="18" value="1" style="width:110px"> <span id="levelValue">1</span></label>
+    <label class="small" title="Draw every skill at the same scale so sizes compare"><input id="sameScale" type="checkbox"> Same scale</label>
+    <button id="clear" class="small">Clear filters</button>
+  </div>
+</header>
+<main>
+  <div id="restore" class="banner" hidden></div>
+  <div id="help" class="help" hidden>
+    <ol>
+      <li>Find skills to check: set <b>Show</b> to "Needs attention" for skills whose shape the mod cannot read yet, or browse everything.</li>
+      <li>Compare each drawing with the game. Move the mouse over a drawing to aim, like in a match. The level slider changes ranges that grow with level.</li>
+      <li>If a drawing is wrong or missing, pick a <b>Preview type</b>. Its boxes fill in from the game's own numbers for that skill (the field each came from is shown beside it); correct them if needed. "Use suggestion" applies the viewer's guess.</li>
+      <li>Click <b>Save</b>. Your choices go into the mod's folder and apply the next time the game starts.</li>
+      <li>Tick <b>Checked by me</b> on each skill once its drawing matches the game; ticks save at once. "Show: Not checked yet" lists what is left, and the header counts your progress. Changing a skill's assignment clears its tick, since it needs checking again.</li>
+    </ol>
+    <p>The cast range always comes live from the game (it follows level and balance patches), so assignments hold only the shape. An empty length means "the whole cast range". An assignment wins over everything the game reads for that skill.</p>
+    <p>When the game already reads part of a skill (for example a blast around the caster) and only part is missing (for example a jump away), choose <b>Add to what the game reads</b>: your shape is drawn on top instead of replacing the read one. Each drawing zooms to fit its skill; the scale bar shows 25 units, and "Same scale" compares sizes between skills.</p>
+    <p>Values are filled in from what the viewer learned: for every skill the game reads, it finds which of that skill's numbers holds each size, and tries those fields first for skills it cannot read. When a number is not in the game's data at all, the box says so and the value is yours to enter.</p>
+    <details><summary>What the viewer learned</summary><div id="learned" class="small"></div></details>
+    <p class="legend small"><span><i class="sw" style="background:#fff6c2"></i>cast range</span><span><i class="sw" style="background:#fdee00"></i>shape</span><span><i class="sw" style="background:#53b8e4"></i>shape for allies</span><span><i class="sw" style="background:#5fd3e0"></i>dash, blink, jump</span><span><i class="sw" style="background:#d4537e"></i>target</span><span><i class="sw" style="background:#378ADD"></i>your champion</span><span>dashed white arrow: not readable yet</span></p>
+  </div>
+  <details id="missingBox" class="help" hidden><summary id="missingSummary"></summary><p class="small muted">These champions are in your game (base game and enabled mods) but no match has shown them yet, so their skills are not recorded. Put them in a match (a custom match or a match day with them picked) and reload this page.</p><div id="missingList" class="small"></div></details>
+  <div id="list"></div>
+</main>
+<script>
+"use strict";
+const EMBEDDED=/*DATA*/null;
+const SERVER=!EMBEDDED;
+let D,TABLE,ST,NUMBERS,NAMES,SOURCE,saved={},assigned={};
+/// Skills the author compared with the game ("Checked by me"), saved at once.
+let checked=new Set();
+const SLOTS=['Q','W','R'],CASTING=['cast on a unit','cast at a point','cast in a direction','cast without aiming'];
+const TYPES={
+  unit_target:{label:'Unit target',fields:['area_radius'],optional:['area_radius']},
+  self_circle:{label:'Around self',fields:['radius']},
+  aim_circle:{label:'Circle at aim',fields:['radius']},
+  aim_rectangle:{label:'Rectangle at aim',fields:['width','depth']},
+  line:{label:'Line from caster',fields:['width','length'],optional:['length']},
+  fan:{label:'Fan of lines',fields:['count','width','length','spread'],optional:['length']},
+  cone:{label:'Cone',fields:['radius','angle']},
+  dash:{label:'Dash or blink',fields:['distance'],optional:['distance'],flags:['blink']},
+  jump_back:{label:'Unit target + jump back',fields:['distance']},
+  no_preview:{label:'No preview',fields:[]},
+};
+const FIELD_HELP={area_radius:'radius around the target (empty: none)',radius:'radius',width:'full width',depth:'depth',length:'length (empty or 0: the cast range)',
+  count:'number of lines',spread:'total spread, degrees',angle:'opening angle, degrees',distance:'distance (empty: up to the aim)'};
+const FLAG_LABELS={allies:'For allies (blue)',blink:'Blink (no path)'};
+const AREA_TYPES=['unit_target','self_circle','aim_circle','aim_rectangle','line','fan','cone'];
+const TYPE_LABELS=Object.assign({},...Object.entries(TYPES).map(([k,v])=>({[k]:v.label})),{passive:'Passive',instant:'Instant (no aim)',no_area:'No area',unread:'Not readable yet'});
+const STATUS={all:'All skills',unchecked:'Not checked yet',checked:'Checked by me',need:'Needs attention',mine:'Assigned by you',live:'Read by the game',file:'From champion file',unit:'Unit target (unread)',passive:'Passive',instant:'Instant (no aim)'};
+const SOURCE_LABEL={assigned:'your assignment',live:'read by the game',file:'from champion file',unit:'unit target',passive:'passive',instant:'instant',unread:'not readable yet'};
+const DIST=/range|radius|width|height|length|distance|offset/;
+const AREA=['radius','attack_range','explosion_range','area_range','heal_range','buff_range','ally_range'];
+const store={get(k,d){try{const v=localStorage.getItem('lt-viewer-'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('lt-viewer-'+k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem('lt-viewer-'+k)}catch(e){}}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hex=(c,a)=>{const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const same=(a,b)=>JSON.stringify(sortKeys(a))===JSON.stringify(sortKeys(b));
+function sortKeys(o){if(Array.isArray(o))return o.map(sortKeys);if(o&&typeof o==='object')return Object.fromEntries(Object.keys(o).sort().map(k=>[k,sortKeys(o[k])]));return o}
+const dirty=()=>!same(assigned,saved);
+
+/* ---------- game numbers and guesses ---------- */
+function nums(champ,slot){const raw=(NUMBERS[champ]||{})[slot]||{},out={};for(const[k,v]of Object.entries(raw))out[k]=DIST.test(k)&&Math.abs(v)>=500?v/1000:v;return out}
+/* ---------- learning from the skills the game reads ---------- */
+/// For every skill whose shape the game reads (or its file declares), which
+/// of its numbers holds each size: LEARNED[type][field] = [{name, scale,
+/// count, examples}], most matches first. Barrier Magician W's 48 x 48
+/// square is its `barrier_range`, so an unread rectangle tries
+/// `barrier_range` first. Numbers that are times, damage or ratios are not
+/// sizes and are skipped, so a duration of 20 cannot pass for a radius.
+let LEARNED={};
+const NOT_SIZE=/ratio|duration|tick|timing|cooltime|cooldown|damage|^attack$|^heal|^shield|speed|offset|stack|mult|amount|percent|chance|^hp|period|delay|level|^stun|^slow$/;
+function shapeValues(shapes,cast){
+  const out=[],range=cast?cast.range||0:0;
+  for(const f of shapes){
+    if(f.kind==='circle'){const t=f.at==='caster'?'self_circle':cast&&cast.casting===0?'unit_target':'aim_circle';out.push([t,t==='unit_target'?'area_radius':'radius',f.radius])}
+    else if(f.kind==='rectangle'){out.push(['aim_rectangle','width',f.width],['aim_rectangle','depth',f.height])}
+    else if(f.kind==='strip'||f.kind==='shot'){out.push(['line','width',f.radius*2]);out.push(['line','length',f.length>0?f.length:range])}
+    else if(f.kind==='cone'){out.push(['cone','radius',f.radius],['cone','angle',Math.acos(Math.max(-1,Math.min(1,f.cosine)))*360/Math.PI])}
+    else if(f.kind==='spread'){out.push(['fan','count',f.count],['fan','width',f.radius*2],['fan','spread',f.degrees]);if(f.length>0)out.push(['fan','length',f.length])}
+    else if(f.kind==='backstep')out.push(['jump_back','distance',f.length]);
+    else if(f.kind==='dash'&&f.at&&f.at.end)out.push(['dash','distance',f.at.end]);
+  }
+  return out.filter(v=>v[2]>0);
+}
+function learn(){
+  const L={};
+  for(const champ of Object.keys(TABLE.champions))for(const slot of SLOTS){
+    const s=TABLE.champions[champ][slot],shapes=s.shapes&&s.shapes.length?s.shapes:s.file&&s.file.shapes||[];
+    if(!shapes.length)continue;
+    const n=nums(champ,slot);
+    for(const[type,field,value]of shapeValues(shapes,s.cast)){
+      for(const[name,v]of Object.entries(n)){
+        if(!(v>0)||(field==='count'?!/count|shot/.test(name):NOT_SIZE.test(name)))continue;
+        for(const scale of field==='width'?[1,2]:[1]){
+          if(Math.abs(v*scale-value)>Math.max(0.6,value*0.01))continue;
+          const list=((L[type]=L[type]||{})[field]=L[type][field]||[]);
+          let e=list.find(x=>x.name===name&&x.scale===scale);if(!e)list.push(e={name,scale,count:0,examples:[]});
+          e.count++;if(e.examples.length<3)e.examples.push(`${NAMES[champ]?.name||champ} ${slot}`);
+        }
+      }
+    }
+  }
+  for(const t of Object.values(L))for(const f of Object.values(t))f.sort((a,b)=>b.count-a.count);
+  LEARNED=L;
+  const box=document.getElementById('learned');
+  if(box)box.innerHTML=Object.entries(L).map(([t,fields])=>`<p><b>${esc(TYPE_LABELS[t])}</b>: `+Object.entries(fields).map(([f,list])=>
+    `${esc(f.replace('_',' '))} from ${list.slice(0,4).map(e=>`${esc(e.name)}${e.scale!==1?' ×'+e.scale:''} (${e.count})`).join(', ')}`).join('; ')+'</p>').join('')||'Nothing yet: no read skills recorded.';
+}
+/// Pre-filled values: first the fields the read skills taught for this type
+/// and value, then the usual names. An area's size never falls back to the
+/// cast range (Wind Mage Q: attack_range 30, not its range 70). `from`
+/// says where each value came from.
+const DEFAULTS={
+  unit_target:{area_radius:[...AREA,'bounce_range','link_range']},self_circle:{radius:AREA},aim_circle:{radius:AREA},
+  aim_rectangle:{width:['width','line_width','barrier_range'],depth:['height','depth','barrier_range']},
+  line:{width:[['projectile_radius',2],'width','line_width']},
+  fan:{count:['projectile_count','total_shots','count','shot_count'],width:[['projectile_radius',2],'width'],spread:['fan_angle','angle','spread']},
+  cone:{radius:AREA,angle:['angle','fan_angle']},dash:{distance:['move_range','move_distance','dash_range']},jump_back:{distance:['move_range','move_distance','backstep_distance']},
+};
+function guess(type,champ,slot){
+  const n=nums(champ,slot),o={type},from={};
+  for(const field of TYPES[type].fields){
+    if(field==='length')continue; // empty: the cast range, as most read lines and fans
+    const learned=(LEARNED[type]?.[field]||[]).map(e=>[e.name,e.scale,e]);
+    const usual=(DEFAULTS[type]?.[field]||[]).map(k=>Array.isArray(k)?[k[0],k[1],null]:[k,1,null]);
+    for(const[name,scale,e]of[...learned,...usual]){
+      if(n[name]===undefined||!(n[name]>0))continue;
+      o[field]=+(n[name]*scale).toFixed(3);
+      from[field]=(scale===1?name:`${name} ×${scale}`)+(e?`, learned from ${e.examples.slice(0,2).join(', ')}${e.count>2?` and ${e.count-2} more`:''}`:'');
+      break;
+    }
+  }
+  const allies=['heal','heal_ratio','shield','shield_ratio','shield_amount'].some(k=>n[k]>0);
+  return{value:o,from,allies};
+}
+/// The likely type of an unread aimed skill, from how it is cast and its numbers.
+function suggest(champ,slot,s){
+  const c=s.cast;if(!c)return null;
+  const n=nums(champ,slot),has=(...ks)=>ks.some(k=>n[k]!==undefined&&n[k]>0);
+  const move=has('move_range','move_distance','dash_range','backstep_distance');
+  let type;
+  if(c.casting===2)type=has('projectile_count')&&has('fan_angle','angle')?'fan':move?'dash':has('angle')?'cone':'line';
+  else if(c.casting===1)type=has('width')&&has('height','depth')?'aim_rectangle':move||has('teleport_offset')?'dash':'aim_circle';
+  else return null;
+  const g=guess(type,champ,slot),o=g.value;
+  if((g.allies||c.target<=4)&&AREA_TYPES.includes(type))o.allies=true;
+  return o;
+}
+
+/* ---------- what the mod would draw ---------- */
+function shapesOf(a){
+  const al=!!a.allies;
+  switch(a.type){
+    case'unit_target':return a.area_radius>0?[{kind:'circle',radius:+a.area_radius,at:'aim',allies:al}]:[];
+    case'self_circle':return[{kind:'circle',radius:+a.radius,at:'caster',allies:al}];
+    case'aim_circle':return[{kind:'circle',radius:+a.radius,at:'aim',allies:al}];
+    case'aim_rectangle':return[{kind:'rectangle',width:+a.width,height:+a.depth,at:'aim',allies:al}];
+    case'line':return[{kind:'strip',radius:a.width/2,length:+a.length||0,at:'caster',allies:al}];
+    case'fan':return[{kind:'spread',count:+a.count,radius:a.width/2,length:+a.length||0,degrees:+a.spread,at:'caster',allies:al}];
+    case'cone':return[{kind:'cone',radius:+a.radius,cosine:Math.cos(a.angle/2*Math.PI/180),at:'caster',allies:al}];
+    case'dash':return[{kind:a.blink?'blink':'dash',at:a.distance>0?{end:+a.distance}:'aim'}];
+    case'jump_back':return[{kind:'backstep',length:+a.distance,at:'caster'}];
+  }return[];
+}
+function typeFromShapes(shapes,cast){
+  const k=shapes.map(f=>f.kind);
+  if(k.includes('spread')||k.includes('fan'))return'fan';
+  if(k.includes('backstep'))return'jump_back';
+  if(k.includes('cone'))return'cone';
+  if(k.includes('rectangle'))return'aim_rectangle';
+  if(k.includes('strip')||k.includes('shot'))return'line';
+  const circle=shapes.find(f=>f.kind==='circle');
+  if(circle)return circle.at==='caster'?'self_circle':cast&&cast.casting===0?'unit_target':'aim_circle';
+  if(k.includes('dash')||k.includes('blink'))return'dash';
+  return cast&&cast.casting===0?'unit_target':'no_area';
+}
+/// The preview this skill gets, in the mod's order: the author's assignment,
+/// then what the game reads, then the champion file.
+function chosen(champ,slot,s){
+  const a=assigned[`${champ} ${slot}`],c=s.cast;
+  if(a&&a.add){const r=readShape(champ,slot,s);return{src:'assigned',type:a.type,addedTo:r.type,shapes:[...r.shapes,...shapesOf(a)],hidden:a.type==='no_preview'}}
+  if(a)return{src:'assigned',type:a.type,shapes:shapesOf(a),hidden:a.type==='no_preview'};
+  if(c&&!(c.casting>=0&&c.casting<=3))return{src:'passive',type:'passive',shapes:[],hidden:true};
+  if(s.shapes&&s.shapes.length)return{src:'live',type:typeFromShapes(s.shapes,c),shapes:s.shapes};
+  const f=s.file;
+  if(f&&f.shapes&&f.shapes.length)return{src:'file',type:typeFromShapes(f.shapes,c),shapes:f.shapes};
+  if(s.no_area||(f&&f.no_area))return{src:s.no_area?'live':'file',type:c&&c.casting===0?'unit_target':'no_area',shapes:[]};
+  if(c&&c.casting===0)return{src:'unit',type:'unit_target',shapes:[]};
+  if(c&&c.casting===3)return{src:'instant',type:'instant',shapes:[],hidden:true};
+  const g=suggest(champ,slot,s);
+  return{src:'unread',type:'unread',shapes:g?shapesOf(g):[],suggestion:g,reason:s.unread||''};
+}
+/// The shape the game reads, ignoring the author's assignment.
+function readShape(champ,slot,s){const a=assigned[`${champ} ${slot}`];delete assigned[`${champ} ${slot}`];const p=chosen(champ,slot,s);if(a)assigned[`${champ} ${slot}`]=a;return p}
+/// A shape in plain words ("fan: 5 lines, 18 wide, cast range long, 36° spread").
+function describe(f,range){
+  const r=x=>+(+x).toFixed(1),len=l=>l>0?`${r(l)} long`:`cast range long${range?` (${r(range)})`:''}`,ok=x=>Number.isFinite(+x)&&x!==undefined;
+  const missing='?';
+  switch(f.kind){
+    case'circle':return`circle, radius ${ok(f.radius)?r(f.radius):missing}${f.at==='caster'?', around the caster':f.at==='aim'?', at the aim':''}${f.allies?', for allies':''}`;
+    case'rectangle':return`rectangle ${ok(f.width)?r(f.width):missing} wide × ${ok(f.height)?r(f.height):missing} deep, at the aim`;
+    case'strip':case'shot':return`line ${ok(f.radius)?r(f.radius*2):missing} wide, ${len(f.length)}`;
+    case'cone':return`cone, radius ${r(f.radius)}, ${r(Math.acos(Math.max(-1,Math.min(1,f.cosine)))*360/Math.PI)}° wide`;
+    case'spread':return`fan: ${ok(f.count)?f.count:missing} lines, ${ok(f.radius)?r(f.radius*2):missing} wide, ${len(f.length)}, ${ok(f.degrees)?r(f.degrees):missing}° spread`;
+    case'fan':return`fan: ${f.count} blades, ${r(f.radius*2)} wide, ${r(f.length)} long`;
+    case'dash':return`dash${f.at&&f.at.end?` ${r(f.at.end)} long`:' to the aim'}`;
+    case'blink':return'blink to the aim';
+    case'backstep':return`jump back ${ok(f.length)?r(f.length):missing}`;
+    case'reach':return`ring at attack range +${r(f.extra)}`;
+    case'segment':return'line between two fixed points';
+  }return f.kind;
+}
+/// Why the mod could not read a skill, in plain words.
+function readerReason(r){
+  if(!r)return'';
+  if(/unsupported native apply|opaque Native|unknown declaration/.test(r))return'the mod cannot read this skill: it uses code of its own, not the game\'s standard effects';
+  if(/alignment|not readable/.test(r))return'the mod cannot read this skill\'s data';
+  return'the mod cannot read this skill';
+}
+function mainPurpose(shapes,unit){
+  const areas=shapes.some(f=>!f.projectile&&!['dash','blink','backstep'].includes(f.kind));
+  return(unit||areas)?shapes.filter(f=>f.kind!=='dash'&&f.kind!=='blink'):shapes;
+}
+const fanOffsets=n=>{const h=Math.floor(n/2),o=[];for(let i=0;i<Math.min(n,16);i++)o.push(i===0||h===0?0:i<=h?i*60/h:-(i-h)*60/h);return o};
+const spreadOffsets=(n,d)=>{n=Math.max(1,Math.min(16,Math.round(n)));return n===1?[0]:Array.from({length:n},(_,i)=>-d/2+d/(n-1)*i)};
+
+/* ---------- drawing ---------- */
+const view={level:1,sameScale:false,maxReach:100};
+function rangeAt(c){return c?Math.max(0,(c.range||0)+(c.growth||0)*(view.level-1)):0}
+function reachOf(s,pick){const c=s.cast||{};let r=rangeAt(c);for(const f of pick.shapes)r=Math.max(r,(f.length||0)+(f.radius||0),(f.radius||0)*2,f.width||0,f.height||0);return Math.max(r,10)}
+function draw(cv,s,pick,pointer){
+  const px=devicePixelRatio||1,W=cv.width=Math.round(cv.clientWidth*px),H=cv.height=W,g=cv.getContext('2d');
+  g.fillStyle='#4f6b3a';g.fillRect(0,0,W,H);
+  const reach=view.sameScale?view.maxReach:reachOf(s,pick),k=(W*0.42)/reach,O=[W/2,H/2];
+  // Grid every 25 world units, labelled.
+  const step=25*k;g.strokeStyle='rgba(255,255,255,0.07)';g.lineWidth=1;
+  for(let x=O[0]%step;x<W;x+=step){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}
+  for(let y=O[1]%step;y<H;y+=step){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}
+  // Scale bar: 25 world units, the grid's step.
+  g.fillStyle='rgba(255,255,255,0.85)';g.font=`${12*px}px system-ui`;
+  g.fillRect(8*px,H-12*px,step,3*px);g.fillText('25 units',8*px,H-17*px);
+  const label=(text,x,y)=>{g.font=`${12*px}px system-ui`;const w=g.measureText(text).width;g.fillStyle='rgba(20,20,18,0.65)';g.fillRect(x-3*px,y-12*px,w+6*px,16*px);g.fillStyle='#fff';g.fillText(text,x,y)};
+  const dot=()=>{g.beginPath();g.arc(O[0],O[1],8*px,0,7);g.fillStyle='#378ADD';g.fill()};
+  if(pick.hidden){dot();g.fillStyle='rgba(255,255,255,0.7)';g.fillText(pick.src==='passive'?'passive: nothing drawn':'nothing drawn',6*px,16*px);return}
+  const c=s.cast||{casting:2,target:6},range=rangeAt(c),unit=c.casting===0,allies=c.target<=4;
+  let dir=[Math.cos(-Math.PI/5),Math.sin(-Math.PI/5)],aimDist=c.casting===1?range*0.75:unit?range*0.66:range;
+  if(pointer){const dx=pointer[0]*px-O[0],dy=pointer[1]*px-O[1],d=Math.hypot(dx,dy);if(d>2){dir=[dx/d,dy/d];const w=d/k;aimDist=c.casting===1?Math.min(w,range):unit?w:range}}
+  const at=d=>[O[0]+dir[0]*d*k,O[1]+dir[1]*d*k],aim=c.casting===3?O:at(aimDist);
+  const shapes=mainPurpose(pick.shapes,unit),yellow=allies?ST.ally:ST.yellow;
+  if(range>0.5&&c.casting!==3){
+    const rc=allies?ST.range_ally:ST.range_ready;
+    g.beginPath();g.arc(O[0],O[1],range*k,0,7);g.fillStyle=hex(rc,ST.range_fill);g.fill();
+    g.lineWidth=5*px;g.strokeStyle=hex(ST.ink,0.35);g.stroke();g.lineWidth=ST.range_width*px;g.strokeStyle=hex(rc,ST.range_opacity);g.stroke();
+  }
+  if(unit){g.beginPath();g.arc(aim[0],aim[1],7*px,0,7);g.fillStyle='#d4537e';g.fill()}
+  const base=f=>{const p=f.at;if(p==='caster')return O;if(p==='aim')return aim;
+    if(p&&p.forward!==undefined)return at(p.forward);if(p&&p.end!==undefined)return unit?aim:at(Math.min(p.end,c.casting===1?aimDist:p.end));
+    if(p&&p.landing!==undefined)return unit||c.casting===1?aim:at(p.landing);return aim};
+  const stroke=(col,w)=>{g.lineWidth=w*px;g.strokeStyle=col;g.stroke()};
+  const fill=col=>{g.fillStyle=hex(col,ST.area_fill*2);g.fill();stroke(hex(col,0.95),2)};
+  const strip=(b,ang,len,hw,col)=>{g.beginPath();g.save();g.translate(b[0],b[1]);g.rotate(ang);g.rect(0,-hw,len,hw*2);g.restore();fill(col)};
+  const a0=Math.atan2(dir[1],dir[0]);
+  for(const f of shapes){
+    const col=f.allies?ST.ally:yellow,b=base(f);g.beginPath();
+    if(f.kind==='circle'){g.arc(b[0],b[1],f.radius*k,0,7);fill(col)}
+    else if(f.kind==='strip'||f.kind==='shot')strip(b,a0,(f.length>0?f.length:range)*k,Math.max(f.radius,1.5)*k,col);
+    else if(f.kind==='rectangle'){g.save();g.translate(b[0],b[1]);g.rotate(a0);g.rect(-f.height*k/2,-f.width*k/2,f.height*k,f.width*k);g.restore();fill(col)}
+    else if(f.kind==='cone'){const h=Math.acos(Math.max(-1,Math.min(1,f.cosine)));g.moveTo(b[0],b[1]);g.arc(b[0],b[1],f.radius*k,a0-h,a0+h);g.closePath();fill(col)}
+    else if(f.kind==='fan'){for(const o of fanOffsets(f.count))strip(b,a0+o*Math.PI/180,f.length*k,Math.max(f.radius,1.5)*k,col)}
+    else if(f.kind==='spread'){for(const o of spreadOffsets(f.count,f.degrees))strip(b,a0+o*Math.PI/180,(f.length>0?f.length:range)*k,Math.max(f.radius,1.5)*k,col)}
+    else if(f.kind==='dash'){g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(b[0],b[1]);stroke('#5fd3e0',3);g.setLineDash([])}
+    else if(f.kind==='blink'){g.arc(b[0],b[1],9*px,0,7);stroke('#5fd3e0',3)}
+    else if(f.kind==='backstep'){const e=[O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k];g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(e[0],e[1]);stroke('#5fd3e0',3);g.setLineDash([])}
+    else if(f.kind==='reach'){g.setLineDash([4*px,4*px]);g.arc(O[0],O[1],(range+f.extra)*k,0,7);stroke(hex(col,0.8),2);g.setLineDash([])}
+  }
+  if(pick.src==='unread'&&!pick.suggestion&&c.casting!==0&&c.casting!==3){g.beginPath();g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(aim[0],aim[1]);stroke(hex(ST.white,0.8),2);g.setLineDash([])}
+  // Values on the drawing, so sizes read at a glance at any zoom.
+  if(range>0.5&&c.casting!==3){const a=-Math.PI*0.75;label(`range ${+range.toFixed(1)}`,O[0]+Math.cos(a)*range*k-30*px,O[1]+Math.sin(a)*range*k)}
+  for(const f of shapes){const b=base(f);
+    if(f.kind==='circle'&&f.radius>0)label(`r ${+(+f.radius).toFixed(1)}`,b[0]+f.radius*k*0.71,b[1]+f.radius*k*0.71+12*px);
+    else if(f.kind==='backstep'&&f.length>0)label(`jump ${+(+f.length).toFixed(1)}`,O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k+16*px)}
+  if(pick.suggestion){g.fillStyle='rgba(255,255,255,0.85)';g.font=`${12*px}px system-ui`;g.fillText('suggested shape',8*px,18*px)}
+  dot();
+}
+
+/* ---------- cards ---------- */
+const cards=[];
+function skillCard(champ,slot){
+  const s=TABLE.champions[champ][slot],key=`${champ} ${slot}`,nm=NAMES[champ]||{};
+  const div=document.createElement('div');div.className='skill';
+  div.innerHTML=`<canvas></canvas><div class="title"><span class="key">${slot}</span><span>${esc(nm['skill_'+slot]||'')}</span><span class="chip type"></span><span class="chip src"></span>
+    <label class="small" style="margin-left:auto" title="Tick after comparing this skill's drawing with the game"><input type="checkbox" class="check"> Checked by me</label></div>
+    <div class="info small muted"></div>${nm['desc_'+slot]?`<div class="desc" title="Click to show all">${esc(nm['desc_'+slot])}</div>`:''}
+    <div class="edit"></div><details><summary>Game numbers for this skill</summary><div class="nums"></div></details>`;
+  const cv=div.querySelector('canvas');let pointer=null;
+  const card={champ,slot,s,div,redraw:()=>draw(cv,s,chosen(champ,slot,s),pointer)};
+  cv.onmousemove=e=>{const r=cv.getBoundingClientRect();pointer=[e.clientX-r.left,e.clientY-r.top];card.redraw()};
+  cv.onmouseleave=()=>{pointer=null;card.redraw()};
+  const d=div.querySelector('.desc');if(d)d.onclick=()=>d.classList.toggle('open');
+  const tick=div.querySelector('.check');tick.checked=checked.has(key);
+  tick.onchange=()=>{if(tick.checked)checked.add(key);else checked.delete(key);saveChecked();updateHeader()};
+  card.untick=()=>{if(checked.delete(key)){tick.checked=false;saveChecked()}};
+  const n=nums(champ,slot);div.querySelector('.nums').textContent=Object.entries(n).map(([k,v])=>`${k} ${+(+v).toFixed(3)}`).join(' · ')||'none found';
+  const edit=div.querySelector('.edit');
+  card.refresh=()=>{
+    const p=chosen(champ,slot,s),c=s.cast||{};
+    div.querySelector('.chip.type').textContent=(p.addedTo?`${TYPE_LABELS[p.addedTo]} + `:'')+(TYPE_LABELS[p.type]||p.type);
+    const src=div.querySelector('.chip.src');src.textContent=SOURCE_LABEL[p.src]+(p.suggestion?' · suggestion shown':'');src.className='chip src'+(p.src==='unread'?' need':p.src==='assigned'?' mine':'');
+    const rng=rangeAt(c),kinds=p.shapes.map(f=>describe(f,rng)).join('; ');
+    const info=div.querySelector('.info');
+    info.textContent=[c.casting>=0&&c.casting<=3?CASTING[c.casting]:'never cast (passive)',rng>0.5?`cast range ${+rng.toFixed(1)}${c.growth?` (+${c.growth} per level)`:''}`:'no cast range',
+      kinds?(p.suggestion?'suggested: ':'')+kinds:'',p.reason?readerReason(p.reason):''].filter(Boolean).join(' · ');
+    info.title=p.reason?`Reader detail: ${p.reason}`:'';
+    card.redraw();
+  };
+  card.build=()=>{
+    edit.innerHTML='';const a=assigned[key],read=readShape(champ,slot,s);
+    const head=document.createElement('div');head.className='fields';
+    const lab=document.createElement('label');lab.textContent='Preview type';
+    const sel=document.createElement('select');
+    const keepLabel=read.src==='unread'?'None (not readable yet)':`Use what the game reads (${TYPE_LABELS[read.type]})`;
+    sel.innerHTML=`<option value="">${esc(keepLabel)}</option>`+Object.entries(TYPES).map(([t,v])=>`<option value="${t}">${esc(v.label)}</option>`).join('');
+    sel.value=a?a.type:'';lab.appendChild(sel);head.appendChild(lab);
+    sel.onchange=()=>{if(!sel.value)delete assigned[key];else{const g=guess(sel.value,champ,slot);const v=g.value;if((a&&a.allies)||(g.allies&&AREA_TYPES.includes(sel.value)))v.allies=true;assigned[key]=v}changed(card)};
+    const p=chosen(champ,slot,s);
+    if(!a&&p.suggestion){const b=document.createElement('button');b.className='small';b.textContent=`Use suggestion: ${TYPES[p.suggestion.type].label}`;b.onclick=()=>{assigned[key]=clone(p.suggestion);changed(card)};head.appendChild(b)}
+    if(a){const b=document.createElement('button');b.className='small';b.textContent=read.src==='unread'?'Remove assignment':'Back to what the game reads';b.onclick=()=>{delete assigned[key];changed(card)};head.appendChild(b)}
+    edit.appendChild(head);
+    if(!a)return;
+    const g=guess(a.type,champ,slot),t=TYPES[a.type],box=document.createElement('div');box.className='fields';
+    for(const f of t.fields){
+      const l=document.createElement('label');l.title=FIELD_HELP[f]||'';l.append(f.replace('_',' '));
+      const i=document.createElement('input');i.type='number';i.step='any';i.min='0';i.max='10000';i.value=a[f]??'';
+      const rng=rangeAt(s.cast);
+      // An empty optional box says what it means.
+      i.placeholder=f==='length'?`${+rng.toFixed(1)} (cast range)`:f==='distance'&&a.type==='dash'?'to the aim':f==='area_radius'?'none':'';
+      const hint=document.createElement('span');hint.className='small muted';
+      const check=()=>{const v=a[f],need=!(t.optional||[]).includes(f);const bad=v===undefined?need:!(v>=0&&v<=10000);i.classList.toggle('invalid',bad);
+        hint.textContent=bad?(v===undefined?'not in the game\'s data: enter it':'must be 0 to 10000'):(g.from[f]&&v===g.value[f]?`from ${g.from[f]}`:v===undefined?'':'your value');
+        hint.className='small '+(bad?'bad':'muted')};
+      i.oninput=()=>{const v=parseFloat(i.value);if(isNaN(v))delete a[f];else a[f]=v;check();changed(card,true)};
+      check();l.append(i,hint);box.appendChild(l);
+    }
+    for(const fl of[...(t.flags||[]),...(AREA_TYPES.includes(a.type)?['allies']:[])]){const l=document.createElement('label');const i=document.createElement('input');i.type='checkbox';i.checked=!!a[fl];
+      i.onchange=()=>{if(i.checked)a[fl]=true;else delete a[fl];changed(card,true)};l.append(i,FLAG_LABELS[fl]);box.appendChild(l)}
+    edit.appendChild(box);
+    if(read.shapes.length&&(read.src==='live'||read.src==='file')){
+      // Replace what the game reads, or keep it and draw this on top.
+      const what=`${TYPE_LABELS[read.type]} (${read.shapes.map(f=>describe(f,rangeAt(s.cast))).join('; ')})`;
+      const mode=document.createElement('div');mode.className='fields';
+      for(const[v,l]of[['replace','Replace what the game reads'],['add','Add to what the game reads']]){
+        const lab=document.createElement('label');const r=document.createElement('input');r.type='radio';r.name=`mode-${key}`;r.checked=(v==='add')===!!a.add;
+        r.onchange=()=>{if(v==='add')a.add=true;else delete a.add;changed(card)};lab.append(r,l);mode.appendChild(lab)}
+      edit.appendChild(mode);
+      const nt=document.createElement('div');nt.className='note '+(a.add?'muted':'warn');
+      nt.textContent=a.add?`Drawn on top of what the game reads: ${what}.`:`This replaces what the game reads: ${what}.`;edit.appendChild(nt)}
+  };
+  card.build();cards.push(card);return div;
+}
+/// A changed shape needs checking again, so its tick is cleared.
+function changed(card,keepEditor){if(!keepEditor)card.build();card.untick();card.refresh();store.set('draft',assigned);updateHeader()}
+let checkTimer=null;
+function saveChecked(){
+  store.set('checked',[...checked]);
+  if(!SERVER)return;
+  clearTimeout(checkTimer);
+  checkTimer=setTimeout(()=>fetch('/api/checked',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({skills:[...checked]})})
+    .then(r=>r.json()).then(r=>{if(!r.ok)throw 0}).catch(()=>{$('saveState').innerHTML='<span class="bad">Could not save the checked marks. Is the viewer window still open?</span>'}),300);
+}
+function invalidKeys(){return Object.entries(assigned).filter(([k,a])=>{const t=TYPES[a.type];if(!t)return true;return t.fields.some(f=>{const v=a[f];return v===undefined?!(t.optional||[]).includes(f):!(v>=0&&v<=10000)})}).map(([k])=>k)}
+
+/* ---------- filters and list ---------- */
+function statusOf(p){return p.src==='assigned'?'mine':p.src==='unread'?'need':p.src}
+function matches(champ,slot,f){
+  const s=TABLE.champions[champ][slot],p=chosen(champ,slot,s),nm=NAMES[champ]||{},key=`${champ} ${slot}`;
+  if(f.status==='checked'||f.status==='unchecked'){if(checked.has(key)!==(f.status==='checked'))return false}
+  else if(f.status!=='all'&&statusOf(p)!==f.status)return false;
+  if(f.type&&p.type!==f.type)return false;
+  if(f.mod&&SOURCE[champ]!==f.mod)return false;
+  if(f.q){const hay=[champ,nm.name,SOURCE[champ],nm['skill_'+slot],slot].join(' ').toLowerCase();if(!hay.includes(f.q))return false}
+  return true;
+}
+function filters(){return{q:$('find').value.trim().toLowerCase(),status:$('status').value||'all',type:$('type').value,mod:$('mod').value}}
+function render(){
+  const f=filters();store.set('filters',{status:f.status,type:f.type,mod:f.mod,q:$('find').value,level:view.level,sameScale:view.sameScale});
+  const list=$('list');list.innerHTML='';cards.length=0;
+  const names=Object.keys(TABLE.champions).sort((a,b)=>(NAMES[a]?.name||a).localeCompare(NAMES[b]?.name||b));
+  view.maxReach=10;
+  for(const c of names)for(const k of SLOTS){const s=TABLE.champions[c][k];view.maxReach=Math.max(view.maxReach,reachOf(s,chosen(c,k,s)))}
+  let shown=0;
+  for(const champ of names){
+    const slots=SLOTS.filter(k=>matches(champ,k,f));if(!slots.length)continue;shown+=slots.length;
+    const nm=NAMES[champ]||{},card=document.createElement('section');card.className='champ';
+    card.innerHTML=`<h2>${esc(nm.name||champ)} <span class="small muted">${esc(champ)} · ${esc(SOURCE[champ])}</span></h2><div class="skills"></div>`;
+    for(const k of slots)card.querySelector('.skills').appendChild(skillCard(champ,k));
+    list.appendChild(card);
+  }
+  if(!shown)list.innerHTML=`<div class="empty">${Object.keys(TABLE.champions).length?'No skill matches these filters. <button id="clear2">Clear filters</button>':'No champions recorded yet. Play a match with the mod (1.5.0-dev9 or later), then reload this page.'}</div>`;
+  const c2=$('clear2');if(c2)c2.onclick=clearFilters;
+  // Filled at once (not on the next paint, which a background tab skips).
+  cards.forEach(c=>c.refresh());
+  fillFilters();updateHeader(shown);
+}
+function fillFilters(){
+  const counts={status:{},type:{},mod:{}};
+  for(const c of Object.keys(TABLE.champions))for(const k of SLOTS){const p=chosen(c,k,TABLE.champions[c][k]);
+    const st=statusOf(p);counts.status[st]=(counts.status[st]||0)+1;counts.type[p.type]=(counts.type[p.type]||0)+1;counts.mod[SOURCE[c]]=(counts.mod[SOURCE[c]]||0)+1}
+  const total=Object.values(counts.status).reduce((a,b)=>a+b,0);
+  const ticked=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>checked.has(`${c} ${k}`)).length,0);
+  counts.status.checked=ticked;counts.status.unchecked=total-ticked;
+  const set=(id,first,entries)=>{const el=$(id),v=el.value;el.innerHTML=`<option value="${id==='status'?'all':''}">${first}</option>`+entries.map(([k,l,n])=>`<option value="${esc(k)}">${esc(l)} (${n})</option>`).join('');el.value=[...el.options].some(o=>o.value===v)?v:el.options[0].value};
+  set('status',`Show: all skills (${total})`,Object.entries(STATUS).filter(([k])=>k!=='all'&&counts.status[k]).map(([k,l])=>[k,'Show: '+l,counts.status[k]]));
+  set('type','Every preview type',Object.keys(TYPE_LABELS).filter(t=>counts.type[t]).map(t=>[t,TYPE_LABELS[t],counts.type[t]]));
+  set('mod','Every source',Object.keys(counts.mod).sort((a,b)=>a==='Base game'?-1:b==='Base game'?1:a.localeCompare(b)).map(m=>[m,m,counts.mod[m]]));
+}
+function updateHeader(shown){
+  let need=0,total=0;for(const c of Object.keys(TABLE.champions))for(const k of SLOTS){total++;if(chosen(c,k,TABLE.champions[c][k]).src==='unread')need++}
+  const mine=Object.keys(assigned).length;
+  const ticked=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>checked.has(`${c} ${k}`)).length,0);
+  const missing=(D.missing||[]).length;
+  $('progress').textContent=`Game ${TABLE.game||'?'} · ${Object.keys(TABLE.champions).length} champions, ${total} skills · ${ticked} of ${total} checked by you · ${need} need attention · ${mine} assigned by you`
+    +(missing?` · ${missing} champions not recorded yet`:'')+(shown!==undefined?` · showing ${shown}`:'');
+  const bad=invalidKeys(),d=dirty();
+  $('save').classList.toggle('dirty',d);
+  $('saveState').innerHTML=bad.length?`<span class="bad">${bad.length} assignment(s) have missing or invalid values and will not be saved</span>`:d?'<span class="warn">Unsaved changes</span>':'<span class="muted">All saved</span>';
+}
+function clearFilters(){$('find').value='';$('status').value='all';$('type').value='';$('mod').value='';render()}
+
+/* ---------- saving ---------- */
+async function saveNow(){
+  const bad=invalidKeys(),good=Object.fromEntries(Object.entries(assigned).filter(([k])=>!bad.includes(k)));
+  if(!SERVER){
+    const body=JSON.stringify({about:'The author\'s skill preview assignments (tools/preview_viewer.py).',skills:good},null,2);
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'application/json'}));a.download='skill-overrides.json';a.click();
+    $('saveState').innerHTML=`<span class="warn">Downloaded. Put skill-overrides.json in ${esc(D.paths?.overrides?.replace(/[^\\/]*$/,'')||'%LOCALAPPDATA%\\LTDirectControl')}</span>`;return;
+  }
+  $('saveState').textContent='Saving…';
+  try{
+    const r=await fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({skills:good})}).then(r=>r.json());
+    if(!r.ok)throw new Error((r.problems||[]).join('; '));
+    saved=clone(good);store.del('draft');updateHeader();
+    $('saveState').innerHTML=`<span class="muted">Saved ${r.saved} assignment(s). They apply the next time the game starts.</span>`+(r.problems&&r.problems.length?` <span class="bad">${esc(r.problems.join('; '))}</span>`:'');
+  }catch(e){$('saveState').innerHTML=`<span class="bad">Could not save: ${esc(e.message)}. Is the viewer window still open?</span>`}
+}
+
+/* ---------- start ---------- */
+async function start(){
+  try{D=EMBEDDED||await fetch('/api/data',{cache:'no-store'}).then(r=>r.json())}
+  catch(e){$('list').innerHTML='<div class="empty">The viewer could not load its data. Start it again with tools\\preview_viewer.cmd.</div>';return}
+  TABLE=D.table||{};TABLE.champions=TABLE.champions||{};ST=D.style;NUMBERS=D.numbers||{};NAMES=D.names||{};SOURCE=D.source||{};
+  learn();
+  saved=clone(D.saved||{});assigned=clone(saved);
+  checked=new Set(SERVER?(D.checked||[]):store.get('checked',[]));
+  const miss=D.missing||[];
+  if(miss.length){$('missingBox').hidden=false;$('missingSummary').textContent=`Not recorded yet: ${miss.length} champion(s) your game has but no match has shown`;
+    $('missingList').innerHTML=miss.map(c=>`${esc(NAMES[c]?.name||c)} <span class="muted">(${esc(c)} · ${esc(SOURCE[c]||'')})</span>`).join('<br>')}
+  // Unsaved work from the first viewer version (one key, no "Save").
+  try{const old=JSON.parse(localStorage.getItem('lt-assignments')||'null');
+    if(old&&!store.get('draft',null))store.set('draft',Object.assign(clone(saved),old));localStorage.removeItem('lt-assignments')}catch(e){}
+  const draft=store.get('draft',null);
+  if(draft&&!same(draft,saved)){const b=$('restore');b.hidden=false;
+    b.innerHTML=`<span>You have unsaved changes from last time (${Object.keys(draft).length} assignment(s)).</span><button id="restoreYes">Restore them</button><button id="restoreNo">Discard</button>`;
+    $('restoreYes').onclick=()=>{assigned=clone(draft);b.hidden=true;render()};$('restoreNo').onclick=()=>{store.del('draft');b.hidden=true}}
+  const f=store.get('filters',{});
+  $('find').value=f.q||'';view.level=f.level||1;view.sameScale=!!f.sameScale;$('level').value=view.level;$('levelValue').textContent=view.level;$('sameScale').checked=view.sameScale;
+  if(store.get('helpSeen',false)===false){$('help').hidden=false;store.set('helpSeen',true)}
+  fillFilters();if(f.status)$('status').value=f.status;if(f.type)$('type').value=f.type;if(f.mod)$('mod').value=f.mod;
+  render();
+}
+$('find').oninput=render;['status','type','mod'].forEach(id=>$(id).onchange=render);$('clear').onclick=clearFilters;
+$('level').oninput=()=>{view.level=+$('level').value;$('levelValue').textContent=view.level;cards.forEach(c=>c.refresh());store.set('filters',Object.assign(store.get('filters',{}),{level:view.level}))};
+$('sameScale').onchange=()=>{view.sameScale=$('sameScale').checked;cards.forEach(c=>c.refresh());store.set('filters',Object.assign(store.get('filters',{}),{sameScale:view.sameScale}))};
+$('helpButton').onclick=()=>{$('help').hidden=!$('help').hidden};
+$('save').onclick=saveNow;
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveNow()}});
+addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue=''}});
+addEventListener('resize',()=>cards.forEach(c=>c.redraw()));
+start();
+</script></body></html>

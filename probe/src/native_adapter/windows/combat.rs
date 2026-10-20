@@ -617,7 +617,8 @@ unsafe fn record_shapes(shared: &Shared, entity: usize) {
     let Some(name) = crate::shape_record::wanted(actor) else {
         return;
     };
-    let skills = [0x4c0, 0x4f8, 0x530].map(|offset| {
+    let offsets = [0x4c0, 0x4f8, 0x530];
+    let skills = offsets.map(|offset| {
         let readable = preview::dump(base, entity, offset, &|a, n| {
             super::tooltips::accessible(a, n, false)
         })
@@ -630,7 +631,18 @@ unsafe fn record_shapes(shared: &Shared, entity: usize) {
             absent
         }
     });
-    crate::shape_record::record(name, skills, &shared.logger);
+    // How each skill is cast, for the viewer (the same fields as
+    // `read_effect_metadata`; at play they stay live).
+    let casts = offsets.map(|offset| {
+        let data = entity + offset;
+        crate::shape_record::Cast {
+            casting: std::ptr::read_unaligned((data + 0x30) as *const u32),
+            target: std::ptr::read_unaligned((data + 0x28) as *const u32),
+            range: std::ptr::read_unaligned((data + 0x10) as *const u64),
+            growth: std::ptr::read_unaligned((data + 0x18) as *const u64),
+        }
+    });
+    crate::shape_record::record(name, skills, casts, &shared.logger);
 }
 /// Background trees: each shape (the tree without payload words) twice.
 fn new_background_shape(tree: &str) -> bool {

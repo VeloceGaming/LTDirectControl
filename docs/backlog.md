@@ -57,6 +57,16 @@ addition (not to be copied).
    (`native_adapter/windows/combat.rs`), which stays, so ranges keep their
    patched values without the live reader; only a few radius or width
    values would miss patches.
+   **Noted by the author, 2026-10-21, for later design work:** (a) the dash
+   preview (chevrons to the landing point) is hard to see during a fight
+   and needs a new design; (b) a line skill's meaning is not shown: Harpy R
+   (a dash that damages along its way) and Harpooner W (a projectile strip
+   that stops at the first unit hit) are both drawn as the same plain strip.
+   **Settled the same day (author, from League):** League draws Hwei QE (a
+   lingering area strip) and Hwei EQ (stops at the first unit hit) with
+   the same line preview, only the width differs; so Harpy R and Harpooner
+   W stay one line type, distinguished only by width. No "stops at the
+   first unit" or "moves the caster" options.
    **Earlier note, superseded by the order above:** replace the live reader for the 60
    compiled base champions (about 37 version-specific entries per game
    version, 7 anchors and about 30 effect addresses on 0.6.4) with a table

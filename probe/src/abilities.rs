@@ -1358,13 +1358,15 @@ impl Abilities {
                 range: desc.range,
                 ready,
                 geometry: crate::skill_preview::main_purpose(
-                    crate::skill_preview::resolve(
-                        s.geometry
-                            .as_ref()
-                            .filter(|(_, at)| at.elapsed() <= FRESH)
-                            .map(|(g, _)| &g[slot]),
-                        crate::skill_preview::geometry(s.champion.as_deref(), slot),
-                    ),
+                    crate::skill_preview::with_assignment(s.champion.as_deref(), slot, || {
+                        crate::skill_preview::resolve(
+                            s.geometry
+                                .as_ref()
+                                .filter(|(_, at)| at.elapsed() <= FRESH)
+                                .map(|(g, _)| &g[slot]),
+                            crate::skill_preview::geometry(s.champion.as_deref(), slot),
+                        )
+                    }),
                     desc.casting == 0,
                 ),
                 target,
