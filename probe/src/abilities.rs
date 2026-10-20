@@ -1354,6 +1354,7 @@ impl Abilities {
                 aim: (!hover).then(|| s.aim.map(|a| a.world)).flatten(),
                 casting: desc.casting,
                 self_target: desc.target == 4,
+                allies: crate::skill_preview::targets_allies(desc.target as usize),
                 range: desc.range,
                 ready,
                 geometry: crate::skill_preview::main_purpose(

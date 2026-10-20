@@ -20,7 +20,9 @@ for that skill and recognises each by the address of its `apply` method, from
 a table per game version (about 30 addresses on 0.6.4: 13 generic effect
 types, four hand-written base skills, a "no area" list). A skill whose tree
 holds an unrecognised effect and yields no shape is "not understood": for a
-direction or position cast a white crosshair is drawn at the aim point; a
+direction or position cast a white crosshair is drawn at the aim point
+(superseded 2026-10-20, 1.5.0-dev5: an arrow toward the aim for a
+direction cast, a small landing ring for a point cast); a
 unit-targeted skill draws nothing (the hovered unit is the aim). A skill whose
 every effect is recognised and none has an area draws only the range and aim
 cue. A decoded shape is kept even when a status effect beside it is

@@ -205,12 +205,51 @@ fn attack_range() -> Option<f32> {
     let range = ATTACK_RANGE.load(std::sync::atomic::Ordering::Relaxed);
     (range > 0).then_some(range as f32 / 1000.)
 }
+/// The game's own data-defined base champions (`asset/base/setting/<id>`,
+/// `data_champion`; 8 on 0.6.4), read from the installed bundle so they
+/// follow game updates (the author, 2026-10-20, stage 2). Empty when the
+/// bundle cannot be read.
+fn bundle_champions() -> Vec<(String, Value)> {
+    let Some(bundle) = crate::game_bundle::installed() else {
+        return Vec::new();
+    };
+    crate::game_bundle::files(&bundle, |extension, path| {
+        extension == "data_champion" && path.starts_with("asset/base/")
+    })
+    .into_iter()
+    .filter_map(|(_, bytes)| {
+        let value: Value = serde_json::from_slice(&bytes).ok()?;
+        Some((value.get("id")?.as_str()?.to_owned(), value))
+    })
+    .collect()
+}
 pub fn initialize(log: &Logger) {
-    let base: Value =
-        serde_json::from_str(include_str!("preview_assets.json")).expect("preview declarations");
     let mut shapes = HashMap::new();
-    for (name, value) in base.as_object().expect("preview map") {
-        shapes.insert(name.clone(), skills(value));
+    let mut base = bundle_champions();
+    let source = if base.is_empty() {
+        // The copy taken by `tools/read_preview_assets.py` at build time.
+        let baked: Value = serde_json::from_str(include_str!("preview_assets.json"))
+            .expect("preview declarations");
+        base = baked
+            .as_object()
+            .expect("preview map")
+            .iter()
+            .map(|(name, value)| (name.clone(), value.clone()))
+            .collect();
+        "built-in copy (bundle unreadable)"
+    } else {
+        "game bundle"
+    };
+    base.sort_by(|a, b| a.0.cmp(&b.0));
+    for (name, value) in base {
+        let geometry = skills(&value);
+        log.write(&format!(
+            "PREVIEW BASE champion={name} source={source} Q={} W={} R={}",
+            geometry[0].summary(),
+            geometry[1].summary(),
+            geometry[2].summary()
+        ));
+        shapes.insert(name, geometry);
     }
     // One line per enabled mod champion: what its file gives each skill
     // (checking coverage needs no description from the player).
@@ -444,9 +483,24 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
             );
             landed(v, out, depth);
         }
-        // A lob that lands at the target (Workshop example: league_annie R);
-        // its own `shape` is the flight, its `end_effects` the landing.
-        "ParabolicProjectile" => landed(v, out, depth),
+        // A lob that lands at the target; its `end_effects` happen there.
+        // Its own `shape` is the area it hits on landing when effects are
+        // attached (Workshop example: bulldozer R, a 120000 circle that
+        // damages and stuns, seen in game by the author 2026-10-20), and
+        // only a flight marker otherwise (league_annie R: radius 1, no
+        // effects).
+        "ParabolicProjectile" => {
+            let hits = v
+                .get("applied_effects")
+                .and_then(Value::as_array)
+                .is_some_and(|e| !e.is_empty());
+            if let Some(Shape::Circle { radius }) = declared_shape(v).filter(|_| hits) {
+                if radius > LOB_MARKER {
+                    out.add_for(Shape::Circle { radius }, inherited, declared_allies(v));
+                }
+            }
+            landed(v, out, depth);
+        }
         // A shot at the target unit that bounces on to further units within
         // `range` of the unit it just hit, like League's Jhin Q (the author,
         // 2026-10-20, of voidling Q: 45000 on a 90000 cast; cf_void_mage W
@@ -545,6 +599,9 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
         _ => out.issue(format!("unknown declaration {kind}")),
     }
 }
+/// World units at or below which a lob's own circle is a flight marker,
+/// not an area it hits.
+const LOB_MARKER: f32 = 5.;
 /// A mover's or lob's `end_effects`, which happen where it lands: an area
 /// "around the caster" there is drawn at the aim.
 fn landed(v: &Value, out: &mut Geometry, depth: usize) {
@@ -796,6 +853,9 @@ pub struct Preview {
     pub aim: Option<(u64, u64)>,
     pub casting: u32,
     pub self_target: bool,
+    /// The skill targets allies (heals, shields): its range is drawn in the
+    /// pale ally colour.
+    pub allies: bool,
     pub range: u64,
     pub ready: bool,
     pub geometry: Geometry,
@@ -880,8 +940,22 @@ fn unit_vector(from: Point, to: Point) -> Option<Point> {
     let length = dx.hypot(dy);
     (length > f32::EPSILON).then(|| (dx / length, dy / length))
 }
-/// Cast range: a quiet neutral ring, no fill.
-fn range_ring(d: &mut Drawing, s: &Style, center: Point, radius: f32) {
+/// The range's colour: a sibling of the skill's own colour, so range and
+/// shape read as one skill yet stay distinct (the author, 2026-10-20: pale
+/// cream beside the yellow shape, a pale blue beside an ally skill's blue;
+/// grey while not ready, like the shape).
+fn range_color(s: &Style, ready: bool, allies: bool) -> u32 {
+    match (ready, allies) {
+        (false, _) => s.gray,
+        (true, true) => s.range_ally,
+        (true, false) => s.range_ready,
+    }
+}
+/// Cast range: a faint fill over the whole range and a bright rim over a
+/// dark edge, like League's range indicator (the author, 2026-10-20: the
+/// 1 px grey ring was barely visible on grass).
+fn range_ring(d: &mut Drawing, s: &Style, center: Point, radius: f32, color: u32) {
+    d.disc(center, radius, alpha(color, s.range_fill));
     let ring = arc_points(center, radius, radius, 0., std::f32::consts::TAU);
     d.poly(
         &ring,
@@ -893,7 +967,7 @@ fn range_ring(d: &mut Drawing, s: &Style, center: Point, radius: f32) {
     d.poly(
         &ring,
         s.range_width,
-        alpha(s.gray, s.range_opacity),
+        alpha(color, s.range_opacity),
         true,
         Z_MAIN,
     );
@@ -1100,21 +1174,40 @@ fn dash(d: &mut Drawing, s: &Style, caster: Point, end: Point, ink: Ink) {
         _ => grip(d, s, end, ink, s.dash_short_grip),
     }
 }
-/// A skill whose area is not understood: a small white crosshair where it
-/// is aimed. It claims no shape and no direction.
-fn crosshair(d: &mut Drawing, s: &Style, p: Point, ink: Ink) {
-    let color = alpha(ink.white, s.guide_opacity);
-    let ring = arc_points(p, s.guide_ring, s.guide_ring, 0., std::f32::consts::TAU);
-    d.poly(&ring, s.guide_width, color, true, Z_MAIN);
-    let (inner, outer) = (s.guide_ring - 1., s.guide_ring + s.guide_tick);
-    for (x, y) in [(1., 0.), (-1., 0.), (0., 1.), (0., -1.)] {
-        d.line(
-            (p.0 + x * inner, p.1 + y * inner),
-            (p.0 + x * outer, p.1 + y * outer),
-            s.guide_width,
-            color,
-            Z_MAIN,
+/// A skill whose area is not understood shows only how it is cast (the
+/// author's option A, 2026-10-20, replacing the crosshair): a thin arrow
+/// from the caster to `at` for a direction cast, a small ring where it lands
+/// for a point cast. Neither claims a width or an area.
+fn cast_cue(d: &mut Drawing, s: &Style, caster: Point, at: Point, direction: bool, ink: Ink) {
+    let color = alpha(ink.col, s.guide_opacity);
+    if direction {
+        let Some(dir) = unit_vector(caster, at) else {
+            return;
+        };
+        let start = (
+            caster.0 + dir.0 * s.dash_start,
+            caster.1 + dir.1 * s.dash_start,
         );
+        if (at.0 - start.0) * dir.0 + (at.1 - start.1) * dir.1 <= 0. {
+            return;
+        }
+        d.line(start, at, s.guide_width, color, Z_MAIN);
+        // Arrowhead: two strokes back from the tip, 30 degrees off the line.
+        let head = s.guide_ring + s.guide_tick;
+        for side in [-30f32, 30.] {
+            let back = turned((-dir.0, -dir.1), side);
+            d.line(
+                at,
+                (at.0 + back.0 * head, at.1 + back.1 * head),
+                s.guide_width,
+                color,
+                Z_MAIN,
+            );
+        }
+    } else {
+        let ring = arc_points(at, s.guide_ring, s.guide_ring, 0., std::f32::consts::TAU);
+        d.poly(&ring, s.guide_width, color, true, Z_MAIN);
+        d.disc(at, s.guide_width, color);
     }
 }
 /// Blink: a four-part destination aperture, a core dot and a white pin.
@@ -1270,7 +1363,8 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let (sx, sy) = (2048. / frame.extent.0, 2048. / frame.extent.1);
     let self_area = p.self_target || p.casting == 3 || p.geometry.self_area();
     if range > 0. && !self_area {
-        range_ring(&mut out, s, center, range * sx);
+        let color = range_color(s, p.ready, p.allies);
+        range_ring(&mut out, s, center, range * sx, color);
     }
     let world_target = p
         .target
@@ -1423,9 +1517,8 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
         let end = endpoint(origin, aim, range, p.casting == 2);
         let at = project(end);
         if p.geometry.footprints.is_empty() && !p.geometry.known_without_area() {
-            // Limited guide, for skills not understood: where it is aimed,
-            // with no claim about shape or direction.
-            crosshair(&mut out, s, at, ink);
+            // A skill not understood: only how it is cast, no shape.
+            cast_cue(&mut out, s, center, at, p.casting == 2, ink);
         }
         if p.casting == 1 && (end.0 - aim.0).hypot(end.1 - aim.1) > 0.1 {
             beyond(&mut out, s, at, project(aim), p.ready);
@@ -1468,10 +1561,15 @@ pub fn hover_drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let ink = Ink::of(s, p.ready);
     if p.range > 0 && !self_area {
         // No aim while the pointer is on the HUD: the range is the whole
-        // preview, so it is drawn in the skill's colour, not the faint
-        // aiming ring.
+        // preview, so its rim is also drawn in the skill's own colour.
         let radius = p.range as f32 / 1000. * sx;
-        range_ring(&mut out, s, center, radius);
+        range_ring(
+            &mut out,
+            s,
+            center,
+            radius,
+            range_color(s, p.ready, p.allies),
+        );
         let ring = arc_points(center, radius, radius, 0., std::f32::consts::TAU);
         out.poly(
             &ring,
@@ -1626,6 +1724,7 @@ mod tests {
             aim: Some((600000, 600000)),
             casting: 2,
             self_target: false,
+            allies: false,
             range: 45000,
             ready: true,
             geometry,
@@ -1637,7 +1736,12 @@ mod tests {
         assert!(d
             .strokes
             .iter()
-            .all(|s| [st.gray, st.ink, st.yellow].contains(&rgb(s.color))));
+            .all(|s| [st.gray, st.ink, st.yellow, st.range_ready].contains(&rgb(s.color))));
+        // The range's own rim is the cream sibling of the skill's yellow.
+        assert!(d
+            .strokes
+            .iter()
+            .any(|s| rgb(s.color) == st.range_ready && s.width == st.range_width));
         // The range itself is drawn in the skill's colour.
         assert!(d
             .strokes
@@ -1657,6 +1761,7 @@ mod tests {
             aim: Some((600000, 600000)),
             casting: 3,
             self_target: true,
+            allies: false,
             range: 45000,
             ready: false,
             geometry,
@@ -1680,6 +1785,7 @@ mod tests {
             aim: None,
             casting: 3,
             self_target: true,
+            allies: false,
             range: 0,
             ready: true,
             geometry: Geometry::default(),
@@ -1699,6 +1805,7 @@ mod tests {
                 aim: Some((600000, 600000)),
                 casting: 0,
                 self_target: true,
+                allies: false,
                 range: 45000,
                 ready: true,
                 geometry,
@@ -1744,6 +1851,7 @@ mod tests {
                 aim: Some((480000, 600000)),
                 casting: 0,
                 self_target: false,
+                allies: false,
                 range: 45000,
                 ready: true,
                 geometry,
@@ -1766,6 +1874,7 @@ mod tests {
                 aim: Some((500000, 480000)),
                 casting: 1,
                 self_target: false,
+                allies: false,
                 range: 40000,
                 ready: true,
                 geometry,
@@ -1880,6 +1989,7 @@ mod tests {
                 aim: Some((480000, 600000)),
                 casting: 2,
                 self_target: false,
+                allies: false,
                 range: 70000,
                 ready: true,
                 geometry,
@@ -1921,6 +2031,7 @@ mod tests {
                 aim: Some((600000, 480000)),
                 casting: 2,
                 self_target: false,
+                allies: false,
                 range: 130000,
                 ready: true,
                 geometry,
@@ -1947,6 +2058,7 @@ mod tests {
             aim: Some((600000, 480000)),
             casting: 2,
             self_target: false,
+            allies: false,
             range,
             ready: true,
             geometry,
@@ -1986,6 +2098,7 @@ mod tests {
             aim: Some((600000, 480000)),
             casting: 1,
             self_target: false,
+            allies: false,
             range: 40000,
             ready,
             geometry: geometry.clone(),
@@ -2054,6 +2167,15 @@ mod tests {
         );
         assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 30. });
         assert_eq!(g.footprints[0].placement, Placement::Aim);
+        assert_eq!(g.footprints.len(), 1);
+        // bulldozer R: the lob's own circle damages and stuns on landing.
+        let g = one(
+            serde_json::json!({"type": "ParabolicProjectile", "travel_time": 20, "range": 40000,
+            "shape": {"Circle": {"radius": 120000}}, "applied_target": "EnemyWithoutTower",
+            "applied_effects": [{"casting_type": "Targeting", "effect": {"type": "Stun", "duration": 90}}], "end_effects": []}),
+        );
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 120. });
+        assert_eq!(g.footprints[0].placement, Placement::Aim);
         // voidling Q: a splash around the target.
         let g = one(
             serde_json::json!({"type": "TargetSplashProjectile", "speed": 2500, "range": 45000, "applied_target": "EnemyWithoutTower"}),
@@ -2073,6 +2195,57 @@ mod tests {
                 .summary(),
             "no-area"
         );
+    }
+    #[test]
+    fn the_range_is_a_sibling_of_the_skill_colour_with_a_faint_fill() {
+        let st = style();
+        assert_eq!(range_color(st, true, false), st.range_ready);
+        assert_eq!(range_color(st, true, true), st.range_ally);
+        assert_eq!(range_color(st, false, true), st.gray);
+        // Distinct from the shapes' colours, and fainter than their fill.
+        assert!(st.range_ready != st.yellow && st.range_ally != st.ally);
+        assert!(st.range_fill < st.area_fill);
+        let mut d = Drawing::default();
+        range_ring(&mut d, st, (960., 540.), 100., st.range_ready);
+        assert_eq!(d.discs.len(), 1);
+        assert_eq!(rgb(d.discs[0].color), st.range_ready);
+    }
+    #[test]
+    fn a_skill_not_understood_shows_only_its_cast_style() {
+        let mut unknown = Geometry::default();
+        unknown.issue("opaque Native");
+        let preview = |casting| Preview {
+            origin: (480000, 480000),
+            aim: Some((520000, 480000)),
+            casting,
+            self_target: false,
+            allies: false,
+            range: 90000,
+            ready: true,
+            geometry: unknown.clone(),
+            target: None,
+        };
+        let base = drawing(
+            frame(),
+            Preview {
+                aim: None,
+                ..preview(2)
+            },
+        );
+        // Direction cast: an arrow, three strokes beyond the range ring,
+        // no disc; point cast: a ring with a centre dot.
+        let arrow = drawing(frame(), preview(2));
+        assert!(arrow.strokes.len() > base.strokes.len());
+        assert_eq!(arrow.discs.len(), base.discs.len());
+        let ring = drawing(frame(), preview(1));
+        assert_eq!(ring.discs.len(), base.discs.len() + 1);
+        // Neither is the old white crosshair.
+        let white = style().white;
+        assert!(arrow
+            .strokes
+            .iter()
+            .chain(&ring.strokes)
+            .all(|s| rgb(s.color) != white));
     }
     #[test]
     fn a_dash_is_drawn_only_when_moving_is_the_skills_main_purpose() {
@@ -2258,6 +2431,7 @@ mod tests {
                 aim: Some((600000, 480000)),
                 casting: 3,
                 self_target: false,
+                allies: false,
                 range: 0,
                 ready,
                 geometry,
@@ -2369,6 +2543,7 @@ mod tests {
                     range: 120000,
                     ready: true,
                     self_target: false,
+                    allies: false,
                     geometry: Geometry {
                         footprints: vec![Footprint {
                             shape: Shape::Corridor {

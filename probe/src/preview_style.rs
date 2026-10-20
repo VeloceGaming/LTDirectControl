@@ -41,10 +41,10 @@ macro_rules! style {
 }
 
 style! {
-    colors { yellow, white, orange, gray, ink, enemy, ally }
+    colors { yellow, white, orange, gray, ink, enemy, ally, range_ready, range_ally }
     numbers {
         strip_step,
-        range_ink_width, range_ink_opacity, range_width, range_opacity,
+        range_ink_width, range_ink_opacity, range_width, range_opacity, range_fill,
         rim_width, rim_ink_extra, rim_ink_opacity, rim_glow_extra, rim_glow_opacity,
         rim_opacity, rim_core_width, rim_core_opacity,
         area_fill, accent_inset, accent_offset, accent_span, accent_width, accent_opacity,

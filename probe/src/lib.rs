@@ -25,6 +25,7 @@ mod emotes;
 mod hud_icons;
 mod hud_motion;
 // motion: pass
+mod game_bundle;
 mod ground_ring;
 mod hud_motion_pass;
 mod hud_style;

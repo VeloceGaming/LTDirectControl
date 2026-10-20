@@ -3,6 +3,46 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.5.0-dev7 (development build) — 2026-10-20
+
+**Seen in game 2026-10-20 by the author: "Test passed". Development build, never for the Workshop.** A visible, League-like range indicator in a sibling of the skill's colour, approved by the author on 2026-10-20 ("cream").
+
+- **Seen in game (1.5.0-dev6, the author):** Bulldozer R shows its circle. The range while aiming (Shift+W) is barely visible: a 1 px grey line at 48 % over a 3 px dark line at 30 % (`preview_style.json`). League draws a soft fill over the whole range and a bright rim, in the same colour as the skill's shape. The author chose a related but distinct colour, so range and shape read as one skill yet mean different things.
+- **Now (`skill_preview::range_ring`, `range_color`):** the range gets a faint fill (5 %, below the shapes' 6.5 %) and a 2.5 px rim at 90 % over a 5 px dark edge at 35 %. Its colour is pale cream (`range_ready` #fff6c2) beside the yellow shape, pale blue (`range_ally` #b4e2f5) for a skill that targets allies (`Preview::allies`, from the skill's casting target), and grey while the skill is not ready, like the shape. Amber was declined: too close to the orange "target out of range" marker. The HUD-hover preview keeps its rim in the skill's own colour on top.
+- All new values are style keys (`range_ready`, `range_ally`, `range_fill`, and the existing widths and opacities), so they can be tuned in `%LOCALAPPDATA%\LTDirectControl\preview_style.json` without a build.
+- Tests: the range colours by state and side, a fill fainter than the shapes', one fill disc in the range colour; the HUD-hover test now allows the cream rim.
+- Verified: formatting, Clippy with warnings denied, 586 passing tests (one existing translation-export helper intentionally ignored), release build (staging confirmed the DLL carries 1.5.0-dev7), all 581 native instruction/header anchors across game 0.6.3 / 0.6.4 / 0.7.0, DLL interface/null-host refusal and the 103-file package. Installed over verified 1.5.0-dev6; installed DLL, metadata and all 101 assets match, and the installed DLL carries 1.5.0-dev7. Record: `dist/build-1.5.0-dev7.json`. Not verified: anything in game, including how the fill reads on dark and bright ground. Not committed, pushed or uploaded.
+
+## 1.5.0-dev6 (development build) — 2026-10-20
+
+**Seen in game 2026-10-20 by the author: Bulldozer R shows its circle. Development build, never for the Workshop.** A lob's own landing area in champion files, approved by the author on 2026-10-20.
+
+- **Seen in game (1.5.0-dev5, the author, Bulldozer from the Bowsori Champions Workshop item):** W is like League's Singed flip, a skill cast on an enemy champion; R is cast on a unit and hits an area. R's description says "Can only target towers", yet champions and minions can be targeted, and R then really hits, damages and stuns. **Read from the champion file:** R's `casting_target` is `Enemy` (any enemy; the game's list has no "towers only"), so the game allows it and Takeover follows the game; the tower rule is only in the description. W, cast on a unit, shows the range and the target cue by the 1.5.0-dev3 rule.
+- **Now:** a `ParabolicProjectile` whose own circle has `applied_effects` and is larger than 5 units is drawn as an area where it lands (Bulldozer R: 120 units, damage and stun). 1.5.0-dev2 treated a lob's own shape as its flight only, from League Annie R's 1-unit circle with no effects, which keeps that reading.
+- Tests: Bulldozer R's 120-unit landing circle; League Annie R still only its landing effects.
+- Verified: formatting, Clippy with warnings denied, 585 passing tests (one existing translation-export helper intentionally ignored), release build (staging confirmed the DLL carries 1.5.0-dev6), all 581 native instruction/header anchors across game 0.6.3 / 0.6.4 / 0.7.0, DLL interface/null-host refusal and the 103-file package. Installed over verified 1.5.0-dev5; installed DLL, metadata and all 101 assets match, and the installed DLL carries 1.5.0-dev6. Record: `dist/build-1.5.0-dev6.json`. Not verified: anything in game, including whether the live reader already drew this circle (it comes first). Not committed, pushed or uploaded.
+
+## 1.5.0-dev5 (development build) — 2026-10-20
+
+**Seen in game 2026-10-20 by the author with Bulldozer (W shows range and target, R hits champions and minions); the cast-style cue itself not yet commented on. Development build, never for the Workshop.** Stage 3 of the skill preview redesign, approved by the author on 2026-10-20 (option A of three shown as sketches: today's crosshair; A, the cast style only; B, A plus a "?" glyph).
+
+- **A skill the mod cannot read** (no shape from the live reader or a champion file, and not known to have no area) no longer shows a white crosshair at the aim point, which looked broken and said nothing. It shows only how it is cast (`skill_preview::cast_cue`), in the skill's colour: a direction cast draws a thin arrow from just ahead of the caster to the aimed end of its range; a point cast draws a small ring with a centre dot where it lands. Neither claims a width or an area. The range ring is unchanged; skills cast on a unit keep the range ring and the target highlight.
+- Examples (read from the 1.5.0-dev2 coverage log, not seen): bulldozer W and R, dummy Q and R, witness Q, zook R, and base Strongman Q and R, Harpooner R, Nightmare R and Spellbreaker R where the live reader cannot decode them.
+- Docs: `investigation-preview-sources.md` section 1 marks the crosshair as superseded; backlog item 2 lists stages 1-3 as built.
+- Tests: an arrow for a direction cast, a ring with a dot for a point cast, no white crosshair strokes.
+- Verified: formatting, Clippy with warnings denied, 585 passing tests (one existing translation-export helper intentionally ignored), release build (staging confirmed the DLL carries 1.5.0-dev5), all 581 native instruction/header anchors across game 0.6.3 / 0.6.4 / 0.7.0, DLL interface/null-host refusal and the 103-file package. Installed over verified 1.5.0-dev4; installed DLL, metadata and all 101 assets match, and the installed DLL carries 1.5.0-dev5. Record: `dist/build-1.5.0-dev5.json`. Not verified: anything in game. Not committed, pushed or uploaded.
+
+## 1.5.0-dev4 (development build) — 2026-10-20
+
+**Started once by the author 2026-10-20 (no match). Read from its log (`probe=1.5.0-dev4`): eight `PREVIEW BASE … source=game bundle` lines; 63 declared skill slots, the same as 1.5.0-dev3, so the base previews are unchanged. Development build, never for the Workshop.** Stage 2 of reading the champion files for skill previews, approved by the author on 2026-10-20: the game's own data-defined base champions come from the installed bundle at start.
+
+- **New `game_bundle.rs`:** reads chosen files from `bundle.game_data` beside the executable (entry count, then per entry extension, path and size as little-endian u32-prefixed fields, then the bytes; unwanted entries are skipped with a seek; files over 4 MB are skipped; a malformed bundle ends the listing without a panic). `sprite_art.rs` keeps its own reader for artwork for now.
+- **`skill_preview::initialize`:** the base champions' declarations (`asset/base/setting/<id>`, `data_champion`) are read from the bundle, so they follow game updates without a rebuild. The copy baked in at build time (`preview_assets.json`, from `tools/read_preview_assets.py`) is used only when the bundle cannot be read. A `PREVIEW BASE champion=… source=… Q=… W=… R=…` line is logged for each.
+- **Read from the data:** on game 0.6.4 the bundle's 8 data champions match the baked copy exactly, so nothing changes on the author's game; game 0.7.0's bundle has 12, and Bombardier, Ferryman, Gladiator and Hypnotist were missing from the baked copy.
+- The live reader still comes first; these declarations fill in where it cannot decode a skill.
+- Tests: wanted entries read and the rest skipped, a truncated bundle, a missing bundle.
+- Verified: formatting, Clippy with warnings denied, 584 passing tests (one existing translation-export helper intentionally ignored), release build (staging confirmed the DLL carries 1.5.0-dev4), all 581 native instruction/header anchors across game 0.6.3 / 0.6.4 / 0.7.0, DLL interface/null-host refusal and the 103-file package. Installed over verified 1.5.0-dev3; installed DLL, metadata and all 101 assets match, and the installed DLL carries 1.5.0-dev4. Record: `dist/build-1.5.0-dev4.json`. Not verified: anything in game, including that the bundle is read at start. Not committed, pushed or uploaded.
+
 ## 1.5.0-dev3 (development build) — 2026-10-20
 
 **Seen in game 2026-10-20 by the author: "Test passed" (Candygel R pools only, Candygel W no path, Voidling Q bounce circle). No base or installed champion has a pure dash; the nearest, Nullifier Q (a dash that empowers the next attack), keeps its path by the rule. Development build, never for the Workshop.** Dashes in skill previews follow the skill's main purpose, approved by the author on 2026-10-20 ("pools only for Candygel R").

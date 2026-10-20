@@ -40,9 +40,11 @@ addition (not to be copied).
    **Decided 2026-10-20 (author):** watching play was measured and cannot
    give widths or areas (investigation section 6); read the champion files
    first. Stage 1 (1.5.0-dev2): the file decoder reads the remaining JSON
-   shape types. Stage 2: read the 8 data base champions from the bundle at
-   start instead of the baked copy. Stage 3: what the preview draws when
-   nothing is known.
+   shape types. Stage 2 (1.5.0-dev4): read the 8 data base champions from
+   the bundle at start instead of the baked copy. Stage 3 (1.5.0-dev5, the
+   author's option A): a skill not understood shows only its cast style,
+   an arrow toward the aim or a landing ring, instead of a crosshair.
+   Also 1.5.0-dev3: dashes follow the skill's main purpose.
    **Later, with its tradeoff:** replace the live reader for the 60
    compiled base champions (about 37 version-specific entries per game
    version, 7 anchors and about 30 effect addresses on 0.6.4) with a table
