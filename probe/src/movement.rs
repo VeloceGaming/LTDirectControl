@@ -79,6 +79,9 @@ struct State {
     hover_units: Vec<Unit>,
     hover_updated: Option<Instant>,
     hover_actor: Option<usize>,
+    /// Units a left-click may select while the champion is dead (its own
+    /// think does not run then); hover and orders stay off.
+    dead_units: Vec<Unit>,
     frame_markers: (Option<Unit>, Option<Unit>),
     attack_click: Option<(usize, Instant)>,
     frame_click: Option<(usize, Instant)>,
@@ -395,6 +398,7 @@ impl Movement {
                 state.units.clear();
                 state.units_updated = None;
                 state.hover_units.clear();
+                state.dead_units.clear();
                 state.hover_updated = None;
                 state.hover_actor = None;
                 state.attack_move_armed = false;
@@ -472,6 +476,7 @@ impl Movement {
         s.units.clear();
         s.units_updated = None;
         s.hover_units.clear();
+        s.dead_units.clear();
         s.hover_updated = None;
         s.hover_actor = None;
         s.attack_move_armed = false;
@@ -738,6 +743,25 @@ impl Movement {
             s.hover_units.clear();
             s.hover_units.extend_from_slice(units);
             s.hover_updated = Some(Instant::now());
+            s.dead_units.clear();
+        }
+    }
+    /// The selected player's visible units while its champion is dead, for
+    /// left-click selection only (the author, 2026-10-20: the selected
+    /// unit's panel vanished during death).
+    pub fn observe_dead_units(&self, key: MatchKey, player: usize, units: &[Unit]) {
+        if !self.enabled {
+            return;
+        }
+        if let Ok(mut s) = self.state.lock() {
+            if s.selection.match_key != Some(key)
+                || s.selection.selected().is_none_or(|p| p.player != player)
+                || s.champion_position.is_some()
+            {
+                return;
+            }
+            s.dead_units.clear();
+            s.dead_units.extend_from_slice(units);
         }
     }
     pub fn camera_target(&self) -> Option<(PlayerIdentity, Option<(u64, u64)>)> {
@@ -1303,7 +1327,12 @@ impl Movement {
             if left_click && !s.attack_move_armed {
                 if let (Some(frame), Some(p)) = (camera.frame(), keys.cursor) {
                     if !camera.command_blocked(p) && !frame.minimap.contains(p) {
-                        let id = crate::combat::clicked_units(frame, p, &s.hover_units, false)
+                        let units = if s.champion_position.is_some() {
+                            &s.hover_units
+                        } else {
+                            &s.dead_units
+                        };
+                        let id = crate::combat::clicked_units(frame, p, units, false)
                             .first()
                             .copied();
                         crate::stats_panel::select(id);

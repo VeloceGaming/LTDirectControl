@@ -71,7 +71,6 @@ pub struct Unit {
     pub hp: (usize, usize),
     pub shield: usize,
     pub values: [f64; STATS],
-    at: Instant,
 }
 
 #[derive(Default)]
@@ -108,24 +107,22 @@ pub fn select(id: Option<usize>) {
 pub(crate) fn target_id() -> Option<usize> {
     Some(TARGET.load(Ordering::Relaxed)).filter(|id| *id != usize::MAX)
 }
-/// Your champion and the selected unit. While `sampling` (the match runs
-/// and samples arrive) one older than a second is dropped; while paused the
-/// last one stays.
-pub fn snapshot(sampling: bool) -> (Option<Unit>, Option<Unit>) {
-    let fresh = |u: &Option<Unit>| {
-        u.clone()
-            .filter(|u| !sampling || u.at.elapsed() < Duration::from_secs(1))
-    };
+/// Your champion and the selected unit. When samples stop (a pause, the
+/// nexus explosion) the last ones stay (the author, 2026-10-20, option a).
+pub fn snapshot() -> (Option<Unit>, Option<Unit>) {
     SHARED
         .lock()
-        .map(|s| (fresh(&s.own), fresh(&s.target)))
+        .map(|s| (s.own.clone(), s.target.clone()))
         .unwrap_or((None, None))
 }
 
 /// Worker, during the HUD sample of the controlled player.
-pub fn sample(sim: &StableSim<'_>, own: Option<&StableEntity<'_, '_>>, log: &Logger) {
-    let side = own.map(|c| c.team());
-    let own_unit = own.filter(|c| c.is_alive()).map(|c| read(sim, c, side));
+/// `team`: the controlled player's, known even without a champion object.
+pub fn sample(sim: &StableSim<'_>, own: Option<&StableEntity<'_, '_>>, team: usize, log: &Logger) {
+    let side = Some(team);
+    // Read live while dead too, so the panel and skill values follow items
+    // bought while dead (the author, 2026-10-20: both vanished on death).
+    let own_unit = own.map(|c| read(sim, c, side));
     // The selected unit, while it lives and the vision choice shows it.
     let target = target_id().and_then(|id| {
         let e = sim.get_entity(id)?;
@@ -155,7 +152,8 @@ pub fn sample(sim: &StableSim<'_>, own: Option<&StableEntity<'_, '_>>, log: &Log
             c.buff_count(), b.haste, b.vamp, b.defence_pen, b.mr_pen
         ));
     }
-    s.own = own_unit;
+    // Without a champion object (possible while dead), the last values stay.
+    s.own = own_unit.or_else(|| s.own.take());
     s.target = target;
 }
 
@@ -222,7 +220,6 @@ fn read(sim: &StableSim<'_>, e: &StableEntity<'_, '_>, side: Option<usize>) -> U
             b.defence_pen,
             b.mr_pen,
         ],
-        at: Instant::now(),
     }
 }
 

@@ -212,8 +212,22 @@ pub fn initialize(log: &Logger) {
     for (name, value) in base.as_object().expect("preview map") {
         shapes.insert(name.clone(), skills(value));
     }
-    for (name, value) in hud_icons::enabled_assets().descriptions {
-        shapes.insert(name, skills(&value));
+    // One line per enabled mod champion: what its file gives each skill
+    // (checking coverage needs no description from the player).
+    let mut files: Vec<_> = hud_icons::enabled_assets()
+        .descriptions
+        .into_iter()
+        .collect();
+    files.sort_by(|a, b| a.0.cmp(&b.0));
+    for (name, value) in files {
+        let geometry = skills(&value);
+        log.write(&format!(
+            "PREVIEW FILE champion={name} Q={} W={} R={}",
+            geometry[0].summary(),
+            geometry[1].summary(),
+            geometry[2].summary()
+        ));
+        shapes.insert(name, geometry);
     }
     let count = shapes
         .values()
@@ -242,6 +256,27 @@ pub fn resolve(native: Option<&Geometry>, declared: Geometry) -> Geometry {
         Some(g) => g.clone(),
         None => declared,
     }
+}
+/// What a preview shows of a skill that moves the caster, by the skill's
+/// main purpose (the author, 2026-10-20, from League: Zac R shows no jump
+/// path, Corki W shows its dash):
+/// - cast on a unit: no path; the range and the target cue say it all;
+/// - a dash that hits along its way: its corridor (kept: not a `Movement`);
+/// - a dash that does nothing else: the path, since moving is the point;
+/// - a dash that leaves areas (Candygel R's pools): the areas only.
+///
+/// A projectile beside a dash is not an area left behind: both stay.
+pub fn main_purpose(mut geometry: Geometry, unit_target: bool) -> Geometry {
+    let leaves_areas = geometry
+        .footprints
+        .iter()
+        .any(|f| !f.projectile && !matches!(f.shape, Shape::Movement { .. }));
+    if unit_target || leaves_areas {
+        geometry
+            .footprints
+            .retain(|f| !matches!(f.shape, Shape::Movement { .. }));
+    }
+    geometry
 }
 fn number(v: &Value, name: &str) -> Option<f32> {
     let n = v.get(name)?.as_f64()?;
@@ -382,15 +417,52 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
                 out.issue("range projectile shape unresolved");
             }
         }
-        "LineRangeProjectile" => {
-            out.issue("LineRangeProjectile width/placement semantics unresolved");
+        // A beam from the caster toward the aim (Workshop example: abbie W,
+        // `width` 27000 and `length` 100000 on a direction cast). Guess:
+        // `width` is the full width, as Astrologer W's `line_width`.
+        "LineRangeProjectile" => match (number(v, "width"), number(v, "length")) {
+            (Some(width), Some(length)) => out.add_for(
+                Shape::Corridor {
+                    radius: width / 2.,
+                    length,
+                },
+                Placement::Caster,
+                declared_allies(v),
+            ),
+            _ => out.issue("LineRangeProjectile width/length missing"),
+        },
+        // Movers end where the caster lands, so their `end_effects` drawn
+        // "around the caster" belong at the aim. MoveToTarget dashes to the
+        // target unit; RushTime and Rush charge toward the aim; RushMoveToBack
+        // dashes to the target (its `applied_effects` hit that target only).
+        "MoveTo" | "Teleport" | "MoveToTarget" | "Rush" | "RushTime" | "RushMoveToBack" => {
+            out.add(
+                Shape::Movement {
+                    blink: kind == "Teleport",
+                },
+                Placement::Aim,
+            );
+            landed(v, out, depth);
         }
-        "MoveTo" | "Teleport" => out.add(
-            Shape::Movement {
-                blink: kind == "Teleport",
-            },
-            Placement::Aim,
-        ),
+        // A lob that lands at the target (Workshop example: league_annie R);
+        // its own `shape` is the flight, its `end_effects` the landing.
+        "ParabolicProjectile" => landed(v, out, depth),
+        // A shot at the target unit that bounces on to further units within
+        // `range` of the unit it just hit, like League's Jhin Q (the author,
+        // 2026-10-20, of voidling Q: 45000 on a 90000 cast; cf_void_mage W
+        // 30000 on 60000). Later bounces cannot be foreseen, so the circle is
+        // the bounce range around the first target.
+        "TargetSplashProjectile" => match number(v, "range") {
+            Some(radius) => out.add_for(Shape::Circle { radius }, Placement::Aim, declared_allies(v)),
+            None => out.issue("TargetSplashProjectile radius missing"),
+        },
+        // Two variants by a buff on the caster (Workshop example: heavyblade
+        // Q, a larger circle while charged). The preview cannot know the
+        // buff, so it shows the usual state, `effect_none`.
+        "SwitchByBuff" => match v.get("effect_none").or_else(|| v.get("effect_buff")) {
+            Some(e) => collect(e, inherited, out, depth + 1),
+            None => out.issue("SwitchByBuff without variants"),
+        },
         // Astrologer (player's description, 1.1.19): Q and R land a circle
         // at the aim after a delay; W is a line from her toward the aim, as
         // long as the cast range and `line_width` wide.
@@ -433,16 +505,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
                 Placement::Caster,
             );
         }
-        "Native"
-        | "SwitchByBuff"
-        | "RandomTarget"
-        | "ParabolicProjectile"
-        | "Rush"
-        | "RushTime"
-        | "MoveToTarget"
-        | "RushMoveToBack"
-        | "TargetSplashProjectile"
-        | "ShrinkingBarrier" => out.issue(format!("opaque {kind}")),
+        "Native" | "ShrinkingBarrier" => out.issue(format!("opaque {kind}")),
         "Attack"
         | "ApAttack"
         | "FixedAttack"
@@ -475,8 +538,41 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
         | "TargetProjectile"
         | "MoveBack"
         | "Grab"
-        | "Taunt" => {}
+        | "Taunt"
+        // Effects on one random unit near the hit (Workshop examples: ruby
+        // Q, kharazim R): nothing to aim.
+        | "RandomTarget" => {}
         _ => out.issue(format!("unknown declaration {kind}")),
+    }
+}
+/// A mover's or lob's `end_effects`, which happen where it lands: an area
+/// "around the caster" there is drawn at the aim.
+fn landed(v: &Value, out: &mut Geometry, depth: usize) {
+    let Some(list) = v
+        .get("end_effects")
+        .and_then(Value::as_array)
+        .filter(|s| s.len() <= 32)
+    else {
+        return;
+    };
+    let mut at_landing = Geometry::default();
+    for child in list {
+        collect(child, Placement::Aim, &mut at_landing, depth + 1);
+    }
+    for f in at_landing.footprints {
+        // Only a circle moves to the landing point; a line or cone keeps its
+        // own placement rather than being drawn from a guessed origin.
+        let placement = match (f.placement, f.shape) {
+            (Placement::Caster, Shape::Circle { .. }) => Placement::Aim,
+            (other, _) => other,
+        };
+        out.push(f.shape, placement, f.allies, f.projectile);
+    }
+    for reason in at_landing.issues {
+        out.issue(reason);
+    }
+    for name in at_landing.families {
+        out.family(name);
     }
 }
 
@@ -1914,6 +2010,110 @@ mod tests {
         assert_eq!(g.footprints[0].placement, Placement::Aim);
         assert_eq!(g.footprints[1].placement, Placement::Caster);
         assert!(g.issues.is_empty());
+    }
+    #[test]
+    fn workshop_effect_types_from_installed_champion_files_are_read() {
+        // Trimmed from Workshop champion files on the author's PC, 2026-10-20.
+        let one = |effect: serde_json::Value| {
+            skills(&serde_json::json!({"skill": {"effect": effect}}))[0].clone()
+        };
+        // abbie W: a beam from the caster.
+        let g = one(
+            serde_json::json!({"type": "LineRangeProjectile", "width": 27000, "length": 100000, "applied_target": "Enemy"}),
+        );
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Corridor {
+                radius: 13.5,
+                length: 100.
+            }
+        );
+        assert_eq!(g.footprints[0].placement, Placement::Caster);
+        // invincible Q: a dash to the target, its punch has no area.
+        let g = one(
+            serde_json::json!({"type": "MoveToTarget", "speed": 5200, "range": 60000, "end_effects": [
+            {"type": "CasterAnimation", "name": "skill_land"}, {"type": "Attack", "damage": 70}]}),
+        );
+        assert_eq!(g.summary(), "dash");
+        assert!(g.issues.is_empty());
+        // abbie R: the circle "around the caster" after the dash is at the landing point.
+        let g = one(
+            serde_json::json!({"type": "MoveToTarget", "speed": 3000, "range": 70000, "end_effects": [
+            {"type": "RangeEffect", "shape": {"Circle": {"radius": 120000}}, "target": "EnemyChampion", "apply_type": "AroundCaster", "effects": []}]}),
+        );
+        assert!(g.footprints.contains(&Footprint {
+            shape: Shape::Circle { radius: 120. },
+            placement: Placement::Aim,
+            allies: false,
+            projectile: false
+        }));
+        // league_annie R: a lob whose landing circle is at the target.
+        let g = one(
+            serde_json::json!({"type": "ParabolicProjectile", "range": 1000000, "shape": {"Circle": {"radius": 1}}, "end_effects": [
+            {"type": "RangeProjectile", "shape": {"Circle": {"radius": 30000}}, "applied_target": "EnemyWithoutTower"}]}),
+        );
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 30. });
+        assert_eq!(g.footprints[0].placement, Placement::Aim);
+        // voidling Q: a splash around the target.
+        let g = one(
+            serde_json::json!({"type": "TargetSplashProjectile", "speed": 2500, "range": 45000, "applied_target": "EnemyWithoutTower"}),
+        );
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 45. });
+        // heavyblade Q: the usual (uncharged) variant.
+        let g = one(
+            serde_json::json!({"type": "SwitchByBuff", "buff_name": "heavyblade_charged",
+            "effect_none": {"type": "RangeEffect", "shape": {"Circle": {"radius": 60000}}, "apply_type": "AroundCaster", "effects": []},
+            "effect_buff": {"type": "RangeEffect", "shape": {"Circle": {"radius": 90000}}, "apply_type": "AroundCaster", "effects": []}}),
+        );
+        assert_eq!(g.footprints[0].shape, Shape::Circle { radius: 60. });
+        // candygel R: a charge; kharazim R's random strike has nothing to aim.
+        assert_eq!(one(serde_json::json!({"type": "RushTime", "speed": 2700, "tick": 44, "range": 72000, "penetrate": true, "applied_effects": []})).summary(), "dash");
+        assert_eq!(
+            one(serde_json::json!({"type": "RandomTarget", "range": 78000, "effects": []}))
+                .summary(),
+            "no-area"
+        );
+    }
+    #[test]
+    fn a_dash_is_drawn_only_when_moving_is_the_skills_main_purpose() {
+        let dash = Footprint {
+            shape: Shape::Movement { blink: false },
+            placement: Placement::Aim,
+            allies: false,
+            projectile: false,
+        };
+        let pool = Footprint {
+            shape: Shape::Circle { radius: 42. },
+            placement: Placement::Aim,
+            ..dash
+        };
+        let shot = Footprint {
+            shape: Shape::Corridor {
+                radius: 5.,
+                length: 70.,
+            },
+            placement: Placement::Caster,
+            projectile: true,
+            ..dash
+        };
+        let kept = |footprints: Vec<Footprint>, unit: bool| {
+            main_purpose(
+                Geometry {
+                    footprints,
+                    ..Geometry::default()
+                },
+                unit,
+            )
+            .footprints
+        };
+        // A pure dash: the path.
+        assert_eq!(kept(vec![dash], false), vec![dash]);
+        // Candygel R: the pools only.
+        assert_eq!(kept(vec![dash, pool, pool], false), vec![pool, pool]);
+        // Candygel W, cast on an ally: no path.
+        assert!(kept(vec![dash], true).is_empty());
+        // A shot beside a dash is not an area left behind: both stay.
+        assert_eq!(kept(vec![dash, shot], false), vec![dash, shot]);
     }
     #[test]
     fn projectile_end_is_the_target_or_the_full_flight_length() {

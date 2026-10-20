@@ -37,6 +37,23 @@ addition (not to be copied).
    [investigation-preview-sources.md](investigation-preview-sources.md)
    (read champion files first, then watch and learn; unit-targeted skills
    keep a reticle; no "could not read" crosshair).
+   **Decided 2026-10-20 (author):** watching play was measured and cannot
+   give widths or areas (investigation section 6); read the champion files
+   first. Stage 1 (1.5.0-dev2): the file decoder reads the remaining JSON
+   shape types. Stage 2: read the 8 data base champions from the bundle at
+   start instead of the baked copy. Stage 3: what the preview draws when
+   nothing is known.
+   **Later, with its tradeoff:** replace the live reader for the 60
+   compiled base champions (about 37 version-specific entries per game
+   version, 7 anchors and about 30 effect addresses on 0.6.4) with a table
+   generated once from the live reader (shape kinds and sizes) plus the
+   bundle's `champion_info` numbers read at start. Gains: no preview entries
+   to carry per game version. Loses, until the active in-game balance patch
+   can be read: patched numbers (the patch settings allow range ±10 %,
+   projectile speed ±10 % and, for a few skills, radius, width or
+   projectile radius to change), and a game update that changes a size is
+   missed until the table is regenerated. Best done after reading the
+   active patch is solved.
 3. **Ability tooltip numbers ("…").** Native descriptions are enabled for
    all champions since 0.69.1, with the old resolver as fallback. Of 204
    localized entries, 6 are confirmed in logs and 198 are unobserved. Needs

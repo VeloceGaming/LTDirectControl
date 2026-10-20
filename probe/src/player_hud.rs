@@ -302,25 +302,24 @@ impl PlayerHud {
             items: snapshot.items.clone(),
         })
     }
-    pub fn snapshot(&self, identity: Option<(MatchKey, usize)>, running: bool) -> Option<Snapshot> {
+    /// The last sample for this match and player. When samples stop while
+    /// the battlefield shows (every actor stops calling think while the
+    /// nexus explodes), the last values stay frozen, as in a pause (the
+    /// author, 2026-10-20, option a: it blanked to "-"). Timers are never
+    /// extrapolated from wall time.
+    pub fn snapshot(&self, identity: Option<(MatchKey, usize)>) -> Option<Snapshot> {
         let (key, player) = identity?;
         let s = self.0.lock().ok()?;
-        let (snapshot, at) = s.as_ref()?;
-        if snapshot.key != key || snapshot.player != player {
-            return None;
-        }
-        let fresh = at.elapsed() <= Duration::from_millis(250);
-        if running && !fresh && snapshot.alive {
-            return None;
-        }
-        let mut result = snapshot.clone();
-        // Preserve identity/inventory if every actor has stopped calling think.
-        // Do not extrapolate a respawn timer from wall time or claim stale HP.
-        if running && !fresh {
-            result.respawn = 0;
-            result.hp = None;
-        }
-        Some(result)
+        let (snapshot, _) = s.as_ref()?;
+        (snapshot.key == key && snapshot.player == player).then(|| snapshot.clone())
+    }
+    /// `snapshot`, only while samples arrive (the AI-control state plate,
+    /// where a stale dead state must not stick).
+    pub fn fresh_snapshot(&self, identity: Option<(MatchKey, usize)>) -> Option<Snapshot> {
+        let at = self.0.lock().ok()?.as_ref()?.1;
+        (at.elapsed() <= Duration::from_millis(250))
+            .then(|| self.snapshot(identity))
+            .flatten()
     }
 }
 
@@ -398,8 +397,11 @@ fn grey(level: f32) -> String {
     let v = (level.clamp(0., 1.) * 255.).round() as u8;
     format!("{v:02x}{v:02x}{v:02x}ff")
 }
+/// A slot shows "--": not learned, or the champion's data says it has no
+/// effect. Death is not unavailability: its cooldowns keep showing, like
+/// League (the author, 2026-10-20: all "-" while dead).
 fn skill_unavailable(s: &Snapshot, skills: HudSkills, slot: usize) -> bool {
-    s.level < UNLOCK_LEVELS[slot] || !s.alive || skills.available[slot] == Some(false)
+    s.level < UNLOCK_LEVELS[slot] || skills.available[slot] == Some(false)
 }
 
 const CHARGE_MARKS: usize = 6;
@@ -1601,7 +1603,7 @@ impl HudUi {
         // Skill values computed from your current stats, like League; Ctrl
         // shows the game's own "base + percentage" wording.
         if skill && !crate::ui_state::DETAIL_KEY.load(Ordering::Relaxed) {
-            if let Some(own) = crate::stats_panel::snapshot(false).0 {
+            if let Some(own) = crate::stats_panel::snapshot().0 {
                 full = crate::tooltips::computed(&full, own.values[0], own.values[1]);
             }
         }
@@ -2233,7 +2235,8 @@ impl HudUi {
             let unavailable = skill_unavailable(s, skills, i);
             let ready = skills.ready[i].unwrap_or(s.cooldowns[i] == 0);
             let remaining = skills.wait[i].unwrap_or(s.cooldowns[i]);
-            let live = learned && !unavailable;
+            // Ready cues and sounds wait for the respawn.
+            let live = learned && !unavailable && s.alive;
             if self.track_readiness(i, live, ready, remaining, Instant::now()) {
                 crate::ui_sound::ready();
             }
@@ -2760,15 +2763,15 @@ mod tests {
         first.gold = 999;
         hud.observe_prepared(first.clone());
         hud.select_prepared(first.key, 8);
-        let s = hud.snapshot(Some((first.key, 8)), false).unwrap();
+        let s = hud.snapshot(Some((first.key, 8))).unwrap();
         assert_eq!(s.champion, "harpy");
         assert_eq!(s.gold, 999);
-        assert!(hud.snapshot(Some((first.key, 7)), false).is_none());
+        assert!(hud.snapshot(Some((first.key, 7))).is_none());
         hud.select_prepared((1, 2, 4), 8);
-        assert!(hud.snapshot(Some(((1, 2, 4), 8)), false).is_none());
+        assert!(hud.snapshot(Some(((1, 2, 4), 8))).is_none());
         hud.reset_session();
         hud.select_prepared(first.key, 8);
-        assert!(hud.snapshot(Some((first.key, 8)), false).is_none());
+        assert!(hud.snapshot(Some((first.key, 8))).is_none());
     }
     fn sample() -> Snapshot {
         Snapshot {
@@ -2794,22 +2797,22 @@ mod tests {
         let s = sample();
         assert!(hud.needs_sample(s.key, s.player, 6));
         hud.observe_tick(s.clone(), 6, &log);
-        assert!(hud.snapshot(Some((s.key, s.player)), false).is_some());
+        assert!(hud.snapshot(Some((s.key, s.player))).is_some());
         assert!(!hud.needs_sample(s.key, s.player, 6));
         hud.reset_session();
-        assert!(hud.snapshot(Some((s.key, s.player)), false).is_none());
+        assert!(hud.snapshot(Some((s.key, s.player))).is_none());
         assert!(hud.needs_sample(s.key, s.player, 6));
     }
     #[test]
-    fn snapshots_are_match_and_player_scoped_and_running_data_expires() {
+    fn snapshots_are_match_and_player_scoped_and_stay_frozen_when_samples_stop() {
         let hud = PlayerHud::default();
         hud.observe(sample());
-        assert!(hud.snapshot(Some(((1, 2, 3), 7)), true).is_some());
-        assert!(hud.snapshot(Some(((1, 2, 4), 7)), true).is_none());
-        assert!(hud.snapshot(Some(((1, 2, 3), 6)), true).is_none());
+        assert!(hud.snapshot(Some(((1, 2, 3), 7))).is_some());
+        assert!(hud.snapshot(Some(((1, 2, 4), 7))).is_none());
+        assert!(hud.snapshot(Some(((1, 2, 3), 6))).is_none());
         hud.0.lock().unwrap().as_mut().unwrap().1 = Instant::now() - Duration::from_secs(1);
-        assert!(hud.snapshot(Some(((1, 2, 3), 7)), true).is_none());
-        assert!(hud.snapshot(Some(((1, 2, 3), 7)), false).is_some()); // READY deliberately holds the worker.
+        // Samples stopped (nexus explosion, pause): the last values stay.
+        assert_eq!(hud.snapshot(Some(((1, 2, 3), 7))).unwrap().hp, sample().hp);
         assert!(hud.needs_sample((1, 2, 4), 7, 1));
         assert!(!hud.needs_sample((1, 2, 3), 7, 1));
     }
@@ -2822,7 +2825,6 @@ mod tests {
         let identity = Some((s.key, s.player));
         let art = hud.artwork(identity).unwrap();
         hud.0.lock().unwrap().as_mut().unwrap().1 = Instant::now() - Duration::from_secs(1);
-        assert!(hud.snapshot(identity, true).is_none());
         assert_eq!(hud.artwork(identity), Some(art));
         assert!(hud.artwork(None).is_none());
         assert!(hud.artwork(Some(((1, 2, 4), 7))).is_none());
@@ -2837,7 +2839,7 @@ mod tests {
         s.items.push("registered_item".into());
         hud.observe(s.clone());
         assert_eq!(hud.artwork(identity).unwrap().items, s.items);
-        assert!(hud.snapshot(identity, true).is_some());
+        assert!(hud.snapshot(identity).is_some());
         hud.reset_session();
         assert!(hud.artwork(identity).is_none());
     }
@@ -2851,14 +2853,14 @@ mod tests {
         dead.hp = None;
         dead.respawn = 180;
         hud.observe(dead.clone());
-        let s = hud.snapshot(Some(((1, 2, 3), 7)), true).unwrap();
+        let s = hud.snapshot(Some(((1, 2, 3), 7))).unwrap();
         assert_eq!(s.champion, "lancer");
         assert_eq!(s.hp, None);
         assert!(!s.alive);
         dead.key = (1, 2, 4);
         hud.observe(dead);
         assert!(hud
-            .snapshot(Some(((1, 2, 4), 7)), true)
+            .snapshot(Some(((1, 2, 4), 7)))
             .unwrap()
             .champion
             .is_empty());
@@ -2874,22 +2876,18 @@ mod tests {
         dead.respawn = 600;
         dead.items.push("registered_item".into());
         hud.observe(dead);
-        assert_eq!(
-            hud.snapshot(Some(((1, 2, 3), 7)), true).unwrap().respawn,
-            600
-        );
+        assert_eq!(hud.snapshot(Some(((1, 2, 3), 7))).unwrap().respawn, 600);
         hud.0.lock().unwrap().as_mut().unwrap().1 = Instant::now() - Duration::from_secs(1);
-        let retained = hud.snapshot(Some(((1, 2, 3), 7)), true).unwrap();
+        // Samples stopped: the actual timer stays frozen; no guessed
+        // wall-clock countdown.
+        let retained = hud.snapshot(Some(((1, 2, 3), 7))).unwrap();
         assert_eq!(retained.champion, "lancer");
         assert_eq!(retained.items.len(), 2);
-        assert_eq!(retained.respawn, 0); // No guessed wall-clock countdown.
+        assert_eq!(retained.respawn, 600);
         assert!(retained.hp.is_none());
-        assert_eq!(
-            hud.snapshot(Some(((1, 2, 3), 7)), false).unwrap().respawn,
-            600
-        ); // Pause keeps the actual timer.
+        assert!(hud.fresh_snapshot(Some(((1, 2, 3), 7))).is_none());
         hud.observe(sample());
-        assert!(hud.snapshot(Some(((1, 2, 3), 7)), true).unwrap().alive);
+        assert!(hud.snapshot(Some(((1, 2, 3), 7))).unwrap().alive);
     }
     #[test]
     fn shared_actor_sampling_deduplicates_ticks_and_native_item_tags_require_evidence() {
@@ -3079,7 +3077,11 @@ mod tests {
         s.level = 5;
         skills.available[1] = Some(false);
         assert!(skill_unavailable(&s, skills, 1)); // Learned does not imply native effect availability.
+                                                   // Death keeps the cooldowns showing, like League (the author, 2026-10-20).
         s.alive = false;
-        assert!((0..3).all(|i| skill_unavailable(&s, skills, i)));
+        assert_eq!(
+            std::array::from_fn::<_, 3, _>(|i| skill_unavailable(&s, skills, i)),
+            [false, true, false]
+        );
     }
 }

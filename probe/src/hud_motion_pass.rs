@@ -415,19 +415,22 @@ pub fn b5_next_item(p: &mut Pass, source: Option<&str>) -> f32 {
     }
 }
 
-/// B6 Death and respawn, template nodes: dark veils over the strip and
-/// over each skill slot, under the tooltip and feedback line.
+/// B6 Death and respawn, template nodes: a dark veil over each skill slot,
+/// over its icon but under its cooldown number, key and lock (z 1004, the
+/// slot's shade). Like League, death darkens only the skills, not the
+/// strip, items or panels (the author, 2026-10-20, with League screenshots;
+/// a whole-strip veil before 1.4.9).
 pub fn b6_nodes(skill_x: usize, step: usize, skill_y: usize) -> String {
-    let mut s = node("b6_veil_strip", (0, 90, 1560, 56), "00000000", 1050);
-    for i in 0..3 {
-        s.push_str(&node(
-            &format!("b6_veil_skill{i}"),
-            (skill_x + i * step, skill_y as isize, 80, 80),
-            "00000000",
-            1050,
-        ));
-    }
-    s
+    (0..3)
+        .map(|i| {
+            node(
+                &format!("b6_veil_skill{i}"),
+                (skill_x + i * step, skill_y as isize, 80, 80),
+                "00000000",
+                1004,
+            )
+        })
+        .collect()
 }
 /// B6's veils darken and lift over this long; the skill slots lift this far apart.
 const B6_DIM: f32 = 0.4;
@@ -441,10 +444,10 @@ fn b6_dim(dead: bool, age: Option<f32>, delay: f32) -> f32 {
         (false, None) => 0.,
     }
 }
-/// B6 Death and respawn: the strip dims over 400 ms tonal (a 50 % black
-/// veil, which multiplies the skills' 75 % cooling brightness instead of
-/// replacing it). On respawn it lifts back over 400 ms, the skill slots
-/// 60 ms apart, left to right. The state plate's fade is S1.
+/// B6 Death and respawn: the skill slots dim over 400 ms tonal (a 50 %
+/// black veil, which multiplies the skills' 75 % cooling brightness instead
+/// of replacing it). On respawn they lift back over 400 ms, 60 ms apart,
+/// left to right. The state plate's fade is S1.
 pub fn b6_death_dim(p: &mut Pass, alive: Option<bool>, playing: bool) -> Writes {
     let shown = p.on && playing && alive.is_some();
     let dead = alive == Some(false);
@@ -468,11 +471,9 @@ pub fn b6_death_dim(p: &mut Pass, alive: Option<bool>, playing: bool) -> Writes 
             (128. * a).round() as u8
         )
     };
-    let mut writes = vec![("b6_veil_strip".into(), veil(0.))];
-    for i in 0..3 {
-        writes.push((format!("b6_veil_skill{i}"), veil(i as f32 * B6_STEP)));
-    }
-    writes
+    (0..3)
+        .map(|i| (format!("b6_veil_skill{i}"), veil(i as f32 * B6_STEP)))
+        .collect()
 }
 
 /// B8 Swap stagger, template node: a hairline on the swap button's
@@ -922,6 +923,20 @@ mod tests {
         for (_, source) in b6_death_dim(&mut p, Some(false), true) {
             assert!(source.starts_with("visible: false"), "{source}");
         }
+    }
+    #[test]
+    fn death_darkens_only_the_skill_slots_under_their_cooldown_numbers() {
+        let nodes = b6_nodes(10, 90, 5);
+        assert_eq!(nodes.matches("b6_veil_skill").count(), 3);
+        assert!(!nodes.contains("strip"));
+        // Under the slot's cooldown number, key and lock (z 1005 and up).
+        assert_eq!(nodes.matches("z: 1004;").count(), 3, "{nodes}");
+        let mut p = Pass::default();
+        p.set_on(true);
+        b6_death_dim(&mut p, Some(true), true);
+        let writes = b6_death_dim(&mut p, Some(false), true);
+        assert_eq!(writes.len(), 3);
+        assert!(writes.iter().all(|(id, _)| id.starts_with("b6_veil_skill")));
     }
     #[test]
     fn turning_on_late_replays_nothing() {

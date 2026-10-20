@@ -341,7 +341,6 @@ impl Client {
             &self.logger,
         );
         let running = self.timing.client_running();
-        let sampling = self.timing.client_sampling();
         let gameplay_active =
             running && session_action.is_none() && !ui_state::SETTINGS_OPEN.load(Ordering::Relaxed);
         let controls = self.timing.client_controls(None);
@@ -350,7 +349,7 @@ impl Client {
             self.resolve_targeting(&mut keys, controls);
         }
         let identity = self.movement.hud_identity();
-        let snapshot = self.hud.snapshot(identity, sampling);
+        let snapshot = self.hud.snapshot(identity);
         let artwork = snapshot
             .is_none()
             .then(|| self.hud.artwork(identity))
@@ -363,7 +362,6 @@ impl Client {
             battlefield,
             controls,
             running,
-            sampling,
             dt_micros,
             snapshot,
             artwork,
@@ -595,8 +593,6 @@ struct Frame {
     battlefield: bool,
     controls: bool,
     running: bool,
-    /// Running with current samples (NativeTiming::client_sampling).
-    sampling: bool,
     dt_micros: u64,
     snapshot: Option<player_hud::Snapshot>,
     artwork: Option<player_hud::Artwork>,
@@ -798,7 +794,6 @@ impl Client {
             battlefield,
             controls,
             running,
-            sampling,
             dt_micros,
             ref snapshot,
             ref artwork,
@@ -850,12 +845,12 @@ impl Client {
             );
             hud_motion_pass::write(ctx, &mut observations.hud_ui.cache, player_hud::PATH, a2);
             // The state plate under the game's clock (paused, dead, AI). The
-            // worker keeps sampling in AI control, but the frame's snapshot
-            // skips the freshness check outside Running; the plate applies it
-            // in AI control so a stale dead state or count cannot stick.
+            // worker keeps sampling in AI control, and the frame's snapshot
+            // keeps the last values when samples stop; the plate checks
+            // freshness in AI control so a stale dead state cannot stick.
             let phase = self.timing.phase();
             let plate_snapshot = if phase == Some(native_timing::Phase::Ai) {
-                self.hud.snapshot(self.movement.hud_identity(), true)
+                self.hud.fresh_snapshot(self.movement.hud_identity())
             } else {
                 snapshot.clone()
             };
@@ -867,7 +862,6 @@ impl Client {
                 ctx,
                 battlefield,
                 controls,
-                sampling,
                 keys.stats_panel && keys.focused && !keys.emote_capture,
                 &self.logger,
             ));
@@ -879,7 +873,7 @@ impl Client {
                 } = &mut *observations;
                 let team_active = controls && keys.focused && team_open;
                 let roster = if team_active {
-                    self.team.snapshot(self.timing.match_key(), sampling)
+                    self.team.snapshot(self.timing.match_key())
                 } else {
                     Vec::new()
                 };
@@ -995,7 +989,7 @@ impl Client {
             );
             drop(t);
             let _t = perf::time(perf::Section::Audit);
-            let last_player = self.hud.snapshot(self.movement.hud_identity(), false);
+            let last_player = self.hud.snapshot(self.movement.hud_identity());
             let own_athletes = self
                 .movement
                 .own_players()

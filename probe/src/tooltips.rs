@@ -110,23 +110,33 @@ fn rich_markup(text: &str, icons: bool) -> String {
 /// armour, speeds: whose they are is not always clear) and anything
 /// unreadable stay as the game wrote them.
 pub fn computed(text: &str, attack: f64, magic: f64) -> String {
+    // A stat icon and its percentage run at the start of `text`: the icon,
+    // the run's colour, the bytes they take and the value.
+    fn stat_term(text: &str, attack: f64, magic: f64) -> Option<(&str, &str, usize, f64)> {
+        if !text.starts_with("<i#asset/") {
+            return None;
+        }
+        let icon_len = text.find('>')? + 1;
+        let icon = &text[..icon_len];
+        let stat = if icon.ends_with(":ad_0>") {
+            attack
+        } else if icon.ends_with(":ap_0>") {
+            magic
+        } else {
+            return None;
+        };
+        let (run_len, percent) = percent_run(&text[icon_len..])?;
+        let color = color_of(&text[icon_len..])?;
+        Some((icon, color, icon_len + run_len, percent / 100. * stat))
+    }
+    let term = |text| stat_term(text, attack, magic);
     let mut out = String::new();
     let mut rest = text;
     while let Some(start) = rest.find("<i#asset/") {
         let Some(icon_len) = rest[start..].find('>').map(|n| n + 1) else {
             break;
         };
-        let icon = &rest[start..start + icon_len];
-        let stat = if icon.ends_with(":ad_0>") {
-            Some(attack)
-        } else if icon.ends_with(":ap_0>") {
-            Some(magic)
-        } else {
-            None
-        };
-        let formula = stat.and_then(|stat| {
-            let (run_len, percent) = percent_run(&rest[start + icon_len..])?;
-            let color = color_of(&rest[start + icon_len..])?;
+        let formula = term(&rest[start..]).and_then(|(icon, color, len, value)| {
             // With a base ("60 + …") the base goes into the total; a pure
             // ratio ("200% …") is the percentage of the stat alone.
             // A plus sign with an unreadable base leaves the text alone.
@@ -135,13 +145,28 @@ pub fn computed(text: &str, attack: f64, magic: f64) -> String {
             } else {
                 (start, 0.)
             };
-            let total = base + percent / 100. * stat;
-            Some((from, start + icon_len + run_len, color, total))
+            // Further "+ [stat] N%" terms join the same total (the author,
+            // 2026-10-20: "90 + 100% AD + 100% AP" left its AP part as
+            // written), one number behind all their icons, like League.
+            let (mut icons, mut to, mut total) = (icon.to_owned(), start + len, base + value);
+            while let Some(next) = rest[to..]
+                .trim_start()
+                .strip_prefix('+')
+                .map(str::trim_start)
+                .and_then(|after| Some((rest.len() - after.len(), term(after)?)))
+            {
+                let (at, (icon, _, len, value)) = next;
+                if !icons.contains(icon) {
+                    icons.push_str(icon);
+                }
+                (to, total) = (at + len, total + value);
+            }
+            Some((from, to, icons, color, total))
         });
         match formula {
-            Some((from, to, color, total)) => {
+            Some((from, to, icons, color, total)) => {
                 out.push_str(&rest[..from]);
-                out.push_str(&format!("{icon}<{color}>{}<>", total.round() as i64));
+                out.push_str(&format!("{icons}<{color}>{}<>", total.round() as i64));
                 rest = &rest[to..];
             }
             None => {
@@ -590,6 +615,19 @@ mod tests {
         assert_eq!(
             computed(&two, 100., 100.),
             format!("{ad}<#ff9028ff>60<> then {ap}<#a974ffff>30<>")
+        );
+        // Two stats in one total (the author, 2026-10-20: the Workshop
+        // champion "tale" R, Traditional Chinese): 90 + 100 % AD + 100 % AP.
+        let tale = format!("造成<#ff9028ff>90<> + {ad}<#ff9028ff>100% AD<> + {ap}<#a974ffff>100%魔法攻擊<>的<#ff9028ff>物理傷害<>");
+        assert_eq!(
+            computed(&tale, 280., 150.),
+            format!("造成{ad}{ap}<#ff9028ff>520<>的<#ff9028ff>物理傷害<>")
+        );
+        // A pure ratio chain; an unreadable later term ends the total there.
+        let chain = format!("{ap}<#a974ffff>50%<> + {ad}<#ff9028ff>20%<> + {hp}<#ef5350ff>5%<>");
+        assert_eq!(
+            computed(&chain, 100., 100.),
+            format!("{ap}{ad}<#a974ffff>70<> + {hp}<#ef5350ff>5%<>")
         );
     }
     #[test]

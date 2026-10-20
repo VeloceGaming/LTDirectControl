@@ -158,3 +158,48 @@ to matter in play; 2 unchanged until the rest has landed.
    can be invisible to them.
 4. Whether `queue_effect` by name can ever be mapped to a shape without the
    mod's DLL (none found on disk; guess: no).
+
+## 6. Measurement prototype results (2026-10-20)
+
+Build 1.5.0-dev1 (`probe/src/skill_measure.rs`, log only) tried source 3a
+in a broadened form, approved by the author on 2026-10-20. The author played
+on game 0.6.4 and let background match days run; they noticed no slowdown
+(**Seen in game**; the performance capture was off, so no number).
+
+**How it measured** (**Read from the code**): in the match on screen and the
+background pre-simulations, a cooldown that jumps up marks a cast. For 2 s
+it recorded the caster's projectiles from the interface's projectile list
+and every enemy whose health dropped or who gained a crowd-control effect,
+first time only.
+
+**Results** (**Read from the data**: `research/skill-measure.json` in the
+mod's folder, 155 skills, about 1.28 million casts, nearly all from the
+background pre-simulations):
+
+- **Projectile speed: consistent for 41 skills** (90th percentile within
+  10 % of the median). Where a file declares it, it agrees: Crossbowman Q
+  and W declare range 150 and speed 6.0 per tick; measured 146 / 147 and
+  5.9 / 6.0.
+- **Projectile range: consistent for 13 skills only.** A ranged champion's
+  auto-attacks are projectiles too and the interface's projectile entry has
+  no id or kind, so many "ranges" are auto-attack distances (Alchemist Q,
+  which declares no projectile, measured 69 against its attack range 70).
+- **Width and area from hits: failed.** Across skills the median hit lay
+  about 300 units from the caster and hits spread about 500 units (half the
+  map). Counting every enemy on the map that lost health in the window
+  picked up towers, minions and other fights; the numbers say nothing about
+  a skill's shape. **Rejected** in this form.
+- **No projectile at all for 25 skills** (Demon, Exorcist, Ghost, Hammerer,
+  Inquisitor, Siege Breaker, Squirrel, Vampire, Dokkaebi W): melee and area
+  skills, which this method cannot see.
+- Speed estimates are the farthest point's distance over its flight time,
+  so slow-starting or returning projectiles read low; a few ranges were
+  implausible outliers (Crossbowman Q's maximum 1762).
+
+**Conclusion:** measuring play can confirm a projectile's speed and, where
+auto-attacks do not interfere, its reach; it cannot supply the widths and
+area sizes the preview mostly draws. The author chose on 2026-10-20 to
+build source 1 (read the champion files) next and set the measurement
+aside. A refined measurement (ignore auto-attack projectiles, count a hit
+only where a projectile passed near the enemy) stays possible later, only
+for custom projectiles no file describes.

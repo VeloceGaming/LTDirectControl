@@ -172,36 +172,7 @@ impl Simulation {
             // selection, attacks and skill aiming (user, 2026-10-18).
             let skill_units = if collect_units {
                 let _profile = perf::work(perf::Work::Units);
-                let vision = crate::camera::shown_vision();
-                (0..sim.entity_count())
-                    .filter_map(|index| {
-                        let unit = sim.entity_at(index)?;
-                        (unit.is_alive()
-                            && unit.is_targetable()
-                            && vision.shows(side, unit.team(), |s| sim.is_visible(s, unit.id())))
-                        .then(|| {
-                            let name = unit.name();
-                            combat::Unit {
-                                id: unit.id(),
-                                position: unit.pos(),
-                                radius: unit.radius() as u64,
-                                is_champion: unit.is_champion(),
-                                is_minion: unit.is_minion(),
-                                friendly: unit.team() == side,
-                                in_cc: (0..unit.cc_count().min(64))
-                                    .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
-                                is_tower: unit.is_tower() || name.as_deref() == Some("nexus"),
-                                body: sprite_picking::entity_body(
-                                    name.as_deref(),
-                                    unit.is_champion(),
-                                    unit.is_minion(),
-                                    unit.is_tower(),
-                                    unit.radius() as u64,
-                                ),
-                            }
-                        })
-                    })
-                    .collect::<Vec<_>>()
+                visible_units(&sim, side)
             } else {
                 Vec::new()
             };
@@ -437,6 +408,41 @@ impl Simulation {
 /// counts as ready, so an attack is never a tick late if the game counts the
 /// cooldown down after this decision; if it does not, that one input is
 /// ignored and changes nothing. An unreadable cooldown never withholds one.
+/// Every living, targetable unit the strip's vision choice shows to `side`
+/// (user, 2026-10-18: all of it is playable: hover, selection, attacks and
+/// skill aiming).
+fn visible_units(sim: &StableSim<'_>, side: usize) -> Vec<combat::Unit> {
+    let vision = crate::camera::shown_vision();
+    (0..sim.entity_count())
+        .filter_map(|index| {
+            let unit = sim.entity_at(index)?;
+            (unit.is_alive()
+                && unit.is_targetable()
+                && vision.shows(side, unit.team(), |s| sim.is_visible(s, unit.id())))
+            .then(|| {
+                let name = unit.name();
+                combat::Unit {
+                    id: unit.id(),
+                    position: unit.pos(),
+                    radius: unit.radius() as u64,
+                    is_champion: unit.is_champion(),
+                    is_minion: unit.is_minion(),
+                    friendly: unit.team() == side,
+                    in_cc: (0..unit.cc_count().min(64))
+                        .any(|i| unit.cc_at(i).is_some_and(|cc| cc.kind < 10)),
+                    is_tower: unit.is_tower() || name.as_deref() == Some("nexus"),
+                    body: sprite_picking::entity_body(
+                        name.as_deref(),
+                        unit.is_champion(),
+                        unit.is_minion(),
+                        unit.is_tower(),
+                        unit.radius() as u64,
+                    ),
+                }
+            })
+        })
+        .collect()
+}
 fn attack_ready(cooldown: Option<usize>) -> bool {
     cooldown.is_none_or(|ticks| ticks <= 1)
 }
@@ -609,7 +615,6 @@ impl Simulation {
                         cs: p.cs(),
                         items: p.item_keys(),
                         build: self.hud.build(sim, p.id()),
-                        fresh: true,
                     })
                 })
                 .collect();
@@ -756,12 +761,18 @@ impl Simulation {
                     if !player.is_alive() {
                         self.movement.observe_position(None);
                         self.abilities.observe_actor(key, None, None, cooldowns);
+                        // Its own think is off while dead: a left-click
+                        // still selects a unit for the stats frame.
+                        if self.timing.allows_input(key) {
+                            let units = visible_units(sim, player.team());
+                            self.movement.observe_dead_units(key, hud_player, &units);
+                        }
                     }
                     crate::worker_watch::enter(
                         crate::worker_watch::Step::StatsPanel,
                         call.player_id,
                     );
-                    crate::stats_panel::sample(sim, champion.as_ref(), &self.logger);
+                    crate::stats_panel::sample(sim, champion.as_ref(), player.team(), &self.logger);
                     crate::worker_watch::enter(crate::worker_watch::Step::Hud, call.player_id);
                     self.hud.observe_tick(
                         player_hud::Snapshot {

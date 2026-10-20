@@ -23,7 +23,6 @@ pub struct Player {
     pub cs: usize,
     pub items: Vec<String>,
     pub build: Option<Vec<String>>,
-    pub fresh: bool,
 }
 #[derive(Default)]
 struct State {
@@ -80,29 +79,17 @@ impl TeamStatus {
         s.players = players;
         s.at = Some(Instant::now());
     }
-    pub fn snapshot(&self, key: Option<MatchKey>, running: bool) -> Vec<Player> {
+    /// This match's last sample. When every actor stops calling think (the
+    /// nexus explosion) the last values stay frozen, as in a pause (the
+    /// author, 2026-10-20, option a); timers never run on wall time.
+    pub fn snapshot(&self, key: Option<MatchKey>) -> Vec<Player> {
         let Ok(s) = self.0.lock() else {
             return Vec::new();
         };
         if key.is_none() || s.key != key {
             return Vec::new();
         }
-        let mut players = s.players.clone();
-        if running
-            && s.at
-                .is_none_or(|at| at.elapsed() > Duration::from_millis(250))
-        {
-            // All actors may stop calling think. Preserve dead identities but
-            // hide stale countdowns; do not advance native timers by wall time.
-            for p in &mut players {
-                if p.alive != Some(false) {
-                    p.alive = None;
-                }
-                p.respawn = 0;
-                p.fresh = false;
-            }
-        }
-        players
+        s.players.clone()
     }
 }
 
@@ -390,20 +377,11 @@ impl TeamUi {
                     log,
                 );
                 self.text(ctx, &format!("{path}.portrait.timer"), caption(p));
-                let number = |n: usize| if p.fresh { n.to_string() } else { "—".into() };
-                self.text(ctx, &format!("{path}.level"), number(p.level));
-                self.text(ctx, &format!("{path}.cs"), number(p.cs));
-                self.text(ctx, &format!("{path}.gold"), number(p.gold));
+                self.text(ctx, &format!("{path}.level"), p.level.to_string());
+                self.text(ctx, &format!("{path}.cs"), p.cs.to_string());
+                self.text(ctx, &format!("{path}.gold"), p.gold.to_string());
                 let (k, d, a) = p.kda;
-                self.text(
-                    ctx,
-                    &format!("{path}.kda"),
-                    if p.fresh {
-                        kda_caption(k, d, a)
-                    } else {
-                        "—/—/—".into()
-                    },
-                );
+                self.text(ctx, &format!("{path}.kda"), kda_caption(k, d, a));
                 self.props(ctx, &format!("{path}.gold"), format!("x: {gold_x}px;"), log);
                 let capacity =
                     crate::inventory::slots(p.build.as_ref().map(Vec::len), p.items.len(), None);
@@ -470,7 +448,6 @@ mod tests {
             cs: 0,
             items: Vec::new(),
             build: None,
-            fresh: true,
         }
     }
     #[test]
@@ -501,21 +478,14 @@ mod tests {
         first.build = Some(vec!["target".into(); 5]);
         team.observe(key, vec![first], &log);
         team.observe(key, vec![player(0, 0, true, 0)], &log);
-        assert_eq!(
-            team.snapshot(Some(key), false)[0]
-                .build
-                .as_ref()
-                .unwrap()
-                .len(),
-            5
-        );
+        assert_eq!(team.snapshot(Some(key))[0].build.as_ref().unwrap().len(), 5);
         let next = (2, 34, 2);
         assert!(team.needs_sample(next, 1));
         team.observe(next, vec![player(0, 0, true, 0)], &log);
-        assert!(team.snapshot(Some(next), false)[0].build.is_none());
+        assert!(team.snapshot(Some(next))[0].build.is_none());
     }
     #[test]
-    fn dead_identity_survives_absent_entity_and_native_timer_freezes_on_pause() {
+    fn dead_identity_survives_absent_entity_and_values_freeze_when_samples_stop() {
         let team = TeamStatus::default();
         let key = (1, 33, 1);
         let log = crate::test_support::logger("team-death");
@@ -525,12 +495,12 @@ mod tests {
         dead.champion.clear();
         team.observe(key, vec![dead], &log);
         team.0.lock().unwrap().at = Some(Instant::now() - Duration::from_secs(2));
-        let paused = team.snapshot(Some(key), false);
-        assert_eq!(paused[0].champion, "harpy");
-        assert_eq!(caption(&paused[0]), "3");
-        assert_eq!(caption(&team.snapshot(Some(key), true)[0]), "—");
+        // Samples stopped (pause, nexus explosion): the last values stay.
+        let frozen = team.snapshot(Some(key));
+        assert_eq!(frozen[0].champion, "harpy");
+        assert_eq!(caption(&frozen[0]), "3");
         team.observe(key, vec![player(1, 2, true, 0)], &log);
-        assert_eq!(caption(&team.snapshot(Some(key), true)[0]), "");
+        assert_eq!(caption(&team.snapshot(Some(key))[0]), "");
     }
     #[test]
     fn sides_lanes_and_new_session_do_not_reuse_old_identity_or_sampling() {
@@ -546,14 +516,14 @@ mod tests {
         assert!(!team.needs_sample(key, 6));
         assert_eq!(slot(&players, 0, 0).unwrap().id, 0);
         assert_eq!(slot(&players, 1, 0).unwrap().id, 5);
-        assert!(team.snapshot(Some((2, 33, 2)), false).is_empty());
+        assert!(team.snapshot(Some((2, 33, 2))).is_empty());
         team.reset_session();
-        assert!(team.snapshot(Some(key), false).is_empty());
+        assert!(team.snapshot(Some(key)).is_empty());
         assert!(team.needs_sample(key, 1));
         let mut new = player(0, 0, false, 60);
         new.champion.clear();
         team.observe(key, vec![new], &log);
-        assert!(team.snapshot(Some(key), false)[0].champion.is_empty());
+        assert!(team.snapshot(Some(key))[0].champion.is_empty());
         let mut ambiguous = players.clone();
         ambiguous.push(player(0, 0, true, 0));
         assert!(slot(&ambiguous, 0, 0).is_none());
