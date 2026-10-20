@@ -70,7 +70,38 @@ struct CastRequest {
     champion_only: bool,
     self_cast: bool,
     bound: Option<InputTargetV1>,
+    /// Where a unit-target binding came from ("cursor", "nearby",
+    /// "uncontrolled", "none", or "held" when found during the
+    /// `CONTROLLED_HOLD`).
+    target_from: Option<&'static str>,
+    /// Logged the start of a `CONTROLLED_HOLD` once.
+    holding: bool,
     waiting: bool,
+    /// The champion's native action when the key was pressed (None without
+    /// a fresh sample), for the CAST TIMING line.
+    press_action: Option<usize>,
+}
+/// One line per skill press at the normal log level (the author, 2026-10-19:
+/// buffering "feels not as easy" as League; this shows where presses wait):
+/// the slot, the champion's native action at the press (2 walking, above 2
+/// attacking or casting), the outcome, how long it waited, and whether it
+/// was held while the champion was busy.
+fn cast_timing(request: &CastRequest, outcome: &str, reason: &str) -> String {
+    format!(
+        "CAST TIMING {} outcome={outcome}{}{}{} press_action={} wait_ms={} held_busy={} trace_id={}",
+        NAMES[request.slot],
+        if reason.is_empty() { "" } else { " reason=" },
+        reason,
+        request
+            .target_from
+            .map_or_else(String::new, |from| format!(" target={from}")),
+        request
+            .press_action
+            .map_or_else(|| "?".to_owned(), |a| a.to_string()),
+        request.at.elapsed().as_millis(),
+        request.waiting,
+        request.stamp.id
+    )
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Charges {
@@ -180,8 +211,15 @@ impl State {
         self.release_slot = None;
         self.wait_state = None;
     }
+    /// The champion's native action now, from a fresh sample.
+    fn native_action(&self) -> Option<usize> {
+        self.native
+            .filter(|(_, _, at)| at.elapsed() <= FRESH)
+            .map(|(action, _, _)| action)
+    }
     fn cancel_logged(&mut self, reason: &str, log: &Logger) {
         if let Some(request) = self.pending.or(self.dispatched) {
+            log.write(&cast_timing(&request, "cancelled", reason));
             log.write(&format!(
                 "ABILITY CANCEL {} reason={reason} trace_id={} age_ms={} waiting={} bound={:?}",
                 NAMES[request.slot],
@@ -194,6 +232,29 @@ impl State {
         self.cancel();
     }
     fn bind_cursor(&self, slot: usize, champion_only: bool) -> Option<InputTargetV1> {
+        self.bind_cursor_from(slot, champion_only).map(|(t, _)| t)
+    }
+    /// A press's binding and its source for the CAST TIMING line; self-casts
+    /// bind nothing.
+    fn press_binding(
+        &self,
+        slot: usize,
+        champion_only: bool,
+        self_cast: bool,
+    ) -> (Option<InputTargetV1>, Option<&'static str>) {
+        if self_cast {
+            return (None, None);
+        }
+        self.bind_cursor_from(slot, champion_only)
+            .map_or((None, None), |(t, from)| (Some(t), Some(from)))
+    }
+    /// The unit-target binding and where it came from: "cursor" (under it),
+    /// "nearby" (within `combat::SKILL_NEARBY_RADIUS`) or "none".
+    fn bind_cursor_from(
+        &self,
+        slot: usize,
+        champion_only: bool,
+    ) -> Option<(InputTargetV1, &'static str)> {
         let d = self
             .metadata
             .as_ref()
@@ -206,18 +267,57 @@ impl State {
             .units
             .as_ref()
             .filter(|(_, at)| at.elapsed() <= FRESH)?;
-        let aim = self.aim?;
-        let actor = self.actor?;
-        let picked = crate::combat::clicked_units(aim.frame, aim.cursor, units, champion_only)
+        let (picked, from) = unit_at_cursor(self.aim?, units, self.actor?, d.target, champion_only);
+        // Misses cannot turn into hits when another unit crosses the cursor.
+        Some((InputTargetV1::target(picked), from))
+    }
+}
+/// How long a unit-target press that needs a crowd-controlled target waits
+/// for one near the cursor (the author, 2026-10-20: Nullifier's W after R's
+/// 0.3 s stun "never comes off"; League-style buffering, option A).
+const CONTROLLED_HOLD: Duration = Duration::from_millis(500);
+/// Skill target kinds that require the target to be under crowd control.
+fn needs_control(kind: u32) -> bool {
+    matches!(kind, 2 | 8)
+}
+/// The eligible unit under the cursor, else the nearest one within
+/// `combat::SKILL_NEARBY_RADIUS`, with its source: "cursor", "nearby",
+/// "uncontrolled" (only a unit that would qualify if it were under crowd
+/// control) or "none"; `usize::MAX` when nothing qualifies.
+fn unit_at_cursor(
+    aim: Aim,
+    units: &[Unit],
+    actor: usize,
+    kind: u32,
+    champion_only: bool,
+) -> (usize, &'static str) {
+    let find = |kind: u32| {
+        crate::combat::clicked_units(aim.frame, aim.cursor, units, champion_only)
             .into_iter()
             .find(|id| {
                 units
                     .iter()
-                    .any(|u| u.id == *id && eligible(d.target, actor, u))
-            });
-        // Misses cannot turn into hits when another unit crosses the cursor.
-        Some(InputTargetV1::target(picked.unwrap_or(usize::MAX)))
-    }
+                    .any(|u| u.id == *id && eligible(kind, actor, u))
+            })
+            .map(|id| (id, "cursor"))
+            .or_else(|| {
+                crate::combat::nearby_unit(aim.frame, aim.cursor, units, champion_only, |u| {
+                    eligible(kind, actor, u)
+                })
+                .map(|id| (id, "nearby"))
+            })
+    };
+    find(kind).unwrap_or_else(|| {
+        let uncontrolled = match kind {
+            2 => find(1).is_some(),
+            8 => find(7).is_some(),
+            _ => false,
+        };
+        (
+            usize::MAX,
+            if uncontrolled { "uncontrolled" } else { "none" },
+        )
+    })
 }
 fn eligible(kind: u32, actor: usize, u: &Unit) -> bool {
     match kind {
@@ -478,8 +578,17 @@ impl Abilities {
         let ability_pressed = edges.into_iter().any(|edge| edge);
         // Physical polling cannot order two edges inside the same frame. A new
         // skill wins this tie; a later click still cancels the retained skill.
+        // A later right-click cancels aiming and walking into range for a
+        // skill, but not a skill already pressed that waits for the
+        // champion's current action or for the game's answer: it fires when
+        // the champion is free and the move carries on (the author,
+        // 2026-10-19; 1.4.1 logs showed about 10 skills in two matches
+        // cancelled by a right-click 6-50 ms after the key).
         if right_click && !ability_pressed {
-            s.cancel_logged("later-right-click", log);
+            let approaching = s.wait_state.is_some_and(|(_, _, approaching)| approaching);
+            if (s.pending.is_none() && s.dispatched.is_none()) || approaching {
+                s.cancel_logged("later-right-click", log);
+            }
             return action;
         }
         for (slot, edge) in edges.into_iter().enumerate() {
@@ -530,6 +639,12 @@ impl Abilities {
                 s.cancel_logged("newer-skill", log);
                 action.disarm_attack_move = true;
                 action.new_cast = true;
+                let self_cast = if keys.mapped {
+                    keys.self_casts[slot]
+                } else {
+                    keys.alt
+                };
+                let (bound, target_from) = s.press_binding(slot, keys.champion_only, self_cast);
                 // One pending cast; simultaneous polled edges use R > W > Q.
                 s.pending = Some(CastRequest {
                     stamp: crate::input_trace::Stamp::new(NAMES[slot]),
@@ -539,17 +654,12 @@ impl Abilities {
                     normal_cast: false,
                     generation: s.generation,
                     champion_only: keys.champion_only,
-                    self_cast: if keys.mapped {
-                        keys.self_casts[slot]
-                    } else {
-                        keys.alt
-                    },
+                    self_cast,
                     waiting: false,
-                    bound: if (keys.mapped && keys.self_casts[slot]) || (!keys.mapped && keys.alt) {
-                        None
-                    } else {
-                        s.bind_cursor(slot, keys.champion_only)
-                    },
+                    press_action: s.native_action(),
+                    bound,
+                    target_from,
+                    holding: false,
                 });
                 log.write(&format!(
                     "ABILITY PRESS {} cursor={:?}",
@@ -560,6 +670,7 @@ impl Abilities {
         if let Some(slot) = s.release_slot.filter(|slot| released[*slot]) {
             s.release_slot = None;
             s.generation = s.generation.wrapping_add(1);
+            let (bound, target_from) = s.press_binding(slot, keys.champion_only, false);
             s.pending = Some(CastRequest {
                 stamp: crate::input_trace::Stamp::new(NAMES[slot]),
                 slot,
@@ -570,7 +681,10 @@ impl Abilities {
                 champion_only: keys.champion_only,
                 self_cast: false,
                 waiting: false,
-                bound: s.bind_cursor(slot, keys.champion_only),
+                press_action: s.native_action(),
+                bound,
+                target_from,
+                holding: false,
             });
             action.new_cast = true;
             log.write(&format!(
@@ -582,6 +696,12 @@ impl Abilities {
             if let Some(slot) = s.preview {
                 s.release_slot = None;
                 s.generation = s.generation.wrapping_add(1);
+                let self_cast = if keys.mapped {
+                    keys.self_casts[slot]
+                } else {
+                    keys.alt
+                };
+                let (bound, target_from) = s.press_binding(slot, keys.champion_only, self_cast);
                 s.pending = Some(CastRequest {
                     stamp: crate::input_trace::Stamp::new(NAMES[slot]),
                     slot,
@@ -590,17 +710,12 @@ impl Abilities {
                     normal_cast: true,
                     generation: s.generation,
                     champion_only: keys.champion_only,
-                    self_cast: if keys.mapped {
-                        keys.self_casts[slot]
-                    } else {
-                        keys.alt
-                    },
+                    self_cast,
                     waiting: false,
-                    bound: if (keys.mapped && keys.self_casts[slot]) || (!keys.mapped && keys.alt) {
-                        None
-                    } else {
-                        s.bind_cursor(slot, keys.champion_only)
-                    },
+                    press_action: s.native_action(),
+                    bound,
+                    target_from,
+                    holding: false,
                 });
                 action.left_reserved = true;
                 action.new_cast = true;
@@ -769,7 +884,7 @@ impl Abilities {
         mut valid: impl FnMut(&InputV1) -> bool,
         log: &Logger,
     ) -> Option<InputV1> {
-        let (mut request, desc, level, cooldown, native) = {
+        let (mut request, desc, level, cooldown, native, live_aim) = {
             let mut s = self.0.lock().ok()?;
             let request = s.pending.take()?;
             if !s.active
@@ -788,6 +903,7 @@ impl Abilities {
                 } else {
                     "client-heartbeat-stale"
                 };
+                log.write(&cast_timing(&request, "dropped", reason));
                 log.write(&format!(
                     "ABILITY DROP {} trace_id={} reason={reason} age_ms={} waiting={} bound={:?}",
                     NAMES[request.slot],
@@ -810,8 +926,44 @@ impl Abilities {
                 s.level,
                 s.cooldowns[request.slot],
                 s.native.filter(|(_, _, at)| at.elapsed() <= FRESH),
+                s.aim,
             )
         };
+        // A press that needs a crowd-controlled target and found none waits
+        // up to `CONTROLLED_HOLD` for one near the live cursor (e.g. a stun
+        // still in flight), sending nothing meanwhile; then it is denied.
+        if let Some(d) = desc.filter(|d| d.casting == 0 && needs_control(d.target)) {
+            if matches!(request.target_from, Some("none" | "uncontrolled")) {
+                let found = live_aim
+                    .map(|aim| unit_at_cursor(aim, units, actor, d.target, request.champion_only))
+                    .filter(|(id, _)| *id != usize::MAX);
+                if let Some((id, _)) = found {
+                    request.bound = Some(InputTargetV1::target(id));
+                    request.target_from = Some("held");
+                    log.write(&format!(
+                        "ABILITY HOLD {} trace_id={} found target={id} after_ms={}",
+                        NAMES[request.slot],
+                        request.stamp.id,
+                        request.at.elapsed().as_millis()
+                    ));
+                } else if request.at.elapsed() < CONTROLLED_HOLD {
+                    let mut s = self.0.lock().ok()?;
+                    if s.generation == request.generation && s.pending.is_none() {
+                        if !request.holding {
+                            request.holding = true;
+                            log.write(&format!(
+                                "ABILITY HOLD {} trace_id={} waiting for a controlled target ({})",
+                                NAMES[request.slot],
+                                request.stamp.id,
+                                request.target_from.unwrap_or("none")
+                            ));
+                        }
+                        s.pending = Some(request);
+                    }
+                    return None;
+                }
+            }
+        }
         let mut approaching = None;
         let busy = native.is_some_and(|(action, _, _)| action > 2);
         let charged = native
@@ -901,7 +1053,12 @@ impl Abilities {
                 && target.target_id != actor
                 && !units.iter().any(|u| u.id == target.target_id)
             {
-                reason = "bound-target-disappeared";
+                // usize::MAX is a press that found no target, not a lost one.
+                reason = if target.target_id == usize::MAX {
+                    "no-target"
+                } else {
+                    "bound-target-disappeared"
+                };
                 return None;
             }
             let input = make(target);
@@ -1004,6 +1161,7 @@ impl Abilities {
                 s.message = Some((message, Instant::now()));
                 if result.is_none() {
                     s.denied_at[request.slot] = Some(Instant::now());
+                    log.write(&cast_timing(&request, "denied", reason));
                 }
             }
             if result.is_some() {
@@ -1073,6 +1231,7 @@ impl Abilities {
         }
         s.dispatched = None;
         if spent {
+            log.write(&cast_timing(&request, "cast", ""));
             log.write(&format!(
                 "ABILITY EXECUTED {} native cooldown spent; action={action} trace_id={} capture_age_us={}",
                 NAMES[slot], request.stamp.id, request.stamp.at.elapsed().as_micros()
@@ -1090,6 +1249,11 @@ impl Abilities {
             s.message = Some((
                 crate::lang::trf("{key} could not start", &[("key", &NAMES[slot])]),
                 Instant::now(),
+            ));
+            log.write(&cast_timing(
+                &request,
+                "refused",
+                "native-consumer-did-not-spend-cooldown",
             ));
             log.write(&format!(
                 "ABILITY REJECTED {} trace_id={} reason=native-consumer-did-not-spend-cooldown action={action} age_ms={} waiting={} bound={:?}",
@@ -1312,6 +1476,51 @@ pub(crate) fn draw_segment(
 mod tests {
     use super::*;
     #[test]
+    fn each_press_outcome_is_one_normal_level_timing_line() {
+        let request = CastRequest {
+            slot: 1,
+            aim: None,
+            at: Instant::now() - Duration::from_millis(120),
+            stamp: crate::input_trace::Stamp::new("W"),
+            normal_cast: false,
+            generation: 0,
+            champion_only: false,
+            self_cast: false,
+            bound: None,
+            target_from: None,
+            holding: false,
+            waiting: true,
+            press_action: Some(3),
+        };
+        let line = cast_timing(&request, "cast", "");
+        assert!(line.starts_with("CAST TIMING W outcome=cast press_action=3 wait_ms=12"));
+        assert!(line.contains("held_busy=true"));
+        let nearby = cast_timing(
+            &CastRequest {
+                target_from: Some("nearby"),
+                ..request
+            },
+            "cast",
+            "",
+        );
+        assert!(nearby.starts_with("CAST TIMING W outcome=cast target=nearby press_action=3"));
+        let refused = cast_timing(
+            &CastRequest {
+                press_action: None,
+                ..request
+            },
+            "refused",
+            "native-consumer-did-not-spend-cooldown",
+        );
+        assert!(refused.contains(
+            "outcome=refused reason=native-consumer-did-not-spend-cooldown press_action=?"
+        ));
+        assert_eq!(
+            crate::logging::level_of(&line),
+            crate::logging::Level::Normal
+        );
+    }
+    #[test]
     fn normal_cast_cursor_uses_ally_eligibility_and_preserves_out_of_range_targets() {
         use crate::cursor::SkillCursor;
         let (a, c, log) = setup(0, 1);
@@ -1371,7 +1580,7 @@ mod tests {
         assert!(take(&a, &[], |_| true, &log).is_some());
     }
     #[test]
-    fn simultaneous_click_skill_keeps_one_cast_but_a_later_click_cancels() {
+    fn simultaneous_click_skill_keeps_one_cast_and_a_later_click_keeps_it() {
         let (a, c, log) = setup(2, 5);
         let press = Keys {
             right: true,
@@ -1397,7 +1606,26 @@ mod tests {
             &c,
             &log,
         );
-        budget(&a, 0);
+        // A right-click after the key no longer cancels the pressed skill
+        // (1.4.2): it still casts.
+        assert!(take(&a, &[], |_| true, &log).is_some());
+    }
+    #[test]
+    fn a_right_click_still_cancels_aiming_a_normal_cast() {
+        let (a, c, log) = setup(1, 6);
+        a.update(keys(true, true), true, &c, &log);
+        assert!(a.status().is_some()); // Aiming Q.
+        a.update(keys(false, false), true, &c, &log);
+        a.update(
+            Keys {
+                right: true,
+                ..keys(false, false)
+            },
+            true,
+            &c,
+            &log,
+        );
+        assert!(a.status().is_none());
         assert!(take(&a, &[], |_| true, &log).is_none());
     }
     #[test]
@@ -1538,6 +1766,40 @@ mod tests {
         a.observe_units((1, 33, 1), 7, &[]);
         a.update(keys(true, false), true, &c, &log);
         assert!(take(&a, &[u], |_| true, &log).is_none());
+    }
+    #[test]
+    fn a_press_needing_a_controlled_target_waits_briefly_for_one() {
+        let (a, c, log) = setup(0, 8);
+        let free = enemy(29, (300_000, 200_000));
+        a.observe_units((1, 33, 1), 7, &[free]);
+        a.update(keys(true, false), true, &c, &log);
+        let pending = |a: &Abilities| a.0.lock().unwrap().pending.map(|r| r.target_from);
+        assert_eq!(pending(&a), Some(Some("uncontrolled")));
+        // Not stunned yet: nothing is sent and the press keeps waiting.
+        assert!(take(&a, &[free], |_| true, &log).is_none());
+        assert_eq!(pending(&a), Some(Some("uncontrolled")));
+        let stunned = Unit {
+            in_cc: true,
+            ..free
+        };
+        assert_eq!(
+            take(&a, &[stunned], |_| true, &log)
+                .unwrap()
+                .target
+                .target_id,
+            29
+        );
+        // After the hold the press is denied as before.
+        a.update(keys(false, false), true, &c, &log);
+        a.update(keys(true, false), true, &c, &log);
+        a.0.lock().unwrap().pending.as_mut().unwrap().at = Instant::now() - CONTROLLED_HOLD;
+        assert!(take(&a, &[free], |_| true, &log).is_none());
+        assert_eq!(pending(&a), None);
+        // Skills without a crowd-control rule are not held.
+        let (plain, c, log) = setup(0, 7);
+        plain.update(keys(true, false), true, &c, &log);
+        assert!(take(&plain, &[], |_| true, &log).is_none());
+        assert_eq!(pending(&plain), None);
     }
     fn enemy(id: usize, position: (u64, u64)) -> Unit {
         Unit {
@@ -1976,7 +2238,7 @@ mod tests {
         a.take_input((1, 33, 1), 7, (200_000, 200_000), units, valid, log)
     }
     #[test]
-    fn diagnostics_identify_later_click_expiry_and_target_miss() {
+    fn diagnostics_identify_expiry_and_target_miss() {
         let (a, c, _) = setup(1, 5);
         let log = logger("cast-diagnostics-36");
         budget(&a, 3);
@@ -2003,7 +2265,6 @@ mod tests {
             .join("target/test-cast-diagnostics-36.log");
         let lines = std::fs::read_to_string(path).unwrap();
         for reason in [
-            "reason=later-right-click",
             "reason=buffer-expired",
             "reason=cursor-missed-eligible-target",
         ] {
@@ -2422,7 +2683,7 @@ mod tests {
         assert!(Descriptor::from_fields(1, 6, u64::MAX, 5_000, 3, 0).is_none());
     }
     #[test]
-    fn held_right_button_does_not_block_new_casts_but_new_click_and_stop_cancel_pending() {
+    fn held_right_button_does_not_block_new_casts_and_stop_cancels_pending_but_a_click_does_not() {
         let (a, c, log) = setup(1, 6);
         a.update(
             Keys {
@@ -2453,10 +2714,6 @@ mod tests {
                 ..keys(false, false)
             },
             Keys {
-                right: true,
-                ..keys(false, false)
-            },
-            Keys {
                 release: true,
                 ..keys(false, false)
             },
@@ -2466,6 +2723,19 @@ mod tests {
             a.update(cancellation, true, &c, &log);
             assert!(take(&a, &[], |_| true, &log).is_none());
         }
+        // A new right-click keeps the pressed skill (1.4.2).
+        a.update(keys(false, false), true, &c, &log);
+        a.update(keys(true, false), true, &c, &log);
+        a.update(
+            Keys {
+                right: true,
+                ..keys(false, false)
+            },
+            true,
+            &c,
+            &log,
+        );
+        assert!(take(&a, &[], |_| true, &log).is_some());
     }
     #[test]
     fn all_slots_preview_only_and_normal_cast_once_with_snapshot_aim_at_zoom() {

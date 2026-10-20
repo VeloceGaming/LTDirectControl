@@ -11,6 +11,10 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 const LANES: [&str; 5] = ["top", "jungle", "mid", "bottom", "support"];
 pub(crate) const ATTACK_CLICK_DURATION: Duration = Duration::from_millis(120);
+/// While right-click is held after a move (or Shift + right-click
+/// attack-move), the order is re-issued to the cursor this often, like
+/// League (the author, 2026-10-19).
+pub(crate) const HOLD_REPEAT: Duration = Duration::from_millis(100);
 #[derive(Clone, Copy)]
 pub struct CosmeticAnchor {
     pub key: MatchKey,
@@ -58,6 +62,9 @@ struct State {
     marker: Option<(u64, u64)>,
     champion_position: Option<(u64, u64)>,
     previous_right: bool,
+    /// Right-click held after a ground order: (attack-move, last issued).
+    /// None after an attack on a clicked unit, which holding never repeats.
+    right_hold: Option<(bool, Instant)>,
     previous_stop: bool,
     previous_recall: bool,
     pending_recall: Option<Instant>,
@@ -127,6 +134,59 @@ fn kept_team(
     }
 }
 impl State {
+    /// A repeat while right-click is held: the same ground order to the
+    /// cursor, routed like a click, with the click marker following the
+    /// cursor (League), but no log line or input-delay sample.
+    fn repeat_order(&mut self, target: (u64, u64), attack_move: bool, minimap: bool) {
+        let (order, route) = if attack_move {
+            (Order::AttackMove(target), Vec::new())
+        } else {
+            match (&self.navigation, self.champion_position) {
+                (Some(grid), Some(start)) => {
+                    // No traversable route: keep the order already given.
+                    let Some(route) = grid.route(start, target) else {
+                        return;
+                    };
+                    let end = route.last().copied().unwrap_or(target);
+                    (Order::Move(end), route)
+                }
+                _ => (Order::Move(target), Vec::new()),
+            }
+        };
+        let end = match order {
+            Order::Move(p) | Order::AttackMove(p) => p,
+            _ => target,
+        };
+        self.carry = None;
+        self.target = Some(order);
+        self.route = route.into();
+        self.marker = Some(end);
+        self.manual_release = (!attack_move).then(Instant::now);
+        self.attack_click = None;
+        self.cancel_recall = true;
+        self.clicks.clear();
+        self.clicks.push_back(ClickFeedback {
+            position: end,
+            attack: attack_move,
+            minimap,
+            at: Instant::now(),
+        });
+    }
+    /// A held drag that reaches an enemy attacks it (the author, 2026-10-19,
+    /// option b: leaving it walks again); the same enemy is not re-ordered.
+    fn repeat_attack(&mut self, id: usize) {
+        if self.target == Some(Order::Attack(id)) {
+            return;
+        }
+        self.carry = None;
+        self.route.clear();
+        self.target = Some(Order::Attack(id));
+        self.marker = None;
+        self.manual_release = None;
+        self.attack_click = Some((id, Instant::now()));
+        self.cancel_recall = true;
+        self.clicks.clear();
+    }
     /// Next point of the walk a direct attack order was laid over, if any.
     fn onward(&mut self, position: (u64, u64)) -> Option<(u64, u64)> {
         let goal = match self.carry? {
@@ -1162,6 +1222,10 @@ impl Movement {
         let focus_returned = keys.focused && !s.mouse_focused;
         let right_down = keys.right || keys.attack_click;
         let click = right_down && !s.previous_right && !focus_returned;
+        let held = right_down && s.previous_right && !focus_returned;
+        if !held {
+            s.right_hold = None;
+        }
         let stop = keys.stop && !s.previous_stop && !focus_returned;
         let left_click = keys.left && !s.previous_left && !focus_returned && !left_reserved;
         let arm = keys.attack_move && !s.previous_attack_move && !focus_returned;
@@ -1172,6 +1236,9 @@ impl Movement {
         s.previous_left = keys.left;
         s.previous_attack_move = keys.attack_move;
         s.previous_recall = keys.recall;
+        if !active || !keys.focused || keys.emote_capture || stop || keys.escape || recall {
+            s.right_hold = None;
+        }
         if !active {
             s.clicks.clear();
             s.target = None;
@@ -1245,6 +1312,46 @@ impl Movement {
             }
             let attack_click = s.attack_move_armed && left_click;
             let attack_move = attack_click || (click && keys.attack_click);
+            // Holding right-click repeats a ground order to the cursor; it
+            // never turns into an attack on a unit the cursor passes over.
+            let repeat = !click
+                && !attack_move
+                && s.right_hold
+                    .is_some_and(|(_, at)| at.elapsed() >= HOLD_REPEAT);
+            if repeat {
+                let (held_attack_move, _) = s.right_hold.expect("checked above");
+                s.right_hold = Some((held_attack_move, Instant::now()));
+                let frame = camera.frame();
+                let minimap_target =
+                    frame.and_then(|f| keys.cursor.and_then(|p| f.unproject_minimap(p)));
+                let target = minimap_target.or_else(|| {
+                    keys.cursor
+                        .filter(|p| !camera.command_blocked(*p))
+                        .and_then(|p| frame.and_then(|f| f.unproject(p)))
+                });
+                // An enemy under the cursor of a held move is attacked, as a
+                // click on it would be; attack-move picks its own targets.
+                let hit = (!held_attack_move && minimap_target.is_none() && target.is_some())
+                    .then(|| {
+                        s.units_updated
+                            .filter(|t| t.elapsed() <= Duration::from_millis(250))
+                            .and_then(|_| {
+                                crate::combat::clicked_unit(
+                                    frame?,
+                                    keys.cursor?,
+                                    &s.units,
+                                    keys.champion_only,
+                                )
+                            })
+                    })
+                    .flatten();
+                if let Some(id) = hit {
+                    s.repeat_attack(id);
+                } else if let Some(target) = target {
+                    s.repeat_order(target, held_attack_move, minimap_target.is_some());
+                }
+                return;
+            }
             if !click && !attack_move {
                 return;
             }
@@ -1345,6 +1452,11 @@ impl Movement {
                 }
                 s.cancel_recall = true;
                 s.attack_move_armed = false;
+                s.right_hold = match order {
+                    Order::Move(_) if click => Some((false, Instant::now())),
+                    Order::AttackMove(_) if click => Some((true, Instant::now())),
+                    _ => None,
+                };
                 s.manual_release = matches!(s.target, Some(Order::Move(_))).then(Instant::now);
                 s.marker = s.target.map(|order| match order {
                     Order::Move(p) => p,
@@ -1556,6 +1668,85 @@ mod tests {
         m.update_mouse(click, true, &camera, &log);
         assert!(m.take_command_stamp().is_none());
         assert!(stamp > 0);
+    }
+    #[test]
+    fn holding_right_click_follows_the_cursor_and_attacks_an_enemy_under_it() {
+        let m = movement();
+        let log = logger("hold-rmb");
+        start(&m, &log, 0);
+        let camera = recall_camera();
+        m.update_mouse(keys(0, 0), true, &camera, &log);
+        let enemy = Unit {
+            id: 29,
+            friendly: false,
+            ..hover_ally()
+        };
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![enemy],
+            Some(120_000),
+            Default::default(),
+        );
+        let at = |p: (f32, f32), right: bool| Keys {
+            right,
+            cursor: Some(p),
+            ..keys(0, 0)
+        };
+        let target = || m.state.lock().unwrap().target;
+        let age_hold = || {
+            let mut s = m.state.lock().unwrap();
+            s.right_hold = s.right_hold.map(|(a, t)| (a, t - HOLD_REPEAT));
+        };
+        // A press on the ground moves; holding within 0.1 s changes nothing.
+        m.update_mouse(at((1240., 617.), true), true, &camera, &log);
+        let first = target();
+        assert!(matches!(first, Some(Order::Move(_))));
+        let _ = m.take_command_stamp();
+        m.update_mouse(at((1300., 700.), true), true, &camera, &log);
+        assert_eq!(target(), first);
+        // After 0.1 s the move follows the cursor, and so does the click
+        // marker; no new input-delay sample.
+        let marker = m.click_feedback()[0].position;
+        age_hold();
+        m.update_mouse(at((1300., 700.), true), true, &camera, &log);
+        assert!(matches!(target(), Some(Order::Move(_))) && target() != first);
+        assert!(m.take_command_stamp().is_none());
+        let feedback = m.click_feedback();
+        assert_eq!(feedback.len(), 1);
+        assert_ne!(feedback[0].position, marker);
+        // Reaching the enemy while held attacks it; leaving it walks again
+        // (option b).
+        age_hold();
+        m.update_mouse(at((1160., 537.), true), true, &camera, &log);
+        assert_eq!(target(), Some(Order::Attack(29)));
+        assert!(m.click_feedback().is_empty());
+        age_hold();
+        m.update_mouse(at((1300., 700.), true), true, &camera, &log);
+        assert!(matches!(target(), Some(Order::Move(_))));
+        // Releasing ends the hold; a press on the enemy attacks, and holding
+        // and dragging off it keeps the attack.
+        m.update_mouse(at((1160., 537.), false), true, &camera, &log);
+        assert!(m.state.lock().unwrap().right_hold.is_none());
+        m.update_mouse(at((1160., 537.), true), true, &camera, &log);
+        assert_eq!(target(), Some(Order::Attack(29)));
+        assert!(m.state.lock().unwrap().right_hold.is_none());
+        m.update_mouse(at((1300., 700.), true), true, &camera, &log);
+        assert_eq!(target(), Some(Order::Attack(29)));
+        // Stop ends a hold too.
+        m.update_mouse(at((1240., 617.), false), true, &camera, &log);
+        m.update_mouse(at((1240., 617.), true), true, &camera, &log);
+        assert!(m.state.lock().unwrap().right_hold.is_some());
+        m.update_mouse(
+            Keys {
+                stop: true,
+                ..at((1240., 617.), true)
+            },
+            true,
+            &camera,
+            &log,
+        );
+        assert!(m.state.lock().unwrap().right_hold.is_none());
     }
     #[test]
     fn rapid_accepted_clicks_replace_marker_without_replacing_it_on_a_hud_miss() {

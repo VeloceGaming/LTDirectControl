@@ -12,4 +12,7 @@ pub static EMOTE_CAPTURE: AtomicBool = AtomicBool::new(false);
 /// The "HUD tooltip (hold)" key is down; a mouse button is down. Written by
 /// input polling, read by the HUD tooltip.
 pub static HUD_TOOLTIP_KEY: AtomicBool = AtomicBool::new(false);
+/// Ctrl is down: skill tooltips show the game's own "base + percentage"
+/// wording instead of values computed from your stats.
+pub static DETAIL_KEY: AtomicBool = AtomicBool::new(false);
 pub static POINTER_BUTTON: AtomicBool = AtomicBool::new(false);

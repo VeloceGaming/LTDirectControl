@@ -279,6 +279,7 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
     };
     crate::ui_state::HUD_TOOLTIP_KEY
         .store(pressed("hud_tooltip"), std::sync::atomic::Ordering::Relaxed);
+    crate::ui_state::DETAIL_KEY.store(raw.0[0x11], std::sync::atomic::Ordering::Relaxed);
     crate::ui_state::POINTER_BUTTON.store(
         raw.0[1] || raw.0[2] || raw.0[4],
         std::sync::atomic::Ordering::Relaxed,

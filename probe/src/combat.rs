@@ -292,6 +292,37 @@ pub fn picked(
     hits.sort_unstable();
     hits.into_iter().map(|h| h.6).collect()
 }
+/// Screen pixels past a unit's selection area within which a unit-target
+/// skill still finds it when the cursor is on no valid target (the author,
+/// 2026-10-20: League's quick cast takes the nearest valid target near the
+/// cursor instead of throwing the press away).
+pub const SKILL_NEARBY_RADIUS: f32 = 50.;
+/// The `allowed` unit whose selection area (with its edge forgiveness) is
+/// closest to the cursor, at most `SKILL_NEARBY_RADIUS` pixels away; ties go
+/// to the lower id. For use only after nothing allowed is under the cursor.
+pub fn nearby_unit(
+    frame: crate::camera::CameraFrame,
+    cursor: (f32, f32),
+    units: &[Unit],
+    champion_only: bool,
+    allowed: impl Fn(&Unit) -> bool,
+) -> Option<usize> {
+    if !frame.valid() || !frame.viewport.contains(cursor) || frame.minimap.contains(cursor) {
+        return None;
+    }
+    units
+        .iter()
+        .filter(|u| (!champion_only || u.is_champion) && allowed(u))
+        .filter_map(|u| {
+            let (x0, y0, x1, y1, margin) = screen_area(frame, u);
+            let dx = (x0 - margin - cursor.0).max(cursor.0 - x1 - margin).max(0.);
+            let dy = (y0 - margin - cursor.1).max(cursor.1 - y1 - margin).max(0.);
+            let d = dx.hypot(dy);
+            (d <= SKILL_NEARBY_RADIUS).then_some(((d * 100.) as u64, u.id))
+        })
+        .min()
+        .map(|(_, id)| id)
+}
 /// A unit's measured body in world units (x0, y0, x1, y1), placed with the
 /// game's own draw data, with click padding: champions are 3 units wider on
 /// each side, and every body reaches 2 units below the feet. None without
@@ -1005,6 +1036,50 @@ mod tests {
         assert_eq!(clicked_unit(f, edge, &[champion, nearby], false), Some(2));
         // The champion-only key still picks the champion.
         assert_eq!(clicked_unit(f, edge, &[champion, nearby], true), Some(9));
+    }
+    #[test]
+    fn skill_nearby_search_takes_the_closest_allowed_unit_within_the_radius() {
+        let f = frame(1024.);
+        let near = Unit {
+            id: 4,
+            position: (300_000, 200_000),
+            is_tower: false,
+            ..units()[1]
+        };
+        let far = Unit {
+            id: 5,
+            position: (300_000, 200_000),
+            ..near
+        };
+        let (x0, _, _, y1, margin) = screen_area(f, &near);
+        let beside = (x0 - margin - 20., y1);
+        assert!(clicked_unit(f, beside, &[near], false).is_none());
+        assert_eq!(nearby_unit(f, beside, &[near], false, |_| true), Some(4));
+        // Not allowed for the skill, or the champion-only key on a minion.
+        assert!(nearby_unit(f, beside, &[near], false, |_| false).is_none());
+        let minion = Unit {
+            is_champion: false,
+            ..near
+        };
+        assert!(nearby_unit(f, beside, &[minion], true, |_| true).is_none());
+        // Beyond the radius: nothing.
+        let away = (x0 - margin - SKILL_NEARBY_RADIUS - 5., y1);
+        assert!(nearby_unit(f, away, &[near], false, |_| true).is_none());
+        // Same distance: the lower id; otherwise the closer one.
+        assert_eq!(
+            nearby_unit(f, beside, &[far, near], false, |_| true),
+            Some(4)
+        );
+        let farther = Unit {
+            position: (310_000, 200_000),
+            ..far
+        };
+        assert_eq!(
+            nearby_unit(f, beside, &[farther, Unit { id: 6, ..near }], false, |_| {
+                true
+            }),
+            Some(6)
+        );
     }
     #[test]
     fn visible_body_can_be_picked_with_offscreen_feet_but_cursor_must_be_in_battlefield() {

@@ -98,6 +98,118 @@ fn rich_markup(text: &str, icons: bool) -> String {
     }
     result
 }
+/// Skill text with values computed from the champion's current stats, like
+/// League: "<#c>60<> + <i#…:ad_0><#c>80% Attack Damage<>" (base + percentage
+/// of attack damage; `ap_0` is ability power) becomes "<i#…:ad_0><#c>154<>",
+/// and a pure ratio "<i#…:ad_0><#c>攻擊力的200%<>" the percentage of the stat
+/// (seen in game 2026-10-20: Crossbowman Q has no base). Only that shape is
+/// changed: an attack- or ability-power icon, a colour run right after it
+/// holding one percentage (its words go too: in most languages the run is
+/// the stat phrase alone; in Russian it also names the damage type), and
+/// optionally a plain base number with a plus sign before the icon. Every other value, other stat icons (health,
+/// armour, speeds: whose they are is not always clear) and anything
+/// unreadable stay as the game wrote them.
+pub fn computed(text: &str, attack: f64, magic: f64) -> String {
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(start) = rest.find("<i#asset/") {
+        let Some(icon_len) = rest[start..].find('>').map(|n| n + 1) else {
+            break;
+        };
+        let icon = &rest[start..start + icon_len];
+        let stat = if icon.ends_with(":ad_0>") {
+            Some(attack)
+        } else if icon.ends_with(":ap_0>") {
+            Some(magic)
+        } else {
+            None
+        };
+        let formula = stat.and_then(|stat| {
+            let (run_len, percent) = percent_run(&rest[start + icon_len..])?;
+            let color = color_of(&rest[start + icon_len..])?;
+            // With a base ("60 + …") the base goes into the total; a pure
+            // ratio ("200% …") is the percentage of the stat alone.
+            // A plus sign with an unreadable base leaves the text alone.
+            let (from, base) = if rest[..start].trim_end().ends_with('+') {
+                base_before(&rest[..start])?
+            } else {
+                (start, 0.)
+            };
+            let total = base + percent / 100. * stat;
+            Some((from, start + icon_len + run_len, color, total))
+        });
+        match formula {
+            Some((from, to, color, total)) => {
+                out.push_str(&rest[..from]);
+                out.push_str(&format!("{icon}<{color}>{}<>", total.round() as i64));
+                rest = &rest[to..];
+            }
+            None => {
+                out.push_str(&rest[..start + icon_len]);
+                rest = &rest[start + icon_len..];
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+/// The `#rrggbbaa` of a colour tag at the start of `text`.
+fn color_of(text: &str) -> Option<&str> {
+    let tag = text.strip_prefix('<')?.get(..9)?;
+    (tag.starts_with('#')
+        && tag[1..].bytes().all(|c| c.is_ascii_hexdigit())
+        && text.as_bytes().get(10) == Some(&b'>'))
+    .then_some(tag)
+}
+/// Before an icon: "<#c>60<> + " or "60 + ". The byte where the base starts
+/// and its value.
+fn base_before(text: &str) -> Option<(usize, f64)> {
+    let before_plus = text.trim_end().strip_suffix('+')?.trim_end();
+    let (number_end, colored) = match before_plus.strip_suffix("<>") {
+        Some(inner) => (inner.len(), true),
+        None => (before_plus.len(), false),
+    };
+    let digits = before_plus[..number_end]
+        .bytes()
+        .rev()
+        .take_while(|c| c.is_ascii_digit() || *c == b'.')
+        .count();
+    let number_start = number_end - digits;
+    let base: f64 = before_plus[number_start..number_end].parse().ok()?;
+    if colored {
+        let tag_start = number_start.checked_sub(11)?;
+        color_of(&before_plus[tag_start..])?;
+        Some((tag_start, base))
+    } else {
+        Some((number_start, base))
+    }
+}
+/// After an icon: a colour run "<#c>…80%…<>" holding exactly one
+/// percentage and nothing unresolved. Its length and the percentage.
+fn percent_run(text: &str) -> Option<(usize, f64)> {
+    color_of(text)?;
+    let close = text.find("<>")?;
+    let inner = text.get(11..close)?;
+    if inner.contains(['{', '…', '<']) || inner.matches('%').count() != 1 {
+        return None;
+    }
+    // "80%", "80 %" (French, with any space) or "%80" (Turkish).
+    let at = inner.find('%')?;
+    let number = |s: &str| -> Option<f64> { s.parse().ok().filter(|_| !s.is_empty()) };
+    let before = inner[..at].trim_end();
+    let digits = before
+        .bytes()
+        .rev()
+        .take_while(|c| c.is_ascii_digit() || *c == b'.')
+        .count();
+    let after = &inner[at + 1..];
+    let lead = after
+        .bytes()
+        .take_while(|c| c.is_ascii_digit() || *c == b'.')
+        .count();
+    let percent = number(&before[before.len() - digits..]).or_else(|| number(&after[..lead]))?;
+    Some((close + 2, percent))
+}
 /// Only declared fields are substituted. Conflicting nested effects remain
 /// unknown; animation duration is never used as buff/CC duration.
 fn field(spec: &Value, names: &[&str]) -> Option<f64> {
@@ -429,6 +541,56 @@ mod tests {
         let w = skill_spec("ghost", 1, &changed).unwrap();
         assert_eq!(resolve_skill("{Attack}", "ghost", 0, Some(&q)), "9");
         assert_eq!(resolve_skill("{Time}", "ghost", 1, Some(&w)), "4");
+    }
+    #[test]
+    fn skill_values_are_computed_from_attack_or_ability_power_with_or_without_a_base() {
+        let ad = "<i#asset/base/ui/banpick/champion_stat_icon:ad_0>";
+        let ap = "<i#asset/base/ui/banpick/champion_stat_icon:ap_0>";
+        let hp = "<i#asset/base/ui/banpick/champion_stat_icon:hp_0>";
+        // English Archer Q with 117 attack damage: 60 + 80 % = 153.6.
+        let q = format!("dealing <#ff9028ff>60<> + {ad}<#ff9028ff>80% Attack Damage<> as <#ff9028ff>physical damage<>.");
+        assert_eq!(
+            computed(&q, 117., 200.),
+            format!("dealing {ad}<#ff9028ff>154<> as <#ff9028ff>physical damage<>.")
+        );
+        // Korean wording, ability power, a base outside a colour run.
+        let ko = format!("<#a974ffff>100<>+{ap}<#a974ffff>주문력의 60%<>만큼");
+        assert_eq!(
+            computed(&ko, 117., 200.),
+            format!("{ap}<#a974ffff>220<>만큼")
+        );
+        let bare = format!("100 + {ap}<#a974ffff>60% AP<>");
+        assert_eq!(computed(&bare, 0., 50.), format!("{ap}<#a974ffff>130<>"));
+        // French "80 %" and Turkish "%80".
+        let fr = format!("<#ff9028ff>60<> + {ad}<#ff9028ff>80 % des dégâts<>");
+        assert_eq!(computed(&fr, 100., 0.), format!("{ad}<#ff9028ff>140<>"));
+        let tr = format!("<#ff9028ff>60<> + {ad}<#ff9028ff>%80 saldırı<>");
+        assert_eq!(computed(&tr, 100., 0.), format!("{ad}<#ff9028ff>140<>"));
+        // A pure ratio (seen in game 2026-10-20, Crossbowman Q in Traditional
+        // Chinese, 85 attack damage): 200 % of 85.
+        let zh = format!("造成{ad}<#ff9028ff>攻擊力的200%<> <#ff9028ff>物理傷害<>。額外造成{ad}<#ff9028ff>攻擊力的60%<>傷害。");
+        assert_eq!(
+            computed(&zh, 85., 0.),
+            format!(
+                "造成{ad}<#ff9028ff>170<> <#ff9028ff>物理傷害<>。額外造成{ad}<#ff9028ff>51<>傷害。"
+            )
+        );
+        // Left as written: other stat icons, an unresolved base, two
+        // percentages in one run; several formulas each on its own.
+        for kept in [
+            format!("<#ef5350ff>60<> + {hp}<#ef5350ff>5% max HP<>"),
+            format!("<#ff9028ff>…<> + {ad}<#ff9028ff>80% AD<>"),
+            format!("<#ff9028ff>60<> + {ad}<#ff9028ff>80% AD, 20%<>"),
+        ] {
+            assert_eq!(computed(&kept, 117., 200.), kept);
+        }
+        let two = format!(
+            "<#ff9028ff>10<> + {ad}<#ff9028ff>50%<> then <#a974ffff>20<> + {ap}<#a974ffff>10%<>"
+        );
+        assert_eq!(
+            computed(&two, 100., 100.),
+            format!("{ad}<#ff9028ff>60<> then {ap}<#a974ffff>30<>")
+        );
     }
     #[test]
     fn coefficient_type_follows_native_inline_stat_marker_before_it_is_stripped() {

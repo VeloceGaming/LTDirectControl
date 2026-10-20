@@ -1597,7 +1597,14 @@ impl HudUi {
                 self.tooltip_text.insert(key.clone(), text);
             }
         }
-        let full = self.tooltip_text[&key].clone();
+        let mut full = self.tooltip_text[&key].clone();
+        // Skill values computed from your current stats, like League; Ctrl
+        // shows the game's own "base + percentage" wording.
+        if skill && !crate::ui_state::DETAIL_KEY.load(Ordering::Relaxed) {
+            if let Some(own) = crate::stats_panel::snapshot(false).0 {
+                full = crate::tooltips::computed(&full, own.values[0], own.values[1]);
+            }
+        }
         let (raw_title, body) = full.split_once('\n').unwrap_or((&full, ""));
         let body = body.trim();
         let title = if skill {
