@@ -65,10 +65,18 @@ pub struct Guards {
 }
 impl Guards {
     fn family(&self, rva: usize) -> u32 {
+        self.listed(rva).unwrap_or(family::ALL)
+    }
+    fn listed(&self, rva: usize) -> Option<u32> {
         self.families
             .iter()
             .find(|(_, guards)| guards.contains(&rva))
-            .map_or(family::ALL, |(family, _)| *family)
+            .map(|(family, _)| *family)
+    }
+    /// A pointer guard belongs to the live skill reader unless listed
+    /// (the skill method guards are listed with the combat family).
+    fn pointer_family(&self, rva: usize) -> u32 {
+        self.listed(rva).unwrap_or(family::READERS)
     }
     /// Call only after the exact disk hash and loaded PE identity have
     /// passed. Checks the guards of the `families` being installed; a guard
@@ -81,15 +89,31 @@ impl Guards {
             .all(|(rva, bytes)| {
                 std::slice::from_raw_parts((base + rva) as *const u8, bytes.len()) == *bytes
             })
-            && (families & family::READERS == 0
-                || self.pointers.iter().all(|(rva, target)| {
+            && self
+                .pointers
+                .iter()
+                .filter(|(rva, _)| families & self.pointer_family(*rva) != 0)
+                .all(|(rva, target)| {
                     std::ptr::read_unaligned((base + rva) as *const usize) == base + target
-                }))
+                })
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn pointer_guards_belong_to_the_live_reader_unless_listed() {
+        let guards = Guards {
+            bytes: &[],
+            pointers: &[(0x10, 0x20), (0x30, 0x40)],
+            families: &[(family::COMBAT, &[0x30])],
+        };
+        // The skill method guard goes with the combat hook, so a public
+        // build (no live reader) still checks it.
+        assert_eq!(guards.pointer_family(0x30), family::COMBAT);
+        assert_eq!(guards.pointer_family(0x10), family::READERS);
+        assert_eq!(guards.family(0x50), family::ALL);
+    }
     #[test]
     fn only_a_family_that_may_step_aside_is_dropped_when_another_mod_holds_it() {
         let enabled = family::ALL;

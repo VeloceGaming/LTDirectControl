@@ -56,7 +56,21 @@ addition (not to be copied).
    skill range, cast style and target type come live from the combat hook
    (`native_adapter/windows/combat.rs`), which stays, so ranges keep their
    patched values without the live reader; only a few radius or width
-   values would miss patches.
+   values would miss patches. **Superseded 2026-10-21:** patches may change
+   a size on 87 of 236 skill kinds, and players can edit sizes in the
+   database editor; step 5 became reading each skill's current numbers by
+   name from the game's own skill objects (no new hook), and the live
+   reader stays for research builds only (below).
+   **Step 4 done in stages (1.5.0-dev15 to dev18, the author 2026-10-21):**
+   the shipped `preview_table.json` holds each skill's shape with every size
+   as a game number by name, the live cast range or a fixed number; the mod
+   reads those numbers from the controlled athlete's skill objects, so
+   previews follow database edits and balance patches (seen in game: Hammerer
+   W after an edit to 150). Public builds leave out the live reader, its
+   per-version tables and the research logs (`--features research` keeps
+   them). Plan: `local/plans/skill-preview-step4.md` (not in git). Open: the
+   Hellion R and Mistguide R size picks; Workshop champions not in the table
+   use their file's numbers.
    **Noted by the author, 2026-10-21, for later design work:** (a) the dash
    preview (chevrons to the landing point) is hard to see during a fight
    and needs a new design; (b) a line skill's meaning is not shown: Harpy R

@@ -7,6 +7,10 @@ pub static SETTINGS_OPEN: AtomicBool = AtomicBool::new(false);
 /// The shop window is open: Esc belongs to the shop (it must not also cancel
 /// a recall).
 pub static SHOP_OPEN: AtomicBool = AtomicBool::new(false);
+/// A left-click that meant nothing else (empty ground, outside every window
+/// and the minimap, no attack-move or skill waiting for it) asks the open
+/// shop to close. Written by movement input, taken by the shop.
+pub static SHOP_CLOSE: AtomicBool = AtomicBool::new(false);
 /// Includes the closing edge and held cancel buttons, so they cannot leak.
 pub static EMOTE_CAPTURE: AtomicBool = AtomicBool::new(false);
 /// The "HUD tooltip (hold)" key is down; a mouse button is down. Written by

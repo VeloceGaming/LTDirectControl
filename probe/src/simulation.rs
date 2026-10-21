@@ -112,6 +112,7 @@ impl Simulation {
             let key = (sim.seed(), origin.match_id, origin.set_index);
             // Champion names by actor for the shape table: the combat hook
             // on this thread sees the actors but not their names.
+            #[cfg(feature = "research")]
             crate::shape_record::observe_roster(key, || {
                 (0..sim.player_count())
                     .filter_map(|i| {

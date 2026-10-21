@@ -179,13 +179,23 @@ the rest is open. The order that worked, and what to play for each:
 | Movement, Combat | Move, attack-move, stop, recall and cancel, attacks, attack cancel, Q/W/R, cast on release |
 | Shop | Open, queue, buy, gold, build, slot count; with an item mod installed |
 | Outline | Hover and target outlines on both teams |
-| Readers | Skill previews. One match per group of champions, then `python tools/audit_previews.py`: it lists every skill the reader did not understand, so not every champion needs playing |
+| Readers | Research builds only (`--features research`): the live skill reader that records shapes for the preview table. Public builds leave this family out, so a release does not need it. With Log detail set to Verbose, one match per group of champions, then `python tools/audit_previews.py`: it lists every skill the reader did not understand |
 | Tooltips | Ability numbers on a few champions, including a new one and a mod one |
 | Stats | "Athlete stat rules" On, then back to the main menu: the log says `STATRULE installed sites=33` (`unavailable` names the site that differs). With `"practice_mode": 1` in controls.json, cast a projectile skill and a circle skill at the pinned enemies: the readout names shape B and shape A. One normal match with the rules On |
 
 For skill shapes, a field's meaning is settled by what the game shows, not
 by its position: ask for a screenshot of the skill's real area before
 deciding which word is a width and which a length.
+
+The previews of every build read each skill's numbers by name through the
+skill objects' own methods (name at +0x18, get-by-name at +0x20, beside
+the cooldown at +0x90). Find Hammerer W's skill method table in the new
+executable (the one whose name method returns "hammerer_skill2" and whose
++0x90 reads `[rcx+0x30]`) and carry its three position guards and three
+code guards (`SKILL_*_SLOT`, `ENTITY_SKILL_*_CODE` in the profile;
+`LAYOUT_POINTERS`, `LAYOUT_BYTES` and the combat family's list in
+`identity.rs`), plus `SKILL_PATCH_NAME_SLOT` and `SKILL_PATCH_GET_SLOT` in
+`layout.rs`. The verifier checks them; they belong to the combat family.
 
 ## 6. Build and release
 
@@ -203,6 +213,11 @@ python tools/verify_build.py --version X --probe-tests N
 python tools/package_mod.py --version X
 .\tools\install_verified_build.ps1 -Version X -PreviousVersion Y
 ```
+
+A research build (`cargo build --release --features research`) goes
+through the same steps; the tools read the variant from the DLL and name
+its record and package `X-research` (install with `-Version X-research`).
+It is never for the Workshop.
 
 - `verify_build.py` checks every profile against its own executable: the
   installed game for its version, the kept copies for the others.

@@ -1594,12 +1594,17 @@ impl ShopUi {
             self.description = Description::default();
         }
         let modal = crate::ui_state::SETTINGS_OPEN.load(Ordering::Relaxed);
+        // A left-click on empty ground (movement input decides).
+        let click_outside = crate::ui_state::SHOP_CLOSE.swap(false, Ordering::Relaxed);
         if !active {
             self.open = false;
         } else if shop_edge && !modal {
             self.open = !self.open;
         } else if escape_edge && self.open {
             self.open = false;
+        } else if click_outside && self.open && !modal {
+            self.open = false;
+            log.write("SHOP UI closed by a left-click outside it");
         }
         let mut view = shop::SHOP.view();
         // The session owns this startup-only claim. Spectator start/Watch/AI

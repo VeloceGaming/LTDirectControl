@@ -512,6 +512,30 @@
     "VIEW_LAYOUT_PAUSE": {
       "rva": "0x93078b",
       "bytes": "807e4800"
+    },
+    "SKILL_PATCH_NAME_SLOT": {
+      "rva": "0x3ba3e20",
+      "pointer_target": "0x16bf540"
+    },
+    "SKILL_PATCH_GET_SLOT": {
+      "rva": "0x3ba3e28",
+      "pointer_target": "0x16bf360"
+    },
+    "SKILL_COOLDOWN_SLOT": {
+      "rva": "0x3ba3e98",
+      "pointer_target": "0x127ace0"
+    },
+    "ENTITY_SKILL_PATCH_NAME_CODE": {
+      "rva": "0x16bf540",
+      "bytes": "488d0585614e02ba0f000000c3"
+    },
+    "ENTITY_SKILL_PATCH_GET_CODE": {
+      "rva": "0x16bf360",
+      "bytes": "31c04983c0fa4983f8070f87c8000000"
+    },
+    "ENTITY_SKILL_COOLDOWN_CODE": {
+      "rva": "0x127ace0",
+      "bytes": "488b4130c3"
     }
   },
   "review_notes": "Explicit source-reference/caller/consumer review against exact preserved 0.6.2; instruction alignment is supporting evidence only. No automatic runtime signature matching.",

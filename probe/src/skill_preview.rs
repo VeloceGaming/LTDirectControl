@@ -133,7 +133,13 @@ impl Geometry {
     pub fn add_for(&mut self, shape: Shape, placement: Placement, allies: bool) {
         self.push(shape, placement, allies, false);
     }
-    fn push(&mut self, shape: Shape, placement: Placement, allies: bool, projectile: bool) {
+    pub(crate) fn push(
+        &mut self,
+        shape: Shape,
+        placement: Placement,
+        allies: bool,
+        projectile: bool,
+    ) {
         let footprint = Footprint {
             shape,
             placement,
@@ -231,24 +237,34 @@ fn attack_range() -> Option<f32> {
 /// The game's own data-defined base champions (`asset/base/setting/<id>`,
 /// `data_champion`; 8 on 0.6.4), read from the installed bundle so they
 /// follow game updates (the author, 2026-10-20, stage 2). Empty when the
-/// bundle cannot be read.
-fn bundle_champions() -> Vec<(String, Value)> {
+/// bundle cannot be read. The same pass hands the bundle's balance patch
+/// rules (`patch_setting`) to `patch_fields`.
+#[cfg_attr(not(feature = "research"), allow(unused_variables))]
+fn bundle_champions(log: &Logger) -> Vec<(String, Value)> {
     let Some(bundle) = crate::game_bundle::installed() else {
         return Vec::new();
     };
-    crate::game_bundle::files(&bundle, |extension, path| {
-        extension == "data_champion" && path.starts_with("asset/base/")
-    })
-    .into_iter()
-    .filter_map(|(_, bytes)| {
-        let value: Value = serde_json::from_slice(&bytes).ok()?;
-        Some((value.get("id")?.as_str()?.to_owned(), value))
-    })
-    .collect()
+    let mut champions = Vec::new();
+    for (path, bytes) in crate::game_bundle::files(&bundle, |extension, path| {
+        (extension == "data_champion"
+            || (cfg!(feature = "research") && extension == "patch_setting"))
+            && path.starts_with("asset/base/")
+    }) {
+        let Ok(value) = serde_json::from_slice::<Value>(&bytes) else {
+            continue;
+        };
+        if path.ends_with("/patch_setting") {
+            #[cfg(feature = "research")]
+            crate::patch_fields::set_rules(&value, log);
+        } else if let Some(id) = value.get("id").and_then(Value::as_str) {
+            champions.push((id.to_owned(), value));
+        }
+    }
+    champions
 }
 pub fn initialize(log: &Logger) {
     let mut shapes = HashMap::new();
-    let mut base = bundle_champions();
+    let mut base = bundle_champions(log);
     let source = if base.is_empty() {
         // The copy taken by `tools/read_preview_assets.py` at build time.
         let baked: Value = serde_json::from_str(include_str!("preview_assets.json"))
@@ -298,6 +314,10 @@ pub fn initialize(log: &Logger) {
         .count();
     log.write(&format!("PREVIEW declared_slots={count}; runtime effect geometry preferred; input and footprint independent"));
     let _ = SHAPES.set(shapes);
+    let (champions, skills) = crate::preview_table::counts();
+    log.write(&format!(
+        "PREVIEW TABLE champions={champions} skills={skills}; sizes from the game's numbers by name"
+    ));
     let _ = OVERRIDES.set(load_overrides(log));
 }
 /// The author's skill assignments (step 3 of the preview plan, 2026-10-21):
@@ -317,18 +337,26 @@ fn load_overrides(log: &Logger) -> HashMap<(String, usize), Geometry> {
         return HashMap::new();
     };
     let mut out = HashMap::new();
-    let mut refused = 0;
+    let (mut refused, mut shipped) = (0, 0);
     for (key, entry) in value
         .get("skills")
         .and_then(Value::as_object)
         .into_iter()
         .flatten()
     {
-        let parsed = key.rsplit_once(' ').and_then(|(champion, slot)| {
+        let skill = key.rsplit_once(' ').and_then(|(champion, slot)| {
             let slot = ["Q", "W", "R"].iter().position(|s| *s == slot)?;
-            Some(((champion.to_owned(), slot), assigned(entry)?))
+            Some((champion.to_owned(), slot))
         });
-        match parsed {
+        // The shipped table holds this assignment with sizes that follow
+        // the game's numbers: that copy is used (the author's own file).
+        if let Some((champion, slot)) = &skill {
+            if crate::preview_table::ships_assignment(champion, *slot, entry) {
+                shipped += 1;
+                continue;
+            }
+        }
+        match skill.and_then(|k| Some((k, assigned(entry)?))) {
             Some((k, g)) => {
                 out.insert(k, g);
             }
@@ -336,7 +364,7 @@ fn load_overrides(log: &Logger) -> HashMap<(String, usize), Geometry> {
         }
     }
     log.write(&format!(
-        "PREVIEW OVERRIDES skills={} refused={refused}",
+        "PREVIEW OVERRIDES skills={} refused={refused} shipped={shipped}",
         out.len()
     ));
     out
@@ -461,9 +489,18 @@ pub fn geometry(name: Option<&str>, slot: usize) -> Geometry {
 }
 /// Recognized runtime footprints are authoritative, even if sibling effects are
 /// unresolved. A file declaration can fill an opaque tree, not replace live dimensions.
+/// An assignment from the shipped table wins even when it draws nothing
+/// ("no preview", or a unit target without an area).
 pub fn resolve(native: Option<&Geometry>, declared: Geometry) -> Geometry {
     match native {
-        Some(g) if !g.footprints.is_empty() => g.clone(),
+        Some(g) if !g.footprints.is_empty() || g.hidden => g.clone(),
+        Some(g)
+            if g.families
+                .iter()
+                .any(|f| f == crate::preview_table::ASSIGNMENT) =>
+        {
+            g.clone()
+        }
         Some(g) if !declared.footprints.is_empty() => {
             let mut result = declared;
             for reason in &g.issues {
@@ -570,9 +607,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
                 .and_then(Value::as_array)
                 .filter(|s| s.len() <= 32)
             {
-                for child in list {
-                    collect(child, inherited, out, depth + 1);
-                }
+                collect_list(list, inherited, out, depth);
             } else {
                 out.issue("invalid Combine children");
             }
@@ -590,9 +625,7 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
                 .and_then(Value::as_array)
                 .filter(|s| s.len() <= 32)
             {
-                for child in list {
-                    collect(child, placement, out, depth + 1);
-                }
+                collect_list(list, placement, out, depth);
             } else {
                 out.issue(format!("unsupported {kind} wrapper"));
             }
@@ -783,6 +816,28 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
 const LOB_MARKER: f32 = 5.;
 /// A mover's or lob's `end_effects`, which happen where it lands: an area
 /// "around the caster" there is drawn at the aim.
+/// A list of effects. When it holds a move to the aimed point or onto the
+/// target unit, the other effects go with that move: a circle around the
+/// caster is around where the caster lands (the author, 2026-10-21:
+/// Invincible R slams where she lands, as League's Fizz E).
+fn collect_list(list: &[Value], inherited: Placement, out: &mut Geometry, depth: usize) {
+    let is_move = |v: &Value| {
+        matches!(
+            v.get("type").and_then(Value::as_str),
+            Some("MoveTo" | "MoveToTarget" | "Teleport")
+        )
+    };
+    let mover = list.iter().any(is_move);
+    for child in list {
+        if mover && !is_move(child) {
+            let mut beside = Geometry::default();
+            collect(child, inherited, &mut beside, depth + 1);
+            to_landing(beside, out);
+        } else {
+            collect(child, inherited, out, depth + 1);
+        }
+    }
+}
 fn landed(v: &Value, out: &mut Geometry, depth: usize) {
     let Some(list) = v
         .get("end_effects")
@@ -795,6 +850,11 @@ fn landed(v: &Value, out: &mut Geometry, depth: usize) {
     for child in list {
         collect(child, Placement::Aim, &mut at_landing, depth + 1);
     }
+    to_landing(at_landing, out);
+}
+/// `at_landing`'s footprints where the caster lands, with its issues and
+/// families.
+fn to_landing(at_landing: Geometry, out: &mut Geometry) {
     for f in at_landing.footprints {
         // Only a circle moves to the landing point; a line or cone keeps its
         // own placement rather than being drawn from a guessed origin.
@@ -2338,6 +2398,34 @@ mod tests {
         assert!(g.issues.is_empty());
     }
     #[test]
+    fn areas_beside_a_move_happen_where_the_caster_lands() {
+        // invincible R, trimmed: after a move onto the target, a delayed slam
+        // around the caster, so around where she lands.
+        let r = serde_json::json!({"ult": {"casting_type": "Targeting", "effect": {"type": "Combine", "effects": [
+            {"type": "Delayed", "tick": 33, "effects": [
+                {"type": "MoveToTarget", "speed": 2800, "range": 32000, "end_effects": []},
+                {"type": "Delayed", "tick": 12, "effects": [
+                    {"type": "RangeEffect", "shape": {"Circle": {"radius": 46000}},
+                     "target": "EnemyWithoutTower", "apply_type": "AroundCaster", "effects": []}]}]}]}}});
+        let g = skills(&r)[2].clone();
+        let found: Vec<_> = g
+            .footprints
+            .iter()
+            .map(|f| (f.shape, f.placement))
+            .collect();
+        assert_eq!(
+            found,
+            [
+                (Shape::Movement { blink: false }, Placement::Aim),
+                (Shape::Circle { radius: 46. }, Placement::Aim)
+            ]
+        );
+        // Without a move the slam stays around the caster.
+        let alone = serde_json::json!({"skill": {"effect": {"type": "Combine", "effects": [
+            {"type": "RangeEffect", "shape": {"Circle": {"radius": 46000}}, "apply_type": "AroundCaster"}]}}});
+        assert_eq!(skills(&alone)[0].footprints[0].placement, Placement::Caster);
+    }
+    #[test]
     fn workshop_effect_types_from_installed_champion_files_are_read() {
         // Trimmed from Workshop champion files on the author's PC, 2026-10-20.
         let one = |effect: serde_json::Value| {
@@ -2677,6 +2765,15 @@ mod tests {
         let fallback = resolve(Some(&unknown), file.clone());
         assert_eq!(fallback.footprints, file.footprints);
         assert_eq!(fallback.issues, ["runtime: foreign table"]);
+        // A shipped assignment that draws nothing still wins over the file.
+        let hidden = Geometry {
+            hidden: true,
+            ..Geometry::default()
+        };
+        assert!(resolve(Some(&hidden), file.clone()).hidden);
+        let mut bare = Geometry::default();
+        bare.family(crate::preview_table::ASSIGNMENT);
+        assert!(resolve(Some(&bare), file.clone()).footprints.is_empty());
     }
     #[test]
     fn forward_centers_and_cone_threshold_match_native_geometry() {

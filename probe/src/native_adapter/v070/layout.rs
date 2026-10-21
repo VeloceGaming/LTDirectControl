@@ -1747,3 +1747,8 @@ pub(super) const TOOLTIP_POINTERS: &[(usize, usize)] = &[
 ];
 // The purchase gate's slot limit: cmp rax, imm8 ; ja rel32.
 pub(crate) const SHOP_SLOT_GATE: usize = 0x174ab91;
+// A skill object's method table (step 4 of the preview plan): its patch
+// name and get-by-name methods; guarded by Hammerer W's table in
+// `identity::LAYOUT_POINTERS`.
+pub(crate) const SKILL_PATCH_NAME_SLOT: usize = 0x18;
+pub(crate) const SKILL_PATCH_GET_SLOT: usize = 0x20;

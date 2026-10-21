@@ -8,7 +8,7 @@ notes come from the version's section in CHANGELOG.md.
 Usage (after `cargo test --release` and tools/stage_package.py):
     python tools/verify_build.py --version 0.66.0 --probe-tests 274
 """
-from paths import FONT_SOURCES, GAME_EXE
+from paths import FONT_SOURCES, GAME_EXE, build_name, dll_variant
 import argparse
 import ctypes
 import hashlib
@@ -142,8 +142,12 @@ dll.tfm2_mod_entry_stable.restype = ctypes.c_void_p
 assert dll.tfm2_mod_entry_stable(None) is None
 
 sources = sorted(p for p in (root / 'probe/src').rglob('*') if p.suffix in {'.rs', '.json'})
+# A research build gets its own record (dist/build-<version>-research.json).
+variant = dll_variant(package / 'lt_direct_control.dll')
+build = build_name(version, variant)
 record = {
-    'version': version,
+    'version': build,
+    'variant': variant,
     'built_at': datetime.now(timezone(timedelta(hours=8))).isoformat(),
     'changes': changes,
     'previous_game_result': args.previous_result,
@@ -166,7 +170,7 @@ record = {
     'game_test': f'pending user test on {profile["game_version"]}; native rendering/gameplay not verified by automated tests',
     'installation': 'Package verified; installation pending.',
 }
-(root / f'dist/build-{version}.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
-print(json.dumps({k: record[k] for k in ['version', 'dll_sha256', 'metadata_sha256', 'probe_tests', 'dll_load']}, indent=2))
+(root / f'dist/build-{build}.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
+print(json.dumps({k: record[k] for k in ['version', 'variant', 'dll_sha256', 'metadata_sha256', 'probe_tests', 'dll_load']}, indent=2))
 print(f'Tables verified for game {", ".join(sorted(supported))}, each against its own executable.')
 print(f'All {len(anchors)} native instruction/header anchors verified; ABI 6 and null-host rejection passed.')

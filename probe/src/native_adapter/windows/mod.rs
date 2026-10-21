@@ -19,8 +19,12 @@ mod combat;
 mod input;
 mod movement;
 mod outline;
+#[cfg(feature = "research")]
 mod preview;
+#[cfg(feature = "research")]
+mod research;
 mod shop;
+mod skill_numbers;
 mod stack;
 mod stats;
 #[cfg(test)]
@@ -224,6 +228,10 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
             return Err("Loaded PE identity differs; no hooks installed".into());
         }
         let enabled = ENABLED & !skip;
+        // Public builds carry no live skill reader (stage C of the preview
+        // plan), so its family and its guards stay out.
+        #[cfg(not(feature = "research"))]
+        let enabled = enabled & !family::READERS;
         let on = |family: u32| enabled & family != 0;
         if !on(family::SESSION) {
             return Err(

@@ -1230,7 +1230,7 @@ impl Movement {
         camera: &crate::camera::CameraControl,
         log: &Logger,
     ) {
-        self.update_mouse_with_cast(keys, active, camera, log, false);
+        self.update_mouse_with_cast(keys, active, camera, log, false, false);
     }
     pub fn update_mouse_with_cast(
         &self,
@@ -1239,6 +1239,7 @@ impl Movement {
         camera: &crate::camera::CameraControl,
         log: &Logger,
         left_reserved: bool,
+        paused: bool,
     ) {
         let Ok(mut s) = self.state.lock() else { return };
         s.hover_keys = active.then_some(keys);
@@ -1273,9 +1274,19 @@ impl Movement {
             s.command_stamp = None;
             s.cancel_recall = false;
             s.manual_release = None;
-            s.hover_units.clear();
-            s.hover_updated = None;
-            s.hover_actor = None;
+            // During a pause the units stand still: keep the last list, so a
+            // plain left-click can still tell a unit from empty ground (the
+            // author, 2026-10-21: selecting and closing the shop work in every
+            // pause, including the shop's own).
+            if paused {
+                if left_click && keys.focused && !keys.emote_capture {
+                    plain_click(&s, camera, keys);
+                }
+            } else {
+                s.hover_units.clear();
+                s.hover_updated = None;
+                s.hover_actor = None;
+            }
             return;
         }
         if !keys.focused {
@@ -1323,21 +1334,11 @@ impl Movement {
             }
             // Like League: a plain left-click selects the unit under the
             // cursor for the stats frame; empty ground clears it. UI areas,
-            // the minimap and an armed attack-move keep the click.
+            // the minimap and an armed attack-move keep the click. With the
+            // shop open, empty ground closes the shop instead and the
+            // selection stays (the author, 2026-10-21).
             if left_click && !s.attack_move_armed {
-                if let (Some(frame), Some(p)) = (camera.frame(), keys.cursor) {
-                    if !camera.command_blocked(p) && !frame.minimap.contains(p) {
-                        let units = if s.champion_position.is_some() {
-                            &s.hover_units
-                        } else {
-                            &s.dead_units
-                        };
-                        let id = crate::combat::clicked_units(frame, p, units, false)
-                            .first()
-                            .copied();
-                        crate::stats_panel::select(id);
-                    }
-                }
+                plain_click(&s, camera, keys);
             }
             let attack_click = s.attack_move_armed && left_click;
             let attack_move = attack_click || (click && keys.attack_click);
@@ -1574,10 +1575,88 @@ fn draw_marker(
         line(point(i), point(i + 1));
     }
 }
+/// What a plain left-click on the battlefield does (UI areas, the minimap,
+/// an armed attack-move and an aimed skill have already taken theirs).
+#[derive(Debug, PartialEq)]
+enum LeftClick {
+    /// Select the unit under the cursor for the stats panel; None clears it.
+    Select(Option<usize>),
+    /// Empty ground while the shop is open: close the shop, keep the
+    /// selection (the author, 2026-10-21).
+    CloseShop,
+}
+/// A plain left-click at the cursor, running or paused: outside UI areas
+/// and the minimap, it selects the unit there or, on empty ground, clears
+/// the selection or closes an open shop.
+fn plain_click(s: &State, camera: &crate::camera::CameraControl, keys: Keys) {
+    let (Some(frame), Some(p)) = (camera.frame(), keys.cursor) else {
+        return;
+    };
+    if camera.command_blocked(p) || frame.minimap.contains(p) {
+        return;
+    }
+    let units = if s.champion_position.is_some() {
+        &s.hover_units
+    } else {
+        &s.dead_units
+    };
+    let id = crate::combat::clicked_units(frame, p, units, false)
+        .first()
+        .copied();
+    let shop_open = crate::ui_state::SHOP_OPEN.load(std::sync::atomic::Ordering::Relaxed);
+    match plain_left_click(id, shop_open) {
+        LeftClick::Select(id) => crate::stats_panel::select(id),
+        LeftClick::CloseShop => {
+            crate::ui_state::SHOP_CLOSE.store(true, std::sync::atomic::Ordering::Relaxed)
+        }
+    }
+}
+fn plain_left_click(unit: Option<usize>, shop_open: bool) -> LeftClick {
+    match unit {
+        None if shop_open => LeftClick::CloseShop,
+        unit => LeftClick::Select(unit),
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::test_support::logger;
+    #[test]
+    fn a_pause_keeps_the_clickable_units_and_other_stops_clear_them() {
+        let m = movement();
+        let log = logger("paused-units");
+        start(&m, &log, 0);
+        let camera = recall_camera();
+        m.combat_input(
+            5,
+            (200_000, 200_000),
+            vec![],
+            Some(120_000),
+            Default::default(),
+        );
+        m.observe_hover_units((1, 33, 1), 5, 100, &[hover_ally()]);
+        assert_eq!(m.state.lock().unwrap().hover_units.len(), 1);
+        // Paused (the shop's pause included): the units stay for a plain click.
+        m.update_mouse_with_cast(keys(0, 0), false, &camera, &log, false, true);
+        assert_eq!(m.state.lock().unwrap().hover_units.len(), 1);
+        // Inactive for another reason (AI, released): cleared as before.
+        m.update_mouse_with_cast(keys(0, 0), false, &camera, &log, false, false);
+        assert!(m.state.lock().unwrap().hover_units.is_empty());
+    }
+    #[test]
+    fn empty_ground_closes_an_open_shop_and_keeps_the_selection() {
+        assert_eq!(plain_left_click(None, true), LeftClick::CloseShop);
+        assert_eq!(plain_left_click(None, false), LeftClick::Select(None));
+        // A unit is selected for the stats panel; the shop stays open.
+        assert_eq!(
+            plain_left_click(Some(29), true),
+            LeftClick::Select(Some(29))
+        );
+        assert_eq!(
+            plain_left_click(Some(29), false),
+            LeftClick::Select(Some(29))
+        );
+    }
     #[test]
     fn emote_capture_keeps_world_order_and_drains_cancel_click_and_stop() {
         let m = movement();
@@ -3612,7 +3691,7 @@ mod tests {
             cursor: Some((1160., 537.)),
             ..keys(0, 0)
         };
-        movement.update_mouse_with_cast(left, true, &camera, &log, true);
+        movement.update_mouse_with_cast(left, true, &camera, &log, true, false);
         // An A press while the same left button remains held must not act like a new click.
         movement.update_mouse(
             Keys {

@@ -69,7 +69,8 @@ def main():
     args = parser.parse_args()
     found, reasons = read(args.logs or logs_default())
     if not found:
-        print('No PREVIEW COVERAGE lines found (they are written from mod 1.1.17 on).')
+        print('No PREVIEW COVERAGE lines found (they are written from mod 1.1.17 on, by research '
+              'builds from 1.5.0-dev18, and only at Log detail Verbose from 1.5.0-dev20).')
         return
     width = max(map(len, found)) + 2
     print(f"{'champion':<{width}}{'Q':<22}{'W':<22}{'R':<22}")

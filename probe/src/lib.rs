@@ -11,6 +11,13 @@
 //! Native game hooks (game 0.6.3, 0.6.4 and 0.7.0) live in `native_adapter`; the session and
 //! frame pacing between the two threads in `native_timing`.
 
+/// Which build this is (step 4 of the preview plan, stage C): a research
+/// build (`--features research`) also records skill shapes and numbers; a
+/// public one only draws. The tools read this marker from the DLL.
+#[cfg(feature = "research")]
+const VARIANT: &str = "variant=research";
+#[cfg(not(feature = "research"))]
+const VARIANT: &str = "variant=public";
 mod abilities;
 mod acquisition;
 mod ai_handback;
@@ -44,12 +51,15 @@ mod native_profile;
 mod native_timing;
 mod native_tooltips;
 mod own_selection;
+#[cfg(feature = "research")]
+mod patch_fields;
 mod perf;
 mod platform_input;
 mod player_hud;
 mod pointer_clip;
 mod practice;
 mod preview_style;
+mod preview_table;
 mod purchase_tracker;
 mod result_audit;
 mod runtime_storage;
@@ -58,6 +68,7 @@ mod season_fix;
 mod session_ui;
 mod settings;
 mod settings_ui;
+#[cfg(feature = "research")]
 mod shape_record;
 mod shop;
 mod shop_recipe;
@@ -235,13 +246,14 @@ fn init(host: &StableHost) -> StableMod {
     log_panics(logger.clone());
     let version = host.game_version();
     logger.write(&format!(
-        "INIT game={}.{}.{} abi={} probe={}",
+        "INIT game={}.{}.{} abi={} probe={} {VARIANT}",
         version.major,
         version.minor,
         version.patch,
         host.abi_level(),
         env!("CARGO_PKG_VERSION")
     ));
+    #[cfg(feature = "research")]
     shape_record::set_game(format!(
         "{}.{}.{}",
         version.major, version.minor, version.patch

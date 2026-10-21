@@ -499,6 +499,30 @@
     "PREVIEW_CHANNEL_LINE_TABLE_APPLY": {
       "rva": "0x3e9d9f0",
       "pointer_target": "0x12cd950"
+    },
+    "SKILL_PATCH_NAME_SLOT": {
+      "rva": "0x3ed3ef8",
+      "pointer_target": "0x15c5940"
+    },
+    "SKILL_PATCH_GET_SLOT": {
+      "rva": "0x3ed3f00",
+      "pointer_target": "0x15c5760"
+    },
+    "SKILL_COOLDOWN_SLOT": {
+      "rva": "0x3ed3f70",
+      "pointer_target": "0x12d2110"
+    },
+    "ENTITY_SKILL_PATCH_NAME_CODE": {
+      "rva": "0x15c5940",
+      "bytes": "488d059d0c9102ba0f000000c3"
+    },
+    "ENTITY_SKILL_PATCH_GET_CODE": {
+      "rva": "0x15c5760",
+      "bytes": "31c04983c0fa4983f8070f87c8000000"
+    },
+    "ENTITY_SKILL_COOLDOWN_CODE": {
+      "rva": "0x12d2110",
+      "bytes": "488b4130c3"
     }
   },
   "tooltip_anchors": {

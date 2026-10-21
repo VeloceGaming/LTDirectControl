@@ -38,6 +38,7 @@ const VERBOSE: &[&str] = &[
     "STATRULE collision site=",
     "STATRULE gate caster=",
     "ABILITY AIMING",
+    "ABILITY CANCEL",
     "ABILITY CHARGES",
     "ABILITY CONFIRM",
     "ABILITY EXECUTED",
@@ -49,6 +50,11 @@ const VERBOSE: &[&str] = &[
     "AIM PRESERVED",
     "ATTACK ",
     "CAMERA WHEEL",
+    // Successful Q/W/R presses (the author, 2026-10-21: split by outcome);
+    // denied, refused, cancelled and dropped presses stay at Normal.
+    "CAST TIMING Q outcome=cast",
+    "CAST TIMING W outcome=cast",
+    "CAST TIMING R outcome=cast",
     "CAMERA Y",
     "CONTROL DIAGNOSTIC",
     "CURSOR HANDBACK",
@@ -72,18 +78,36 @@ const VERBOSE: &[&str] = &[
     "NAVIGATION ",
     "OUTLINE ",
     "PACING ",
+    "PATCH FIELDS",
     "PERF ",
     "PLAYBACK ",
     "PLAYER HUD",
     "POINTER ",
+    // Skill preview research (1.5.0-dev20 audit): start-up and per-match
+    // diagnostics, and the research build's recording traces. The shape
+    // table is written whatever the level; tools/audit_previews.py needs
+    // Verbose.
+    "PREVIEW BASE",
+    "PREVIEW COVERAGE",
+    "PREVIEW DECLARED",
+    "PREVIEW FILE",
     "PREVIEW GEOMETRY",
+    "PREVIEW ROSTER",
+    "PREVIEW TREE",
+    "PREVIEW declared_slots",
     "PURCHASE TRACE",
     "RECALL NATIVE",
     "RECALL PRESS",
     "ROSTER ",
+    "SHAPE NUMBERS",
+    "SHAPE RECORD",
     "SHOP HOOK PROOF",
+    // Every purchase by all ten champions.
+    "SHOP PURCHASE",
     "SIM ",
     "SPRITE PICKING",
+    // The stats panel's raw numbers every 10 s (an investigation, backlog item 5).
+    "STATS own raw",
     "TEAM STATUS",
 ];
 
@@ -143,5 +167,32 @@ mod tests {
         assert_eq!(level_of("SHOP UI spawn failed"), Level::Safety);
         assert_eq!(level_of("Worker adapter panic"), Level::Safety);
         assert_eq!(level_of("SOMETHING NEW from a modder"), Level::Normal);
+        // The 1.5.0-dev20 audit: per-press, per-purchase and research traces
+        // are Verbose; refusals and once-per-match preview lines stay Normal.
+        for line in [
+            "CAST TIMING Q outcome=cast target=cursor",
+            "CAST TIMING R outcome=cast press_action=2",
+            "ABILITY CANCEL R reason=newer-skill",
+            "SHOP PURCHASE tick=3 player=0",
+            "STATS own raw attack=100",
+            "PREVIEW FILE champion=amazon",
+            "PREVIEW TREE viewed=false",
+            "SHAPE NUMBERS champion=amazon",
+            "PATCH FIELDS champion=amazon",
+        ] {
+            assert_eq!(level_of(line), Level::Verbose, "{line}");
+        }
+        for line in [
+            "ABILITY REJECTED W reason=native-consumer-did-not-spend-cooldown",
+            "CAST TIMING W outcome=denied reason=on-cooldown",
+            "CAST TIMING W outcome=refused reason=native-consumer-did-not-spend-cooldown",
+            "CAST TIMING Q outcome=cancelled reason=right-click",
+            "PREVIEW NAMES champion=hammerer slot=W read 1 of 1",
+            "PREVIEW TABLE champions=96",
+            "PREVIEW COMPARE champion=hammerer slot=W",
+            "SHOP STATE queue=[]",
+        ] {
+            assert_eq!(level_of(line), Level::Normal, "{line}");
+        }
     }
 }

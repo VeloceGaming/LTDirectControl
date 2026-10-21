@@ -522,6 +522,8 @@ pub fn reset_session() {
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod v070 {
     use super::*;
+    // The live reader's tables: research builds only (stage C).
+    #[cfg(feature = "research")]
     mod effects;
     pub(super) mod identity;
     mod items;
@@ -534,6 +536,8 @@ mod v070 {
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod v063 {
     use super::*;
+    // The live reader's tables: research builds only (stage C).
+    #[cfg(feature = "research")]
     mod effects;
     pub(super) mod identity;
     mod items;
@@ -546,6 +550,8 @@ mod v063 {
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod v064 {
     use super::*;
+    // The live reader's tables: research builds only (stage C).
+    #[cfg(feature = "research")]
     mod effects;
     pub(super) mod identity;
     mod items;

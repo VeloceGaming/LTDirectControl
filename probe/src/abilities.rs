@@ -759,6 +759,13 @@ impl Abilities {
             s.cooldowns = cooldowns;
         }
     }
+    /// The controlled athlete's champion, once known.
+    pub fn champion(&self, key: MatchKey, actor: usize) -> Option<String> {
+        let s = self.0.lock().ok()?;
+        (s.key == Some(key) && s.actor == Some(actor))
+            .then(|| s.champion.clone())
+            .flatten()
+    }
     pub fn observe_level(&self, key: MatchKey, actor: usize, level: usize) {
         if let Ok(mut s) = self.0.lock() {
             if s.key == Some(key) && s.actor == Some(actor) {
@@ -1482,7 +1489,7 @@ pub(crate) fn draw_segment(
 mod tests {
     use super::*;
     #[test]
-    fn each_press_outcome_is_one_normal_level_timing_line() {
+    fn each_press_outcome_is_one_timing_line_and_only_problems_are_normal() {
         let request = CastRequest {
             slot: 1,
             aim: None,
@@ -1521,8 +1528,14 @@ mod tests {
         assert!(refused.contains(
             "outcome=refused reason=native-consumer-did-not-spend-cooldown press_action=?"
         ));
+        // Split by outcome (the author, 2026-10-21): a successful press is
+        // Verbose, one that went wrong stays at Normal.
         assert_eq!(
             crate::logging::level_of(&line),
+            crate::logging::Level::Verbose
+        );
+        assert_eq!(
+            crate::logging::level_of(&refused),
             crate::logging::Level::Normal
         );
     }

@@ -7,7 +7,7 @@ use crate::skill_preview::{targets_allies, Geometry, Placement, Shape};
 
 /// The caster's current stack (stat block `stack`, entity +0x648, just
 /// before its position at +0x658): Dancer R's extra blades. Set by `read`.
-const ENTITY_STACK: usize = 0x648;
+use super::skill_numbers::ENTITY_STACK;
 thread_local! {
     static CASTER_STACK: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
@@ -144,8 +144,62 @@ fn after_dash(p: Placement, length: f32) -> Placement {
         other => other,
     }
 }
+/// Where a footprint lands when its effect goes with a move to the aimed
+/// point or onto the target unit: a circle around the caster is around where
+/// the caster lands (the author, 2026-10-21: Pole Warrior W lands like
+/// League's Fizz E; Invincible R slams where she lands; Nightmare W's landing
+/// circle). A line or cone keeps its own placement, as in the champion-file
+/// reader (`skill_preview::to_landing`).
+fn at_landing(shape: Shape, p: Placement) -> Placement {
+    match (p, shape) {
+        (Placement::Caster, Shape::Circle { .. }) => Placement::Aim,
+        (other, _) => other,
+    }
+}
+/// A move to the aimed point or onto the target unit among a list's effects
+/// (a rush to the clicked unit too: Lancer W, Tale W).
+unsafe fn is_move(base: usize, arc: usize, table: usize) -> bool {
+    matches!(
+        peek(base, arc, table),
+        Some((_, MOVE, 40)) | Some((_, MOVE_TO_TARGET, 40)) | Some((_, RUSH_TO_TARGET, 32))
+    )
+}
+/// One effect of a list holding a move: its footprints around the caster
+/// happen where the caster lands.
+#[allow(clippy::too_many_arguments)]
+unsafe fn beside_move(
+    base: usize,
+    arc: usize,
+    table: usize,
+    inherited: Placement,
+    out: &mut Geometry,
+    nodes: &mut usize,
+    depth: usize,
+) {
+    let mut moved = Geometry::default();
+    effect(base, arc, table, inherited, &mut moved, nodes, depth);
+    landed(moved, out);
+}
+/// `moved`'s footprints at the landing point, with its issues and families.
+fn landed(moved: Geometry, out: &mut Geometry) {
+    for f in moved.footprints {
+        out.push(
+            f.shape,
+            at_landing(f.shape, f.placement),
+            f.allies,
+            f.projectile,
+        );
+    }
+    for issue in moved.issues {
+        out.issue(issue);
+    }
+    for family in moved.families {
+        out.family(family);
+    }
+}
 /// A Combine's effects. Effects delayed until a timed dash among them has
-/// finished happen where the dash ends (Candygel R: a pool at each end).
+/// finished happen where the dash ends (Candygel R: a pool at each end);
+/// effects beside a move happen where the caster lands.
 unsafe fn combine(
     base: usize,
     at: usize,
@@ -165,7 +219,12 @@ unsafe fn combine(
     let dash = items
         .iter()
         .find_map(|&(arc, table)| timed_dash(base, arc, table));
+    let mover = items.iter().any(|&(arc, table)| is_move(base, arc, table));
     for &(arc, table) in &items {
+        if mover && !is_move(base, arc, table) {
+            beside_move(base, arc, table, inherited, out, nodes, depth + 1);
+            continue;
+        }
         let delay = match peek(base, arc, table) {
             Some((object, DELAYED, 32)) => Some(word(object + 24)),
             _ => None,
@@ -202,16 +261,16 @@ unsafe fn children(
         out.issue("invalid native effect vector");
         return;
     }
-    for i in 0..len {
-        effect(
-            base,
-            word(ptr + i * 16),
-            word(ptr + i * 16 + 8),
-            inherited,
-            out,
-            nodes,
-            depth + 1,
-        );
+    let items: Vec<(usize, usize)> = (0..len)
+        .map(|i| (word(ptr + i * 16), word(ptr + i * 16 + 8)))
+        .collect();
+    let mover = items.iter().any(|&(arc, table)| is_move(base, arc, table));
+    for &(arc, table) in &items {
+        if mover && !is_move(base, arc, table) {
+            beside_move(base, arc, table, inherited, out, nodes, depth + 1);
+        } else {
+            effect(base, arc, table, inherited, out, nodes, depth + 1);
+        }
     }
 }
 #[allow(clippy::too_many_arguments)]
@@ -307,8 +366,12 @@ unsafe fn payload(
         }
         (Some(MOVE), 40) => {
             // Movement to the aimed point: { effects, speed, maximum distance }.
+            // Its effects happen on arrival (Nightmare W's landing circle).
             out.family("native MoveTo");
             out.add(Shape::Movement { blink: false }, Placement::Aim);
+            let mut on_arrival = Geometry::default();
+            children(base, object, Placement::Aim, &mut on_arrival, nodes, depth);
+            landed(on_arrival, out);
         }
         (Some(RANGE_PROJECTILE), 120) => {
             // An area at its placement after a delay: { shape (words 0-5),
@@ -459,9 +522,13 @@ unsafe fn payload(
             }
         }
         (Some(MOVE_TO_TARGET), 40) => {
-            // Movement onto the target unit: { applied effects, speed, _ }.
+            // Movement onto the target unit: { applied effects, speed, _ }; the
+            // effects happen on arrival.
             out.family("native MoveToTarget");
             out.add(Shape::Movement { blink: false }, Placement::Aim);
+            let mut on_arrival = Geometry::default();
+            children(base, object, Placement::Aim, &mut on_arrival, nodes, depth);
+            landed(on_arrival, out);
         }
         (Some(RANGE), 96) => {
             out.family("native RangeEffect");
@@ -921,6 +988,69 @@ mod tests {
             Placement::End { length: 120. }
         );
         assert_eq!(after_dash(Placement::Aim, 100.), Placement::Aim);
+    }
+    #[test]
+    fn areas_that_go_with_a_move_happen_where_the_caster_lands() {
+        // Fake vtables [_, size, align, _, apply]: Combine, MoveTo, area.
+        let mut tables = [0usize; 15];
+        let base = tables.as_ptr() as usize - RDATA_TABLE_BOUNDS.start();
+        for (i, (size, apply)) in [(24, COMBINE), (40, MOVE), (96, RANGE)]
+            .into_iter()
+            .enumerate()
+        {
+            tables[i * 5 + 1] = size;
+            tables[i * 5 + 2] = 8;
+            tables[i * 5 + 4] = base + apply;
+        }
+        let table = |i: usize| tables.as_ptr() as usize + i * 5 * 8;
+        // Arc allocations: strong, weak, then the payload. A 32-unit circle
+        // around the caster: placement 0, offset 0, circle tag 0, radius,
+        // no effects, aimed at enemies.
+        let mut area = [0usize; 14];
+        area[2 + 3] = 32_000;
+        (area[2 + 9], area[2 + 11]) = (8, 6);
+        let area_list = [area.as_ptr() as usize, table(2)];
+        let circle = (Shape::Circle { radius: 32. }, Placement::Aim);
+        let dash = (Shape::Movement { blink: false }, Placement::Aim);
+        let read = |at: usize, apply: usize, size: usize| {
+            let mut g = Geometry::default();
+            unsafe {
+                payload(
+                    base,
+                    at,
+                    Some(apply),
+                    size,
+                    Placement::Aim,
+                    &mut g,
+                    &mut 0,
+                    0,
+                )
+            };
+            g.footprints
+                .iter()
+                .map(|f| (f.shape, f.placement))
+                .collect::<Vec<_>>()
+        };
+        // Nightmare W: the circle is the move's own effect on arrival.
+        let arrival = [1usize, area_list.as_ptr() as usize, 1, 5600, 60_000];
+        assert_eq!(read(arrival.as_ptr() as usize, MOVE, 40), [dash, circle]);
+        // Pole Warrior W: the circle beside the move in a Combine.
+        let empty = [1usize, 1, 0, 8, 0, 5600, 60_000];
+        let effects = [
+            empty.as_ptr() as usize,
+            table(1),
+            area.as_ptr() as usize,
+            table(2),
+        ];
+        let combine = [2usize, effects.as_ptr() as usize, 2];
+        assert_eq!(read(combine.as_ptr() as usize, COMBINE, 24), [dash, circle]);
+        // Without a move the circle stays around the caster.
+        let alone = [area.as_ptr() as usize, table(2)];
+        let combine = [1usize, alone.as_ptr() as usize, 1];
+        assert_eq!(
+            read(combine.as_ptr() as usize, COMBINE, 24),
+            [(Shape::Circle { radius: 32. }, Placement::Caster)]
+        );
     }
     #[test]
     fn switch_by_buff_previews_the_branch_without_the_buff() {

@@ -1,0 +1,3253 @@
+{
+ "about": "Skill preview shapes the mod ships, written by tools/build_preview_table.py from the shapes and numbers recorded in play, the author's assignments and picks. Sizes: {\"name\"} is the game's number by name (distances divided by 1000, times \"times\"), {\"cast_range\"} the live cast range, {\"fixed\"} a number in world units; \"recorded\" is the value when it was recorded. Do not edit by hand: change the assignments or picks in tools/preview_viewer.py and run the tool again.",
+ "game": "0.6.4",
+ "champions": {
+  "abbie": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "pierce": true,
+      "radius": {
+       "name": "width",
+       "times": 0.5,
+       "recorded": 13.5
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "alchemist": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "fixed": 9.0
+      }
+     },
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 32.0
+      }
+     }
+    ],
+    "kind": "alchemist_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "alchemist_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 92.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 12.0
+      }
+     }
+    ],
+    "kind": "alchemist_ult"
+   }
+  },
+  "amazon": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "unit_target",
+     "area_radius": {
+      "name": "radius",
+      "recorded": 43
+     }
+    },
+    "kind": "data_action"
+   }
+  },
+  "android": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "landing": {
+        "cast_range": true,
+        "recorded": 75.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "explosion_range",
+       "recorded": 16.0
+      }
+     }
+    ],
+    "kind": "android_skill"
+   }
+  },
+  "archer": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "end": {
+        "name": "move_range",
+        "recorded": 30.0
+       }
+      },
+      "kind": "dash"
+     }
+    ],
+    "kind": "archer_skill"
+   }
+  },
+  "astrologer": {
+   "Q": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 34.0
+      }
+     }
+    ],
+    "kind": "astrologer_skill1"
+   },
+   "W": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "name": "line_width",
+       "times": 0.5,
+       "recorded": 16.0
+      }
+     }
+    ],
+    "kind": "astrologer_skill2"
+   },
+   "R": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "astrologer_ult"
+   }
+  },
+  "bard": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": {
+       "landing": {
+        "cast_range": true,
+        "recorded": 100.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "buff_range",
+       "recorded": 64.0
+      }
+     }
+    ],
+    "kind": "bard_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 100.0
+      }
+     }
+    ],
+    "kind": "bard_ult"
+   }
+  },
+  "barrier_magician": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_rectangle",
+     "width": {
+      "fixed": 40
+     },
+     "depth": {
+      "fixed": 40
+     },
+     "allies": true
+    },
+    "kind": "barrier_magician_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "height": {
+       "fixed": 48.0
+      },
+      "kind": "rectangle",
+      "width": {
+       "fixed": 48.0
+      }
+     }
+    ],
+    "kind": "barrier_magician_skill2"
+   }
+  },
+  "beastman": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 23.0
+      }
+     },
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "fixed": 5.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "berserker": {
+   "Q": {
+    "from": "no_area",
+    "kind": "berserker_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 20.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "berserker_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "berserker_ult"
+   }
+  },
+  "bomber": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "landing": {
+        "cast_range": true,
+        "recorded": 75.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "explosion_range",
+       "recorded": 20.0
+      }
+     }
+    ],
+    "kind": "bomber_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "landing": {
+        "cast_range": true,
+        "recorded": 70.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 40.0
+      }
+     }
+    ],
+    "kind": "bomber_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "explosion_range",
+       "recorded": 25.0
+      }
+     }
+    ],
+    "kind": "bomber_ult"
+   }
+  },
+  "boomerang_hunter": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 18.0
+      }
+     },
+     {
+      "at": {
+       "end": {
+        "cast_range": true,
+        "recorded": 80.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "fixed": 16.0
+      }
+     }
+    ],
+    "kind": "boomerang_hunter_skill"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "cone",
+     "radius": {
+      "name": "attack_range",
+      "recorded": 14
+     },
+     "angle": {
+      "fixed": 100
+     }
+    },
+    "kind": "boomerang_hunter_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "line",
+     "width": {
+      "name": "attack_range",
+      "recorded": 14
+     },
+     "length": {
+      "cast_range": true,
+      "recorded": 90
+     }
+    },
+    "kind": "boomerang_hunter_ult"
+   }
+  },
+  "bulldozer": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "fixed": 30.0
+      },
+      "pierce": true,
+      "radius": {
+       "name": "width",
+       "times": 0.5,
+       "recorded": 30.0
+      }
+     },
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 84.0
+      },
+      "radius": {
+       "fixed": 10.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "fixed": 120.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "candygel": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 116.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 3.5
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "end": {
+        "fixed": 118.8000030517578
+       }
+      },
+      "kind": "dash"
+     },
+     {
+      "at": {
+       "landing": {
+        "fixed": 0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 42.0
+      }
+     },
+     {
+      "allies": true,
+      "at": {
+       "landing": {
+        "fixed": 0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 42.0
+      }
+     },
+     {
+      "at": {
+       "end": {
+        "fixed": 118.8000030517578
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 42.0
+      }
+     },
+     {
+      "allies": true,
+      "at": {
+       "end": {
+        "fixed": 118.8000030517578
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 42.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "cavalry_knight": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "fixed": 3.0
+      }
+     }
+    ],
+    "kind": "cavalry_knight_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "cavalry_knight_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "cavalry_knight_ult"
+   }
+  },
+  "cf_archangel": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 75.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 10.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 10.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "cf_spirit_latcher": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 75.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 7.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 37.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "cf_sun_mage": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 85.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 10.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 10.0
+      }
+     },
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "fixed": 16.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "cf_void_mage": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 65.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 25.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "chef": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "chef_skill"
+   }
+  },
+  "circus_blade": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 70.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 8.0
+      }
+     }
+    ],
+    "kind": "circus_blade_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "circus_blade_skill2"
+   }
+  },
+  "clown": {
+   "R": {
+    "from": "no_area",
+    "kind": "clown_ult"
+   }
+  },
+  "construct": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 41.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 60.0
+      }
+     },
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "fixed": 45.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "crossbowman": {
+   "Q": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 150.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 3.0
+      }
+     }
+    ],
+    "kind": "crossbowman_skill1"
+   },
+   "W": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 150.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 6.0
+      }
+     }
+    ],
+    "kind": "crossbowman_skill2"
+   },
+   "R": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 150.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 8.0
+      }
+     }
+    ],
+    "kind": "crossbowman_ult"
+   }
+  },
+  "dancer": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 10.0
+      }
+     }
+    ],
+    "kind": "dancer_skill"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "count": 4,
+      "kind": "fan",
+      "length": {
+       "cast_range": true,
+       "recorded": 130.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 10.0
+      },
+      "max_count": {
+       "fixed": 10
+      }
+     }
+    ],
+    "kind": "dancer_ult"
+   }
+  },
+  "dark_mage": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 12.0
+      }
+     }
+    ],
+    "kind": "dark_mage_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 20.0
+      }
+     }
+    ],
+    "kind": "dark_mage_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "dark_mage_ult"
+   }
+  },
+  "demon": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "attack_range",
+      "recorded": 18
+     }
+    },
+    "kind": "demon_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "demon_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 48.0
+      }
+     }
+    ],
+    "kind": "demon_ult"
+   }
+  },
+  "dokkaebi": {
+   "Q": {
+    "from": "no_area",
+    "kind": "dokkaebi_skill"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "fixed": 6.0
+      }
+     }
+    ],
+    "kind": "dokkaebi_ult"
+   }
+  },
+  "druid": {
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "line",
+     "width": {
+      "fixed": 12
+     },
+     "length": {
+      "cast_range": true,
+      "recorded": 80
+     }
+    },
+    "kind": "druid_ult"
+   }
+  },
+  "dual_blader": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 20.0
+      }
+     }
+    ],
+    "kind": "dual_blader_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "dual_blader_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "dual_blader_ult"
+   }
+  },
+  "dummy": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "end": {
+        "fixed": 75.0
+       }
+      },
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "dynamo": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 189.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 13.5
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 34.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "endkeeper": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "fixed": 34.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 124.0
+      }
+     },
+     {
+      "allies": true,
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 124.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "executioner": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 5.0
+      }
+     }
+    ],
+    "kind": "executioner_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "executioner_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 1.0
+       }
+      },
+      "cosine": 0.0,
+      "kind": "cone",
+      "radius": {
+       "name": "range",
+       "recorded": 132.0
+      }
+     }
+    ],
+    "kind": "executioner_ult"
+   }
+  },
+  "exorcist": {
+   "W": {
+    "from": "no_area",
+    "kind": "exorcist_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "exorcist_ult"
+   }
+  },
+  "fighter": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "fixed": 3.200000047683716
+      }
+     }
+    ],
+    "kind": "fighter_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 45.0
+      }
+     }
+    ],
+    "kind": "fighter_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 70.0
+      }
+     }
+    ],
+    "kind": "fighter_ult"
+   }
+  },
+  "fireblade": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "gambler": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "fixed": 3.0
+      }
+     }
+    ],
+    "kind": "gambler_skill1"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "landing": {
+        "cast_range": true,
+        "recorded": 75.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 35.0
+      }
+     }
+    ],
+    "kind": "gambler_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 35.0
+      }
+     }
+    ],
+    "kind": "gambler_ult"
+   }
+  },
+  "ghost": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "ghost_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "fixed": 5.0
+      }
+     }
+    ],
+    "kind": "ghost_skill2"
+   },
+   "R": {
+    "from": "no_area"
+   }
+  },
+  "ghostrabbit": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 1.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 1.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "guardian_spirit": {
+   "Q": {
+    "from": "no_area",
+    "kind": "guardian_spirit_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 50.0
+      }
+     }
+    ],
+    "kind": "guardian_spirit_skill2"
+   }
+  },
+  "gunner": {
+   "W": {
+    "from": "no_area",
+    "kind": "gunner_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "gunner_ult"
+   }
+  },
+  "hammerer": {
+   "Q": {
+    "from": "no_area",
+    "kind": "hammerer_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 12.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "hammerer_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 1.0
+       }
+      },
+      "cosine": 0.0,
+      "kind": "cone",
+      "radius": {
+       "name": "range",
+       "recorded": 81.0
+      }
+     }
+    ],
+    "kind": "hammerer_ult"
+   }
+  },
+  "harpooner": {
+   "Q": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 11.0
+      }
+     }
+    ],
+    "kind": "harpooner_skill1"
+   },
+   "W": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 11.0
+      }
+     }
+    ],
+    "kind": "harpooner_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "fan",
+     "count": {
+      "name": "projectile_count",
+      "unit": "count",
+      "recorded": 5
+     },
+     "width": {
+      "name": "projectile_radius",
+      "times": 2,
+      "recorded": 18
+     },
+     "spread": {
+      "name": "fan_angle",
+      "unit": "degrees",
+      "recorded": 36
+     },
+     "length": {
+      "cast_range": true,
+      "recorded": 130
+     }
+    },
+    "kind": "harpooner_ult"
+   }
+  },
+  "harpy": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 44.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 175.0
+      },
+      "radius": {
+       "fixed": 10.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "heavyblade": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "fixed": 70.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 180.0
+      },
+      "pierce": true,
+      "radius": {
+       "name": "width",
+       "times": 0.5,
+       "recorded": 45.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "hellion": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 150.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 6.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 1000.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "hunter": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "hunter_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "pierce": true,
+      "radius": {
+       "fixed": 10.0
+      }
+     }
+    ],
+    "kind": "hunter_ult"
+   }
+  },
+  "ice_mage": {
+   "Q": {
+    "from": "no_area",
+    "kind": "ice_mage_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 30.0
+      }
+     }
+    ],
+    "kind": "ice_mage_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "cosine": 0.7070000171661377,
+      "kind": "cone",
+      "radius": {
+       "name": "range",
+       "recorded": 70.0
+      }
+     }
+    ],
+    "kind": "ice_mage_ult"
+   }
+  },
+  "illusionist": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 95.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 20.0
+      }
+     }
+    ],
+    "kind": "illusionist_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "illusionist_skill2"
+   }
+  },
+  "inquisitor": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "fixed": 4.0
+      }
+     }
+    ],
+    "kind": "inquisitor_skill"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "inquisitor_ult"
+   }
+  },
+  "invincible": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     },
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 46.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "jiangshi": {
+   "W": {
+    "from": "no_area",
+    "kind": "jiangshi_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 48.0
+      }
+     }
+    ],
+    "kind": "jiangshi_ult"
+   }
+  },
+  "kharazim": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "unit_target",
+     "area_radius": {
+      "fixed": 0
+     }
+    },
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 42.5
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "knight": {
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 60.0
+      }
+     },
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "knight_ult"
+   }
+  },
+  "lancer": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 35.0
+      }
+     }
+    ],
+    "kind": "lancer_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "lancer_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 118.4000015258789
+      },
+      "radius": {
+       "fixed": 10.0
+      }
+     }
+    ],
+    "kind": "lancer_ult"
+   }
+  },
+  "lightning_mage": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "lightning_mage_skill2"
+   }
+  },
+  "magic_knight": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 113.0
+      },
+      "pierce": true,
+      "radius": {
+       "name": "attack_range",
+       "times": 0.5,
+       "recorded": 2.5
+      }
+     }
+    ],
+    "kind": "magic_knight_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 70.0
+      }
+     }
+    ],
+    "kind": "magic_knight_skill2"
+   },
+   "R": {
+    "from": "no_area"
+   }
+  },
+  "mistguide": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 32.0
+      }
+     },
+     {
+      "allies": true,
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 32.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 1000.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "monk": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 80.0
+      }
+     }
+    ],
+    "kind": "monk_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 23.0
+      }
+     }
+    ],
+    "kind": "monk_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 76.0
+      }
+     }
+    ],
+    "kind": "monk_ult"
+   }
+  },
+  "nightmare": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 46.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 5.0
+      }
+     }
+    ],
+    "kind": "nightmare_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "nightmare_skill2"
+   }
+  },
+  "ninja": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 120.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 10.0
+      }
+     }
+    ],
+    "kind": "ninja_skill"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "ninja_ult"
+   }
+  },
+  "nullifier": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "end": {
+        "fixed": 54.400001525878906
+       }
+      },
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "blink"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "ogre": {
+   "W": {
+    "from": "no_area",
+    "kind": "ogre_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "ogre_ult"
+   }
+  },
+  "oni": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 72.0
+      }
+     },
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 72.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "plague_doctor": {
+   "W": {
+    "from": "no_area",
+    "kind": "plague_doctor_skill2"
+   }
+  },
+  "planemage": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 25.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 25.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 50.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "poison_dart_hunter": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "landing": {
+        "cast_range": true,
+        "recorded": 50.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 48.0
+      }
+     }
+    ],
+    "kind": "poison_dart_hunter_skill1"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 60.0
+      }
+     }
+    ],
+    "kind": "poison_dart_hunter_ult"
+   }
+  },
+  "pole_warrior": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "pole_warrior_skill"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "attack_range",
+      "recorded": 32
+     }
+    },
+    "kind": "pole_warrior_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "pole_warrior_ult"
+   }
+  },
+  "priest": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "allies": true,
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "heal_range",
+       "recorded": 32.0
+      }
+     }
+    ],
+    "kind": "priest_skill"
+   }
+  },
+  "prisoner": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 70.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "prisoner_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 45.0
+      }
+     }
+    ],
+    "kind": "prisoner_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "prisoner_ult"
+   }
+  },
+  "pyromancer": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 35.0
+      }
+     }
+    ],
+    "kind": "pyromancer_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 32.0
+      }
+     }
+    ],
+    "kind": "pyromancer_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 70.0
+      }
+     }
+    ],
+    "kind": "pyromancer_ult"
+   }
+  },
+  "pythoness": {
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 120.0
+      }
+     }
+    ],
+    "kind": "pythoness_ult"
+   }
+  },
+  "ruby": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 3.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "sand_mage": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 26.0
+      }
+     }
+    ],
+    "kind": "sand_mage_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "sand_mage_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 42.0
+      }
+     }
+    ],
+    "kind": "sand_mage_ult"
+   }
+  },
+  "shadowmancer": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 30.0
+      }
+     }
+    ],
+    "kind": "shadowmancer_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "shadowmancer_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 120.0
+      },
+      "projectile": true,
+      "radius": {
+       "fixed": 8.0
+      }
+     }
+    ],
+    "kind": "shadowmancer_ult"
+   }
+  },
+  "shield_bearer": {
+   "W": {
+    "from": "no_area",
+    "kind": "shield_bearer_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "shield_bearer_ult"
+   }
+  },
+  "siege_breaker": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 15.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 40.0
+      }
+     }
+    ],
+    "kind": "siege_breaker_skill2"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "siege_breaker_ult"
+   }
+  },
+  "soldier": {
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 300.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 30.0
+      }
+     }
+    ],
+    "kind": "soldier_ult"
+   }
+  },
+  "spellbreaker": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 38.0
+      },
+      "pierce": true,
+      "radius": {
+       "name": "width",
+       "times": 0.5,
+       "recorded": 14.0
+      }
+     }
+    ],
+    "kind": "spellbreaker_skill1"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "fixed": 6.0
+      }
+     }
+    ],
+    "kind": "spellbreaker_skill2"
+   }
+  },
+  "spirit_caller": {
+   "Q": {
+    "from": "no_area",
+    "kind": "spirit_caller_skill1"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "spirit_caller_skill2"
+   }
+  },
+  "squirrel": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 41.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "strongman": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 42.0
+      }
+     }
+    ],
+    "kind": "strongman_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "radius",
+      "recorded": 30
+     },
+     "allies": true
+    },
+    "kind": "strongman_ult"
+   }
+  },
+  "swordman": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 100.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 30.0
+      }
+     }
+    ],
+    "kind": "swordman_skill"
+   },
+   "W": {
+    "from": "no_area",
+    "kind": "swordman_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 150.0
+      },
+      "pierce": true,
+      "radius": {
+       "fixed": 20.0
+      }
+     }
+    ],
+    "kind": "swordman_ult"
+   }
+  },
+  "tale": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 180.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 8.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "taoist": {
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "projectile": true,
+      "radius": {
+       "fixed": 8.0
+      }
+     }
+    ],
+    "kind": "taoist_ult"
+   }
+  },
+  "vampire": {
+   "Q": {
+    "from": "no_area",
+    "kind": "vampire_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 20.0
+       }
+      },
+      "cosine": 0.5,
+      "kind": "cone",
+      "radius": {
+       "name": "range",
+       "recorded": 40.0
+      }
+     }
+    ],
+    "kind": "vampire_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 120.0
+      },
+      "radius": {
+       "fixed": 10.0
+      }
+     }
+    ],
+    "kind": "vampire_ult"
+   }
+  },
+  "voidling": {
+   "Q": {
+    "from": "file",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "fixed": 45.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 90.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 1.600000023841858
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "voodoo_shaman": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 90.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 5.0
+      }
+     }
+    ],
+    "kind": "voodoo_shaman_skill1"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "range",
+      "recorded": 50
+     }
+    },
+    "kind": "voodoo_shaman_ult"
+   }
+  },
+  "werewolf": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "name": "attack_range",
+        "recorded": 30.0
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 30.0
+      }
+     }
+    ],
+    "kind": "werewolf_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 0
+      },
+      "radius": {
+       "fixed": 4.199999809265137
+      }
+     }
+    ],
+    "kind": "werewolf_skill2"
+   }
+  },
+  "whip_master": {
+   "Q": {
+    "from": "no_area",
+    "kind": "whip_master_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": {
+       "forward": {
+        "fixed": 20.5
+       }
+      },
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 41.0
+      }
+     }
+    ],
+    "kind": "whip_master_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 130.0
+      },
+      "radius": {
+       "fixed": 3.0
+      }
+     }
+    ],
+    "kind": "whip_master_ult"
+   }
+  },
+  "white_mage": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "shot",
+      "length": {
+       "cast_range": true,
+       "recorded": 80.0
+      },
+      "pierce": true,
+      "radius": {
+       "name": "attack_range",
+       "times": 0.5,
+       "recorded": 8.0
+      }
+     }
+    ],
+    "kind": "white_mage_skill"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 20.0
+      }
+     }
+    ],
+    "kind": "white_mage_skill2"
+   },
+   "R": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 120.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "attack_range",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "white_mage_ult"
+   }
+  },
+  "wind_mage": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "attack_range",
+      "recorded": 30
+     }
+    },
+    "kind": "wind_mage_skill1"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "fan",
+     "count": {
+      "fixed": 5
+     },
+     "width": {
+      "name": "attack_range",
+      "times": 2,
+      "recorded": 16
+     },
+     "spread": {
+      "fixed": 70
+     }
+    },
+    "kind": "wind_mage_skill2"
+   }
+  },
+  "witness": {
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "fixed": 120.0
+      },
+      "projectile": true,
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 15.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "R": {
+    "from": "no_area",
+    "kind": "data_action"
+   }
+  },
+  "yang": {
+   "Q": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "strip",
+      "length": {
+       "cast_range": true,
+       "recorded": 62.0
+      },
+      "projectile": true,
+      "radius": {
+       "fixed": 3.5
+      }
+     }
+    ],
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "live",
+    "shapes": [
+     {
+      "at": "aim",
+      "kind": "dash"
+     }
+    ],
+    "kind": "data_action"
+   }
+  },
+  "zook": {
+   "Q": {
+    "from": "no_area",
+    "kind": "data_action"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "jump_back",
+     "distance": {
+      "fixed": 64
+     },
+     "add": true
+    },
+    "shapes": [
+     {
+      "at": "caster",
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 32.0
+      }
+     }
+    ],
+    "kind": "data_action"
+   }
+  }
+ }
+}

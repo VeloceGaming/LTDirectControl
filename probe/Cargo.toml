@@ -1,6 +1,6 @@
 [package]
 name = "lt_direct_control"
-version = "1.5.0-dev12"
+version = "1.5.0-dev21"
 edition = "2021"
 publish = false
 
@@ -15,5 +15,11 @@ serde_json = "=1.0.151"
 serde = "=1.0.229"
 png = "=0.17.16"
 miniz_oxide = "=0.8.9"
+
+[features]
+# Research builds (step 4 of the preview plan, stage C): also the live skill
+# reader, the shape table and the research logs. Public builds only draw.
+#     cargo build --release --features research
+research = []
 
 [workspace]

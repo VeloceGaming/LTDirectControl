@@ -105,7 +105,9 @@ impl Client {
             }
         }
     }
-    fn gameplay_input(&self, keys: platform_input::Keys, active: bool) {
+    /// `paused`: the match is paused for this player, so only the plain
+    /// left-click (select a unit, clear the selection, close the shop) works.
+    fn gameplay_input(&self, keys: platform_input::Keys, active: bool, paused: bool) {
         camera::publish_vision(self.camera.vision());
         let action = self
             .abilities
@@ -117,6 +119,7 @@ impl Client {
             &self.camera,
             &self.logger,
             action.left_reserved,
+            paused,
         );
     }
 }
@@ -186,7 +189,7 @@ impl Client {
         self.emote_input(&mut keys, true, self.timing.client_running());
         self.resolve_targeting(&mut keys, true);
         self.movement.update(keys, true, false, &self.logger);
-        self.gameplay_input(keys, true);
+        self.gameplay_input(keys, true, false);
         if let Ok(mut o) = self.observations.lock() {
             o.early_input = Some((self.timing.generation(), keys));
         }
@@ -373,9 +376,14 @@ impl Client {
         let Frame { snapshot, .. } = frame;
         self.block_native_ui(ctx, hud_bounds);
         if early.is_none() || !gameplay_active {
+            let paused = controls
+                && battlefield
+                && self.timing.phase() == Some(native_timing::Phase::Paused)
+                && !ui_state::SETTINGS_OPEN.load(Ordering::Relaxed);
             self.gameplay_input(
                 keys,
                 gameplay_active && !ui_state::SETTINGS_OPEN.load(Ordering::Relaxed),
+                paused,
             );
         }
         self.update_pointer(

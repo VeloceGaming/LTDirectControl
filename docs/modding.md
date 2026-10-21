@@ -238,7 +238,16 @@ can and cannot do is in [preview-drawing.md](preview-drawing.md).
 
 Previews come from the game's own skill data, never per-skill code:
 
-- `native_adapter/windows/preview.rs` reads the controlled champion's live effect tree and
+- `preview_table.json` (compiled in; read by `preview_table.rs`) holds each
+  recorded champion's skill shapes, with every size given as where it comes
+  from: one of the skill's numbers by name (`attack_range`), the live cast
+  range, or a fixed number. During a match the mod asks the controlled
+  athlete's own skill objects for those numbers
+  (`native_adapter/windows/skill_numbers.rs`), so previews follow the
+  player's database edits and the save's balance patches. Do not edit the
+  table by hand; see "Add a champion's preview" below.
+- Research builds only (`cargo build --release --features research`):
+  `native_adapter/windows/preview.rs` reads the controlled champion's live effect tree and
   turns each recognised effect type (identified by its apply function and
   size) into footprints: a shape (circle, corridor, rectangle, cone,
   movement) and a placement (caster, aim, ahead, projectile end, landing).
@@ -256,6 +265,29 @@ Previews come from the game's own skill data, never per-skill code:
   its keys in `%LOCALAPPDATA%\LTDirectControl\preview_style.json`; it is
   read at start-up. A new kind of detail (a glow, a pulse) is a code
   addition to the pieces; after that it is a style value.
+
+### Add a champion's preview
+
+The shipped table is learned from play, then reviewed in a viewer:
+
+1. Build and install a research build (`cargo build --release
+   --features research`; the tools name it `<version>-research`, and it
+   is never for the Workshop). Play matches with the champion, or leave
+   the game running: background matches count. The mod records the
+   champion's shapes as the live reader decodes them and each skill's
+   numbers by name with the shapes read at the same moment, into
+   `%LOCALAPPDATA%\LTDirectControl\research\skill-shapes.json`.
+2. Open the viewer (`tools/preview_viewer.cmd`). Compare each drawing with
+   the game; assign a preview type to skills the reader cannot read; under
+   "Sizes in the mod", pick the number for sizes where two fit. Assignments
+   go to `skill-overrides.json`, picks to `skill-sources.json`, both in the
+   same folder.
+3. Run `python tools/build_preview_table.py`: it writes
+   `probe/src/preview_table.json` and lists what still needs a pick or has
+   no numbers yet. Build the public mod as usual.
+
+A Workshop champion that is not in the table is drawn from its champion
+file, with the file's numbers (they do not follow patches).
 
 ### Change hover and click selection
 
@@ -287,9 +319,15 @@ Previews come from the game's own skill data, never per-skill code:
 ### Logging
 
 Write `logger.write("TAG details")`. `logging.rs` assigns each tag a level
-(Safety, Normal, Verbose); a new tag counts as Normal. Add it to the
-`VERBOSE` list if it fires every click or frame. Use Settings › Interface ›
-Debug › Log detail = Verbose when investigating.
+(Safety, Normal, Verbose); a new tag counts as Normal, so decide its level
+when you add it. Normal is for what a tester reads after a match: session
+and settings events, refusals, and lines written once per start or per
+match. Add a tag to the `VERBOSE` list if it fires on every click, press,
+purchase or frame, every few seconds, or for every champion of a match, or if
+it only serves an investigation (research builds' recording traces
+included). Lines containing "failed" or "panic" are always written. Use
+Settings › Interface › Debug › Log detail = Verbose when investigating; a
+test in `logging.rs` pins the level of the busiest tags.
 
 ## Native hook code
 

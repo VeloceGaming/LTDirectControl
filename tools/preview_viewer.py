@@ -22,6 +22,10 @@ latest data, so there is nothing to regenerate:
   The mod reads it when the game starts (probe/src/skill_preview.rs).
 - skill-checked.json in the mod's folder: the skills the author has ticked
   "Checked by me" after comparing them with the game (the viewer only).
+- skill-sources.json in the mod's folder: which of the game's numbers the
+  author picked for a size when two fit (step 4, stage A); tools/preview_sources.py
+  decides the rest, and tools/build_preview_table.py writes the table the mod
+  ships from all of these.
 
 It also lists the champions the player's game can field (base game and
 enabled mods) that no match has recorded yet.
@@ -39,6 +43,8 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import preview_sources
+
 ROOT = Path(__file__).resolve().parent.parent
 PAGE = Path(__file__).resolve().parent / 'preview_viewer.html'
 MOD_FOLDER = Path(os.environ.get('LOCALAPPDATA', '')) / 'LTDirectControl'
@@ -46,6 +52,8 @@ TABLE = MOD_FOLDER / 'research' / 'skill-shapes.json'
 OVERRIDES = MOD_FOLDER / 'skill-overrides.json'
 # Skills the author has compared with the game ("Checked by me").
 CHECKED = MOD_FOLDER / 'skill-checked.json'
+# The author's picks where two of the game's numbers fit one size.
+PICKS = MOD_FOLDER / 'skill-sources.json'
 GAME = Path(os.environ.get('TFM2_GAME_DIR', r'C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager2'))
 SLOTS = {'skill': 'Q', 'skill1': 'Q', 'skill2': 'W', 'ult': 'R'}
 # What the mod accepts (probe/src/skill_preview.rs `assigned`): required
@@ -143,10 +151,15 @@ def mod_roots():
     return [(found[m][0], found[m][1], m in enabled) for m in order]
 
 
+# The bundle's balance patch rules from the last read (which numbers are
+# distances), kept for recomputing sources between page loads.
+RULES = {}
+
+
 def game_data():
     """Numbers, names and source of every champion the game and its mods
-    know, and which of them the player's game can field (the base game and
-    the enabled mods)."""
+    know, which of them the player's game can field (the base game and
+    the enabled mods), and the bundle's balance patch rules."""
     numbers, names, source, playable = {}, {}, {}, set()
     lang = game_language()
     try:
@@ -157,12 +170,16 @@ def game_data():
                 path = b.read(word()).decode()
                 size = word()
                 wanted = path.startswith('asset/base/') and (
-                    extension in ('champion_info_sheet', 'data_champion')
+                    extension in ('champion_info_sheet', 'data_champion', 'patch_setting')
                     or (extension == 'i18n' and path == 'asset/base/text/champion'))
                 if not wanted:
                     b.seek(size, 1)
                     continue
                 data = json.loads(b.read(size))
+                if extension == 'patch_setting':
+                    RULES.clear()
+                    RULES.update(data)
+                    continue
                 if extension == 'i18n':
                     add_text(names, data, lang)
                     continue
@@ -199,14 +216,30 @@ def game_data():
     return numbers, names, source, playable, lang
 
 
+def read_picks():
+    picks = read_json(PICKS)
+    return picks.get('picks') if isinstance(picks, dict) and isinstance(picks.get('picks'), dict) else {}
+
+
 def data():
     """Everything the page shows, read fresh."""
     table = read_json(TABLE) or {}
+    # Shapes recorded before 1.5.0-dev19, drawn with the readers' landing
+    # rule (tools/preview_sources.py `landed`), as the shipped table has them.
+    for slots in (table.get('champions') or {}).values():
+        for entry in slots.values():
+            if isinstance(entry, dict):
+                if entry.get('shapes'):
+                    entry['shapes'] = preview_sources.landed(entry['shapes'])
+                if isinstance(entry.get('file'), dict) and entry['file'].get('shapes'):
+                    entry['file']['shapes'] = preview_sources.landed(entry['file']['shapes'])
     overrides = read_json(OVERRIDES) or {}
     checked = read_json(CHECKED) or {}
     numbers, names, source, playable, lang = game_data()
     champions = table.get('champions') or {}
     missing = sorted(c for c in playable if c not in champions)
+    saved = overrides.get('skills') if isinstance(overrides, dict) else {}
+    picks = read_picks()
     return {
         'table': table,
         'style': style(),
@@ -215,15 +248,50 @@ def data():
         'source': {c: source.get(c, 'Unknown mod') for c in list(champions) + missing},
         # Champions the player's game can field that no match has shown yet.
         'missing': missing,
-        'saved': overrides.get('skills') if isinstance(overrides, dict) else {},
+        'saved': saved,
         'checked': checked.get('skills') if isinstance(checked, dict) else [],
-        'paths': {'table': str(TABLE), 'overrides': str(OVERRIDES)},
+        # Where each size comes from (step 4, stage A) and the author's picks.
+        'sources': preview_sources.all_skills(table, RULES, saved, picks),
+        'picks': picks,
+        'paths': {'table': str(TABLE), 'overrides': str(OVERRIDES), 'picks': str(PICKS)},
         'lang': lang,
     }
 
 
-def save_checked(skills):
+def sources(body):
+    """Sources for assignments and picks not saved yet (nothing is written)."""
+    table = read_json(TABLE) or {}
+    skills = body.get('skills') if isinstance(body.get('skills'), dict) else {}
+    picks = body.get('picks') if isinstance(body.get('picks'), dict) else {}
+    return {'ok': True, 'sources': preview_sources.all_skills(table, RULES, skills, picks)}
+
+
+def save_picks(body):
+    """The author's picks: {"<champion> <Q|W|R>": {size key: source}}."""
+    picks = body.get('picks')
+    clean = {}
+    for skill, sizes in (picks or {}).items():
+        if not (isinstance(skill, str) and re.fullmatch(r'\S+ [QWR]', skill) and isinstance(sizes, dict)):
+            continue
+        kept = {key: source for key, source in sizes.items()
+                if isinstance(key, str) and isinstance(source, dict)
+                and (source.get('cast_range') is True
+                     or isinstance(source.get('fixed'), (int, float))
+                     or isinstance(source.get('name'), str))}
+        if kept:
+            clean[skill] = dict(sorted(kept.items()))
+    MOD_FOLDER.mkdir(parents=True, exist_ok=True)
+    temp = PICKS.with_name(PICKS.name + '.tmp')
+    temp.write_text(json.dumps({'about': 'Which of the game\'s numbers the author picked for a preview size, '
+                                         'written by tools/preview_viewer.py; read by tools/build_preview_table.py.',
+                                'picks': dict(sorted(clean.items()))}, indent=2), encoding='utf-8')
+    temp.replace(PICKS)
+    return {'ok': True, 'picked': sum(len(v) for v in clean.values())}
+
+
+def save_checked(body):
     """The skills the author has compared with the game."""
+    skills = body.get('skills')
     keys = sorted({k for k in skills or [] if isinstance(k, str) and re.fullmatch(r'\S+ [QWR]', k)})
     MOD_FOLDER.mkdir(parents=True, exist_ok=True)
     temp = CHECKED.with_name(CHECKED.name + '.tmp')
@@ -267,8 +335,8 @@ def validate(skills):
     return good, problems
 
 
-def save(skills):
-    good, problems = validate(skills)
+def save(body):
+    good, problems = validate(body.get('skills'))
     body = {
         'about': 'The author\'s skill preview assignments, written by tools/preview_viewer.py. '
                  'Keyed "<champion> <Q|W|R>"; sizes in world units. The mod reads this file when the game starts.',
@@ -302,14 +370,17 @@ class Handler(BaseHTTPRequestHandler):
             self.send(404, 'text/plain', 'not found')
 
     def do_POST(self):
-        handlers = {'/api/save': save, '/api/checked': save_checked}
+        handlers = {'/api/save': save, '/api/checked': save_checked,
+                    '/api/sources': sources, '/api/picks': save_picks}
         if self.path not in handlers or self.headers.get('Origin', '').split('//')[-1].split(':')[0] not in ('', '127.0.0.1', 'localhost'):
             self.send(403, 'text/plain', 'refused')
             return
         try:
             length = min(int(self.headers.get('Content-Length', '0')), 2_000_000)
-            skills = json.loads(self.rfile.read(length)).get('skills')
-            self.send(200, 'application/json', json.dumps(handlers[self.path](skills)))
+            body = json.loads(self.rfile.read(length))
+            if not isinstance(body, dict):
+                raise ValueError('not an object')
+            self.send(200, 'application/json', json.dumps(handlers[self.path](body)))
         except (ValueError, AttributeError, OSError) as error:
             self.send(400, 'application/json', json.dumps({'ok': False, 'problems': [str(error)]}))
 

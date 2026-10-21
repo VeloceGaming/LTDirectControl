@@ -187,15 +187,45 @@ pub(crate) const LAYOUT_BYTES: &[(usize, &[u8])] = &[
             0x80, 0xb8, 0x01, 0x00, 0x00, 0xc3,
         ],
     ),
+    // ENTITY_SKILL_PATCH_NAME_CODE: a skill's patch name (Hammerer W:
+    // "hammerer_skill2"), returned in rax/rdx (step 4 of the preview plan).
+    (
+        0x16bf540,
+        &[
+            0x48, 0x8d, 0x05, 0x85, 0x61, 0x4e, 0x02, 0xba, 0x0f, 0x00, 0x00, 0x00, 0xc3,
+        ],
+    ),
+    // ENTITY_SKILL_PATCH_GET_CODE: get a number by name (rcx self, rdx/r8
+    // the name), found in al, value in rdx.
+    (
+        0x16bf360,
+        &[
+            0x31, 0xc0, 0x49, 0x83, 0xc0, 0xfa, 0x49, 0x83, 0xf8, 0x07, 0x0f, 0x87, 0xc8, 0x00,
+            0x00, 0x00,
+        ],
+    ),
+    // ENTITY_SKILL_COOLDOWN_CODE: the cooldown method `read_charges` calls.
+    (0x127ace0, &[0x48, 0x8b, 0x41, 0x30, 0xc3]),
 ];
 pub(crate) const LAYOUT_POINTERS: &[(usize, usize)] = &[
     (0x3b438a0, 0x16974f0),
     (0x3b430f8, 0x1adaf00),
     (0x3ba6298, 0x1611090),
+    // Hammerer W's skill method table: its patch name, get-by-name and
+    // cooldown methods at the positions the mod calls (+0x18, +0x20, +0x90).
+    (0x3ba3e20, 0x16bf540),
+    (0x3ba3e28, 0x16bf360),
+    (0x3ba3e98, 0x127ace0),
 ];
 pub(crate) const GUARDS: Guards = Guards {
     bytes: LAYOUT_BYTES,
     pointers: LAYOUT_POINTERS,
-    // Every family is installed, so every guard is checked.
-    families: &[],
+    // Every family is installed, so every byte guard is checked; the skill
+    // method guards go with the combat hook, which calls those methods.
+    families: &[(
+        family::COMBAT,
+        &[
+            0x3ba3e20, 0x3ba3e28, 0x3ba3e98, 0x16bf540, 0x16bf360, 0x127ace0,
+        ],
+    )],
 };

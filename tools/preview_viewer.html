@@ -41,6 +41,9 @@ button.primary.dirty{background:var(--accent);color:var(--card)}
 .edit .note{font-size:13px}
 details{font-size:13px;color:var(--muted);margin-top:4px}summary{cursor:pointer}
 .empty{padding:40px;text-align:center;color:var(--muted)}
+.sizes{margin-top:6px;display:flex;flex-direction:column;gap:3px}
+.sizes .row1{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.sizes select{font-size:13px;padding:1px 4px;max-width:100%}
 </style></head><body>
 <header>
   <div class="row">
@@ -74,10 +77,12 @@ details{font-size:13px;color:var(--muted);margin-top:4px}summary{cursor:pointer}
     <p>The cast range always comes live from the game (it follows level and balance patches), so assignments hold only the shape. An empty length means "the whole cast range". An assignment wins over everything the game reads for that skill.</p>
     <p>When the game already reads part of a skill (for example a blast around the caster) and only part is missing (for example a jump away), choose <b>Add to what the game reads</b>: your shape is drawn on top instead of replacing the read one. Each drawing zooms to fit its skill; the scale bar shows 25 units, and "Same scale" compares sizes between skills.</p>
     <p>Values are filled in from what the viewer learned: for every skill the game reads, it finds which of that skill's numbers holds each size, and tries those fields first for skills it cannot read. When a number is not in the game's data at all, the box says so and the value is yours to enter.</p>
+    <p><b>Sizes in the mod</b> (under each drawing): the mod will read each size from the game's own number by name, so it follows database edits and balance patches. Each size says where it comes from: one of the skill's numbers ("follows edits and patches"), the cast range, or a fixed number the game does not hold by name. Where two numbers have the same value, pick the right one ("Show: Size source to pick"); the choice saves at once. Sizes wait for their numbers until a match has shown that skill (background matches count).</p>
     <details><summary>What the viewer learned</summary><div id="learned" class="small"></div></details>
     <p class="legend small"><span><i class="sw" style="background:#fff6c2"></i>cast range</span><span><i class="sw" style="background:#fdee00"></i>shape</span><span><i class="sw" style="background:#53b8e4"></i>shape for allies</span><span><i class="sw" style="background:#5fd3e0"></i>dash, blink, jump</span><span><i class="sw" style="background:#d4537e"></i>target</span><span><i class="sw" style="background:#378ADD"></i>your champion</span><span>dashed white arrow: not readable yet</span></p>
   </div>
   <details id="missingBox" class="help" hidden><summary id="missingSummary"></summary><p class="small muted">These champions are in your game (base game and enabled mods) but no match has shown them yet, so their skills are not recorded. Put them in a match (a custom match or a match day with them picked) and reload this page.</p><div id="missingList" class="small"></div></details>
+  <details id="numbersBox" class="help" hidden><summary id="numbersSummary"></summary><p class="small muted">The mod has recorded these champions' shapes, but not yet the game's numbers for some of their skills, so those sizes are fixed for now. Play matches with the mod (background matches count too, and a skill is recorded once it is learned); then reload this page.</p><div id="numbersList" class="small"></div></details>
   <div id="list"></div>
 </main>
 <script>
@@ -87,6 +92,9 @@ const SERVER=!EMBEDDED;
 let D,TABLE,ST,NUMBERS,NAMES,SOURCE,saved={},assigned={};
 /// Skills the author compared with the game ("Checked by me"), saved at once.
 let checked=new Set();
+/// Where each size comes from (tools/preview_sources.py, via the viewer) and
+/// the author's picks where two of the game's numbers fit one size.
+let SOURCES={},picks={};
 const SLOTS=['Q','W','R'],CASTING=['cast on a unit','cast at a point','cast in a direction','cast without aiming'];
 const TYPES={
   unit_target:{label:'Unit target',fields:['area_radius'],optional:['area_radius']},
@@ -105,7 +113,7 @@ const FIELD_HELP={area_radius:'radius around the target (empty: none)',radius:'r
 const FLAG_LABELS={allies:'For allies (blue)',blink:'Blink (no path)'};
 const AREA_TYPES=['unit_target','self_circle','aim_circle','aim_rectangle','line','fan','cone'];
 const TYPE_LABELS=Object.assign({},...Object.entries(TYPES).map(([k,v])=>({[k]:v.label})),{passive:'Passive',instant:'Instant (no aim)',no_area:'No area',unread:'Not readable yet'});
-const STATUS={all:'All skills',unchecked:'Not checked yet',checked:'Checked by me',need:'Needs attention',mine:'Assigned by you',live:'Read by the game',file:'From champion file',unit:'Unit target (unread)',passive:'Passive',instant:'Instant (no aim)'};
+const STATUS={all:'All skills',unchecked:'Not checked yet',checked:'Checked by me',pick:'Size source to pick',nonumbers:'Numbers not recorded yet',need:'Needs attention',mine:'Assigned by you',live:'Read by the game',file:'From champion file',unit:'Unit target (unread)',passive:'Passive',instant:'Instant (no aim)'};
 const SOURCE_LABEL={assigned:'your assignment',live:'read by the game',file:'from champion file',unit:'unit target',passive:'passive',instant:'instant',unread:'not readable yet'};
 const DIST=/range|radius|width|height|length|distance|offset/;
 const AREA=['radius','attack_range','explosion_range','area_range','heal_range','buff_range','ally_range'];
@@ -351,7 +359,7 @@ function skillCard(champ,slot){
   div.innerHTML=`<canvas></canvas><div class="title"><span class="key">${slot}</span><span>${esc(nm['skill_'+slot]||'')}</span><span class="chip type"></span><span class="chip src"></span>
     <label class="small" style="margin-left:auto" title="Tick after comparing this skill's drawing with the game"><input type="checkbox" class="check"> Checked by me</label></div>
     <div class="info small muted"></div>${nm['desc_'+slot]?`<div class="desc" title="Click to show all">${esc(nm['desc_'+slot])}</div>`:''}
-    <div class="edit"></div><details><summary>Game numbers for this skill</summary><div class="nums"></div></details>`;
+    <div class="edit"></div><div class="sizes small"></div><details><summary>Game numbers for this skill</summary><div class="nums"></div></details>`;
   const cv=div.querySelector('canvas');let pointer=null;
   const card={champ,slot,s,div,redraw:()=>draw(cv,s,chosen(champ,slot,s),pointer)};
   cv.onmousemove=e=>{const r=cv.getBoundingClientRect();pointer=[e.clientX-r.left,e.clientY-r.top];card.redraw()};
@@ -371,6 +379,7 @@ function skillCard(champ,slot){
     info.textContent=[c.casting>=0&&c.casting<=3?CASTING[c.casting]:'never cast (passive)',rng>0.5?`cast range ${+rng.toFixed(1)}${c.growth?` (+${c.growth} per level)`:''}`:'no cast range',
       kinds?(p.suggestion?'suggested: ':'')+kinds:'',p.reason?readerReason(p.reason):''].filter(Boolean).join(' · ');
     info.title=p.reason?`Reader detail: ${p.reason}`:'';
+    renderSizes(card);
     card.redraw();
   };
   card.build=()=>{
@@ -418,7 +427,64 @@ function skillCard(champ,slot){
   card.build();cards.push(card);return div;
 }
 /// A changed shape needs checking again, so its tick is cleared.
-function changed(card,keepEditor){if(!keepEditor)card.build();card.untick();card.refresh();store.set('draft',assigned);updateHeader()}
+function changed(card,keepEditor){if(!keepEditor)card.build();card.untick();card.refresh();store.set('draft',assigned);updateHeader();refreshSources()}
+
+/* ---------- where each size comes from (step 4, stage A) ---------- */
+const sizesOf=(champ,slot)=>(SOURCES[champ]?.[slot]?.sizes)||[];
+const SIZE_NAMES={radius:'radius',length:'length',width:'width',height:'depth',depth:'depth',extra:'extra reach',count:'count',degrees:'spread',
+  'at.forward':'ahead of the caster','at.end':'end','at.landing':'landing',area_radius:'radius around the target',distance:'distance',spread:'spread',angle:'angle'};
+function sizeLabel(key,many){const parts=key.split('.'),head=parts[0],rest=parts.slice(1).join('.');
+  if(head==='assigned')return SIZE_NAMES[rest]||rest;return(many?`shape ${+head+1} `:'')+(SIZE_NAMES[rest]||rest)}
+function sourceLabel(src,value){
+  if(!src)return'';if(src.cast_range)return'the cast range';if(src.fixed!==undefined)return`fixed ${+(+src.fixed).toFixed(2)}`;
+  return src.name+(src.times&&src.times!==1?` × ${src.times}`:'')+(src.unit==='degrees'?' (degrees)':src.unit==='count'?' (count)':'')}
+const STATUS_NOTE={named:['muted','follows edits and patches'],picked:['muted','your pick'],cast_range:['muted','follows level and patches'],
+  fixed:['muted','fixed: the game holds no number for it'],pick:['warn','two numbers fit: pick one'],no_numbers:['warn','numbers not recorded yet']};
+const plain=src=>{const o=Object.assign({},src);delete o.recorded;return o};
+function renderSizes(card){
+  const box=card.div.querySelector('.sizes'),entry=SOURCES[card.champ]?.[card.slot],list=entry?entry.sizes:[];
+  box.innerHTML='';box.hidden=!list.length;if(!list.length)return;
+  const many=new Set(list.filter(x=>!x.key.startsWith('assigned')).map(x=>x.key.split('.')[0])).size>1;
+  const title=document.createElement('div');title.className='muted';title.textContent='Sizes in the mod:';box.appendChild(title);
+  const key=`${card.champ} ${card.slot}`;
+  for(const z of list){
+    const row=document.createElement('div');row.className='row1';
+    const lab=document.createElement('span');lab.textContent=`${sizeLabel(z.key,many)} ${+(+z.value).toFixed(2)}`;
+    const sel=document.createElement('select');sel.disabled=!SERVER;sel.title='Where the mod takes this size from';
+    const options=[];const add=(src,label)=>{const v=JSON.stringify(plain(src));if(!options.some(o=>o[0]===v))options.push([v,label])};
+    const mine=picks[key]?.[z.key];
+    if(mine)options.push(['',`automatic`]);
+    add(z.source,sourceLabel(z.source));
+    for(const c of z.candidates||[])add(c,sourceLabel(c));
+    add({fixed:z.value},sourceLabel({fixed:z.value}));
+    if(/length|at\.end|at\.landing|distance/.test(z.key))add({cast_range:true},'the cast range');
+    sel.innerHTML=options.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('');
+    sel.value=JSON.stringify(plain(z.source));
+    sel.onchange=()=>{const m=picks[key]=picks[key]||{};if(sel.value==='')delete m[z.key];else m[z.key]=JSON.parse(sel.value);
+      if(!Object.keys(m).length)delete picks[key];savePicks();refreshSources(true)};
+    const note=document.createElement('span');const[cls,text]=STATUS_NOTE[z.status]||['muted',z.status];note.className=cls;note.textContent=text;
+    row.append(lab,sel,note);box.appendChild(row);
+  }
+}
+let picksTimer=null,sourcesTimer=null;
+function savePicks(){
+  if(!SERVER)return;clearTimeout(picksTimer);
+  picksTimer=setTimeout(()=>fetch('/api/picks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({picks})})
+    .then(r=>r.json()).then(r=>{if(!r.ok)throw 0}).catch(()=>{$('saveState').innerHTML='<span class="bad">Could not save your size picks. Is the viewer window still open?</span>'}),300);
+}
+/// Sources for what is on screen now (unsaved assignments included).
+function refreshSources(now){
+  if(!SERVER)return;clearTimeout(sourcesTimer);
+  sourcesTimer=setTimeout(()=>fetch('/api/sources',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({skills:assigned,picks})})
+    .then(r=>r.json()).then(r=>{if(!r.ok)throw 0;SOURCES=r.sources||{};cards.forEach(renderSizes);fillFilters();updateHeader();showNumbersBox()}).catch(()=>{}),now?0:300);
+}
+function showNumbersBox(){
+  const waiting=Object.keys(TABLE.champions).filter(c=>SLOTS.some(k=>sizesOf(c,k).some(z=>z.status==='no_numbers')));
+  $('numbersBox').hidden=!waiting.length;
+  $('numbersSummary').textContent=`Numbers not recorded yet: ${waiting.length} champion(s)`;
+  $('numbersList').innerHTML=waiting.sort((a,b)=>(NAMES[a]?.name||a).localeCompare(NAMES[b]?.name||b))
+    .map(c=>`${esc(NAMES[c]?.name||c)} <span class="muted">(${esc(c)}: ${SLOTS.filter(k=>sizesOf(c,k).some(z=>z.status==='no_numbers')).join(', ')})</span>`).join('<br>');
+}
 let checkTimer=null;
 function saveChecked(){
   store.set('checked',[...checked]);
@@ -434,6 +500,7 @@ function statusOf(p){return p.src==='assigned'?'mine':p.src==='unread'?'need':p.
 function matches(champ,slot,f){
   const s=TABLE.champions[champ][slot],p=chosen(champ,slot,s),nm=NAMES[champ]||{},key=`${champ} ${slot}`;
   if(f.status==='checked'||f.status==='unchecked'){if(checked.has(key)!==(f.status==='checked'))return false}
+  else if(f.status==='pick'||f.status==='nonumbers'){const want=f.status==='pick'?'pick':'no_numbers';if(!sizesOf(champ,slot).some(z=>z.status===want))return false}
   else if(f.status!=='all'&&statusOf(p)!==f.status)return false;
   if(f.type&&p.type!==f.type)return false;
   if(f.mod&&SOURCE[champ]!==f.mod)return false;
@@ -468,6 +535,7 @@ function fillFilters(){
   const total=Object.values(counts.status).reduce((a,b)=>a+b,0);
   const ticked=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>checked.has(`${c} ${k}`)).length,0);
   counts.status.checked=ticked;counts.status.unchecked=total-ticked;
+  for(const[st,want]of[['pick','pick'],['nonumbers','no_numbers']])counts.status[st]=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>sizesOf(c,k).some(z=>z.status===want)).length,0);
   const set=(id,first,entries)=>{const el=$(id),v=el.value;el.innerHTML=`<option value="${id==='status'?'all':''}">${first}</option>`+entries.map(([k,l,n])=>`<option value="${esc(k)}">${esc(l)} (${n})</option>`).join('');el.value=[...el.options].some(o=>o.value===v)?v:el.options[0].value};
   set('status',`Show: all skills (${total})`,Object.entries(STATUS).filter(([k])=>k!=='all'&&counts.status[k]).map(([k,l])=>[k,'Show: '+l,counts.status[k]]));
   set('type','Every preview type',Object.keys(TYPE_LABELS).filter(t=>counts.type[t]).map(t=>[t,TYPE_LABELS[t],counts.type[t]]));
@@ -478,8 +546,9 @@ function updateHeader(shown){
   const mine=Object.keys(assigned).length;
   const ticked=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>checked.has(`${c} ${k}`)).length,0);
   const missing=(D.missing||[]).length;
+  let toPick=0,waiting=0;for(const c of Object.keys(TABLE.champions))for(const k of SLOTS){const z=sizesOf(c,k);toPick+=z.filter(x=>x.status==='pick').length;if(z.some(x=>x.status==='no_numbers'))waiting++}
   $('progress').textContent=`Game ${TABLE.game||'?'} · ${Object.keys(TABLE.champions).length} champions, ${total} skills · ${ticked} of ${total} checked by you · ${need} need attention · ${mine} assigned by you`
-    +(missing?` · ${missing} champions not recorded yet`:'')+(shown!==undefined?` · showing ${shown}`:'');
+    +(missing?` · ${missing} champions not recorded yet`:'')+(toPick?` · ${toPick} size(s) to pick`:'')+(waiting?` · ${waiting} skill(s) waiting for numbers`:'')+(shown!==undefined?` · showing ${shown}`:'');
   const bad=invalidKeys(),d=dirty();
   $('save').classList.toggle('dirty',d);
   $('saveState').innerHTML=bad.length?`<span class="bad">${bad.length} assignment(s) have missing or invalid values and will not be saved</span>`:d?'<span class="warn">Unsaved changes</span>':'<span class="muted">All saved</span>';
@@ -510,6 +579,7 @@ async function start(){
   TABLE=D.table||{};TABLE.champions=TABLE.champions||{};ST=D.style;NUMBERS=D.numbers||{};NAMES=D.names||{};SOURCE=D.source||{};
   learn();
   saved=clone(D.saved||{});assigned=clone(saved);
+  SOURCES=D.sources||{};picks=clone(D.picks||{});
   checked=new Set(SERVER?(D.checked||[]):store.get('checked',[]));
   const miss=D.missing||[];
   if(miss.length){$('missingBox').hidden=false;$('missingSummary').textContent=`Not recorded yet: ${miss.length} champion(s) your game has but no match has shown`;
@@ -520,12 +590,14 @@ async function start(){
   const draft=store.get('draft',null);
   if(draft&&!same(draft,saved)){const b=$('restore');b.hidden=false;
     b.innerHTML=`<span>You have unsaved changes from last time (${Object.keys(draft).length} assignment(s)).</span><button id="restoreYes">Restore them</button><button id="restoreNo">Discard</button>`;
-    $('restoreYes').onclick=()=>{assigned=clone(draft);b.hidden=true;render()};$('restoreNo').onclick=()=>{store.del('draft');b.hidden=true}}
+    $('restoreYes').onclick=()=>{assigned=clone(draft);b.hidden=true;render();refreshSources(true)};$('restoreNo').onclick=()=>{store.del('draft');b.hidden=true}}
   const f=store.get('filters',{});
   $('find').value=f.q||'';view.level=f.level||1;view.sameScale=!!f.sameScale;$('level').value=view.level;$('levelValue').textContent=view.level;$('sameScale').checked=view.sameScale;
   if(store.get('helpSeen',false)===false){$('help').hidden=false;store.set('helpSeen',true)}
   fillFilters();if(f.status)$('status').value=f.status;if(f.type)$('type').value=f.type;if(f.mod)$('mod').value=f.mod;
-  render();
+  render();showNumbersBox();
+  // Restored unsaved assignments change which sizes are drawn.
+  if(!same(assigned,saved))refreshSources(true);
 }
 $('find').oninput=render;['status','type','mod'].forEach(id=>$(id).onchange=render);$('clear').onclick=clearFilters;
 $('level').oninput=()=>{view.level=+$('level').value;$('levelValue').textContent=view.level;cards.forEach(c=>c.refresh());store.set('filters',Object.assign(store.get('filters',{}),{level:view.level}))};

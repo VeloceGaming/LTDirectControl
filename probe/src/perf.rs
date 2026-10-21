@@ -265,7 +265,8 @@ pub fn worker_thread() {
         WORKER_THREAD.store(id, Relaxed);
     }
 }
-/// True on the viewed match's simulation worker.
+/// True on the viewed match's simulation worker (the research inventory).
+#[cfg(feature = "research")]
 pub fn on_worker_thread() -> bool {
     crate::platform_input::thread_id() == WORKER_THREAD.load(Relaxed)
 }

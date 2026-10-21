@@ -158,14 +158,54 @@ pub(crate) unsafe fn observe_owned_abilities(
         .abilities
         .observe_metadata(key, actor, metadata, &shared.logger);
     if let Some(base) =
-        family_base(family::READERS).filter(|_| shared.abilities.geometry_due(key, actor))
+        family_base(family::COMBAT).filter(|_| shared.abilities.geometry_due(key, actor))
     {
-        let offsets = [0x4c0, 0x4f8, 0x530];
+        // What the live reader reads, in research builds only: the preview
+        // where the table has no entry, and the comparison below.
+        #[cfg(feature = "research")]
+        let live = super::research::live_geometry(entity, &metadata);
+        #[cfg(not(feature = "research"))]
+        let live: [crate::skill_preview::Geometry; 3] = Default::default();
+        // Step 4 of the preview plan: the shipped table, sized by the game's
+        // numbers by name (stage B, 1.5.0-dev17).
+        let champion = shared.abilities.champion(key, actor);
+        let stack =
+            std::ptr::read_unaligned((entity + super::skill_numbers::ENTITY_STACK) as *const usize)
+                .min(64);
         let geometry = std::array::from_fn(|slot| {
-            if metadata[slot].is_some() {
-                preview::read(base, entity, offsets[slot])
+            // No cast data (a passive, or not readable): nothing, as before.
+            let Some(name) = champion.as_deref().filter(|_| metadata[slot].is_some()) else {
+                return live[slot].clone();
+            };
+            let names = crate::preview_table::names(name, slot);
+            let numbers = if metadata[slot].is_some() && !names.is_empty() {
+                super::skill_numbers::named(shared, (key, actor), entity, base, slot, name, &names)
             } else {
-                crate::skill_preview::Geometry::default()
+                None
+            };
+            let now = crate::preview_table::Live {
+                numbers: numbers.as_ref(),
+                cast_range: metadata[slot].map(|d| d.range as f32 / 1000.),
+                stack,
+            };
+            match crate::preview_table::geometry(name, slot, &now) {
+                Some(table) => {
+                    // Once the numbers are read: before that the table uses
+                    // its recorded values, which an edit may have changed.
+                    #[cfg(feature = "research")]
+                    if numbers.is_some() {
+                        super::research::compare(
+                            shared,
+                            (key, actor),
+                            name,
+                            slot,
+                            &table,
+                            &live[slot],
+                        );
+                    }
+                    table
+                }
+                None => live[slot].clone(),
             }
         });
         shared
@@ -275,9 +315,11 @@ pub(crate) unsafe extern "system" fn auto_attack_hook(entity: usize, input: usiz
 pub(crate) unsafe fn attack_hook_from(source: &str, entity: usize, input: usize, events: usize) {
     let _profile = crate::perf::work(crate::perf::Work::AttackInclusive);
     crate::perf::hook(crate::perf::Hook::Attack);
+    // Research builds only: the effect-tree inventory, the shape table and
+    // the skill numbers of every champion (`research.rs`).
+    #[cfg(feature = "research")]
     if let Some(shared) = SHARED.get() {
-        let _ = catch_unwind(AssertUnwindSafe(|| inventory(shared, entity)));
-        let _ = catch_unwind(AssertUnwindSafe(|| record_shapes(shared, entity)));
+        super::research::observe(shared, entity);
     }
     let original: AttackFn = std::mem::transmute(ORIGINAL_ATTACK.load(Ordering::Acquire));
     let selected = SHARED.get().and_then(|shared| {
@@ -524,155 +566,4 @@ pub(crate) unsafe fn finish_attack_backswing(
     std::ptr::write_unaligned((entity + 0x70) as *mut usize, 0);
     shared.logger.write(&format!("ATTACK COMMITTED_INTERRUPT actor={actor} reason={reason} elapsed={elapsed} cooldown={cooldown}; hit tick passed, empty pending queue, animation released, cooldown retained"));
     true
-}
-
-// 0.70 diagnostic: an inventory of skill effect trees, so the remaining
-// effect types can be decoded. The viewed match's champions have their own
-// budget (every champion, once per match: the roster names them); background
-// matches add new tree shapes only.
-const VIEWED_LIMIT: usize = 240;
-const BACKGROUND_LIMIT: usize = 200;
-const BACKGROUND_PER_SHAPE: usize = 2;
-static VIEWED_LINES: AtomicUsize = AtomicUsize::new(0);
-static BACKGROUND_LINES: AtomicUsize = AtomicUsize::new(0);
-static INVENTORY_SHAPES: std::sync::Mutex<Vec<(u64, usize)>> = std::sync::Mutex::new(Vec::new());
-thread_local! {
-    static INVENTORIED: std::cell::RefCell<std::collections::HashSet<usize>> =
-        std::cell::RefCell::new(std::collections::HashSet::new());
-}
-/// Coverage lines (one per champion of the viewed match) have their own
-/// budget: they are short, and a report needs every match of a session.
-const COVERAGE_LIMIT: usize = 600;
-static COVERAGE_LINES: AtomicUsize = AtomicUsize::new(0);
-unsafe fn inventory(shared: &Shared, entity: usize) {
-    let viewed = crate::perf::on_worker_thread();
-    let (lines, limit) = if viewed {
-        (&VIEWED_LINES, VIEWED_LIMIT)
-    } else {
-        (&BACKGROUND_LINES, BACKGROUND_LIMIT)
-    };
-    if lines.load(Ordering::Relaxed) >= limit
-        && (!viewed || COVERAGE_LINES.load(Ordering::Relaxed) >= COVERAGE_LIMIT)
-    {
-        return;
-    }
-    let fresh = INVENTORIED.with(|seen| {
-        let mut seen = seen.borrow_mut();
-        if seen.len() >= 4096 {
-            seen.clear();
-        }
-        seen.insert(entity)
-    });
-    let Some(base) = family_base(family::READERS).filter(|_| fresh) else {
-        return;
-    };
-    let actor = std::ptr::read_unaligned((entity + 0x5b8) as *const usize);
-    // What the reader makes of each skill, for tools/audit_previews.py; the
-    // PREVIEW ROSTER line before it names the actor's champion.
-    if viewed && COVERAGE_LINES.fetch_add(1, Ordering::Relaxed) < COVERAGE_LIMIT {
-        let slots = [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)].map(|(slot, offset)| {
-            let readable = preview::dump(base, entity, offset, &|a, n| {
-                super::tooltips::accessible(a, n, false)
-            })
-            .is_some();
-            let summary = if readable {
-                preview::read(base, entity, offset).summary()
-            } else {
-                "absent".into()
-            };
-            format!("{slot}={summary}")
-        });
-        shared.logger.write(&format!(
-            "PREVIEW COVERAGE actor={actor} {}",
-            slots.join(" ")
-        ));
-    }
-    if lines.load(Ordering::Relaxed) >= limit {
-        return;
-    }
-    for (slot, offset) in [("Q", 0x4c0), ("W", 0x4f8), ("R", 0x530)] {
-        let Some(tree) = preview::dump(base, entity, offset, &|a, n| {
-            super::tooltips::accessible(a, n, false)
-        }) else {
-            continue;
-        };
-        if !viewed && !new_background_shape(&tree) {
-            continue;
-        }
-        if lines.fetch_add(1, Ordering::Relaxed) < limit {
-            shared.logger.write(&format!(
-                "PREVIEW TREE viewed={viewed} actor={actor} slot={slot} {tree}"
-            ));
-        }
-    }
-}
-/// Every champion's decoded Q/W/R, once per champion, for the shape table
-/// (`crate::shape_record`). Only skills whose effect tree is readable are
-/// decoded, as for the coverage lines above.
-unsafe fn record_shapes(shared: &Shared, entity: usize) {
-    let Some(base) = family_base(family::READERS) else {
-        return;
-    };
-    let actor = std::ptr::read_unaligned((entity + 0x5b8) as *const usize);
-    let Some(name) = crate::shape_record::wanted(actor) else {
-        return;
-    };
-    let offsets = [0x4c0, 0x4f8, 0x530];
-    let skills = offsets.map(|offset| {
-        let readable = preview::dump(base, entity, offset, &|a, n| {
-            super::tooltips::accessible(a, n, false)
-        })
-        .is_some();
-        if readable {
-            preview::read(base, entity, offset)
-        } else {
-            let mut absent = crate::skill_preview::Geometry::default();
-            absent.issue("effect tree not readable");
-            absent
-        }
-    });
-    // How each skill is cast, for the viewer (the same fields as
-    // `read_effect_metadata`; at play they stay live).
-    let casts = offsets.map(|offset| {
-        let data = entity + offset;
-        crate::shape_record::Cast {
-            casting: std::ptr::read_unaligned((data + 0x30) as *const u32),
-            target: std::ptr::read_unaligned((data + 0x28) as *const u32),
-            range: std::ptr::read_unaligned((data + 0x10) as *const u64),
-            growth: std::ptr::read_unaligned((data + 0x18) as *const u64),
-        }
-    });
-    crate::shape_record::record(name, skills, casts, &shared.logger);
-}
-/// Background trees: each shape (the tree without payload words) twice.
-fn new_background_shape(tree: &str) -> bool {
-    let mut shape = String::new();
-    let mut inside = false;
-    for c in tree.chars() {
-        match c {
-            '[' => inside = true,
-            ']' => inside = false,
-            _ if !inside => shape.push(c),
-            _ => {}
-        }
-    }
-    let hash = {
-        use std::hash::{Hash, Hasher};
-        let mut h = std::collections::hash_map::DefaultHasher::new();
-        shape.hash(&mut h);
-        h.finish()
-    };
-    INVENTORY_SHAPES.lock().is_ok_and(|mut shapes| {
-        match shapes.iter_mut().find(|(h, _)| *h == hash) {
-            Some((_, n)) if *n >= BACKGROUND_PER_SHAPE => false,
-            Some((_, n)) => {
-                *n += 1;
-                true
-            }
-            None => {
-                shapes.push((hash, 1));
-                true
-            }
-        }
-    })
 }

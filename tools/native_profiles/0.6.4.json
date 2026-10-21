@@ -495,6 +495,30 @@
   "VISION_FOG_ARGUMENT": {
    "rva": "0x2abf529",
    "bytes": "450fb64e4b"
+  },
+  "SKILL_PATCH_NAME_SLOT": {
+   "rva": "0x3bb8180",
+   "pointer_target": "0x149f990"
+  },
+  "SKILL_PATCH_GET_SLOT": {
+   "rva": "0x3bb8188",
+   "pointer_target": "0x149f7b0"
+  },
+  "SKILL_COOLDOWN_SLOT": {
+   "rva": "0x3bb81f8",
+   "pointer_target": "0x13f2ac0"
+  },
+  "ENTITY_SKILL_PATCH_NAME_CODE": {
+   "rva": "0x149f990",
+   "bytes": "488d051aa47102ba0f000000c3"
+  },
+  "ENTITY_SKILL_PATCH_GET_CODE": {
+   "rva": "0x149f7b0",
+   "bytes": "31c04983c0fa4983f8070f87c8000000"
+  },
+  "ENTITY_SKILL_COOLDOWN_CODE": {
+   "rva": "0x13f2ac0",
+   "bytes": "488b4130c3"
   }
  },
  "tooltip_anchors": {

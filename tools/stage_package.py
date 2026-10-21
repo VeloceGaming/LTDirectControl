@@ -8,6 +8,8 @@ import json
 import shutil
 from pathlib import Path
 
+from paths import dll_variant
+
 root = Path(__file__).resolve().parents[1]
 probe = root / 'probe'
 package = root / 'dist/lt_direct_control'
@@ -15,8 +17,13 @@ dll = probe / 'target/release/lt_direct_control.dll'
 # Refuse a stale DLL (2026-10-20: a skipped `cargo build --release` shipped
 # the 1.4.4 DLL as 1.4.5 and 1.4.6; tests and the verifier passed). The DLL
 # must be newer than every source input and carry mod.mod_info's version.
+# Data compiled into the DLL counts too (1.5.0-dev17): the shipped preview
+# table and other JSON in src/, the translations and the per-version
+# native profiles, all pulled in with include_str!.
 version = json.loads((probe / 'mod.mod_info').read_text(encoding='utf-8-sig'))['version']
-inputs = [probe / 'Cargo.toml', probe / 'Cargo.lock', *(probe / 'src').rglob('*.rs')]
+inputs = [probe / 'Cargo.toml', probe / 'Cargo.lock', *(probe / 'src').rglob('*.rs'),
+          *(probe / 'src').rglob('*.json'), *(probe / 'lang').glob('*.json'),
+          *(root / 'tools/native_profiles').glob('*.json')]
 newest = max(inputs, key=lambda p: p.stat().st_mtime)
 if not dll.exists() or dll.stat().st_mtime < newest.stat().st_mtime:
     raise SystemExit(f'Stale DLL: {newest.relative_to(root)} is newer. Run `cargo build --release` in probe/ first.')
@@ -32,4 +39,6 @@ shutil.copy2(probe / 'mod.mod_info', package)
 for folder in ['ui', 'font', 'sound']:
     shutil.copytree(probe / folder, package / folder)
 count = sum(1 for p in package.rglob('*') if p.is_file())
-print(f'Staged {count} files in {package.relative_to(root)}')
+variant = dll_variant(package / 'lt_direct_control.dll')
+print(f'Staged {count} files in {package.relative_to(root)} ({variant} build'
+      + (', records skill shapes; never for the Workshop)' if variant == 'research' else ')'))
