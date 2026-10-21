@@ -207,6 +207,36 @@ worker caller sends from a drain loop as well: such sends go in the
 version's `WORKER_EXTRA_SITES`, and the profile names each as
 `WORKER_EXTRA_BYTES_<n>`.
 
+A function the mod calls can disappear into its callers. 0.7.0 Beta 2
+builds the cancel-recall event inline wherever it needs it, so no function
+is left to call; its draft "found" the move function, whose entry bytes
+happen to be the old function's. Check a drafted function by its callers,
+not its first bytes. The mod then builds such an event itself, the way the
+game does (`layout::CANCEL_RECALL_INLINE`, `movement::push_inline_cancel`).
+
+Values that identify a type change with the build, not only addresses: the
+in-game UI's Rust type id differs in Beta 2 (`layout::INGAME_UI_TYPE_ID`).
+Look for constants the shared code compares with, not only offsets.
+
+Check what a moved function now reads that it did not before. Beta 2's
+move refuses while the champion has a named status (`MOVE_BLOCK_STATUS`),
+and its ranges add a new effect method (0 for every effect found). The
+mod repeats some of the game's checks itself, so each new condition there
+needs a look.
+
+An object the game hands the mod can grow even when the code that uses it
+is unchanged. Beta 2's Assets context grew by about 0x330 bytes (the sheet
+getter reads `+0x368` where 0.6.5 read `+0x30`), so the tooltip reader's
+readability check became a per-version size
+(`layout::TOOLTIP_ASSETS_READ_SIZE`). Measure how far the functions the
+mod calls read into each object it passes them, the callees included.
+
+The draft carries addresses, not values stored in data. Beta 2's
+champion-info tables kept their places, but two of the sizes they hold grew;
+the draft kept the old ones (`TOOLTIP_TABLE_LAYOUTS`). Read every size and
+byte pattern again from the new executable. Its sheet getter was also wrong
+(right entry bytes, one caller instead of 24): the callers again.
+
 ## 4. Add the version
 
 1. Copy the reviewed draft to `probe/src/native_adapter/v071/` and the
@@ -233,7 +263,7 @@ the rest is open. The order that worked, and what to play for each:
 | Outline | Hover and target outlines on both teams |
 | Readers | Research builds only (`--features research`): the live skill reader that records shapes for the preview table. Public builds leave this family out, so a release does not need it. With Log detail set to Verbose, one match per group of champions, then `python tools/audit_previews.py`: it lists every skill the reader did not understand |
 | Tooltips | Ability numbers on a few champions, including a new one and a mod one |
-| Stats | "Athlete stat rules" On, then back to the main menu: the log says `STATRULE installed sites=33` (`unavailable` names the site that differs). With `"practice_mode": 1` in controls.json, cast a projectile skill and a circle skill at the pinned enemies: the readout names shape B and shape A. One normal match with the rules On |
+| Stats | "Athlete stat rules" On, then back to the main menu: the log says `STATRULE installed sites=33` on 0.6.4, 35 from 0.6.5 (`unavailable` names the site that differs). With `"practice_mode": 1` in controls.json, cast a projectile skill and a circle skill at the pinned enemies: the readout names shape B and shape A. One normal match with the rules On |
 
 For skill shapes, a field's meaning is settled by what the game shows, not
 by its position: ask for a screenshot of the skill's real area before

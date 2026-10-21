@@ -1299,6 +1299,8 @@ pub struct ShopUi {
     cache: HashMap<String, String>,
     names: HashMap<String, String>,
     bodies: HashMap<String, String>,
+    /// `native_tooltips::item_revision` when names and bodies were stored.
+    item_revision: u64,
     spawn: Option<Instant>,
     registered: bool,
     previous_shop: bool,
@@ -1352,6 +1354,13 @@ impl ShopUi {
         }
     }
     fn name(&mut self, ctx: &StableClient<'_>, hud: &HudUi, key: &str) -> String {
+        // A game item text arrived since these were stored: build them again.
+        let revision = crate::native_tooltips::item_revision();
+        if self.item_revision != revision {
+            self.item_revision = revision;
+            self.names.clear();
+            self.bodies.clear();
+        }
         if !self.bodies.contains_key(key) {
             let text = hud.item_text(ctx, key);
             let (title, body) = text.split_once('\n').unwrap_or((&text, ""));

@@ -145,6 +145,25 @@ def verify_sources(profile, root=ROOT):
                                  ('TOOLTIP_ARC_DROP','TOOLTIP_ARC_DROP_ENTRY')]:
             assert numbers(declaration(adapter,constant)) == [int(profile['tooltip_anchors'][anchor]['rva'],16)]
         assert numbers(declaration(adapter,'TOOLTIP_DESCRIPTION_SLOTS')) == [0xe0,0xe8,0xf0]
+        # Item effect text (1.5.0-dev29): the panel's getter, list builder and
+        # list drop, the key/text slots, and every reviewed item table with
+        # its key and text methods guarded.
+        tips = profile['tooltip_anchors']
+        if 'TOOLTIP_ITEM_SHEET_GETTER_ENTRY' in tips:
+            for constant, anchor in [('TOOLTIP_ITEM_SHEET_GETTER','TOOLTIP_ITEM_SHEET_GETTER_ENTRY'),
+                                     ('TOOLTIP_ITEM_LIST','TOOLTIP_ITEM_LIST_ENTRY'),
+                                     ('TOOLTIP_ITEM_LIST_DROP','TOOLTIP_ITEM_LIST_DROP_ENTRY')]:
+                assert numbers(declaration(adapter,constant)) == [int(tips[anchor]['rva'],16)], constant
+            key_slot = numbers(declaration(adapter,'TOOLTIP_ITEM_KEY_SLOT'))
+            text_slot = numbers(declaration(adapter,'TOOLTIP_ITEM_TEXT_SLOT'))
+            assert key_slot == [0x58] and text_slot == [0x90]
+            assert tips['TOOLTIP_ITEM_TEXT_CALL']['bytes'].endswith('90000000'), 'item text slot'
+            tables = numbers(declaration(adapter,'TOOLTIP_ITEM_TABLES'))
+            assert tables and len(set(tables)) == len(tables)
+            for table in tables:
+                for slot, what in ((0x58,'KEY'),(0x90,'TEXT')):
+                    anchor = tips[f'TOOLTIP_ITEM_{table:X}_{what}_POINTER']
+                    assert int(anchor['rva'],16) == table+slot, f'item table {table:#x}'
         layouts = numbers(declaration(adapter,'TOOLTIP_TABLE_LAYOUTS'))
         for n in range(0,len(layouts),3):
             table,size,alignment = layouts[n:n+3]

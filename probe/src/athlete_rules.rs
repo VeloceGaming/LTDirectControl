@@ -37,8 +37,11 @@ pub const COLLISION_MARKER: u64 = 5_000;
 /// The Dodging the controlled athlete's body counts as for enemy shots: the
 /// middle of the 0..=100 scale (the author, 2026-10-21; it was 0 before).
 pub const NEUTRAL_DODGING: u64 = 50;
-pub const FLOOR_DEFAULT: u32 = 6;
-pub const CEILING_DEFAULT: u32 = 14;
+/// The reaction band's default floor and ceiling, in ticks: the author's
+/// settings after testing on 0.6.4 (2026-10-21), to follow the base game's
+/// reaction differences more closely (6 and 14 before).
+pub const FLOOR_DEFAULT: u32 = 12;
+pub const CEILING_DEFAULT: u32 = 35;
 /// The testing setting "Collision margin", in game units.
 pub const MARGIN_DEFAULT: u32 = 2;
 /// Longest pause between two stamps before the rules stop applying. The

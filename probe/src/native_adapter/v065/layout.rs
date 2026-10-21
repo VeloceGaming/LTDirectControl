@@ -42,6 +42,9 @@ pub(crate) const PLAYER_ITEMS_LEN: usize = 0x338;
 pub(crate) const PLAYER_PLAN_CAP: usize = 0x370;
 pub(crate) const PLAYER_PLAN_PTR: usize = 0x378;
 pub(crate) const PLAYER_PLAN_LEN: usize = 0x380;
+// The in-game UI's Rust type id, which the camera family checks before using
+// the UI.
+pub(crate) const INGAME_UI_TYPE_ID: [u64; 2] = [0x810a3f1ff5177337, 0xaf7a6919a6336e28];
 pub(crate) const MOVE_SITE: usize = 0x127ba34;
 pub(crate) const MOVE_ORIGINAL: usize = 0x176be00;
 pub(crate) const STOP_EVENT: usize = 0x157e7b0;
@@ -51,6 +54,10 @@ pub(crate) const CANCEL_RECALL_EVENT: usize = 0x157f420;
 pub(crate) const CANCEL_RECALL_PROLOGUE: [u8; 16] = [
     0x55, 0x56, 0x57, 0x48, 0x83, 0xec, 0x30, 0x48, 0x8d, 0x6c, 0x24, 0x30, 0x48, 0xc7, 0x45, 0xf8,
 ];
+// The game has a cancel-recall function (above), and no status blocks a
+// move beyond the effect gate.
+pub(crate) const CANCEL_RECALL_INLINE: Option<crate::native_adapter::InlineEvent> = None;
+pub(crate) const MOVE_BLOCK_STATUS: Option<crate::native_adapter::BlockStatus> = None;
 // GameClient::input_event: view/client, UI, system, f32 dt, event, window, database.
 // Native tag 6 = key press, tag 7 = key release, with key byte at event+8.
 // These two variants are POD; skipping them needs no native allocation drop.
@@ -315,6 +322,27 @@ pub(super) const TOOLTIP_SHEET_GETTER: usize = 0x337ec0;
 pub(super) const TOOLTIP_INFO_LOOKUP: usize = 0x1683ba0;
 pub(super) const TOOLTIP_ARC_DROP: usize = 0x28b20;
 pub(super) const TOOLTIP_DESCRIPTION_SLOTS: [usize; 3] = [0xe0, 0xe8, 0xf0];
+// How much of the Assets context must be readable before the mod asks the
+// game for champion text (the value earlier builds used; the sheet getter's own
+// fields end at +0x58).
+pub(super) const TOOLTIP_ASSETS_READ_SIZE: usize = 0x70;
+// Item effect text, the way the game's item panel (0x1f219a0) gets it:
+// the item sheet from Assets (the champion sheet getter's twin), the list of
+// item objects built from it, each item's key (+0x58) and effect text
+// (+0x90, with Assets); then the list dropped and its buffer freed from the
+// process heap. docs/investigation-item-text.md.
+pub(super) const TOOLTIP_ITEM_SHEET_GETTER: usize = 0x337cb0;
+pub(super) const TOOLTIP_ITEM_LIST: usize = 0x1ae4060;
+pub(super) const TOOLTIP_ITEM_LIST_DROP: usize = 0x14a070;
+pub(super) const TOOLTIP_ITEM_KEY_SLOT: usize = 0x58;
+pub(super) const TOOLTIP_ITEM_TEXT_SLOT: usize = 0x90;
+// The reviewed item method tables; their key and text methods are guarded
+// in `TOOLTIP_POINTERS`. An item of any other table is not asked.
+pub(super) const TOOLTIP_ITEM_TABLES: &[usize] = &[
+    0x3c24ea0, 0x3c2cb88, 0x3c2ccd0, 0x3c2ce18, 0x3c2cf60, 0x3c2d0a8, 0x3c2d1f0, 0x3c2d338,
+    0x3c2d480, 0x3c2d5c8, 0x3c2d710, 0x3c2d858, 0x3c2d9a0, 0x3c32f08, 0x3c33188, 0x3d2ab18,
+    0x3d3aa38,
+];
 pub(super) const TOOLTIP_TABLE_LAYOUTS: &[(usize, usize, usize)] = &[
     (0x3bcba08, 0x1e8, 0x8),
     (0x3bc3558, 0xb18, 0x8),
@@ -1507,6 +1535,32 @@ pub(super) const TOOLTIP_BYTES: &[(usize, &[u8])] = &[
             0x00, 0x00, 0xfe, 0xff, 0xff, 0xff, 0x4c, 0x89, 0xc7,
         ],
     ),
+    // TOOLTIP_ITEM_SHEET_GETTER_ENTRY
+    (
+        0x337cb0,
+        &[
+            0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81,
+            0xec, 0x98, 0x00, 0x00, 0x00, 0x48, 0x8d, 0xac, 0x24, 0x80, 0x00, 0x00, 0x00,
+        ],
+    ),
+    // TOOLTIP_ITEM_LIST_ENTRY
+    (
+        0x1ae4060,
+        &[
+            0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81,
+            0xec, 0x48,
+        ],
+    ),
+    // TOOLTIP_ITEM_LIST_DROP_ENTRY
+    (
+        0x14a070,
+        &[
+            0x55, 0x41, 0x57, 0x41, 0x56, 0x56, 0x57, 0x53, 0x48, 0x83, 0xec, 0x48, 0x48, 0x8d,
+            0x6c, 0x24,
+        ],
+    ),
+    // TOOLTIP_ITEM_TEXT_CALL
+    (0x1f23b44, &[0xff, 0x90, 0x90, 0x00, 0x00, 0x00]),
 ];
 pub(super) const TOOLTIP_POINTERS: &[(usize, usize)] = &[
     (0x3bcba08, 0x251650),
@@ -1769,6 +1823,40 @@ pub(super) const TOOLTIP_POINTERS: &[(usize, usize)] = &[
     (0x3bcac60, 0x1276910),
     (0x3bcac68, 0x1276a00),
     (0x3bcac70, 0x1276830),
+    (0x3c24ef8, 0x1627670),
+    (0x3c24f30, 0x1af86f0),
+    (0x3c2cbe0, 0x1627670),
+    (0x3c2cc18, 0x1773db0),
+    (0x3c2cd28, 0x1627670),
+    (0x3c2cd60, 0x133ad60),
+    (0x3c2ce70, 0x1627670),
+    (0x3c2cea8, 0x1313440),
+    (0x3c2cfb8, 0x1627670),
+    (0x3c2cff0, 0x1957e60),
+    (0x3c2d100, 0x1627670),
+    (0x3c2d138, 0x1958370),
+    (0x3c2d248, 0x1627670),
+    (0x3c2d280, 0x1244d50),
+    (0x3c2d390, 0x1627670),
+    (0x3c2d3c8, 0x1313820),
+    (0x3c2d4d8, 0x1627670),
+    (0x3c2d510, 0x1af3c60),
+    (0x3c2d620, 0x1627670),
+    (0x3c2d658, 0x1774460),
+    (0x3c2d768, 0x1627670),
+    (0x3c2d7a0, 0x1af42c0),
+    (0x3c2d8b0, 0x1627670),
+    (0x3c2d8e8, 0x1af46c0),
+    (0x3c2d9f8, 0x1627670),
+    (0x3c2da30, 0x1af4e00),
+    (0x3c32f60, 0x1627670),
+    (0x3c32f98, 0x1af86f0),
+    (0x3c331e0, 0x1627670),
+    (0x3c33218, 0x1af86f0),
+    (0x3d2ab70, 0x1627670),
+    (0x3d2aba8, 0x2dcf940),
+    (0x3d3aa90, 0x1627670),
+    (0x3d3aac8, 0x2dcf940),
 ];
 // The simulation table's entity getter (slot +0x48), which the attack-range
 // reader checks before using the table.

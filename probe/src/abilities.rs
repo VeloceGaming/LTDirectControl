@@ -113,6 +113,12 @@ impl Charges {
     /// From the game's own cooldown read: the full cycle (after cooldown
     /// reduction) refills every use, and one use costs cycle / uses (the
     /// engine's model, per the SDK's `CooldownV1`). None for a locked slot.
+    ///
+    /// The uses left are counted from the cooldown counter, not taken from
+    /// the read's own `charges`: the combat hook samples the counter the
+    /// moment a use is spent, fresher than the read (once per tick), so a
+    /// second press right after a cast is not sent. `ABILITY COOLDOWN_READ`
+    /// compares this count with the game's.
     pub fn from_cooldown(c: mod_api_stable::CooldownV1) -> Option<Self> {
         if !c.unlocked || c.max_charges > 64 {
             return None;
@@ -139,6 +145,19 @@ impl Charges {
     pub fn wait(self, cooldown: usize) -> usize {
         cooldown.saturating_sub(self.capacity.saturating_sub(self.cost))
     }
+    /// One use's refill time: the full length of the HUD's cooldown bar
+    /// (the game's cycle after cooldown reduction, per use).
+    pub fn period(self) -> usize {
+        self.cost.max(1)
+    }
+    /// While some uses are left but not all: ticks until the next one refills
+    /// (the author, 2026-10-22: show it, as League does). None when none is
+    /// left (that is the ordinary cooldown) or all are.
+    pub fn refill(self, cooldown: usize) -> Option<usize> {
+        let left = self.remaining(cooldown);
+        (self.multi() && left > 0 && left < self.uses)
+            .then(|| cooldown.saturating_sub(self.capacity.saturating_sub(self.cost * (left + 1))))
+    }
 }
 #[derive(Clone, Copy, Default)]
 pub struct ClientAction {
@@ -156,6 +175,11 @@ pub struct HudSkills {
     pub denied_at: [Option<Instant>; 3],
     pub ready: [Option<bool>; 3],
     pub wait: [Option<usize>; 3],
+    /// One use's refill time from the game's read: the cooldown bar's
+    /// full length.
+    pub period: [Option<usize>; 3],
+    /// Ticks until the next use refills while some are left (multi-use).
+    pub refill: [Option<usize>; 3],
 }
 struct Snapshot {
     actor: usize,
@@ -528,6 +552,10 @@ impl Abilities {
                 s.fresh_charges(i).map(|c| c.remaining(s.cooldowns[i]) > 0)
             }),
             wait: std::array::from_fn(|i| s.fresh_charges(i).map(|c| c.wait(s.cooldowns[i]))),
+            period: std::array::from_fn(|i| s.fresh_charges(i).map(|c| c.period())),
+            refill: std::array::from_fn(|i| {
+                s.fresh_charges(i).and_then(|c| c.refill(s.cooldowns[i]))
+            }),
         }
     }
     pub fn update(
@@ -1015,9 +1043,9 @@ impl Abilities {
         let mut approaching = None;
         let busy = native.is_some_and(|action| action > 2);
         let charged = charge.map_or(cooldown == 0, |c| c.remaining(cooldown) > 0);
-        // Never send a skill that is not learned yet: on 0.6.5 the game's own
-        // input check accepts one, and casting it stopped the match (seen in
-        // game, 1.5.0-dev24, Crossbowman W below level 3).
+        // Never send a skill that is not learned yet: the game's own input
+        // check accepts one, and casting some stopped the match (seen in game
+        // on 0.6.5 and 0.6.4: Crossbowman W, Dynamo R before they unlocked).
         let learned = !locked && level.is_none_or(|l| l >= [1, 3, 5][request.slot]);
         let mut reason = "metadata-unavailable-or-stale";
         let result = desc.and_then(|d| {
@@ -1730,10 +1758,12 @@ mod tests {
         .multi());
         let (a, _camera, _log) = setup(2, 5);
         budget(&a, 0);
+        assert_eq!(a.hud_skills().period[0], Some(120)); // one use's refill: the bar.
         a.0.lock().unwrap().charges.as_mut().unwrap().1 =
             Instant::now() - Duration::from_millis(260);
         assert_eq!(a.hud_skills().uses[0], Some(3));
         assert_eq!(a.hud_skills().ready[0], None); // display retention never authorizes a cast.
+        assert_eq!(a.hud_skills().period[0], None);
         a.observe_charges(
             (1, 33, 1),
             7,
@@ -1755,20 +1785,21 @@ mod tests {
             unlocked,
             ..Default::default()
         };
-        // A 3-use slot on a 360-tick cycle: each use costs 120 ticks.
+        // A 3-use slot on a 360-tick cycle: each use costs 120 ticks, which
+        // is also the cooldown bar's full length.
+        let c = Charges::from_cooldown(read(360, 3, true));
         assert_eq!(
-            Charges::from_cooldown(read(360, 3, true)),
+            c,
             Some(Charges {
                 capacity: 360,
                 cost: 120,
                 uses: 3
             })
         );
-        // One use, and a slot with no cooldown at all.
-        assert_eq!(
-            Charges::from_cooldown(read(90, 1, true)).map(|c| c.uses),
-            Some(1)
-        );
+        assert_eq!(c.map(Charges::period), Some(120));
+        // One use: the bar is the whole cycle. A slot with no cooldown at all.
+        let one = Charges::from_cooldown(read(90, 1, true));
+        assert_eq!(one.map(|c| (c.uses, c.period())), Some((1, 90)));
         assert_eq!(
             Charges::from_cooldown(read(0, 2, true)).map(|c| c.uses),
             Some(1)
@@ -1781,6 +1812,21 @@ mod tests {
         assert_eq!(c.remaining(0), 3);
         assert_eq!(c.remaining(130), 1);
         assert_eq!(c.remaining(360), 0);
+        // The next use's refill while some are left (Ghost W in play, 0.6.5:
+        // a 900-tick cycle, 3 uses, the counter at 300 after one use: two
+        // left, the third in 300 ticks; the game's read said 299, a tick
+        // behind the counter).
+        let ghost = Charges::from_cooldown(read(900, 3, true)).unwrap();
+        assert_eq!(ghost.refill(300), Some(300));
+        assert_eq!(ghost.refill(450), Some(150));
+        assert_eq!(ghost.refill(0), None); // all three ready
+        assert_eq!(ghost.refill(700), None); // none left: the ordinary cooldown
+        assert_eq!(
+            Charges::from_cooldown(read(90, 1, true))
+                .unwrap()
+                .refill(30),
+            None
+        );
     }
     fn budget(a: &Abilities, action: usize) {
         a.observe_native((1, 33, 1), 7, action);

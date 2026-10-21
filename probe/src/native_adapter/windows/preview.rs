@@ -753,8 +753,17 @@ unsafe fn dump_node(
 #[cfg(test)]
 mod tests {
     use super::*;
+    /// The reader's effect table is reviewed for this game version: a
+    /// version whose reader family is off holds no effect addresses (its
+    /// table never matches), so the tests that decode real effects skip it.
+    fn reader_reviewed() -> bool {
+        super::super::ENABLED & crate::native_profile::family::READERS != 0
+    }
     #[test]
     fn inventory_identified_types_decode_from_logged_payloads() {
+        if !reader_reviewed() {
+            return;
+        }
         let decode = |apply: usize, size: usize, words: &[usize], inherited: Placement| {
             let mut g = Geometry::default();
             unsafe {
@@ -903,6 +912,9 @@ mod tests {
     }
     #[test]
     fn effects_after_a_timed_dash_happen_where_it_ends() {
+        if !reader_reviewed() {
+            return;
+        }
         // Candygel R's shape: Delayed 10 { slide 2700 x 44, hits nothing },
         // Delayed 10 { drop: range-1 projectile ending in a 42-unit pool },
         // Delayed 54 { the same drop }.
@@ -991,6 +1003,9 @@ mod tests {
     }
     #[test]
     fn areas_that_go_with_a_move_happen_where_the_caster_lands() {
+        if !reader_reviewed() {
+            return;
+        }
         // Fake vtables [_, size, align, _, apply]: Combine, MoveTo, area.
         let mut tables = [0usize; 15];
         let base = tables.as_ptr() as usize - RDATA_TABLE_BOUNDS.start();
@@ -1054,6 +1069,9 @@ mod tests {
     }
     #[test]
     fn switch_by_buff_previews_the_branch_without_the_buff() {
+        if !reader_reviewed() {
+            return;
+        }
         // Fake vtables [_, size, align, _, apply] for two RangeEffect-free
         // branches: a RangeProjectile (none) and a MoveTo (buff).
         let mut tables = [0usize; 10];
@@ -1097,6 +1115,9 @@ mod tests {
     }
     #[test]
     fn inventory_dump_follows_only_effect_pointers_into_readable_memory() {
+        if !reader_reviewed() {
+            return;
+        }
         // Two fake vtables side by side: [_, size, align, _, apply].
         let mut tables = [0usize; 10];
         let base = tables.as_ptr() as usize - RDATA_TABLE_BOUNDS.start();

@@ -35,7 +35,8 @@ pub(crate) unsafe fn ingame_ui_from_node(node: usize, config: usize) -> Option<u
         std::mem::transmute(std::ptr::read_unaligned((any_table + 0x18) as *const usize));
     let mut identity = [0u64; 2];
     type_id(&mut identity, object);
-    if identity != [0x810a3f1ff5177337, 0xaf7a6919a6336e28] {
+    // The type id is this game version's (`layout::INGAME_UI_TYPE_ID`).
+    if identity != INGAME_UI_TYPE_ID {
         return None;
     }
     ingame_matches_config(object, config).then_some(object)
@@ -414,6 +415,7 @@ pub(crate) unsafe extern "system" fn view_hook(
         // viewer's Assets borrow is still live. The adapter owns no pointers.
         if installed(family::TOOLTIPS) {
             tooltips::resolve_pending(view, assets, shared);
+            tooltips::resolve_items(view, assets, shared);
         }
     }
 }

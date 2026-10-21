@@ -197,7 +197,7 @@ unsafe fn fake_ui_any(data: usize) -> (usize, usize) {
     (pair[0], pair[1])
 }
 unsafe extern "system" fn fake_ui_type_id(out: *mut [u64; 2], _: usize) {
-    std::ptr::write(out, [0x810a3f1ff5177337, 0xaf7a6919a6336e28]);
+    std::ptr::write(out, INGAME_UI_TYPE_ID);
 }
 unsafe extern "system" fn fake_other_type_id(out: *mut [u64; 2], _: usize) {
     std::ptr::write(out, [0, 0]);
@@ -1089,4 +1089,97 @@ fn stack_capture_is_available_and_logs_module_relative_frames() {
     assert!(text.contains("NATIVE STACK"));
     assert!(text.contains(".exe+0x"));
     assert!(!text.contains("frames=[]"));
+}
+#[test]
+fn an_inline_cancel_event_is_built_the_way_the_game_builds_it() {
+    let Some(event) = CANCEL_RECALL_INLINE else {
+        // This version calls the game's own cancel-recall function.
+        return;
+    };
+    // The game's stop event, as it behaves: one entry of tag 0x12 with the
+    // actor at +4, appended to the (capacity, pointer, length) list.
+    unsafe extern "system" fn append(events: usize, actor: usize) {
+        let list = std::ptr::read_unaligned(events as *const usize);
+        let length = std::ptr::read_unaligned((list + 0x10) as *const usize);
+        let entry = std::ptr::read_unaligned((list + 8) as *const usize) + length * 0x70;
+        std::ptr::write(entry as *mut u8, 0x12);
+        std::ptr::write_unaligned((entry + 4) as *mut u32, actor as u32);
+        std::ptr::write_unaligned((list + 0x10) as *mut usize, length + 1);
+    }
+    unsafe extern "system" fn append_nothing(_: usize, _: usize) {}
+    assert_eq!(event.entry, 0x70);
+    let mut entries = vec![0xabu8; 4 * event.entry];
+    let mut list = [4usize, entries.as_mut_ptr() as usize, 1];
+    let holder = list.as_mut_ptr() as usize;
+    let events = &holder as *const usize as usize;
+    unsafe {
+        NOTIFY_STOP.store(append as *const () as usize, Ordering::Release);
+        push_inline_cancel(events, 17);
+        assert_eq!(list[2], 2);
+        let entry = &entries[event.entry..2 * event.entry];
+        assert_eq!(entry[0], 0, "tag 0");
+        let payload = usize::from_le_bytes(entry[8..16].try_into().unwrap()) as *mut u64;
+        assert_eq!(
+            [payload.read(), payload.add(1).read(), payload.add(2).read()],
+            [event.kind, 0, 17]
+        );
+        HeapFree(GetProcessHeap(), 0, payload as *mut c_void);
+        // The first entry is left alone.
+        assert!(entries[..event.entry].iter().all(|b| *b == 0xab));
+        // Nothing appended: nothing changed.
+        NOTIFY_STOP.store(append_nothing as *const () as usize, Ordering::Release);
+        push_inline_cancel(events, 17);
+        assert_eq!(list[2], 2);
+        // No list: no call at all.
+        let none = 0usize;
+        push_inline_cancel(&none as *const usize as usize, 17);
+        NOTIFY_STOP.store(0, Ordering::Release);
+    }
+}
+#[test]
+fn a_status_that_blocks_moving_stops_the_mod_too() {
+    let mut entity = vec![0u8; 0x6c0];
+    let addr = entity.as_mut_ptr() as usize;
+    entity[0x68..0x6c].copy_from_slice(&15u32.to_le_bytes());
+    entity[0x70..0x78].copy_from_slice(&2usize.to_le_bytes());
+    let Some(status) = MOVE_BLOCK_STATUS else {
+        assert!(unsafe { !move_blocked(addr) && can_stop_movement(addr) });
+        return;
+    };
+    let mut list = vec![0u8; 2 * status.entry];
+    let second = &mut list[status.entry..];
+    second[..4].copy_from_slice(&status.kind.to_le_bytes());
+    second[4..4 + status.name.len()].copy_from_slice(status.name);
+    let put = |entity: &mut Vec<u8>, pointer: usize, count: usize| {
+        entity[status.list..status.list + 8].copy_from_slice(&pointer.to_le_bytes());
+        entity[status.list + 8..status.list + 16].copy_from_slice(&count.to_le_bytes());
+    };
+    put(&mut entity, list.as_ptr() as usize, 2);
+    unsafe {
+        assert!(move_blocked(addr) && !can_stop_movement(addr));
+        // Only the first entry counted: not blocked.
+        put(&mut entity, list.as_ptr() as usize, 1);
+        assert!(!move_blocked(addr) && can_stop_movement(addr));
+        // Another kind, or another name: not blocked.
+        put(&mut entity, list.as_ptr() as usize, 2);
+        list[status.entry] ^= 1;
+        assert!(!move_blocked(addr));
+        list[status.entry] ^= 1;
+        list[status.entry + 4] ^= 1;
+        assert!(!move_blocked(addr));
+    }
+}
+#[test]
+fn the_assets_check_covers_the_fields_each_version_reads() {
+    // Before asking for champion text, the tooltip reader checks that this
+    // much of the game's Assets context is readable. Beta 2's context grew:
+    // its sheet getter reads +0x368..+0x388 and the callee up to +0x4b8
+    // (0.6.4/0.6.5: +0x30..+0x50). Hand checks, docs/migration-0.7.0b2.md.
+    let furthest_getter_field = match GAME {
+        "0.6.4" | "0.6.5" => 0x50,
+        "0.7.0b2" => 0x4b8,
+        other => panic!("no Assets measurement for {other}"),
+    };
+    let size = TOOLTIP_ASSETS_READ_SIZE;
+    assert!(size >= furthest_getter_field + 8 && size <= 0x1000);
 }

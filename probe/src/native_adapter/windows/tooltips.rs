@@ -236,7 +236,7 @@ unsafe fn resolve(
     if !profile_matches(base) {
         return Err("native tooltip profile mismatch");
     }
-    if !accessible(assets, 0x70, false) {
+    if !accessible(assets, TOOLTIP_ASSETS_READ_SIZE, false) {
         return Err("Assets context unavailable");
     }
     let get_sheet: unsafe extern "system" fn(usize, *const u8, usize) -> usize =
@@ -305,6 +305,185 @@ pub(super) unsafe fn resolve_pending(view: usize, assets: usize, shared: &Shared
     native_tooltips::publish(request, result.ok());
 }
 
+/// A native `Vec<Box<dyn Item>>`: capacity, pointer, length.
+#[repr(C)]
+#[derive(Default)]
+struct ItemList {
+    capacity: usize,
+    pointer: usize,
+    length: usize,
+}
+const MAX_ITEMS: usize = 4096;
+
+/// The game's item objects, built from the item sheet the way its own item
+/// panel builds them, and released the way it releases them: the game's
+/// list drop, then the buffer freed from the process heap. A list whose
+/// shape is not believable is never handed back to the game (left
+/// allocated).
+struct NativeItems {
+    list: ItemList,
+    base: usize,
+    intact: bool,
+}
+impl NativeItems {
+    unsafe fn build(base: usize, assets: usize) -> Result<Self, &'static str> {
+        let get_sheet: unsafe extern "system" fn(usize, *const u8, usize) -> usize =
+            std::mem::transmute(base + TOOLTIP_ITEM_SHEET_GETTER);
+        let path = b"asset/base/setting/item_setting";
+        let sheet = get_sheet(assets, path.as_ptr(), path.len());
+        if !accessible(sheet, 0x18, false) {
+            return Err("item sheet unavailable");
+        }
+        let build: unsafe extern "system" fn(*mut ItemList, usize) -> usize =
+            std::mem::transmute(base + TOOLTIP_ITEM_LIST);
+        let mut list = ItemList::default();
+        build(&mut list, sheet);
+        let intact = list.length <= list.capacity
+            && list.capacity <= MAX_ITEMS
+            && (list.capacity == 0
+                || (list.pointer.is_multiple_of(8)
+                    && HeapValidate(GetProcessHeap(), 0, list.pointer as *const c_void) != 0
+                    && (list.length == 0 || accessible(list.pointer, list.length * 16, false))));
+        let items = Self { list, base, intact };
+        if !items.intact {
+            return Err("item list shape rejected (left allocated)");
+        }
+        Ok(items)
+    }
+    /// The item object of `key` and its method table, if that table is a
+    /// reviewed one.
+    unsafe fn find(&self, key: &str) -> Result<(usize, usize), &'static str> {
+        let mut unreviewed = false;
+        for i in 0..self.list.length {
+            let entry = self.list.pointer + i * 16;
+            let object = std::ptr::read_unaligned(entry as *const usize);
+            let table = std::ptr::read_unaligned((entry + 8) as *const usize);
+            if object < 0x10000 {
+                continue;
+            }
+            if !TOOLTIP_ITEM_TABLES.iter().any(|t| self.base + t == table) {
+                unreviewed = true;
+                continue;
+            }
+            let key_of: unsafe extern "system" fn(usize) -> usize = std::mem::transmute(
+                std::ptr::read_unaligned((table + TOOLTIP_ITEM_KEY_SLOT) as *const usize),
+            );
+            let text = key_of(object);
+            if !accessible(text, 24, false) {
+                continue;
+            }
+            let raw = std::ptr::read_unaligned(text as *const RawText);
+            if raw.length == key.len()
+                && accessible(raw.pointer, raw.length.max(1), false)
+                && std::slice::from_raw_parts(raw.pointer as *const u8, raw.length)
+                    == key.as_bytes()
+            {
+                return Ok((object, table));
+            }
+        }
+        Err(if unreviewed {
+            "item not found among reviewed item types"
+        } else {
+            "item not found"
+        })
+    }
+    unsafe fn text(&self, key: &str, assets: usize) -> Result<String, &'static str> {
+        let (object, table) = self.find(key)?;
+        let method: unsafe extern "system" fn(*mut RawText, usize, usize) -> usize =
+            std::mem::transmute(std::ptr::read_unaligned(
+                (table + TOOLTIP_ITEM_TEXT_SLOT) as *const usize,
+            ));
+        let mut raw = RawText {
+            capacity: 0,
+            pointer: 1,
+            length: 0,
+        };
+        let output = &mut raw as *mut RawText;
+        let returned = method(output, object, assets);
+        let text = NativeText::checked(raw)?;
+        if returned != output as usize {
+            return Err("unexpected item text return convention");
+        }
+        text.copy()
+    }
+}
+impl Drop for NativeItems {
+    fn drop(&mut self) {
+        if !self.intact {
+            return;
+        }
+        unsafe {
+            let drop_list: unsafe extern "system" fn(*mut ItemList) =
+                std::mem::transmute(self.base + TOOLTIP_ITEM_LIST_DROP);
+            drop_list(&mut self.list);
+            if self.list.capacity != 0 {
+                HeapFree(GetProcessHeap(), 0, self.list.pointer as *mut c_void);
+            }
+        }
+    }
+}
+
+unsafe fn item_texts(
+    assets: usize,
+    requests: &[native_tooltips::ItemRequest],
+) -> Vec<Result<String, &'static str>> {
+    let prepared = (|| {
+        let base = family_base(family::TOOLTIPS).ok_or("native adapter unavailable")?;
+        if !profile_matches(base) {
+            return Err("native tooltip profile mismatch");
+        }
+        if !accessible(assets, TOOLTIP_ASSETS_READ_SIZE, false) {
+            return Err("Assets context unavailable");
+        }
+        NativeItems::build(base, assets)
+    })();
+    match prepared {
+        Err(reason) => vec![Err(reason); requests.len()],
+        Ok(items) => requests
+            .iter()
+            .map(|request| items.text(&request.key, assets))
+            .collect(),
+    }
+}
+
+/// Every item text waiting, from one list of the game's items, inside the
+/// viewer callback (the game's own item panel runs on this thread). The
+/// requests only exist for texts the SDK found, so the game's lookup cannot
+/// fail (docs/investigation-item-text.md).
+pub(super) unsafe fn resolve_items(view: usize, assets: usize, shared: &Shared) {
+    if !shared.timing.client_controls(Some(view)) {
+        return;
+    }
+    let generation = shared.timing.generation();
+    let requests = native_tooltips::take_items(generation);
+    if requests.is_empty() {
+        return;
+    }
+    let results = catch_unwind(AssertUnwindSafe(|| item_texts(assets, &requests)))
+        .unwrap_or_else(|_| vec![Err("native item text panic"); requests.len()]);
+    for (request, result) in requests.into_iter().zip(results) {
+        match &result {
+            Ok(text) => {
+                shared.logger.write(&format!(
+                    "NATIVE ITEM_TEXT key={} bytes={} unresolved={} source=game",
+                    request.key,
+                    text.len(),
+                    native_tooltips::unresolved_parameters(text).len()
+                ));
+                shared.logger.write(&format!(
+                    "NATIVE ITEM_TEXT_TEXT key={} text={text:?}",
+                    request.key
+                ));
+            }
+            Err(reason) => shared.logger.write(&format!(
+                "NATIVE ITEM_TEXT fallback key={} reason={reason}",
+                request.key
+            )),
+        }
+        native_tooltips::publish_item(request, result.ok());
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -339,6 +518,54 @@ mod tests {
         let id = "illusionist";
         let result = unsafe { lookup_pair(tooltip_pair_fixture as *const () as usize, 7, 11, id) };
         assert_eq!(result, [7 + id.as_ptr() as usize, 11 + id.len()]);
+    }
+    static LIST_DROPS: AtomicUsize = AtomicUsize::new(0);
+    unsafe extern "system" fn list_drop_fixture(list: *mut ItemList) {
+        // The game's list drop releases the items, not the buffer.
+        assert!((*list).length <= (*list).capacity);
+        LIST_DROPS.fetch_add(1, Ordering::Relaxed);
+    }
+    #[test]
+    fn the_item_list_goes_back_to_the_game_only_when_believable_and_unknown_tables_are_never_asked()
+    {
+        unsafe {
+            let base = list_drop_fixture as *const () as usize - TOOLTIP_ITEM_LIST_DROP;
+            // Two entries whose method table is not a reviewed one.
+            let buffer = HeapAlloc(GetProcessHeap(), 0, 4 * 16) as *mut usize;
+            assert!(!buffer.is_null());
+            let fake_table = [0usize; 32];
+            let object = [0u8; 64];
+            for i in 0..2 {
+                *buffer.add(i * 2) = object.as_ptr() as usize;
+                *buffer.add(i * 2 + 1) = fake_table.as_ptr() as usize;
+            }
+            let items = NativeItems {
+                list: ItemList {
+                    capacity: 4,
+                    pointer: buffer as usize,
+                    length: 2,
+                },
+                base,
+                intact: true,
+            };
+            assert_eq!(
+                items.find("giants_horn_shard"),
+                Err("item not found among reviewed item types")
+            );
+            drop(items);
+            assert_eq!(LIST_DROPS.load(Ordering::Relaxed), 1);
+            // A list that is not believable is left alone.
+            drop(NativeItems {
+                list: ItemList {
+                    capacity: 1,
+                    pointer: 8,
+                    length: 5,
+                },
+                base,
+                intact: false,
+            });
+            assert_eq!(LIST_DROPS.load(Ordering::Relaxed), 1);
+        }
     }
     static ARC_DROPS: AtomicUsize = AtomicUsize::new(0);
     unsafe extern "system" fn arc_drop_fixture(words: *const [usize; 2]) {

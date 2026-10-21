@@ -326,6 +326,41 @@
     "kind": "berserker_ult"
    }
   },
+  "bombardier": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "attack_reach",
+     "extra": {
+      "name": "move_distance",
+      "recorded": 50
+     }
+    },
+    "kind": "bombardier_skill1"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "radius",
+      "recorded": 22
+     }
+    },
+    "kind": "bombardier_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "radius",
+      "recorded": 35
+     }
+    },
+    "kind": "bombardier_ult"
+   }
+  },
   "bomber": {
    "Q": {
     "from": "live",
@@ -1145,22 +1180,26 @@
     "kind": "data_action"
    },
    "W": {
-    "from": "live",
-    "shapes": [
-     {
-      "allies": true,
-      "at": "caster",
-      "kind": "circle",
-      "radius": {
-       "name": "radius",
-       "recorded": 34.0
-      }
+    "from": "assigned",
+    "assigned": {
+     "type": "self_circle",
+     "radius": {
+      "name": "radius",
+      "recorded": 34
      }
-    ],
+    },
     "kind": "data_action"
    },
    "R": {
-    "from": "live",
+    "from": "assigned",
+    "assigned": {
+     "type": "unit_target",
+     "area_radius": {
+      "name": "radius",
+      "recorded": 46
+     },
+     "add": true
+    },
     "shapes": [
      {
       "at": "aim",
@@ -1274,6 +1313,40 @@
      }
     ],
     "kind": "exorcist_ult"
+   }
+  },
+  "ferryman": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "line",
+     "width": {
+      "name": "line_width",
+      "recorded": 14
+     }
+    },
+    "kind": "ferryman_skill1"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "line",
+     "width": {
+      "name": "line_width",
+      "recorded": 24
+     }
+    },
+    "kind": "ferryman_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "unit_target",
+     "area_radius": {
+      "fixed": 0
+     }
+    },
+    "kind": "ferryman_ult"
    }
   },
   "fighter": {
@@ -1459,6 +1532,42 @@
      }
     ],
     "kind": "data_action"
+   }
+  },
+  "gladiator": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "cone",
+     "radius": {
+      "name": "range",
+      "recorded": 45
+     },
+     "angle": {
+      "name": "fan_angle",
+      "unit": "degrees",
+      "recorded": 70
+     }
+    },
+    "kind": "gladiator_skill1"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "line",
+     "width": {
+      "name": "line_width",
+      "recorded": 10
+     }
+    },
+    "kind": "gladiator_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "unit_target"
+    },
+    "kind": "gladiator_ult"
    }
   },
   "guardian_spirit": {
@@ -1751,6 +1860,41 @@
      }
     ],
     "kind": "hunter_ult"
+   }
+  },
+  "hypnotist": {
+   "Q": {
+    "from": "assigned",
+    "assigned": {
+     "type": "line",
+     "width": {
+      "name": "line_width",
+      "recorded": 25
+     }
+    },
+    "kind": "hypnotist_skill1"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "radius",
+      "recorded": 20
+     }
+    },
+    "kind": "hypnotist_skill2"
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "aim_circle",
+     "radius": {
+      "name": "radius",
+      "recorded": 40
+     }
+    },
+    "kind": "hypnotist_ult"
    }
   },
   "ice_mage": {

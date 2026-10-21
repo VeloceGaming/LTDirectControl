@@ -48,9 +48,6 @@ const READY_FLASH_FADE: f32 = 0.3;
 const READY_EDGE_Y: f32 = 2.;
 /// Shorter cooldowns (and one-frame readiness blips) get no ready cue.
 const READY_CUE_MIN_TICKS: usize = 30;
-/// Only a cooldown of at least 4 s ends with the chime (when it is on), so a
-/// skill that returns every two seconds does not chime all match.
-const READY_CHIME_MIN_TICKS: usize = 240;
 pub static TOOLTIP_SCROLL: AtomicI32 = AtomicI32::new(0);
 /// Overflow panel and its source tile, in screen coordinates, for wheel routing.
 pub static TOOLTIP_SCROLL_AREA: Mutex<Option<(Rect, Rect)>> = Mutex::new(None);
@@ -349,6 +346,9 @@ fn hp_percent(s: &Snapshot) -> f32 {
 }
 /// Tenths below three seconds ("2.4"), whole seconds from three ("12"),
 /// both rounded up so the number never reaches zero before the skill is ready.
+/// The shade over a multi-use skill's slot while the next use refills and
+/// some are still usable: lighter than the cooldown shade (0xcc).
+const REFILL_SHADE: u32 = 0x0a090870;
 fn cooldown(ticks: usize) -> String {
     let tenths = ticks.div_ceil(6);
     if ticks == 0 {
@@ -389,9 +389,6 @@ fn ready_flash_strength(seconds: f32) -> f32 {
     )
 }
 /// Whether the end of a cooldown that peaked at `peak` ticks asks for the chime.
-fn chimes(peak: usize) -> bool {
-    peak >= READY_CHIME_MIN_TICKS
-}
 /// An opaque grey at `level` (0 black, 1 white), as `rrggbbaa`.
 fn grey(level: f32) -> String {
     let v = (level.clamp(0., 1.) * 255.).round() as u8;
@@ -888,12 +885,17 @@ pub struct HudUi {
     item_read: Option<Instant>,
     hover: Option<(String, Instant)>,
     tooltip_text: HashMap<String, String>,
+    /// `native_tooltips::item_revision` when the item texts were stored.
+    item_revision: u64,
     tooltip_source: Option<(bool, usize)>,
     tooltip_layout: crate::tooltip_layout::Layout,
     motion: crate::hud_motion::Motion,
     cooldown_peak: [usize; 3],
     /// Last frame: the slot was learned, usable and recovering a cooldown.
     cooling: [bool; 3],
+    /// Last frame's (uses now, uses held) of a multi-use skill, for the chime
+    /// when a further use refills.
+    use_count: [Option<(usize, usize)>; 3],
     /// When each slot last became ready, for the edge cue and 400 ms glow.
     ready_at: [Option<Instant>; 3],
     motion_identity: Option<(MatchKey, usize)>,
@@ -903,18 +905,31 @@ pub struct HudUi {
     purchase_blank: bool,
 }
 impl HudUi {
-    /// Keep the existing zero-usable-to-ready trigger for both visual cues.
-    /// The return value is the existing optional chime request.
+    /// The visual cues keep the zero-usable-to-ready trigger. The return
+    /// value asks for the chime (played only when "Skill ready sound" is on):
+    /// every skill that comes back (the author, 2026-10-22: no 4 s minimum),
+    /// and every further use of a multi-use skill that refills while it is
+    /// already usable. `uses` is (uses now, uses it holds) for a multi-use
+    /// skill.
+    #[allow(clippy::too_many_arguments)]
     fn track_readiness(
         &mut self,
         slot: usize,
         live: bool,
         ready: bool,
         remaining: usize,
+        full: Option<usize>,
+        uses: Option<(usize, usize)>,
         now: Instant,
     ) -> bool {
         let recovered = live && ready && self.cooling[slot];
-        let chime = recovered && chimes(self.cooldown_peak[slot]);
+        // A further use came back: the count rose from one or more, with the
+        // same number of uses held (not a level-up that adds one).
+        let use_back = live
+            && matches!((self.use_count[slot], uses),
+                (Some((was, held_was)), Some((now_uses, held))) if held == held_was && was > 0 && now_uses > was);
+        self.use_count[slot] = uses.filter(|_| live);
+        let chime = recovered || use_back;
         if recovered {
             self.ready_at[slot] = Some(now);
         }
@@ -923,8 +938,14 @@ impl HudUi {
         } else {
             self.cooldown_peak[slot] = self.cooldown_peak[slot].max(remaining);
         }
-        self.cooling[slot] = live && !ready && self.cooldown_peak[slot] >= READY_CUE_MIN_TICKS;
+        self.cooling[slot] = live && !ready && self.full_length(slot, full) >= READY_CUE_MIN_TICKS;
         chime
+    }
+    /// The cooldown bar's full length: one use's refill time from the game's
+    /// cooldown read (1.5.0-dev32), or the highest remaining time seen since
+    /// the skill was last ready when no fresh read is at hand.
+    fn full_length(&self, slot: usize, full: Option<usize>) -> usize {
+        full.unwrap_or(self.cooldown_peak[slot])
     }
     fn skill_feedback(
         &mut self,
@@ -1575,6 +1596,13 @@ impl HudUi {
         if key == "purchase" {
             self.tooltip_text
                 .insert(key.clone(), self.purchase_tooltip.clone());
+        }
+        // A game item text arrived since the item texts were stored (they
+        // showed "…" while waiting): build them again.
+        let revision = crate::native_tooltips::item_revision();
+        if self.item_revision != revision {
+            self.item_revision = revision;
+            self.tooltip_text.retain(|key, _| !key.starts_with("item:"));
         }
         // Native results arrive on the next viewer callback. Refresh eligible
         // skill text even while hovered; item and other champion caches stay put.
@@ -2237,7 +2265,18 @@ impl HudUi {
             let remaining = skills.wait[i].unwrap_or(s.cooldowns[i]);
             // Ready cues and sounds wait for the respawn.
             let live = learned && !unavailable && s.alive;
-            if self.track_readiness(i, live, ready, remaining, Instant::now()) {
+            let uses = skills.uses[i]
+                .zip(skills.uses_max[i])
+                .filter(|(_, held)| *held > 1);
+            if self.track_readiness(
+                i,
+                live,
+                ready,
+                remaining,
+                skills.period[i],
+                uses,
+                Instant::now(),
+            ) {
                 crate::ui_sound::ready();
             }
             // motion: B4
@@ -2253,10 +2292,14 @@ impl HudUi {
             if ready_flash <= 0. {
                 self.ready_at[i] = None;
             }
+            // A multi-use skill with some uses left still shows the next use
+            // refilling, lighter, with its countdown (the author, 2026-10-22).
+            let refill = skills.refill[i].filter(|_| ready && !unavailable && learned);
+            let shown = refill.unwrap_or(remaining);
             let drain = if unavailable {
                 78.
             } else {
-                78. * remaining as f32 / self.cooldown_peak[i].max(1) as f32
+                78. * (shown as f32 / self.full_length(i, skills.period[i]).max(1) as f32).min(1.)
             };
             let edge_y = cooldown_edge_y(drain, cue.is_some());
             let edge = match cue {
@@ -2264,7 +2307,7 @@ impl HudUi {
                 None => crate::hud_motion::color(
                     0xffffffff,
                     0xfdee00ff,
-                    edge_warmth(remaining, self.cooldown_peak[i]),
+                    edge_warmth(shown, self.full_length(i, skills.period[i])),
                 ),
             };
             self.props(
@@ -2274,7 +2317,7 @@ impl HudUi {
                 // and yellow on a ready R.
                 format!(
                     "visible: {}; y: {:.2}px; color: #{edge};",
-                    (!unavailable && !ready) || cue.is_some(),
+                    (!unavailable && !ready) || cue.is_some() || refill.is_some(),
                     edge_y
                 ),
                 log,
@@ -2310,13 +2353,18 @@ impl HudUi {
                 None => 1.,
             };
             // motion: B4, C1 (restore the 1.3.2 shade write)
-            let shade = if learned { 0x0a0908cc } else { 0x141311dd };
+            let shade = match (learned, refill) {
+                (false, _) => 0x141311dd,
+                // Still usable: a lighter shade over the bright icon.
+                (true, Some(_)) => REFILL_SHADE,
+                (true, None) => 0x0a0908cc,
+            };
             self.props(
                 ctx,
                 &format!("skill{i}.shade"),
                 format!(
                     "visible: {}; height: {:.2}px; color: #{:08x};",
-                    unavailable || !ready || b4_shade.is_some(),
+                    unavailable || !ready || b4_shade.is_some() || refill.is_some(),
                     b4_shade.unwrap_or(drain),
                     pass::fade(shade, 1. - 0.3 * c1)
                 ),
@@ -2331,6 +2379,8 @@ impl HudUi {
                     "--".into()
                 } else if !ready {
                     cooldown(skills.wait[i].unwrap_or(s.cooldowns[i]))
+                } else if let Some(ticks) = refill {
+                    cooldown(ticks)
                 } else {
                     String::new()
                 },
@@ -2578,23 +2628,55 @@ mod tests {
     fn slot_flash_tracks_zero_to_usable_and_does_not_replay_for_extra_charges() {
         let mut hud = HudUi::default();
         let now = Instant::now();
-        assert!(!hud.track_readiness(0, true, true, 0, now));
+        assert!(!hud.track_readiness(0, true, true, 0, None, None, now));
         assert!(hud.ready_at[0].is_none()); // Already ready at first sight.
-        assert!(!hud.track_readiness(0, true, false, 120, now)); // Zero usable charges.
-        hud.track_readiness(0, true, false, 6, now);
-        assert!(!hud.track_readiness(0, true, true, 0, now)); // One charge, no long-cooldown chime.
+        assert!(!hud.track_readiness(0, true, false, 120, None, None, now)); // Zero usable charges.
+        hud.track_readiness(0, true, false, 6, None, None, now);
+        // Two seconds of cooldown chime too: no 4 s minimum any more.
+        assert!(hud.track_readiness(0, true, true, 0, None, None, now));
         assert_eq!(hud.ready_at, [Some(now), None, None]);
         let later = now + Duration::from_millis(200);
-        hud.track_readiness(0, true, true, 0, later); // Extra charge, still usable.
+        hud.track_readiness(0, true, true, 0, None, None, later); // Extra charge, still usable.
         assert_eq!(hud.ready_at[0], Some(now));
         hud.ready_at[0] = None; // Render finished the cue.
-        hud.track_readiness(0, true, true, 0, later);
+        hud.track_readiness(0, true, true, 0, None, None, later);
         assert!(hud.ready_at[0].is_none()); // No repeated ready glow.
-        hud.track_readiness(1, true, false, 300, now);
-        assert!(hud.track_readiness(1, true, true, 0, later)); // Existing 4 s chime gate.
-        hud.track_readiness(2, true, false, 120, now);
-        hud.track_readiness(2, false, true, 0, later); // Dead/unavailable.
+        hud.track_readiness(1, true, false, 300, None, None, now);
+        assert!(hud.track_readiness(1, true, true, 0, None, None, later));
+        hud.track_readiness(2, true, false, 120, None, None, now);
+        hud.track_readiness(2, false, true, 0, None, None, later); // Dead/unavailable.
         assert!(hud.ready_at[2].is_none());
+    }
+    #[test]
+    fn every_use_that_comes_back_asks_for_the_chime() {
+        // Ghost W, 3 uses: spent to one, then each refill while usable.
+        let mut hud = HudUi::default();
+        let now = Instant::now();
+        assert!(!hud.track_readiness(0, true, true, 0, Some(300), Some((3, 3)), now));
+        assert!(!hud.track_readiness(0, true, true, 0, Some(300), Some((1, 3)), now));
+        assert!(hud.track_readiness(0, true, true, 0, Some(300), Some((2, 3)), now));
+        assert!(hud.track_readiness(0, true, true, 0, Some(300), Some((3, 3)), now));
+        assert!(!hud.track_readiness(0, true, true, 0, Some(300), Some((3, 3)), now));
+        // From zero: the ordinary ready chime, once (not twice).
+        hud.track_readiness(0, true, false, 200, Some(300), Some((0, 3)), now);
+        assert!(hud.track_readiness(0, true, true, 0, Some(300), Some((1, 3)), now));
+        // A level-up that adds a use is not a refill; nor is anything while dead.
+        assert!(!hud.track_readiness(0, true, true, 0, Some(300), Some((2, 4)), now));
+        assert!(!hud.track_readiness(0, false, true, 0, Some(300), Some((3, 4)), now));
+        assert!(!hud.track_readiness(0, true, true, 0, Some(300), Some((4, 4)), now));
+    }
+    #[test]
+    fn the_bar_and_chime_take_the_games_full_cycle_from_the_first_frame() {
+        // Seen mid-cooldown for the first time (control taken during it):
+        // with the game's cycle the bar's length is right at once.
+        let mut hud = HudUi::default();
+        assert_eq!(hud.full_length(0, Some(300)), 300);
+        assert_eq!(hud.full_length(0, None), 0);
+        let now = Instant::now();
+        hud.track_readiness(0, true, false, 30, Some(300), None, now);
+        assert!(hud.cooling[0]);
+        // A 300-tick skill chimes when ready even though only 30 were seen.
+        assert!(hud.track_readiness(0, true, true, 0, Some(300), None, now));
     }
     #[test]
     fn unavailable_cue_fades_and_charge_marks_handle_empty_unknown_and_large_counts() {
@@ -3032,12 +3114,6 @@ mod tests {
         let (edge, lift) = ready_cue(0.133).unwrap();
         assert!(edge > 0. && edge < 1. && (edge + lift - 1.).abs() < 1e-5);
         assert_eq!(ready_cue(0.183), None);
-        // The chime: cooldowns of 4 s (240 ticks) or more only.
-        assert!(!chimes(READY_CUE_MIN_TICKS));
-        assert!(!chimes(120));
-        assert!(!chimes(239));
-        assert!(chimes(240));
-        assert!(chimes(3600));
         assert_eq!(grey(1.), "ffffffff");
         assert_eq!(grey(COOLING_ICON * 0.85), "a3a3a3ff");
     }

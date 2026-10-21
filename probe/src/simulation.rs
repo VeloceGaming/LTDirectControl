@@ -26,6 +26,8 @@ pub(crate) struct Simulation {
     pub(crate) last_manual: bool,
     pub(crate) last_manual_mode: Option<&'static str>,
     pub(crate) session_gate: Arc<RwLock<()>>,
+    /// (match, slot, agree) already logged by `ABILITY COOLDOWN_READ`.
+    pub(crate) cooldown_reads: std::sync::Mutex<std::collections::HashSet<(MatchKey, usize, bool)>>,
 }
 
 impl StablePlayerAi for Simulation {
@@ -41,6 +43,7 @@ impl StablePlayerAi for Simulation {
             last_manual: false,
             last_manual_mode: None,
             session_gate: self.session_gate.clone(),
+            cooldown_reads: Default::default(),
         })
     }
 
@@ -843,10 +846,41 @@ impl Simulation {
                 slots.map(|slot| c.cooldown(slot).is_some_and(|cd| !cd.unlocked)),
             );
             // Charges from the game's own cooldown read (ABI 10).
-            let charges = slots.map(|slot| {
-                c.cooldown(slot)
-                    .and_then(crate::abilities::Charges::from_cooldown)
-            });
+            let reads = slots.map(|slot| c.cooldown(slot));
+            let charges = reads.map(|read| read.and_then(crate::abilities::Charges::from_cooldown));
+            // While the game's read is new to the mod: once per match and
+            // skill on cooldown, and at a first disagreement, the game's count
+            // next to the mod's former arithmetic on the cooldown counter.
+            for (slot, read) in reads.iter().enumerate() {
+                let Some(read) = read.filter(|r| r.unlocked && r.cooltime > 0) else {
+                    continue;
+                };
+                let counter = cooldowns[slot];
+                let mine = crate::abilities::Charges::from_cooldown(read)
+                    .map_or(0, |c| c.remaining(counter));
+                // The counts, not the counters: the older cooldown counter
+                // is a tick behind the newer read in the same callback (seen
+                // in play, 1.5.0-dev33: 1 while the read says 0).
+                let agree = mine == read.charges;
+                if (counter > 0 || !agree)
+                    && self
+                        .cooldown_reads
+                        .lock()
+                        .is_ok_and(|mut seen| seen.insert((key, slot, agree)))
+                {
+                    self.logger.write(&format!(
+                        "ABILITY COOLDOWN_READ actor={} slot={} agree={} counter={counter} remaining={} cooltime={} max_charges={} game_charges={} mod_charges={mine} next_charge_ticks={}",
+                        c.id(),
+                        ["Q", "W", "R"][slot],
+                        if agree { "yes" } else { "no" },
+                        read.remaining,
+                        read.cooltime,
+                        read.max_charges,
+                        read.charges,
+                        read.next_charge_ticks
+                    ));
+                }
+            }
             if self.abilities.observe_charges(key, c.id(), charges) {
                 self.logger.write(&format!(
                     "ABILITY CHARGES actor={} Q/W/R={charges:?}; from the game's cooldown read",

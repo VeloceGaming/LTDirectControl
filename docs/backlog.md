@@ -71,6 +71,20 @@ addition (not to be copied).
    them). Plan: `local/plans/skill-preview-step4.md` (not in git). Open: the
    Hellion R and Mistguide R size picks; Workshop champions not in the table
    use their file's numbers.
+   **Viewer cards from the game's files (2026-10-22, the author's option
+   A):** a champion the game can field that no match has recorded gets a
+   card from its data file (how each skill is cast, its range and numbers;
+   "from the game's files, not seen in play"), so a new champion can be
+   assigned on the day it appears without a research build (Beta 2's
+   Bombardier, Ferryman, Gladiator, Hypnotist). Champions whose skills run
+   custom code answer no sizes: their sizes are typed and stay fixed.
+   Not covered: a future champion built into the game's code (no cast kind
+   in any file).
+   **Ring at attack range + extra (1.5.0-dev31, the author's option A):**
+   an assignable type for a skill that adds attack range (Bombardier Q
+   deploys for +`move_distance`): the ring follows the live attack range and
+   the skill's number by name; while the champion is already in that mode
+   (the move-blocking status), it shows the range packing returns to.
    **Noted by the author, 2026-10-21, for later design work:** (a) the dash
    preview (chevrons to the landing point) is hard to see during a fight
    and needs a new design; (b) a line skill's meaning is not shown: Harpy R
@@ -98,6 +112,10 @@ addition (not to be copied).
    broader in-game testing. See
    [investigation-tooltips-native.md](investigation-tooltips-native.md) and
    `tools/audit_tooltips.py`.
+   Item effect text: since 1.5.0-dev29 the game's own item text method
+   fills the values (no more "…" for the four base items with value
+   slots); not seen in game yet. See
+   [investigation-item-text.md](investigation-item-text.md).
 4. **Emotes and performance validation.** The user accepted the built-in
    wheel and display controls (0.79.0–0.79.1). Static PNG import/library
    assignment is implemented in 0.80.0; native imported texture loading
@@ -253,7 +271,9 @@ addition (not to be copied).
       caster Accuracy − dodger Dodging, mapped into a human band. Starting
       curve: gap −100 → 6..9 ticks, 0 → 10..14, +100 → 16..22 (anything
       near 400 ms was rejected as a guaranteed hit). Floor and ceiling are
-      Advanced settings while testing; defaults frozen afterwards. The
+      Advanced settings while testing; defaults frozen afterwards. **Superseded 2026-10-21 (the author, after testing on 0.6.4):**
+      defaults floor 12, ceiling 35 ticks (1.5.0-dev26), to follow the base
+      game's reaction differences more closely. The
       game's deterministic per-projectile choice is kept.
     - **The player's Dodging** must still matter. The game already uses it
       in the AI aim roll (investigation, section 4); whether to replace that
@@ -339,6 +359,14 @@ addition (not to be copied).
 - Shop "Vanilla order" option, default on (0.67.0).
 
 ## Declined
+
+- Working out the health part of a skill value ("100 + 50% AP + 10% max
+  health" as one number, like the attack and ability power parts since
+  1.4.3). The author, 2026-10-21 (option A): keep the game's wording. The
+  text does not say whose health it means and the data does not either:
+  usually the caster's (Ogre W, Android W), but Voodoo Shaman R hurts
+  enemies by a share of their own maximum health. A wrong number is worse
+  than an honest percentage.
 
 - The design's 550 ms dash reveal (user, 2026-10-09: "means little and can
   backfire").

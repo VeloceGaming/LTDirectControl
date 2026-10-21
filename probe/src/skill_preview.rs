@@ -227,8 +227,29 @@ static SHAPES: OnceLock<HashMap<String, [Geometry; 3]>> = OnceLock::new();
 /// The controlled champion's basic attack range in thousandths of a world
 /// unit (0 = unknown), for `Shape::Reach`. Written by the movement module.
 static ATTACK_RANGE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// The controlled champion is in the mode its reach skill toggles, so its
+/// attack range already holds the extra: the version's move-blocking
+/// status (Beta 2: Bombardier deployed). Written with the attack range.
+static REACH_ACTIVE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 pub fn set_attack_range(range: Option<u64>) {
     ATTACK_RANGE.store(range.unwrap_or(0), std::sync::atomic::Ordering::Relaxed);
+    if range.is_none() {
+        set_reach_active(false);
+    }
+}
+pub fn set_reach_active(active: bool) {
+    REACH_ACTIVE.store(active, std::sync::atomic::Ordering::Relaxed);
+}
+/// The reach ring's radius: the attack range after the cast. Not in the
+/// mode: the range plus the extra (deploying adds it). In the mode: the
+/// range already holds the extra, and casting again takes it away (the
+/// author, 2026-10-22, option A).
+fn reach_radius(range: f32, extra: f32, active: bool) -> f32 {
+    if active {
+        (range - extra).max(0.)
+    } else {
+        range + extra
+    }
 }
 fn attack_range() -> Option<f32> {
     let range = ATTACK_RANGE.load(std::sync::atomic::Ordering::Relaxed);
@@ -450,6 +471,8 @@ pub fn assigned(v: &Value) -> Option<Geometry> {
             },
             Placement::Caster,
         ),
+        // A ring at the caster's attack range plus `extra` (Bombardier Q).
+        "attack_reach" => g.add(Shape::Reach { extra: n("extra")? }, Placement::Caster),
         _ => return None,
     }
     Some(g)
@@ -1718,11 +1741,12 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
             Shape::Movement { blink: true } => blink(&mut out, s, at, ink),
             Shape::Reach { extra } => {
                 if let Some(range) = attack_range() {
+                    let active = REACH_ACTIVE.load(std::sync::atomic::Ordering::Relaxed);
                     area(
                         &mut out,
                         s,
                         project(origin),
-                        (range + extra) * sx,
+                        reach_radius(range, extra, active) * sx,
                         ink,
                         false,
                     );
@@ -2991,5 +3015,16 @@ mod tests {
                 .iter()
                 .all(|s| [s.a.0, s.a.1, s.b.0, s.b.1].into_iter().all(f32::is_finite)));
         }
+    }
+    #[test]
+    fn the_attack_range_ring_shows_the_range_after_the_cast() {
+        // Bombardier Q: attack range 65, deploying adds 50.
+        assert_eq!(reach_radius(65., 50., false), 115.);
+        // Deployed, the attack range already reads 115; packing returns to 65.
+        assert_eq!(reach_radius(115., 50., true), 65.);
+        assert_eq!(reach_radius(30., 50., true), 0.);
+        let g = assigned(&serde_json::json!({"type": "attack_reach", "extra": 50})).unwrap();
+        assert!(matches!(g.footprints[0].shape, Shape::Reach { extra } if extra == 50.));
+        assert!(assigned(&serde_json::json!({"type": "attack_reach"})).is_none());
     }
 }

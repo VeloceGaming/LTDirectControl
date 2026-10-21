@@ -37,6 +37,30 @@ static SELECTION_DRAWS: AtomicBool = AtomicBool::new(false);
 /// executable, then that version's number in `hooks!`.
 #[cfg(all(windows, target_arch = "x86_64"))]
 static ACTIVE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+
+/// An event a game version builds inline instead of in a function the mod
+/// could call (Beta 2: cancel recall). The mod appends an entry with the
+/// game's stop-event function, then turns it into this event: tag 0 and, at
+/// +8, a pointer to a process-heap payload `{ kind, 0, actor }`.
+#[cfg_attr(not(all(windows, target_arch = "x86_64")), allow(dead_code))]
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct InlineEvent {
+    /// Size of one entry of the event list.
+    pub entry: usize,
+    /// The payload's first word.
+    pub kind: u64,
+}
+/// A status that stops a champion from moving (Beta 2: Bombardier
+/// deployed): entries of `entry` bytes in the list at `list` (pointer, then
+/// length at `list + 8`), with the kind at +0 and the name at +4.
+#[cfg_attr(not(all(windows, target_arch = "x86_64")), allow(dead_code))]
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct BlockStatus {
+    pub list: usize,
+    pub entry: usize,
+    pub kind: u32,
+    pub name: &'static [u8],
+}
 /// `hooks!(default, call)`: `call` in the hooks of the running game
 /// version, or `default` while no supported executable is recognised. (The
 /// stack helpers name no game address; their default is the first copy.)
@@ -46,6 +70,7 @@ macro_rules! hooks {
         match ACTIVE.load(Ordering::Acquire) {
             1 => v064::windows::$($call)+,
             2 => v065::windows::$($call)+,
+            3 => v070b2::windows::$($call)+,
             _ => $default,
         }
     };
@@ -437,6 +462,10 @@ pub fn install(skip: u32) -> Result<(&'static str, u32), String> {
             ACTIVE.store(2, Ordering::Release);
             let families = v065::windows::install(&sha, skip)?;
             Ok((v065::identity::GAME, families))
+        } else if sha == v070b2::identity::EXPECTED_SHA {
+            ACTIVE.store(3, Ordering::Release);
+            let families = v070b2::windows::install(&sha, skip)?;
+            Ok((v070b2::identity::GAME, families))
         } else {
             Err("Executable fingerprint differs; no hooks installed".into())
         }
@@ -453,6 +482,18 @@ pub fn outline_installed() -> bool {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
         hooks!(false, installed(crate::native_profile::family::OUTLINE))
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        false
+    }
+}
+/// The minimap family is installed: the mod restyles the native minimap,
+/// and its frame (`minimap::draw_frame`) belongs to that look.
+pub fn minimap_installed() -> bool {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        hooks!(false, installed(crate::native_profile::family::MINIMAP))
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -532,6 +573,20 @@ mod v064 {
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod v065 {
+    use super::*;
+    // The live reader's tables: research builds only (stage C).
+    #[cfg(feature = "research")]
+    mod effects;
+    pub(super) mod identity;
+    mod items;
+    mod layout;
+    mod stat_sites;
+    #[allow(clippy::duplicate_mod)]
+    #[path = "../windows/mod.rs"]
+    pub(super) mod windows;
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod v070b2 {
     use super::*;
     // The live reader's tables: research builds only (stage C).
     #[cfg(feature = "research")]

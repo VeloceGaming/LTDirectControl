@@ -229,6 +229,9 @@ pub(crate) unsafe fn observe_owned_abilities(
             .filter(|r| *r > 0),
         &shared.logger,
     );
+    // The reach ring (Bombardier Q) shows the range after the cast: the
+    // deployed status the game's move checks says the extra is applied.
+    crate::skill_preview::set_reach_active(super::movement::move_blocked(entity));
     true
 }
 pub(crate) unsafe fn read_ability_metadata(

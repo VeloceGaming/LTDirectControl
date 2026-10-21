@@ -1,5 +1,5 @@
 //! Host-localized descriptions. Unknown formula parameters remain visibly unknown.
-use mod_api_stable::StableClient;
+use mod_api_stable::{SettingTargetV1, StableClient};
 use serde_json::Value;
 use std::sync::OnceLock;
 pub fn base_champion(name: &str) -> Option<&'static Value> {
@@ -478,6 +478,59 @@ pub fn skill(ctx: &StableClient<'_>, champion: &str, slot: usize, spec: Option<&
     };
     format!("{title}\n\n{description}")
 }
+/// The item effect text with the game's own values, as its item panel shows
+/// it (`native_tooltips::item_text`), for a template with value slots. The
+/// game is asked only when the SDK finds that exact text: the game's
+/// item-specific text methods stop the game when the item text sheet is
+/// missing, and the SDK finding the text rules that out
+/// (docs/investigation-item-text.md). None while waiting or when the game's
+/// text is not complete: the template is shown as before.
+fn game_item_effect(ctx: &StableClient<'_>, lookup: &str, template: &str) -> Option<String> {
+    if !template.contains('{') {
+        return None;
+    }
+    if crate::native_tooltips::claim_item_prefetch() {
+        queue_every_item_effect(ctx);
+    }
+    ctx.i18n(&format!("#asset/base/text/item?{lookup}.option"))?;
+    complete_text(crate::native_tooltips::item_text(lookup, template)?)
+}
+/// Once per match, at the first item that needs it: every item whose
+/// effect sentence has value slots (item mods can add many), so the game's
+/// item list is built once for all of them. Same rules as `item`: an
+/// item's own description or `.description` text wins, and the game is
+/// asked only when the SDK finds the exact `.option` text.
+fn queue_every_item_effect(ctx: &StableClient<'_>) {
+    let Some(Value::Object(items)) = ctx
+        .setting_get_json(SettingTargetV1::ItemSetting, "")
+        .and_then(|s| serde_json::from_str::<Value>(&s).ok())
+    else {
+        return;
+    };
+    for (name, spec) in &items {
+        let lookup = spec.get("key").and_then(Value::as_str).unwrap_or(name);
+        let own = spec.get("description").and_then(Value::as_str).is_some()
+            || translated(ctx, &format!("#asset/base/text/item?{lookup}.description")).is_some();
+        let Some(template) = translated(ctx, &format!("#asset/base/text/item?{lookup}.option"))
+        else {
+            continue;
+        };
+        if own
+            || !template.contains('{')
+            || ctx
+                .i18n(&format!("#asset/base/text/item?{lookup}.option"))
+                .is_none()
+        {
+            continue;
+        }
+        crate::native_tooltips::item_text(lookup, &template);
+    }
+}
+/// The game's text, if it has words and no value slot left unfilled.
+fn complete_text(text: String) -> Option<String> {
+    (!text.trim().is_empty() && crate::native_tooltips::unresolved_parameters(&text).is_empty())
+        .then_some(text)
+}
 pub fn item(ctx: &StableClient<'_>, key: &str, spec: Option<&Value>) -> String {
     let name = spec
         .and_then(|s| s.get("name"))
@@ -508,7 +561,10 @@ pub fn item(ctx: &StableClient<'_>, key: &str, spec: Option<&Value>) -> String {
         .and_then(|r| translated(ctx, r));
     let description = explicit
         .or_else(|| translated(ctx, &format!("#asset/base/text/item?{lookup}.description")))
-        .or_else(|| translated(ctx, &format!("#asset/base/text/item?{lookup}.option")));
+        .or_else(|| {
+            let template = translated(ctx, &format!("#asset/base/text/item?{lookup}.option"))?;
+            Some(game_item_effect(ctx, lookup, &template).unwrap_or(template))
+        });
     if let Some(description) = description {
         lines.push(String::new());
         lines.push(rich_with_icons(&description));
@@ -740,5 +796,20 @@ mod tests {
         assert_eq!(rich_with_icons(riot), riot);
         assert_eq!(rich(riot), " <#60e84dff>maximum health<>");
         assert_eq!(rich_with_icons("<i#asset/icon>x<i#other:a>"), "x");
+    }
+    #[test]
+    fn the_game_item_text_is_used_only_when_complete() {
+        // Read from the game (Beta 2, giants_horn_shard): its text method
+        // fills every slot; anything else keeps the template as before.
+        let filled =
+            "每秒回復 40 生命值，並對周圍 30 範圍內所有敵人造成 10+最大生命值1% 的魔法傷害。";
+        assert_eq!(complete_text(filled.into()), Some(filled.into()));
+        assert_eq!(complete_text("Recovers {Flat} HP".into()), None);
+        assert_eq!(complete_text("  ".into()), None);
+        // Braces that are not a value slot are kept.
+        assert_eq!(
+            complete_text("Deals 10 {".into()),
+            Some("Deals 10 {".into())
+        );
     }
 }

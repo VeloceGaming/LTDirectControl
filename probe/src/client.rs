@@ -412,7 +412,11 @@ impl Client {
             return;
         }
         self.abilities.draw(ctx, &self.camera);
-        minimap::draw_frame(ctx, &self.camera);
+        // A game version whose minimap family is off keeps its own minimap
+        // look (0.7.0 Beta 2 for now).
+        if native_adapter::minimap_installed() {
+            minimap::draw_frame(ctx, &self.camera);
+        }
         // motion: S2
         hud_motion_pass::s2_pause_brackets(
             ctx,

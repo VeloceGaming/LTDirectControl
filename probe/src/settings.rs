@@ -122,7 +122,7 @@ pub static OPTIONS: &[OptionDef] = &[
         label: "Reaction floor",
         hint: "Testing: the fastest an enemy can react to your shots.",
         control: Control::Slider(1., 40., 1., " ticks"),
-        default: 6.,
+        default: 12.,
     },
     OptionDef {
         key: "stat_reaction_ceiling",
@@ -131,7 +131,7 @@ pub static OPTIONS: &[OptionDef] = &[
         label: "Reaction ceiling",
         hint: "Testing: the slowest an enemy can react to your shots.",
         control: Control::Slider(1., 60., 1., " ticks"),
-        default: 14.,
+        default: 35.,
     },
     OptionDef {
         key: "stat_collision_margin",
@@ -1074,8 +1074,18 @@ mod tests {
     fn stat_rules_start_off_with_the_tested_defaults() {
         let fresh = Values(json!({"version": 1}));
         assert_eq!(fresh.number("athlete_stat_rules"), 0.);
-        assert_eq!(fresh.number("stat_reaction_ceiling"), 14.);
+        assert_eq!(fresh.number("stat_reaction_floor"), 12.);
+        assert_eq!(fresh.number("stat_reaction_ceiling"), 35.);
         assert_eq!(fresh.number("stat_collision_margin"), 2.);
+        // The window's defaults and the rules' own defaults agree.
+        assert_eq!(
+            fresh.number("stat_reaction_floor"),
+            f64::from(crate::athlete_rules::FLOOR_DEFAULT)
+        );
+        assert_eq!(
+            fresh.number("stat_reaction_ceiling"),
+            f64::from(crate::athlete_rules::CEILING_DEFAULT)
+        );
         assert_eq!(
             fresh.number("stat_collision_margin"),
             f64::from(crate::athlete_rules::MARGIN_DEFAULT)

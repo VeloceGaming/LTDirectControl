@@ -89,7 +89,65 @@ pub(crate) fn take_stop_ticket(
     })
 }
 pub(crate) unsafe fn can_stop_movement(entity: usize) -> bool {
-    can_stop_action(entity, 2)
+    can_stop_action(entity, 2) && !move_blocked(entity)
+}
+/// The game's move also refuses while the champion carries this version's
+/// blocking status (`layout::MOVE_BLOCK_STATUS`; Beta 2: Bombardier
+/// deployed), compared as the game does: the kind at +0, the name at +4.
+pub(crate) unsafe fn move_blocked(entity: usize) -> bool {
+    let Some(status) = MOVE_BLOCK_STATUS else {
+        return false;
+    };
+    let list = std::ptr::read_unaligned((entity + status.list) as *const usize);
+    let count = std::ptr::read_unaligned((entity + status.list + 8) as *const usize);
+    if count == 0 || list == 0 || count > 512 {
+        return false;
+    }
+    (0..count).any(|i| {
+        let entry = list + i * status.entry;
+        std::ptr::read_unaligned(entry as *const u32) == status.kind
+            && std::slice::from_raw_parts((entry + 4) as *const u8, status.name.len())
+                == status.name
+    })
+}
+/// The cancel-recall event of a version that builds it inline
+/// (`layout::CANCEL_RECALL_INLINE`; Beta 2), built the way the game builds
+/// it: an entry appended with the game's own stop-event function, then
+/// turned into tag 0 with a pointer at +8 to a payload `{ kind, 0, actor }`
+/// from the process heap, which the game's allocator uses and frees from.
+/// Same arguments as the game's function on other versions (&events,
+/// actor). Nothing is appended when the payload cannot be allocated.
+pub(crate) unsafe extern "system" fn push_inline_cancel(events: usize, actor: usize) {
+    let Some(event) = CANCEL_RECALL_INLINE else {
+        return;
+    };
+    let list = std::ptr::read_unaligned(events as *const usize);
+    if list == 0 {
+        return;
+    }
+    let heap = GetProcessHeap();
+    if heap.is_null() {
+        return;
+    }
+    let payload = HeapAlloc(heap, 0, 0x18) as *mut u64;
+    if payload.is_null() {
+        return;
+    }
+    payload.write_unaligned(event.kind);
+    payload.add(1).write_unaligned(0);
+    payload.add(2).write_unaligned(actor as u64);
+    let stop: StopEventFn = std::mem::transmute(NOTIFY_STOP.load(Ordering::Acquire));
+    // The list is (capacity, pointer, length).
+    let before = std::ptr::read_unaligned((list + 0x10) as *const usize);
+    stop(events, actor);
+    let length = std::ptr::read_unaligned((list + 0x10) as *const usize);
+    if length != before.wrapping_add(1) {
+        HeapFree(heap, 0, payload as *mut c_void);
+        return;
+    }
+    let entry = std::ptr::read_unaligned((list + 8) as *const usize) + (length - 1) * event.entry;
+    std::ptr::write(entry as *mut u8, 0);
+    std::ptr::write_unaligned((entry + 8) as *mut usize, payload as usize);
 }
 pub(crate) unsafe fn can_stop_action(entity: usize, action: usize) -> bool {
     if std::ptr::read_unaligned((entity + 0x68) as *const u32) != 15

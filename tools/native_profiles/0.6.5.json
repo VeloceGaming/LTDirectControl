@@ -2158,6 +2158,158 @@
   "TOOLTIP_BUILTIN_3BCAB80_LOOKUP_RETURN": {
    "rva": "0x167365b",
    "bytes": "488d151e755502e999d9ffff"
+  },
+  "TOOLTIP_ITEM_SHEET_GETTER_ENTRY": {
+   "rva": "0x337cb0",
+   "bytes": "5541574156415541545657534881ec98000000488dac2480000000"
+  },
+  "TOOLTIP_ITEM_LIST_ENTRY": {
+   "rva": "0x1ae4060",
+   "bytes": "5541574156415541545657534881ec48"
+  },
+  "TOOLTIP_ITEM_LIST_DROP_ENTRY": {
+   "rva": "0x14a070",
+   "bytes": "55415741565657534883ec48488d6c24"
+  },
+  "TOOLTIP_ITEM_TEXT_CALL": {
+   "rva": "0x1f23b44",
+   "bytes": "ff9090000000"
+  },
+  "TOOLTIP_ITEM_3C24EA0_KEY_POINTER": {
+   "rva": "0x3c24ef8",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C24EA0_TEXT_POINTER": {
+   "rva": "0x3c24f30",
+   "pointer_target": "0x1af86f0"
+  },
+  "TOOLTIP_ITEM_3C2CB88_KEY_POINTER": {
+   "rva": "0x3c2cbe0",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2CB88_TEXT_POINTER": {
+   "rva": "0x3c2cc18",
+   "pointer_target": "0x1773db0"
+  },
+  "TOOLTIP_ITEM_3C2CCD0_KEY_POINTER": {
+   "rva": "0x3c2cd28",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2CCD0_TEXT_POINTER": {
+   "rva": "0x3c2cd60",
+   "pointer_target": "0x133ad60"
+  },
+  "TOOLTIP_ITEM_3C2CE18_KEY_POINTER": {
+   "rva": "0x3c2ce70",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2CE18_TEXT_POINTER": {
+   "rva": "0x3c2cea8",
+   "pointer_target": "0x1313440"
+  },
+  "TOOLTIP_ITEM_3C2CF60_KEY_POINTER": {
+   "rva": "0x3c2cfb8",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2CF60_TEXT_POINTER": {
+   "rva": "0x3c2cff0",
+   "pointer_target": "0x1957e60"
+  },
+  "TOOLTIP_ITEM_3C2D0A8_KEY_POINTER": {
+   "rva": "0x3c2d100",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D0A8_TEXT_POINTER": {
+   "rva": "0x3c2d138",
+   "pointer_target": "0x1958370"
+  },
+  "TOOLTIP_ITEM_3C2D1F0_KEY_POINTER": {
+   "rva": "0x3c2d248",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D1F0_TEXT_POINTER": {
+   "rva": "0x3c2d280",
+   "pointer_target": "0x1244d50"
+  },
+  "TOOLTIP_ITEM_3C2D338_KEY_POINTER": {
+   "rva": "0x3c2d390",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D338_TEXT_POINTER": {
+   "rva": "0x3c2d3c8",
+   "pointer_target": "0x1313820"
+  },
+  "TOOLTIP_ITEM_3C2D480_KEY_POINTER": {
+   "rva": "0x3c2d4d8",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D480_TEXT_POINTER": {
+   "rva": "0x3c2d510",
+   "pointer_target": "0x1af3c60"
+  },
+  "TOOLTIP_ITEM_3C2D5C8_KEY_POINTER": {
+   "rva": "0x3c2d620",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D5C8_TEXT_POINTER": {
+   "rva": "0x3c2d658",
+   "pointer_target": "0x1774460"
+  },
+  "TOOLTIP_ITEM_3C2D710_KEY_POINTER": {
+   "rva": "0x3c2d768",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D710_TEXT_POINTER": {
+   "rva": "0x3c2d7a0",
+   "pointer_target": "0x1af42c0"
+  },
+  "TOOLTIP_ITEM_3C2D858_KEY_POINTER": {
+   "rva": "0x3c2d8b0",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D858_TEXT_POINTER": {
+   "rva": "0x3c2d8e8",
+   "pointer_target": "0x1af46c0"
+  },
+  "TOOLTIP_ITEM_3C2D9A0_KEY_POINTER": {
+   "rva": "0x3c2d9f8",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C2D9A0_TEXT_POINTER": {
+   "rva": "0x3c2da30",
+   "pointer_target": "0x1af4e00"
+  },
+  "TOOLTIP_ITEM_3C32F08_KEY_POINTER": {
+   "rva": "0x3c32f60",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C32F08_TEXT_POINTER": {
+   "rva": "0x3c32f98",
+   "pointer_target": "0x1af86f0"
+  },
+  "TOOLTIP_ITEM_3C33188_KEY_POINTER": {
+   "rva": "0x3c331e0",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3C33188_TEXT_POINTER": {
+   "rva": "0x3c33218",
+   "pointer_target": "0x1af86f0"
+  },
+  "TOOLTIP_ITEM_3D2AB18_KEY_POINTER": {
+   "rva": "0x3d2ab70",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3D2AB18_TEXT_POINTER": {
+   "rva": "0x3d2aba8",
+   "pointer_target": "0x2dcf940"
+  },
+  "TOOLTIP_ITEM_3D3AA38_KEY_POINTER": {
+   "rva": "0x3d3aa90",
+   "pointer_target": "0x1627670"
+  },
+  "TOOLTIP_ITEM_3D3AA38_TEXT_POINTER": {
+   "rva": "0x3d3aac8",
+   "pointer_target": "0x2dcf940"
   }
  },
  "review_notes": [

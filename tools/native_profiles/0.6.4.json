@@ -2149,6 +2149,182 @@
   "TOOLTIP_SHEET_PATH": {
    "rva": "0x3b14638",
    "bytes": "61737365742f626173652f73657474696e672f6368616d70696f6e5f696e666f"
+  },
+  "TOOLTIP_ITEM_SHEET_GETTER_ENTRY": {
+   "rva": "0x338190",
+   "bytes": "5541574156415541545657534881ec98000000488dac2480000000"
+  },
+  "TOOLTIP_ITEM_LIST_ENTRY": {
+   "rva": "0x1223070",
+   "bytes": "5541574156415541545657534881ec48"
+  },
+  "TOOLTIP_ITEM_LIST_DROP_ENTRY": {
+   "rva": "0x14a350",
+   "bytes": "55415741565657534883ec48488d6c24"
+  },
+  "TOOLTIP_ITEM_TEXT_CALL": {
+   "rva": "0x2302674",
+   "bytes": "ff9090000000"
+  },
+  "TOOLTIP_ITEM_3B8CE20_KEY_POINTER": {
+   "rva": "0x3b8ce78",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B8CE20_TEXT_POINTER": {
+   "rva": "0x3b8ceb0",
+   "pointer_target": "0x12bc910"
+  },
+  "TOOLTIP_ITEM_3B8CF68_KEY_POINTER": {
+   "rva": "0x3b8cfc0",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B8CF68_TEXT_POINTER": {
+   "rva": "0x3b8cff8",
+   "pointer_target": "0x12b0450"
+  },
+  "TOOLTIP_ITEM_3B8D0B0_KEY_POINTER": {
+   "rva": "0x3b8d108",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B8D0B0_TEXT_POINTER": {
+   "rva": "0x3b8d140",
+   "pointer_target": "0x12af870"
+  },
+  "TOOLTIP_ITEM_3B8D1F8_KEY_POINTER": {
+   "rva": "0x3b8d250",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B8D1F8_TEXT_POINTER": {
+   "rva": "0x3b8d288",
+   "pointer_target": "0x12afcc0"
+  },
+  "TOOLTIP_ITEM_3B916A8_KEY_POINTER": {
+   "rva": "0x3b91700",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B916A8_TEXT_POINTER": {
+   "rva": "0x3b91738",
+   "pointer_target": "0x12adea0"
+  },
+  "TOOLTIP_ITEM_3B917F0_KEY_POINTER": {
+   "rva": "0x3b91848",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B917F0_TEXT_POINTER": {
+   "rva": "0x3b91880",
+   "pointer_target": "0x13541e0"
+  },
+  "TOOLTIP_ITEM_3B91938_KEY_POINTER": {
+   "rva": "0x3b91990",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B91938_TEXT_POINTER": {
+   "rva": "0x3b919c8",
+   "pointer_target": "0x12ae3a0"
+  },
+  "TOOLTIP_ITEM_3B91A80_KEY_POINTER": {
+   "rva": "0x3b91ad8",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B91A80_TEXT_POINTER": {
+   "rva": "0x3b91b10",
+   "pointer_target": "0x12ae840"
+  },
+  "TOOLTIP_ITEM_3B91BC8_KEY_POINTER": {
+   "rva": "0x3b91c20",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B91BC8_TEXT_POINTER": {
+   "rva": "0x3b91c58",
+   "pointer_target": "0x18bb680"
+  },
+  "TOOLTIP_ITEM_3B91D10_KEY_POINTER": {
+   "rva": "0x3b91d68",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B91D10_TEXT_POINTER": {
+   "rva": "0x3b91da0",
+   "pointer_target": "0x12aee90"
+  },
+  "TOOLTIP_ITEM_3B91E58_KEY_POINTER": {
+   "rva": "0x3b91eb0",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B91E58_TEXT_POINTER": {
+   "rva": "0x3b91ee8",
+   "pointer_target": "0x18bb9f0"
+  },
+  "TOOLTIP_ITEM_3B91FA0_KEY_POINTER": {
+   "rva": "0x3b91ff8",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B91FA0_TEXT_POINTER": {
+   "rva": "0x3b92030",
+   "pointer_target": "0x12af220"
+  },
+  "TOOLTIP_ITEM_3B920E8_KEY_POINTER": {
+   "rva": "0x3b92140",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B920E8_TEXT_POINTER": {
+   "rva": "0x3b92178",
+   "pointer_target": "0x18bbd00"
+  },
+  "TOOLTIP_ITEM_3B92230_KEY_POINTER": {
+   "rva": "0x3b92288",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B92230_TEXT_POINTER": {
+   "rva": "0x3b922c0",
+   "pointer_target": "0x12af870"
+  },
+  "TOOLTIP_ITEM_3B92378_KEY_POINTER": {
+   "rva": "0x3b923d0",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B92378_TEXT_POINTER": {
+   "rva": "0x3b92408",
+   "pointer_target": "0x12afcc0"
+  },
+  "TOOLTIP_ITEM_3B924C0_KEY_POINTER": {
+   "rva": "0x3b92518",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B924C0_TEXT_POINTER": {
+   "rva": "0x3b92550",
+   "pointer_target": "0x12b0450"
+  },
+  "TOOLTIP_ITEM_3B95A28_KEY_POINTER": {
+   "rva": "0x3b95a80",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3B95A28_TEXT_POINTER": {
+   "rva": "0x3b95ab8",
+   "pointer_target": "0x13560f0"
+  },
+  "TOOLTIP_ITEM_3BD8CD8_KEY_POINTER": {
+   "rva": "0x3bd8d30",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3BD8CD8_TEXT_POINTER": {
+   "rva": "0x3bd8d68",
+   "pointer_target": "0x12bc910"
+  },
+  "TOOLTIP_ITEM_3D4FF78_KEY_POINTER": {
+   "rva": "0x3d4ffd0",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3D4FF78_TEXT_POINTER": {
+   "rva": "0x3d50008",
+   "pointer_target": "0x2e79db0"
+  },
+  "TOOLTIP_ITEM_3D5E810_KEY_POINTER": {
+   "rva": "0x3d5e868",
+   "pointer_target": "0x12afa20"
+  },
+  "TOOLTIP_ITEM_3D5E810_TEXT_POINTER": {
+   "rva": "0x3d5e8a0",
+   "pointer_target": "0x2e79db0"
   }
  },
  "review_notes": "All hook families; evidence in docs/migration-0.6.4.md. Anchors placed from the reviewed 0.6.3 tables by function alignment, the rest from 0.7.0; tooltip anchors carried with tools/migrate_tooltips.py; minimap operands relocated from the 0.7.0 profile.",

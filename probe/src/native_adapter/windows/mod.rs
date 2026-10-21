@@ -253,9 +253,17 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
             (family::SESSION, (VIEW_ORIGINAL, VIEW_PROLOGUE.as_slice())),
             (family::MOVEMENT, (MOVE_ORIGINAL, MOVE_PROLOGUE.as_slice())),
             (family::MOVEMENT, (STOP_EVENT, STOP_PROLOGUE.as_slice())),
+            // A version that builds the event inline has no function to check.
             (
                 family::MOVEMENT,
-                (CANCEL_RECALL_EVENT, CANCEL_RECALL_PROLOGUE.as_slice()),
+                (
+                    CANCEL_RECALL_EVENT,
+                    if CANCEL_RECALL_INLINE.is_some() {
+                        &[][..]
+                    } else {
+                        CANCEL_RECALL_PROLOGUE.as_slice()
+                    },
+                ),
             ),
             (family::SESSION, (INPUT_ORIGINAL, INPUT_PROLOGUE.as_slice())),
             (
@@ -546,7 +554,14 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
         if on(family::MOVEMENT) {
             ORIGINAL_MOVE.store(base + MOVE_ORIGINAL, Ordering::Release);
             NOTIFY_STOP.store(base + STOP_EVENT, Ordering::Release);
-            NOTIFY_CANCEL_RECALL.store(base + CANCEL_RECALL_EVENT, Ordering::Release);
+            NOTIFY_CANCEL_RECALL.store(
+                if CANCEL_RECALL_INLINE.is_some() {
+                    movement::push_inline_cancel as *const () as usize
+                } else {
+                    base + CANCEL_RECALL_EVENT
+                },
+                Ordering::Release,
+            );
             ORIGINAL_STEER.store(base + STEER_ORIGINAL, Ordering::Release);
             ORIGINAL_DIRECT_STEP.store(base + DIRECT_STEP, Ordering::Release);
         }

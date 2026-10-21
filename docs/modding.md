@@ -336,7 +336,7 @@ test in `logging.rs` pins the level of the busiest tags.
 | File | Holds |
 |---|---|
 | `mod.rs` | the safe functions the rest of the mod calls; picks the hooks built for the running game version |
-| `v064/`, `v065/` | one folder per supported game version (0.6.4, 0.6.5), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
+| `v064/`, `v065/`, `v070b2/` | one folder per supported game version (0.6.4, 0.6.5, 0.7.0 Beta 2), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
 | `windows/mod.rs` | fingerprint check, patch installation (`install`), runtime patch audit |
 | `windows/preview.rs` | skill effect tree reader (skill previews) |
 | `windows/movement.rs` | move, steering, stop, recall |
