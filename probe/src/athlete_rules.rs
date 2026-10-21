@@ -12,10 +12,15 @@
 //!   Dodging term and use the "Collision margin" setting instead: the
 //!   shape-B ones (clamped at zero) and the shape-A ones (floored at 5
 //!   units by the game; the hook lifts the floor for these shots). The
-//!   controlled athlete's own derived Dodging value is 0.
+//!   controlled athlete's own derived Dodging is that of a neutral
+//!   [`NEUTRAL_DODGING`], whatever the athlete's stat: the player dodges by
+//!   hand, so the stat neither shrinks nor grows the body enemy shots see.
 //! - Reaction: the enemy's reaction delay comes from the gap
 //!   (caster Accuracy - defender Dodging) in a human band
-//!   ([`reaction_gate`]) instead of the game's gate.
+//!   ([`reaction_gate`]) instead of the game's gate. Accuracy and Dodging
+//!   are the values the game itself uses there. Two gate shapes: one whose
+//!   final gate the hook replaces (`Capture`, `Complete`), and one whose
+//!   roll the hook hands the human band (`Inputs`, `Band`).
 //!
 //! Hooks run on every simulation thread, so they ask this module two cheap,
 //! lock-free questions first ([`active_on`], [`controlled`]) and return to the
@@ -29,6 +34,9 @@ use std::time::Instant;
 /// Natural values are multiples of 70 (Accuracy x 70), and 5000 is not, so
 /// the consumers can tell these shots apart without knowing the caster.
 pub const COLLISION_MARKER: u64 = 5_000;
+/// The Dodging the controlled athlete's body counts as for enemy shots: the
+/// middle of the 0..=100 scale (the author, 2026-10-21; it was 0 before).
+pub const NEUTRAL_DODGING: u64 = 50;
 pub const FLOOR_DEFAULT: u32 = 6;
 pub const CEILING_DEFAULT: u32 = 14;
 /// The testing setting "Collision margin", in game units.
@@ -63,7 +71,8 @@ pub enum Register {
     Rax,
 }
 
-/// Where a gate reads its "inverse Dodging" (max(100 - Dodging, 0)).
+/// Where a gate reads a value: its "inverse Dodging" (max(100 - Dodging,
+/// 0)) for `Capture`, either form for `Inputs`.
 #[derive(Clone, Copy, Debug)]
 pub enum Source {
     Register(Register),
@@ -71,12 +80,22 @@ pub enum Source {
     Frame(usize),
 }
 
+/// Which form of the defender's Dodging a gate holds.
+#[derive(Clone, Copy, Debug)]
+pub enum Dodging {
+    /// Dodging itself.
+    Value(Source),
+    /// max(100 - Dodging, 0), the form the game multiplies with.
+    Inverse(Source),
+}
+
 /// How a site finds the actor id of the athlete that cast the shot.
 #[derive(Clone, Copy, Debug)]
 pub enum Caster {
     /// An id stored in memory at `*reg + offset` (a projectile or an entity).
     Field { reg: Register, offset: usize },
-    /// An id that the game shifted left into a register: `reg >> shift`.
+    /// An id that the game shifted left into a register: `reg >> shift`
+    /// (`shift` 0: the register holds the id itself).
     Shifted { reg: Register, shift: u32 },
     /// An id shifted and xor-ed with a per-player seed read at
     /// `*other + offset`: `(reg ^ seed) >> shift`.
@@ -101,8 +120,9 @@ pub enum Kind {
         caster: Caster,
         trace: usize,
     },
-    /// Replays `imul output, Dodging, 150`; for the controlled athlete's own
-    /// entity (`entity` holds it) the value becomes 0.
+    /// Replays `imul output, Dodging, factor` (the game's derived Dodging);
+    /// for the controlled athlete's own entity (`entity` holds it) the value
+    /// becomes [`NEUTRAL_DODGING`] times the version's factor.
     DodgingProducer { output: Register, entity: Register },
     /// The start of a reaction gate: remembers the inputs when the caster is
     /// the controlled athlete. `age_mixed` says the game also mixed the
@@ -116,6 +136,26 @@ pub enum Kind {
     /// The end of the same gate: `output` holds the game's gate, replaced
     /// when the matching capture remembered a controlled caster.
     Complete { capture: usize, output: Register },
+    /// The start of a reaction gate that rolls its delay in a band (the
+    /// shape without a place to replace the final gate): remembers the
+    /// caster's Accuracy and the defender's Dodging when the caster is the
+    /// controlled athlete. The game's values, after its own adjustments.
+    Inputs {
+        accuracy: Register,
+        dodging: Dodging,
+        caster: Caster,
+    },
+    /// The same gate's roll, at the load of its hash constant. The game picks
+    /// `low + (range + 1) x splitmix(seed) / 2^64 + extra` ([`rolled_gate`]);
+    /// when `inputs` remembered a controlled caster, `low` and `range` become
+    /// the human band and `extra` 0, so the game's own roll lands in it.
+    Band {
+        inputs: usize,
+        seed: Register,
+        low: Register,
+        range: Register,
+        extra: Register,
+    },
     /// A shape-B collision consumer after its replayed `sub output,
     /// [entity + dodging]`. `accuracy` is where the shot's Accuracy value was
     /// added from just before.
@@ -179,6 +219,28 @@ pub fn reaction_gate(seed: u64, gap: i32, floor: u32, ceiling: u32) -> u32 {
     let (low, high) = reaction_band(gap, floor, ceiling);
     let width = u128::from(high - low) + 1;
     low + ((u128::from(splitmix(seed)) * width) >> 64) as u32
+}
+
+/// The delay a band-shaped gate rolls, as the game computes it: `low` plus a
+/// point of `range + 1` ticks chosen by the seed, plus `extra`. With the
+/// human band (`low`, `high - low`, 0) it is [`reaction_gate`]'s tick.
+pub fn rolled_gate(seed: u64, low: u64, range: u64, extra: u64) -> u64 {
+    let hash = splitmix(seed);
+    let pick = match range.checked_add(1) {
+        Some(width) => low.wrapping_add(((u128::from(width) * u128::from(hash)) >> 64) as u64),
+        // The game skips the scaling when `range + 1` wraps to 0.
+        None => hash,
+    };
+    pick.wrapping_add(extra)
+}
+
+/// The defender's Dodging from either form a gate holds, 0..=100.
+pub fn dodging_from(value: u32, inverse: bool) -> u32 {
+    if inverse {
+        100 - value.min(100)
+    } else {
+        value.min(100)
+    }
 }
 
 /// The seed bits that identify a projectile and defender: the age mixed in by
@@ -246,6 +308,14 @@ pub fn limits() -> (u32, u32) {
         FLOOR.load(Ordering::Relaxed),
         CEILING.load(Ordering::Relaxed),
     )
+}
+
+/// Tests that change the settings copy or the stamp hold this: the test
+/// harness runs tests on several threads at once.
+#[cfg(test)]
+pub fn lock_for_tests() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    LOCK.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 /// The controlled athlete `actor`, whose match runs on `thread`, ticked now.
@@ -465,6 +535,35 @@ mod tests {
     }
 
     #[test]
+    fn the_games_roll_in_the_human_band_is_the_mods_tick() {
+        for seed in [0, 7, 42 << 20, u64::MAX, 0x1234_5678_9abc_def0] {
+            for gap in [-100, -40, 0, 33, 100] {
+                let (low, high) = reaction_band(gap, 6, 22);
+                assert_eq!(
+                    rolled_gate(seed, low.into(), (high - low).into(), 0),
+                    u64::from(reaction_gate(seed, gap, 6, 22))
+                );
+            }
+        }
+        // A band of one tick gives that tick; the extra delay is added.
+        assert_eq!(rolled_gate(99, 12, 0, 0), 12);
+        assert_eq!(rolled_gate(99, 12, 0, 5), 17);
+        // `range + 1` wrapping: the game uses the hash itself.
+        assert_eq!(rolled_gate(3, 12, u64::MAX, 1), splitmix(3).wrapping_add(1));
+    }
+
+    #[test]
+    fn both_forms_of_dodging_give_the_same_gap() {
+        for dodging in 0..=100u32 {
+            assert_eq!(dodging_from(dodging, false), dodging);
+            assert_eq!(dodging_from(100 - dodging, true), dodging);
+        }
+        // Out of range values clamp: an effective value never exceeds 100.
+        assert_eq!(dodging_from(140, false), 100);
+        assert_eq!(dodging_from(140, true), 0);
+    }
+
+    #[test]
     fn splitmix_matches_the_known_sequence() {
         // Reference splitmix64 values for state 0 (first output).
         assert_eq!(splitmix(0), 0xe220_a839_7b1d_cdaf);
@@ -479,6 +578,7 @@ mod tests {
 
     #[test]
     fn the_margin_delta_turns_the_marker_into_the_chosen_margin() {
+        let _globals = lock_for_tests();
         configure(true, 6, 22, 5);
         assert_eq!(COLLISION_MARKER.wrapping_add(margin_delta()), 5_000);
         for units in 0..=7u32 {
@@ -517,6 +617,7 @@ mod tests {
 
     #[test]
     fn the_stamp_names_one_thread_and_one_actor() {
+        let _globals = lock_for_tests();
         clear();
         configure(true, 6, 22, MARGIN_DEFAULT);
         assert!(!active_on(5));

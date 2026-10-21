@@ -20,10 +20,11 @@ PARAMETER = re.compile(r'\{([A-Za-z][A-Za-z0-9_]*)\}')
 
 
 def inventory_from_bundle(game):
-    profile = json.loads((ROOT / 'tools/native_profiles/0.6.3.json').read_text(encoding='utf-8'))
+    reviewed = {json.loads(p.read_text(encoding='utf-8'))['executable_sha256']
+                for p in (ROOT / 'tools/native_profiles').glob('*.json')}
     executable_hash = hashlib.sha256((Path(game) / 'TeamfightManager2.exe').read_bytes()).hexdigest()
-    if executable_hash != profile['executable_sha256']:
-        raise ValueError('Inventory refresh requires the reviewed game executable')
+    if executable_hash not in reviewed:
+        raise ValueError('Inventory refresh requires a reviewed game executable')
     translations = None
     data_champions = set()
     with (Path(game) / 'bundle.game_data').open('rb') as stream:

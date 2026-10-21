@@ -23,12 +23,12 @@ pub(crate) unsafe fn player_pointer(state: usize, table: usize, id: usize) -> Op
     Some(get(object, id)).filter(|player| *player != 0)
 }
 
-// Purchase executor 1465e80 indexes owned items at +310 (pointer) and
-// bounds them by +318 (length) before each upgrade (146b4b0/146b4cb).
+// The purchase executor indexes owned items at `PLAYER_ITEMS_PTR` and bounds
+// them by `PLAYER_ITEMS_LEN` before each upgrade (0.6.3: +0x310/+0x318).
 pub unsafe fn player_owned_len(state: usize, table: usize, id: usize) -> Option<usize> {
     let player = player_pointer(state, table, id)?;
-    let ptr = std::ptr::read_unaligned((player + 0x310) as *const usize);
-    let len = std::ptr::read_unaligned((player + 0x318) as *const usize);
+    let ptr = std::ptr::read_unaligned((player + PLAYER_ITEMS_PTR) as *const usize);
+    let len = std::ptr::read_unaligned((player + PLAYER_ITEMS_LEN) as *const usize);
     (len <= 64 && (len == 0 || (ptr != 0 && ptr.is_multiple_of(8)))).then_some(len)
 }
 
@@ -137,10 +137,10 @@ pub(crate) unsafe extern "system" fn shop_upgrade_hook(
     out
 }
 
-/// The build plan's length (+0x360 of the player object, as in
+/// The build plan's length (`PLAYER_PLAN_LEN` of the player object, as in
 /// `player_build`), when it looks sane.
 unsafe fn build_len(player: usize) -> Option<usize> {
-    let len = std::ptr::read_unaligned((player + 0x360) as *const usize);
+    let len = std::ptr::read_unaligned((player + PLAYER_PLAN_LEN) as *const usize);
     (player != 0 && len <= 64).then_some(len)
 }
 std::thread_local! {
@@ -331,9 +331,9 @@ pub unsafe fn player_build(state: usize, table: usize, id: usize) -> Option<Vec<
     if player == 0 {
         return None;
     }
-    let cap = std::ptr::read_unaligned((player + 0x350) as *const usize);
-    let ptr = std::ptr::read_unaligned((player + 0x358) as *const usize);
-    let len = std::ptr::read_unaligned((player + 0x360) as *const usize);
+    let cap = std::ptr::read_unaligned((player + PLAYER_PLAN_CAP) as *const usize);
+    let ptr = std::ptr::read_unaligned((player + PLAYER_PLAN_PTR) as *const usize);
+    let len = std::ptr::read_unaligned((player + PLAYER_PLAN_LEN) as *const usize);
     if len > 64 || cap < len || cap > 256 || ptr == 0 || !ptr.is_multiple_of(8) {
         return None;
     }

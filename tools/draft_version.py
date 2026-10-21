@@ -402,7 +402,7 @@ def draft_stat_sites(draft, path):
     found = vs.census(draft.new)
     filled, edits = {}, []
     for kind, rvas in found.items():
-        if kind in ('Capture', 'Unclassified'):
+        if kind in ('Capture', 'Band', 'Unclassified'):
             continue
         missing = sorted((s[4], i) for i, s in enumerate(sites) if s[2] == kind and s[0] is None and s[4])
         spare = [r for r in rvas if r not in {s[0] for s in sites}]
@@ -452,9 +452,10 @@ def draft_stat_sites(draft, path):
         drafted = {s[0] for s in sites if s[2] == kind and s[0] is not None}
         extra = [hex(r) for r in rvas if r not in drafted]
         missing = [hex(r) for r in sorted(drafted) if r not in rvas]
-        if kind == 'Capture':
-            lines.append(f'reaction gates: {len(drafted)} drafted; gate-shaped in the executable (not all read'
-                         f' Accuracy, never filled in): {", ".join(hex(r) for r in rvas) or "none"}')
+        if kind in ('Capture', 'Band'):
+            shape = {'Capture': 'replaced at the end', 'Band': 'rolled in a band'}[kind]
+            lines.append(f'reaction gates {shape}: {len(drafted)} drafted; gate-shaped in the executable (not all'
+                         f' read Accuracy, never filled in): {", ".join(hex(r) for r in rvas) or "none"}')
             continue
         if kind == 'Unclassified':
             lines.append(f'{len(rvas)} other Dodging subtractions (neither shape; check they are not hit tests):'

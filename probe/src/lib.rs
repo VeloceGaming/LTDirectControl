@@ -8,7 +8,7 @@
 //!   simulation worker it binds the session, samples HUD/roster data, answers
 //!   the shop and returns the controlled athlete's input.
 //!
-//! Native game hooks (game 0.6.3, 0.6.4 and 0.7.0) live in `native_adapter`; the session and
+//! Native game hooks (game 0.6.4 and 0.6.5) live in `native_adapter`; the session and
 //! frame pacing between the two threads in `native_timing`.
 
 /// Which build this is (step 4 of the preview plan, stage C): a research

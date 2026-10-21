@@ -3,6 +3,99 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.5.0-dev25 (development build) — 2026-10-21
+
+**Not seen in game. Development build, never for the Workshop.** The mod never sends a skill that is not learned yet. Approved by the author on 2026-10-21 ("go ahead with 1.5.0-dev25").
+
+- **The author's report (1.5.0-dev24, game 0.6.5):** the game froze halfway through a match; the author pointed at a Crossbowman W cast before level 3.
+- **What the log showed:** after a switch to Crossbowman, the game's cooldown read reported its W locked. At tick 5475 the mod sent W with `learned=false`, the game started it (`ABILITY EXECUTED W … action=5`), and the match thread exited at tick 5486 (`WORKER ENDED` with the match unfinished; the screen kept drawing the last frame). The game's own error is not visible, so "casting a locked skill stops the game's match thread" is a strong inference, not proven.
+- **Cause (read from the code):** the mod sent a skill whenever the game's own input check (`is_valid_input`) accepted it, and never refused an unlearned one itself. That check accepts a skill not learned yet.
+- **Seen in game, 0.6.4 too (the author, 1.5.0-dev24, after this build was made):** Dynamo's W was sent unlearned and cast without harm; Dynamo's R was sent unlearned at about tick 3925 (`ABILITY EXECUTED R … action=6`) and the match stopped producing ticks at 3932. So the bug is old and not specific to 0.6.5: some unlearned skills cast harmlessly, others stop the match. *Superseded the same day:* the first reading said 0.6.5's check had started accepting unlearned skills.
+- **Now (`abilities::take_input`):** a press is sent only when the skill is learned by the level table (Q 1, W 3, R 5) and a fresh sample of the game's cooldown read does not report it locked (`observe_locked`, fed from `CooldownV1::unlocked` in `simulation.rs`). A refused press shows the existing "W: Lv 3" message (or the existing "not cast" message when the level is enough but the game says locked); the log gives `reason=unlearned` or `reason=locked-by-game`.
+- Tests: a press the game's check would accept is not sent below the level or when locked, and is sent when learned and unlocked (or before any lock reading).
+- Verified: formatting and Clippy with warnings denied for both builds; 550 passing tests in the public build and 574 in the research build (one existing translation-export helper intentionally ignored in each); 40 passing tool tests; both release builds; the native profiles of 0.6.4 / 0.6.5, all 581 native instruction/header anchors counted against the installed game (now 0.6.4; 583 when 0.6.5 is installed), DLL interface/null-host refusal and the 103-file package, for each variant. The research build is verified and packaged, not installed. The public build is installed over 1.5.0-dev24 (installed DLL, metadata and all 101 assets match; it carries 1.5.0-dev25 and `variant=public`; the installed game is 0.6.4) and is what `dist/lt_direct_control` holds. Not verified: anything in game. Not committed, pushed or uploaded.
+
+## 1.5.0-dev24 (development build) — 2026-10-21
+
+**Not seen in game. Development build, never for the Workshop.** With the athlete stat rules On, your champion's body counts as a neutral Dodging 50 for enemy shots, instead of 0. Approved by the author on 2026-10-21 ("go ahead with 1.5.0-dev24, A").
+
+- **Why (the author):** your own Dodging does nothing for you in a match, so your hitbox should stay at the neutral middle ground. With 0, enemy shots got their full Accuracy room against you (Accuracy × 0.07 units), making you easier to hit than any real athlete. Superseded decision of 2026-10-15: "the player's own Dodging term is zero".
+- **Now:** the Dodging producer writes `NEUTRAL_DODGING` (50) times the version's factor (`STAT_DODGING_FACTOR`: 150 on 0.6.4, 200 on 0.6.5) for the controlled athlete's entity. Enemy shots at you get their Accuracy × 0.07 minus 10 units (0.6.5; 7.5 on 0.6.4), then the game's own floor (0 or 5 units by the kind of hit check). Your Dodging stat itself still plays no part. AI against AI is unchanged.
+- **Read from the code (0.6.5):** besides the 21 hit checks, the derived Dodging field is read only to choose between two counters (`0x1300825`, `0x176a885`) and copied with whole entities (`0x10894db`, `0x16544b9`); no other gameplay use.
+- `STATRULE dodging: derived Dodging of athlete N set to neutral (Dodging 50)` replaces the "set to 0" line.
+- The verifier checks `STAT_DODGING_FACTOR` against the Dodging producer's `imul` (a wrong factor is refused).
+- Tests: your entity gets the neutral value; another athlete's keeps the game's.
+- Docs: backlog item 15 (the decision superseded, with the reason).
+- Verified: formatting and Clippy with warnings denied for both builds; 549 passing tests in the public build and 573 in the research build (one existing translation-export helper intentionally ignored in each); 40 passing tool tests; both release builds; the native profiles of 0.6.4 / 0.6.5, all 583 native instruction/header anchors, DLL interface/null-host refusal and the 103-file package, for each variant. The research build is verified and packaged, not installed. The public build is installed over 1.5.0-dev23 (installed DLL, metadata and all 101 assets match; it carries 1.5.0-dev24 and `variant=public`) and is what `dist/lt_direct_control` holds. Not verified: anything in game. Not committed, pushed or uploaded.
+
+## 1.5.0-dev23 (development build) — 2026-10-21
+
+**Not seen in game. Development build, never for the Workshop.** The athlete stat rules are back on game 0.6.5. Approved by the author on 2026-10-21 ("go ahead with 1.5.0-dev23"; earlier choices: effective values, hook the fifth gate).
+
+- **Read from the code (docs/migration-0.6.5.md, "How the rules hook 0.6.5"):** 0.6.5's reaction gates roll their delay in a band (`low + (range + 1) × splitmix(seed) / 2^64 + extra`) and compare it at once; in three of the five gates no safe place is left to replace the final value as on 0.6.4.
+- **New gate hook (`athlete_rules::Kind::Inputs` and `Kind::Band`):**
+  - `Inputs` records the caster's effective Accuracy and the defender's effective Dodging (the value itself, or `100 − Dodging` from the frame) when the caster is the controlled athlete.
+  - `Band`, at the hash constant, sets the gate's `low` and `range` to the human band and `extra` to 0, so the game's own roll lands in it (`rolled_gate`).
+  - 0.6.4 keeps its `Capture`/`Complete` sites unchanged.
+- **Five gates hooked on 0.6.5:** projectile, the big AI function's two paths, area, and the fifth gate (`0xf9fb30`, new in 0.6.5 to read Accuracy).
+  - Corrections to the plan, found while decoding: in both AI paths the `mov reg, 100` near the hash caps Accuracy, so their inputs are read just after Accuracy is final (`0xfa4cb9`, `0xfa50ea`). The fifth gate's are read at `0xfa1d2c`, before the record holding the player seed is overwritten.
+  - The plan said 33 sites; it is 35: 10 gate sites, 3 Accuracy producers, 1 Dodging producer, 21 hit tests.
+- **Producers and seed:**
+  - The projectile Accuracy producer stores at frame `+0xa8` (the draft had 0.6.4's `+0xa0`).
+  - The Dodging producer is `imul rcx, rsi, 200` (the draft had 0.6.4's bytes).
+  - `STAT_PLAYER_SEED` is `0x818`.
+  - `ENABLED` includes Stats on 0.6.5, and the profile reviews the 35 sites (`STATS_SITE_0..34`, `stats` family).
+- **Log:** the per-shot `STATRULE gate site=…` line (Verbose) now names the gate's site, so the fifth gate's lines can be told apart; the game's own gate is still shown next to the band's. `logging.rs` lists the line by its new start, and a test pins it at Verbose (the first-fire and `installed` lines stay Normal).
+- **Verifier and census (`tools/verify_stat_sites.py`):**
+  - It derives every field of `Inputs` and `Band` from the code: Accuracy from the register the gate squares; Dodging from `mov 100; sub` or the frame slot it multiplies with; the caster from the Accuracy lookup's id, followed along every path to the site.
+  - It refuses an `Inputs`/`Band` pair with a call or a branch in or out between them.
+  - A branch onto the first instruction of a producer is now allowed (a jump lands on all three 0.6.5 Accuracy producers; it runs the hook, which needs nothing before it); a branch into the middle of any site is still refused.
+  - The player-seed offset comes from the table instead of a fixed `0x7f8`; the census also knows `× 200` and band-shaped gates (`draft_version.py` reports them).
+  - Checked against eight deliberately wrong tables (each refused) and the plan's original AI capture spot (refused: a jump lands inside that gate).
+- **Tests:**
+  - the game's roll in the human band gives the mod's tick;
+  - both forms of Dodging give the same gap;
+  - every Inputs/Band pair of the table, driven through the hook with fake registers: the controlled caster's band registers get the band and the seed is kept; another caster's registers are left alone;
+  - tests that change the shared rule state now take a lock.
+- **Docs:** migration-0.6.5.md (how the rules hook 0.6.5); version-migration.md (the two gate shapes, the census, the branch rule); modding.md; investigation-stat-rules-0.6.4.md (pointer); backlog item 15 (on again in 1.5.0-dev23; the author's later refinement: bring the manual average hit rate closer to 0.6.5's own calculation).
+- Verified: formatting and Clippy with warnings denied for both builds; 547 passing tests in the public build and 571 in the research build (one existing translation-export helper intentionally ignored in each); 40 passing tool tests; both release builds; the native profiles of 0.6.4 / 0.6.5 (now with 0.6.5's 35 stat sites), all 583 native instruction/header anchors, DLL interface/null-host refusal and the 103-file package, for each variant. The research build is verified and packaged, not installed. The public build is installed (first over 1.5.0-dev22b; rebuilt and reinstalled after the log-level fix, checked against the first install's fingerprints; installed DLL, metadata and all 101 assets match; it carries 1.5.0-dev23 and `variant=public`; the installed game is 0.6.5) and is what `dist/lt_direct_control` holds. Not verified: anything in game, including whether each gate fires and what the fifth gate covers. Not committed, pushed or uploaded.
+
+## 1.5.0-dev22b (development build) — 2026-10-21
+
+**Not seen in game. Development build, never for the Workshop.** On 0.6.5 the screen shows the live simulation again. Approved by the author on 2026-10-21 ("go ahead with 1.5.0-dev22b, always remove the delay").
+
+- **The author's report (1.5.0-dev22, game 0.6.5):**
+  - the controlled champion walked on its own, back and forth near the nexus;
+  - no outline on minions, champions and some monsters ("what I see is not actually what's going on in the simulation");
+  - the shop opened by itself at 1:48.
+- **What the verbose log showed:** the controlled athlete's input ran 900 ticks (15 s) ahead of the frames shown; for seconds the mod's own trace had the champion standing still while the screen showed it walking.
+- **Read from the code:** 0.6.5 delays the match on screen. The hooked worker caller builds a frame queue `15 × [settings + 0x1308]` frames long and releases each frame only once the queue is full; probably so match chat can comment on what is about to happen (guess). The player's orders act on the live simulation, so they showed up 15 s later; hover and outlines matched units that had already moved or died; and before the first frame was shown the simulation ran 15 s unpaced. The second worker send found in dev22 is this queue's drain.
+- **Now (`VIEW_DELAY_SITES`, session family; 0.6.5 only):** the queue length load at `0xb074cd` (`mov rdx, [rax + 0x1308]`) becomes `xor edx, edx` and a 5-byte nop, so every frame goes to the screen at once and the mod's pacing works as on 0.6.4.
+  - It is done for every match on screen while the mod is installed (the author's choice): match chat loses its head start even when you only watch.
+  - The game's bytes are checked before the change and read back after it. The profile names the site (`VIEW_DELAY_BYTES_0`) and the verifier checks the table against it. A more graceful answer is backlog item 18 (low priority).
+- Docs: migration-0.6.5.md "The screen delay"; backlog item 18.
+- Tests: a delay rewrite keeps the instruction length and is `xor edx, edx` plus a nop.
+- Verified: formatting and Clippy with warnings denied for both builds; 543 passing tests in the public build and 567 in the research build (one existing translation-export helper intentionally ignored in each); 40 passing tool tests; both release builds; the native profiles of 0.6.4 / 0.6.5, all 548 native instruction/header anchors, DLL interface/null-host refusal and the 103-file package, for each variant. The research build is verified and packaged, not installed. The public build is installed over 1.5.0-dev22 (installed DLL, metadata and all 101 assets match; it carries 1.5.0-dev22b and `variant=public`) and is what `dist/lt_direct_control` holds. Not verified: anything in game. Not committed, pushed or uploaded.
+
+## 1.5.0-dev22 (development build) — 2026-10-21
+
+**Not seen in game. Development build, never for the Workshop.** Game 0.6.5 supported next to 0.6.4; 0.6.3 and 0.7.0 Beta 1 dropped; skill charges from the game's official cooldown read. Approved by the author on 2026-10-21 ("go ahead, effective, hook it, two builds"): the stat rules come back on 0.6.5 in 1.5.0-dev23.
+
+- **Why:** game 0.6.5 is the live branch; 0.6.4 stays as Steam's rollback. 0.6.3 and 0.7.0 Beta 1 offer only ABI 9, and the author chose the ABI 10 cooldown read over keeping them. 0.7.0 Beta 2 (ABI 10) follows once its hand check is done.
+- **0.6.5 tables (`native_adapter/v065/`, `tools/native_profiles/0.6.5.json`), read from the code** (docs/migration-0.6.5.md): drafted from 0.6.4. A function map seeded with the draft's exact pairs grew from 682 to 1216 functions; all 483 carried code addresses land exactly by alignment; the 69 unknown addresses were found by hand (callers and callees, byte searches, method tables, aligned call order). The draft's `next_step` candidate was wrong (both shop decisions call `0xf0c160`).
+- **What 0.6.5 changed that the hooks rely on:**
+  - The player record grew by 0x20 bytes: the shop's owned-item and build-plan fields became per-version constants (`PLAYER_ITEMS_*`, `PLAYER_PLAN_*`); gold and the item AI's settings owner moved too (byte guards).
+  - The simulation's event list changed format; the mod only calls the game's own stop and cancel-recall functions, so no change.
+  - The worker's caller now also sends from a drain loop over new code: both sends go to the same hook (author's choice, `WORKER_EXTRA_SITES`), and the profile and the verifier name the second one.
+  - The unit renderer has 15 callers (one duplicate caller gone).
+  - The outline setters and the tooltip lookup grew their stack frames but take the same arguments.
+- **Charges from the official read (ABI 10):** `simulation.rs` reads each skill's `CooldownV1` (cycle after cooldown reduction, maximum charges, locked or not) for your athlete. `abilities.rs` keeps the champion's action and the charges as two samples. The combat hook's own charge reader is gone: two native skill-method calls, the cooldown-reduction fields and its own arithmetic. The SDK copy is now 0.6.5's (`tools/prepare_sdk.py`).
+- **Stat rules off on 0.6.5 in this build:** 0.6.5 scales Accuracy and Dodging by a per-athlete slump factor, multiplies Dodging by 200 and reworked the reaction gates (details in docs/migration-0.6.5.md). `v065/stat_sites.rs` holds labelled placeholders; `ENABLED` leaves Stats out and the profile reviews no stat site. On 0.6.4 the rules are unchanged.
+- **Removed:** `v063/`, `v070/` and their profiles. `mod.mod_info` now needs base `>=0.6.4`. Tools that named the 0.6.3 or 0.7.0 profile accept any supported profile (`audit_tooltips.py`, `read_acquisition_assets.py`) or use 0.6.4/0.6.5 (`verify_native_profile.py` default, `test_native_profile.py`).
+- **Docs:** new docs/migration-0.6.5.md; version-migration.md (seeding the map, the stat census's blind spots, player-record fields, extra worker sends); modding.md (supported versions); backlog item 15 (the stat rules on 0.6.5).
+- Tests: the extra worker sends call the same original; charges built from the official read (a 3-use 360-tick slot, a no-cooldown slot, a locked slot); the background-worker test now expects the live hook to leave the official charges alone.
+- Verified: formatting and Clippy with warnings denied for both builds; 543 passing tests in the public build and 567 in the research build (one existing translation-export helper intentionally ignored in each; fewer than dev21 because the per-version hook tests now run for two game versions, not three); 40 passing tool tests; both release builds; the native profiles of 0.6.4 / 0.6.5, all 547 native instruction/header anchors, DLL interface/null-host refusal and the 103-file package, for each variant. The research build is verified and packaged (`dist/build-1.5.0-dev22-research.json`), not installed. The public build is installed over verified 1.5.0-dev21 (installed DLL, metadata and all 101 assets match; it carries 1.5.0-dev22 and `variant=public`) and is what `dist/lt_direct_control` holds. Not verified: anything in game. Not committed, pushed or uploaded.
+
 ## 1.5.0-dev21 (development build) — 2026-10-21
 
 **Not seen in game. Development build, never for the Workshop.** The plain left-click works during a pause. Approved by the author on 2026-10-21 ("every pause").

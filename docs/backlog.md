@@ -217,14 +217,34 @@ addition (not to be copied).
     playing as one athlete, like a sports game's career mode. Lower
     priority since 2026-10-15: the match itself comes first.
 15. **Athlete stat rules in manual matches** (the user's first priority;
-    design agreed 2026-10-15, not built). Findings in
+    design agreed 2026-10-15, not built). **Superseded 2026-10-21:** built
+    and released in 1.3.0 as an experimental setting, Off by default
+    (Settings › Advanced › General: Collision margin for every shot, the
+    Accuracy/Dodging reaction band, your Dodging no longer shrinks your body,
+    AI-versus-AI vanilla), seen in game on 0.7.0 and 0.6.4. **Game 0.6.5
+    (2026-10-21, read from the code):** the game now scales Accuracy and
+    Dodging by a per-athlete slump factor, multiplies Dodging by 200 and
+    reworked the reaction gates, so the rules are off on 0.6.5 in
+    1.5.0-dev22 and back on in 1.5.0-dev23 (the band uses the game's
+    effective values, and a fifth gate is hooked; author's choices; the
+    gates are hooked a new way, [migration-0.6.5.md](migration-0.6.5.md);
+    not yet seen in game). **Later refinement (the author, 2026-10-21):**
+    bring the manual average hit rate closer to 0.6.5's own calculation
+    (its gates now also delay reactions to accurate casters and speed them
+    up against inaccurate ones). The `STATRULE gate` lines (Verbose) show
+    the game's gate next to the band's for each shot. Still open, as
+    ideas: whether your Dodging enters the AI aim roll, and the optional
+    incoming-shot telegraph (both below). Findings in
     [investigation-stat-rules-0.6.4.md](investigation-stat-rules-0.6.4.md);
     the withdrawn 1.2.1 attempt is on the local branch
     `backup/1.2.1-stat-rules`. Decisions:
     - **Collision is fixed.** No dynamic collision of any kind in a
       manually played match: the stat margin is one constant for every shot
       the player fires, at every kind of target, and the player's own
-      Dodging term is zero. Starting constant 5 game units, the game's own
+      Dodging term is zero (**superseded 2026-10-21, the author:** the
+      player's body counts as a neutral Dodging 50 instead, 1.5.0-dev24;
+      zero made the player easier to hit than any athlete while the stat
+      did nothing for them). Starting constant 5 game units, the game's own
       clamp floor; the user wants to see it in game before judging it (draw
       the registering width in the skill preview; a testing overlay of
       collision bodies in the cheat section). AI-versus-AI shots stay
@@ -260,6 +280,14 @@ addition (not to be copied).
 17. **Death recap** (2026-10-15). While dead, the damage sources of the
     last few seconds. A standard MOBA feature, so a main feature; pairs
     with spectating a teammate while dead (item 10).
+18. **Match chat look-ahead on 0.6.5** (low priority, the author
+    2026-10-21). 0.6.5 shows the match 15 seconds behind the simulation,
+    probably so match chat can comment on what is about to happen (guess).
+    1.5.0-dev22b removes that delay for the match on screen, because the
+    player controls the live simulation, so chat now comes as things
+    happen. Wanted: a more graceful answer that keeps the look-ahead where
+    it does not hurt control (details in
+    [migration-0.6.5.md](migration-0.6.5.md)).
 
 ## Done
 

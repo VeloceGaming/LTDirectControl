@@ -429,9 +429,10 @@ fn reused_actor_on_background_worker_cannot_replace_live_charge_state() {
         cost: 100,
         uses: 3,
     });
+    shared.abilities.observe_native((1, 33, 1), 7, 2);
     shared
         .abilities
-        .observe_native((1, 33, 1), 7, 2, [charges; 3]);
+        .observe_charges((1, 33, 1), 7, [charges; 3]);
     let other = shared.clone();
     std::thread::spawn(move || {
         let mut bytes = owned_bytes();
@@ -445,7 +446,9 @@ fn reused_actor_on_background_worker_cannot_replace_live_charge_state() {
     assert_eq!(shared.abilities.hud_skills().uses, [Some(3); 3]);
     let bytes = owned_bytes();
     assert!(unsafe { observe_owned_abilities(&shared, bytes.as_ptr() as usize, (1, 33, 1), 7) });
-    assert_eq!(shared.abilities.hud_skills().ready, [None; 3]);
+    // The live hook refreshes the cooldowns (all 0) but never the charges:
+    // those come from the game's cooldown read only, so all three are ready.
+    assert_eq!(shared.abilities.hud_skills().ready, [Some(true); 3]);
     assert!(owned_key(&shared, 8).is_none());
     shared
         .abilities
@@ -585,21 +588,22 @@ fn attack_commit_observer_rejects_unaccepted_attacks_and_preserves_entity() {
 unsafe extern "system" fn fake_attack(a: usize, b: usize, c: usize) {
     *RECEIVED.lock().unwrap() = vec![a as u64, b as u64, c as u64];
 }
-unsafe extern "system" fn fake_cooltime(_: usize, _: usize) -> usize {
-    360
-}
-unsafe extern "system" fn fake_uses(_: usize, _: usize) -> usize {
-    3
-}
 #[test]
 fn native_observer_refreshes_spent_cooldown_before_charge_readiness() {
+    // Charges come from the game's cooldown read (a 360-tick cycle, three
+    // uses); the hook's own cooldown sample decides readiness right after a
+    // consumer spends it.
     let shared = owned_fixture("owned-cooldown-36");
     let mut bytes = owned_bytes();
-    let mut table = [0usize; 24];
-    table[0x90 / 8] = fake_cooltime as *const () as usize;
-    table[0xa8 / 8] = fake_uses as *const () as usize;
-    bytes[0x578..0x580].copy_from_slice(&1usize.to_le_bytes());
-    bytes[0x580..0x588].copy_from_slice(&(table.as_ptr() as usize).to_le_bytes());
+    shared.abilities.observe_charges(
+        (1, 33, 1),
+        7,
+        [Some(crate::abilities::Charges {
+            capacity: 360,
+            cost: 120,
+            uses: 3,
+        }); 3],
+    );
     let before = bytes;
     assert!(unsafe { observe_owned_abilities(&shared, bytes.as_ptr() as usize, (1, 33, 1), 7) });
     assert_eq!(shared.abilities.hud_skills().uses[0], Some(3));
@@ -610,44 +614,6 @@ fn native_observer_refreshes_spent_cooldown_before_charge_readiness() {
     assert_eq!(shared.abilities.hud_skills().uses[0], Some(0));
     assert_eq!(shared.abilities.hud_skills().ready[0], Some(false));
     assert_eq!(bytes, after);
-}
-#[test]
-fn charge_reader_matches_native_cdr_recast_budget_and_never_writes_entity() {
-    let mut bytes = [0u8; 0x6c0];
-    let mut table = [0usize; 24];
-    table[0x90 / 8] = fake_cooltime as *const () as usize;
-    table[0xa8 / 8] = fake_uses as *const () as usize;
-    for offset in [0x578, 0x588, 0x598] {
-        bytes[offset..offset + 8].copy_from_slice(&1usize.to_le_bytes());
-        bytes[offset + 8..offset + 16].copy_from_slice(&(table.as_ptr() as usize).to_le_bytes());
-    }
-    bytes[0x5c0..0x5c8].copy_from_slice(&5usize.to_le_bytes());
-    bytes[0x3f8..0x3fc].copy_from_slice(&100i32.to_le_bytes());
-    bytes[0x464..0x468].copy_from_slice(&100i32.to_le_bytes());
-    let before = bytes;
-    let entity = bytes.as_ptr() as usize;
-    for offset in [0x578, 0x588] {
-        assert_eq!(
-            unsafe { read_charges(entity, offset) },
-            Some(crate::abilities::Charges {
-                capacity: 180,
-                cost: 60,
-                uses: 3
-            })
-        );
-    }
-    assert_eq!(
-        unsafe { read_charges(entity, 0x598) },
-        Some(crate::abilities::Charges {
-            capacity: 120,
-            cost: 40,
-            uses: 3
-        })
-    );
-    assert_eq!(bytes, before);
-    bytes[0x5c0..0x5c8].copy_from_slice(&1usize.to_le_bytes());
-    assert!(unsafe { read_charges(bytes.as_ptr() as usize, 0x588) }.is_none());
-    assert!(unsafe { read_charges(bytes.as_ptr() as usize, 0x598) }.is_none());
 }
 #[test]
 fn native_effect_reader_uses_three_skill_slots_and_rejects_absent_effects() {
@@ -822,6 +788,19 @@ fn windows_hash_rel32_and_forwarding_abi() {
         relative_call(WORKER_SITE, WORKER_ORIGINAL).unwrap(),
         WORKER_BYTES
     );
+    // A delay rewrite keeps the instruction's length and replaces the
+    // settings load with `xor edx, edx` and a nop.
+    for (rva, expected, replacement) in VIEW_DELAY_SITES {
+        assert!(*rva > 0x1000);
+        assert_ne!(expected, replacement);
+        assert_eq!(replacement[..2], [0x31, 0xd2]);
+        assert_eq!(replacement[2..], [0x0f, 0x1f, 0x44, 0x00, 0x00]);
+    }
+    // Every further worker send calls the same original as the main one.
+    for (rva, bytes) in WORKER_EXTRA_SITES {
+        assert_eq!(relative_call(*rva, WORKER_ORIGINAL).unwrap(), *bytes);
+        assert_ne!(*rva, WORKER_SITE);
+    }
     assert_eq!(relative_call(VIEW_SITE, VIEW_ORIGINAL).unwrap(), VIEW_BYTES);
     assert_eq!(relative_jump(MOVE_SITE, MOVE_ORIGINAL).unwrap(), MOVE_BYTES);
     assert_eq!(

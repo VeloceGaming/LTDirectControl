@@ -254,16 +254,12 @@ mod tests {
         // Each supported game version: its profile and its image size.
         for (profile, image) in [
             (
-                include_str!("../../tools/native_profiles/0.7.0.json"),
-                0x56d8000,
-            ),
-            (
                 include_str!("../../tools/native_profiles/0.6.4.json"),
                 0x533f000,
             ),
             (
-                include_str!("../../tools/native_profiles/0.6.3.json"),
-                0x52d6000,
+                include_str!("../../tools/native_profiles/0.6.5.json"),
+                0x5309000,
             ),
         ] {
             let base = 0x140000000usize;

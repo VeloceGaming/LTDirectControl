@@ -14,6 +14,8 @@ pub(crate) const STAT_ENTITY_ID: usize = 0x5b8;
 pub(crate) const STAT_PLAYER_SEED: usize = 0x7f8;
 /// Offset of the derived Dodging term inside an entity (Dodging x 150).
 pub(crate) const STAT_DERIVED_DODGING: usize = 0x6a0;
+/// The factor of that term: 150 (the Dodging producer's `imul`).
+pub(crate) const STAT_DODGING_FACTOR: usize = 0x96;
 /// Offset of a projectile's kind, the word the hit code switches on after
 /// the projectile Accuracy producer (traced by `STATRULE trace`).
 pub(crate) const STAT_TRACE_PROJECTILE_KIND: usize = 0x40;

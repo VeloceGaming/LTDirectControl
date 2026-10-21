@@ -95,6 +95,22 @@ def verify_sources(profile, root=ROOT):
             continue
         assert numbers(declaration(adapter, site)) == [int(anchors[name]['rva'], 16)], name
         assert bytes(numbers(declaration(adapter, value))).hex() == anchors[name]['bytes'], name
+    # Further worker sends (0.6.5: a drain loop): the table's list and the
+    # profile's WORKER_EXTRA_BYTES_<n> anchors name the same calls.
+    extra = numbers(declaration(adapter, 'WORKER_EXTRA_SITES'))
+    expected = []
+    for name in sorted(n for n in anchors if n.startswith('WORKER_EXTRA_BYTES_')):
+        a = anchors[name]
+        assert int(a['target'], 16) == int(anchors['WORKER_PROLOGUE']['rva'], 16), name
+        expected += [int(a['rva'], 16), *bytes.fromhex(a['bytes'])]
+    assert extra == expected, 'WORKER_EXTRA_SITES'
+    # In-place rewrites (0.6.5: the screen delay): each (rva, the game's 7
+    # bytes, the mod's 7 bytes) matches a VIEW_DELAY_BYTES_<n> anchor.
+    delay = numbers(declaration(adapter, 'VIEW_DELAY_SITES'))
+    assert len(delay) % 15 == 0, 'VIEW_DELAY_SITES'
+    rows = [delay[i:i + 15] for i in range(0, len(delay), 15)]
+    names = sorted(n for n in anchors if n.startswith('VIEW_DELAY_BYTES_'))
+    assert [r[:8] for r in rows] == [[int(anchors[n]['rva'], 16), *bytes.fromhex(anchors[n]['bytes'])] for n in names], 'VIEW_DELAY_SITES'
     for idx, slot in enumerate('QWR'):
         if f'SKILL_{slot}_CALL' not in anchors:
             continue
@@ -201,7 +217,7 @@ def verify(profile_path, executable=DEFAULT_EXE, check_sources=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--profile', type=Path, default=ROOT/'tools/native_profiles/0.7.0.json')
+    parser.add_argument('--profile', type=Path, default=ROOT/'tools/native_profiles/0.6.5.json')
     parser.add_argument('--executable', type=Path, default=DEFAULT_EXE)
     args = parser.parse_args()
     p = verify(args.profile, args.executable)

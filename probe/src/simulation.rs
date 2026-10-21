@@ -2,7 +2,7 @@
 //! player of every match. On the viewed match's worker it binds the session,
 //! samples HUD/roster/shop data and returns the controlled athlete's input.
 use super::*;
-use mod_api_stable::{SimOriginV1, StableEntity, StableSim};
+use mod_api_stable::{SimOriginV1, SkillSlotV1, StableEntity, StableSim};
 use native_timing::MatchKey;
 
 /// Scalars of one `think` call, passed to the per-feature steps below.
@@ -834,6 +834,26 @@ impl Simulation {
             living.map(|c| c.pos()),
             cooldowns,
         );
+        if let Some(c) = living {
+            // Locked skills and charges from the game's own cooldown read (ABI 10).
+            let slots = [SkillSlotV1::Skill, SkillSlotV1::Skill2, SkillSlotV1::Ult];
+            self.abilities.observe_locked(
+                key,
+                c.id(),
+                slots.map(|slot| c.cooldown(slot).is_some_and(|cd| !cd.unlocked)),
+            );
+            // Charges from the game's own cooldown read (ABI 10).
+            let charges = slots.map(|slot| {
+                c.cooldown(slot)
+                    .and_then(crate::abilities::Charges::from_cooldown)
+            });
+            if self.abilities.observe_charges(key, c.id(), charges) {
+                self.logger.write(&format!(
+                    "ABILITY CHARGES actor={} Q/W/R={charges:?}; from the game's cooldown read",
+                    c.id()
+                ));
+            }
+        }
         if let (Some(c), Some(p)) = (living, sim.get_player(player_id)) {
             self.abilities.observe_level(key, c.id(), p.level());
             self.abilities.observe_champion(key, c.id(), c.name());

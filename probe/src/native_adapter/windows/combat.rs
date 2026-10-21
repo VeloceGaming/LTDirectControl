@@ -212,15 +212,12 @@ pub(crate) unsafe fn observe_owned_abilities(
             .abilities
             .observe_geometry(key, actor, geometry, &shared.logger);
     }
-    let charges = [0x578, 0x588, 0x598].map(|offset| read_charges(entity, offset));
-    if shared.abilities.observe_native(
+    // Charges come from the game's own cooldown read (simulation.rs).
+    shared.abilities.observe_native(
         key,
         actor,
         std::ptr::read_unaligned((entity + 0x70) as *const usize),
-        charges,
-    ) {
-        shared.logger.write(&format!("ABILITY CHARGES actor={actor} Q/W/R={charges:?}; declared use count, not inferred capacity/cost"));
-    }
+    );
     shared.movement.observe_action(
         std::ptr::read_unaligned((entity + 0x70) as *const usize),
         &shared.logger,
@@ -233,51 +230,6 @@ pub(crate) unsafe fn observe_owned_abilities(
         &shared.logger,
     );
     true
-}
-/// The Q/W/R consumers call these shared-borrow Action methods with
-/// (action userdata, EntityData/Stat). Current 0.6.3 consumers establish
-/// slots +90 (cooltime), +a8 (use count), CDR +3f8 (+464 for R),
-/// minimum Q=3 ticks, W/R=1. No calls for unlearned actions.
-/// Neither the object nor its vtable is retained beyond this hook.
-pub(crate) unsafe fn read_charges(
-    entity: usize,
-    offset: usize,
-) -> Option<crate::abilities::Charges> {
-    type Read = unsafe extern "system" fn(usize, usize) -> usize;
-    let level = std::ptr::read_unaligned((entity + 0x5c0) as *const usize);
-    let unlock = match offset {
-        0x578 => 1,
-        0x588 => 3,
-        0x598 => 5,
-        _ => return None,
-    };
-    if level < unlock {
-        return None;
-    }
-    let object = std::ptr::read_unaligned((entity + offset) as *const usize);
-    let table = std::ptr::read_unaligned((entity + offset + 8) as *const usize);
-    if object == 0 || table == 0 {
-        return None;
-    }
-    let cool: Read = std::mem::transmute(std::ptr::read_unaligned((table + 0x90) as *const usize));
-    let count: Read = std::mem::transmute(std::ptr::read_unaligned((table + 0xa8) as *const usize));
-    let raw = cool(object, entity);
-    let uses = count(object, entity);
-    let mut cdr = std::ptr::read_unaligned((entity + 0x3f8) as *const i32);
-    if offset == 0x598 {
-        cdr = cdr.checked_add(std::ptr::read_unaligned((entity + 0x464) as *const i32))?;
-    }
-    let divisor = cdr.checked_add(100)?.max(1) as usize;
-    let capacity = (raw.checked_mul(100)? / divisor).max(if offset == 0x578 { 3 } else { 1 });
-    if !(1..=64).contains(&uses) || capacity > 3_600_000 {
-        return None;
-    }
-    let cost = capacity / uses;
-    (cost > 0).then_some(crate::abilities::Charges {
-        capacity,
-        cost,
-        uses: if raw == 0 { 1 } else { uses },
-    })
 }
 pub(crate) unsafe fn read_ability_metadata(
     entity: usize,

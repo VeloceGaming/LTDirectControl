@@ -22,8 +22,8 @@ one (see `CooldownHook`).
 
 On top of the SDK, `native_adapter/` hooks a few places inside the game
 executable (movement, combat, outlines, camera/pacing, hotkeys, the item
-buyer). Those hooks install only on the fingerprinted game build (0.6.3); on
-any other build the mod stays inactive.
+buyer). Those hooks install only on the fingerprinted game builds (0.6.4 and
+0.6.5); on any other build the mod stays inactive.
 
 `native_timing.rs` holds the session state machine shared by both sides:
 Loading → Ready (choose your athlete) → Running ⇄ Paused → Released (F12 or
@@ -336,7 +336,7 @@ test in `logging.rs` pins the level of the busiest tags.
 | File | Holds |
 |---|---|
 | `mod.rs` | the safe functions the rest of the mod calls; picks the hooks built for the running game version |
-| `v063/`, `v064/`, `v070/` | one folder per supported game version (0.6.3, 0.6.4, 0.7.0), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
+| `v064/`, `v065/` | one folder per supported game version (0.6.4, 0.6.5), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
 | `windows/mod.rs` | fingerprint check, patch installation (`install`), runtime patch audit |
 | `windows/preview.rs` | skill effect tree reader (skill previews) |
 | `windows/movement.rs` | move, steering, stop, recall |
@@ -345,7 +345,7 @@ test in `logging.rs` pins the level of the busiest tags.
 | `windows/view.rs` | viewer/worker hooks: pacing, camera, full-screen layout |
 | `windows/input.rs` | blocking game hotkeys during control |
 | `windows/shop.rs` | buyer hooks, item/gold/build reads |
-| `windows/stats.rs` | athlete stat rules for manually played matches: instruction-level sites (a relay replays the displaced bytes, a bridge saves the registers, `adjust` changes one register or frame slot); sites in each version's `stat_sites.rs`, rules in `athlete_rules.rs` |
+| `windows/stats.rs` | athlete stat rules for manually played matches: instruction-level sites (a relay replays the displaced bytes, a bridge saves the registers, `adjust` changes one register or frame slot, or a gate's three band registers); sites in each version's `stat_sites.rs`, rules in `athlete_rules.rs` |
 | `windows/tooltips.rs` | native ChampionInfo descriptions and allocation ownership; called from the existing viewer hook |
 
 `native_tooltips.rs` outside the adapter holds only owned requests/results.
@@ -379,7 +379,7 @@ drafts the new version's tables. In short:
 1. Start from the two places that hold version knowledge. The hook code in
    `native_adapter/windows/` is built once per supported game version,
    each time against that version's tables, and names no address itself:
-   - `native_adapter/v063/`, `v064/` and `v070/` (copy the newest folder: hook sites and byte
+   - `native_adapter/v064/` and `v065/` (copy the newest folder: hook sites and byte
      patterns, executable identity and layout guards, effect and item
      addresses), with a block for the new folder at the end of
      `native_adapter/mod.rs`;
@@ -391,7 +391,8 @@ drafts the new version's tables. In short:
 2. Entity and player field offsets are still written inline in the hook
    files (search for `+ 0x`). An offset that differs between versions
    becomes a constant in every `layout.rs` (the viewer's
-   `VIEW_FRAME_CLOCK` and `VIEW_PAN_VELOCITY` since 0.6.4).
+   `VIEW_FRAME_CLOCK` and `VIEW_PAN_VELOCITY` since 0.6.4; the player
+   record's `PLAYER_ITEMS_*` and `PLAYER_PLAN_*` since 0.6.5).
 3. Follow [re-mod-migration-guide.md](re-mod-migration-guide.md) and
    [patch-migration.md](patch-migration.md). `tools/patch_migration.py`
    proposes candidates; `tools/verify_native_profile.py` checks a profile

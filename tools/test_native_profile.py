@@ -89,19 +89,19 @@ class ProfileTest(unittest.TestCase):
             self.verify(p)
 
     def test_reviewed_profile_cannot_verify_stale_rust_addresses(self):
-        # The branch's profile reviews the session family only; the other
-        # families' constants are not compared (see verify_sources).
-        profile=json.loads((verifier.ROOT/'tools/native_profiles/0.7.0.json').read_text())
+        # A stale address in a version's tables must be refused even when
+        # the rest of the profile matches (see verify_sources).
+        profile=json.loads((verifier.ROOT/'tools/native_profiles/0.6.4.json').read_text())
         # Every supported game version's tables match its own profile.
         for other in sorted((verifier.ROOT/'tools/native_profiles').glob('*.json')):
             verifier.verify_sources(json.loads(other.read_text()))
         (self.root/'probe/src').mkdir(parents=True,exist_ok=True)
         shutil.copytree(verifier.ROOT/'probe/src/native_adapter',self.root/'probe/src/native_adapter')
         verifier.verify_sources(profile,self.root)
-        path=self.root/'probe/src/native_adapter/v070/layout.rs'
+        path=self.root/'probe/src/native_adapter/v064/layout.rs'
         original=path.read_text()
-        for old,stale in [('WORKER_SITE: usize = 0x979089','WORKER_SITE: usize = 0xbfc77a'),
-                          ('VIEW_ORIGINAL: usize = 0xb194c0','VIEW_ORIGINAL: usize = 0x930640')]:
+        for old,stale in [('WORKER_SITE: usize = 0xc52afa','WORKER_SITE: usize = 0xc526a0'),
+                          ('VIEW_ORIGINAL: usize = 0xd0e5e0','VIEW_ORIGINAL: usize = 0x87abe0')]:
             self.assertIn(old,original)
             path.write_text(original.replace(old,stale))
             with self.assertRaises(AssertionError):

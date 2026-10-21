@@ -1,12 +1,18 @@
 //! Game 0.6.4: every code address, call site and expected byte pattern the
 //! hooks rely on (docs/migration-0.6.4.md). Entity field offsets are inline
 //! in the hook files (native_adapter/windows) and equal in every supported
-//! version; the two viewer fields that moved are below.
+//! version; the viewer and player-record fields that differ are below.
 
 // 0.6.4: foreground worker send after runner locks; all 420 decoded
 // instructions equal the 0.6.3 function, and so does its caller.
 pub(crate) const WORKER_SITE: usize = 0xc52afa;
 pub(crate) const WORKER_ORIGINAL: usize = 0x89c880;
+/// Further calls to the worker send that `worker_hook` also takes (0.6.5:
+/// the same caller's drain loop sends with identical arguments).
+/// Instructions the session family rewrites in place: (rva, the game's bytes,
+/// the mod's bytes). 0.6.5: the delay of the frames on screen (none before).
+pub(crate) const VIEW_DELAY_SITES: &[(usize, [u8; 7], [u8; 7])] = &[];
+pub(crate) const WORKER_EXTRA_SITES: &[(usize, [u8; 5])] = &[];
 // Actual foreground viewer dispatch, paired with the unchanged playback
 // implementation. The alternate dispatch branches are not this hook.
 pub(crate) const VIEW_SITE: usize = 0x85f1a0;
@@ -17,6 +23,13 @@ pub(crate) const VIEW_ORIGINAL: usize = 0xd0e5e0;
 // them, so both moved down by 0x68.
 pub(crate) const VIEW_FRAME_CLOCK: usize = 0x2f0;
 pub(crate) const VIEW_PAN_VELOCITY: usize = 0x3f0;
+// Player record fields the shop reads: the owned items (pointer, length)
+// and the build plan (capacity, pointer, length); as in 0.6.3 and 0.7.0.
+pub(crate) const PLAYER_ITEMS_PTR: usize = 0x310;
+pub(crate) const PLAYER_ITEMS_LEN: usize = 0x318;
+pub(crate) const PLAYER_PLAN_CAP: usize = 0x350;
+pub(crate) const PLAYER_PLAN_PTR: usize = 0x358;
+pub(crate) const PLAYER_PLAN_LEN: usize = 0x360;
 pub(crate) const MOVE_SITE: usize = 0x1366af4;
 pub(crate) const MOVE_ORIGINAL: usize = 0x1a646a0;
 pub(crate) const STOP_EVENT: usize = 0x16ac900;

@@ -206,7 +206,8 @@ pub(crate) const LAYOUT_BYTES: &[(usize, &[u8])] = &[
             0x00, 0x00,
         ],
     ),
-    // ENTITY_SKILL_COOLDOWN_CODE: the cooldown method `read_charges` calls.
+    // ENTITY_SKILL_COOLDOWN_CODE: the cooldown method the skill-number reader
+    // compares get("cooltime") with.
     (0x13f2ac0, &[0x48, 0x8b, 0x41, 0x30, 0xc3]),
 ];
 pub(crate) const LAYOUT_POINTERS: &[(usize, usize)] = &[

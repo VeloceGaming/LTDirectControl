@@ -36,7 +36,7 @@ const SAFETY: &[&str] = &[
 /// Lines starting with one of these are written only at Verbose.
 const VERBOSE: &[&str] = &[
     "STATRULE collision site=",
-    "STATRULE gate caster=",
+    "STATRULE gate site=",
     "ABILITY AIMING",
     "ABILITY CANCEL",
     "ABILITY CHARGES",
@@ -179,6 +179,8 @@ mod tests {
             "PREVIEW TREE viewed=false",
             "SHAPE NUMBERS champion=amazon",
             "PATCH FIELDS champion=amazon",
+            // Each reaction gate's per-shot line; the first-fire line stays Normal.
+            "STATRULE gate site=0xfa1d2c caster=3 A=80 D=30",
         ] {
             assert_eq!(level_of(line), Level::Verbose, "{line}");
         }
@@ -191,6 +193,8 @@ mod tests {
             "PREVIEW TABLE champions=96",
             "PREVIEW COMPARE champion=hammerer slot=W",
             "SHOP STATE queue=[]",
+            "STATRULE installed sites=35 at the title screen",
+            "STATRULE gate: first reaction of athlete 3 gated at 12 ticks (game 9)",
         ] {
             assert_eq!(level_of(line), Level::Normal, "{line}");
         }

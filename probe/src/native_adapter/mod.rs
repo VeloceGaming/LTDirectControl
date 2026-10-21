@@ -3,7 +3,9 @@
 //! per supported game version, against that version's tables (v*/); the one
 //! whose fingerprint the running executable has is installed and answers
 //! the calls below, the others stay inert.
-//! Eleven decoded CALLs and one movement-consumer tail JMP are redirected; originals stay
+//! Eleven decoded CALLs (twelve on 0.6.5: a second worker send) and one
+//! movement-consumer tail JMP are redirected; on 0.6.5 one instruction is
+//! also rewritten in place (the screen delay, `VIEW_DELAY_SITES`). Originals stay
 //! intact. Installing is permitted only at the title screen, before a viewer
 //! or its normal worker exists. No patch is made to the executable on disk.
 use crate::{
@@ -42,9 +44,8 @@ static ACTIVE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0)
 macro_rules! hooks {
     ($default:expr, $($call:tt)+) => {
         match ACTIVE.load(Ordering::Acquire) {
-            1 => v070::windows::$($call)+,
-            2 => v063::windows::$($call)+,
-            3 => v064::windows::$($call)+,
+            1 => v064::windows::$($call)+,
+            2 => v065::windows::$($call)+,
             _ => $default,
         }
     };
@@ -305,7 +306,7 @@ pub fn arm_stop(
 pub fn capture_trace(label: &str, logger: &Logger) {
     #[cfg(all(windows, target_arch = "x86_64"))]
     hooks!(
-        v070::windows::capture_trace(label, logger),
+        v064::windows::capture_trace(label, logger),
         capture_trace(label, logger)
     );
     #[cfg(not(all(windows, target_arch = "x86_64")))]
@@ -319,7 +320,7 @@ pub fn capture_trace(label: &str, logger: &Logger) {
 pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        hooks!(v070::windows::thread_stack(thread), thread_stack(thread))
+        hooks!(v064::windows::thread_stack(thread), thread_stack(thread))
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -331,7 +332,7 @@ pub fn thread_stack(thread: u64) -> Result<Vec<String>, &'static str> {
 pub fn thread_alive(thread: u64) -> bool {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
-        hooks!(v070::windows::thread_alive(thread), thread_alive(thread))
+        hooks!(v064::windows::thread_alive(thread), thread_alive(thread))
     }
     #[cfg(not(all(windows, target_arch = "x86_64")))]
     {
@@ -428,18 +429,14 @@ pub fn install(skip: u32) -> Result<(&'static str, u32), String> {
     #[cfg(all(windows, target_arch = "x86_64"))]
     {
         let sha = FINGERPRINT.get_or_init(host::executable_sha).clone()?;
-        if sha == v070::identity::EXPECTED_SHA {
+        if sha == v064::identity::EXPECTED_SHA {
             ACTIVE.store(1, Ordering::Release);
-            let families = v070::windows::install(&sha, skip)?;
-            Ok((v070::identity::GAME, families))
-        } else if sha == v063::identity::EXPECTED_SHA {
-            ACTIVE.store(2, Ordering::Release);
-            let families = v063::windows::install(&sha, skip)?;
-            Ok((v063::identity::GAME, families))
-        } else if sha == v064::identity::EXPECTED_SHA {
-            ACTIVE.store(3, Ordering::Release);
             let families = v064::windows::install(&sha, skip)?;
             Ok((v064::identity::GAME, families))
+        } else if sha == v065::identity::EXPECTED_SHA {
+            ACTIVE.store(2, Ordering::Release);
+            let families = v065::windows::install(&sha, skip)?;
+            Ok((v065::identity::GAME, families))
         } else {
             Err("Executable fingerprint differs; no hooks installed".into())
         }
@@ -520,35 +517,21 @@ pub fn reset_session() {
 // `hooks!` and its fingerprint in `install`.
 // (clippy: loading windows/ more than once is the point.)
 #[cfg(all(windows, target_arch = "x86_64"))]
-mod v070 {
-    use super::*;
-    // The live reader's tables: research builds only (stage C).
-    #[cfg(feature = "research")]
-    mod effects;
-    pub(super) mod identity;
-    mod items;
-    mod layout;
-    mod stat_sites;
-    #[allow(clippy::duplicate_mod)]
-    #[path = "../windows/mod.rs"]
-    pub(super) mod windows;
-}
-#[cfg(all(windows, target_arch = "x86_64"))]
-mod v063 {
-    use super::*;
-    // The live reader's tables: research builds only (stage C).
-    #[cfg(feature = "research")]
-    mod effects;
-    pub(super) mod identity;
-    mod items;
-    mod layout;
-    mod stat_sites;
-    #[allow(clippy::duplicate_mod)]
-    #[path = "../windows/mod.rs"]
-    pub(super) mod windows;
-}
-#[cfg(all(windows, target_arch = "x86_64"))]
 mod v064 {
+    use super::*;
+    // The live reader's tables: research builds only (stage C).
+    #[cfg(feature = "research")]
+    mod effects;
+    pub(super) mod identity;
+    mod items;
+    mod layout;
+    mod stat_sites;
+    #[allow(clippy::duplicate_mod)]
+    #[path = "../windows/mod.rs"]
+    pub(super) mod windows;
+}
+#[cfg(all(windows, target_arch = "x86_64"))]
+mod v065 {
     use super::*;
     // The live reader's tables: research builds only (stage C).
     #[cfg(feature = "research")]

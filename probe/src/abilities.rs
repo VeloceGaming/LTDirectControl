@@ -110,6 +110,26 @@ pub struct Charges {
     pub uses: usize,
 }
 impl Charges {
+    /// From the game's own cooldown read: the full cycle (after cooldown
+    /// reduction) refills every use, and one use costs cycle / uses (the
+    /// engine's model, per the SDK's `CooldownV1`). None for a locked slot.
+    pub fn from_cooldown(c: mod_api_stable::CooldownV1) -> Option<Self> {
+        if !c.unlocked || c.max_charges > 64 {
+            return None;
+        }
+        let capacity = c.cooltime.max(1);
+        let uses = if c.cooltime == 0 {
+            1
+        } else {
+            c.max_charges.max(1)
+        };
+        let cost = capacity / uses;
+        (cost > 0).then_some(Self {
+            capacity,
+            cost,
+            uses,
+        })
+    }
     pub fn remaining(self, cooldown: usize) -> usize {
         (self.capacity.saturating_sub(cooldown) / self.cost.max(1)).min(self.uses)
     }
@@ -168,7 +188,12 @@ struct State {
     champion: Option<String>,
     champion_only: bool,
     message: Option<(String, Instant)>,
-    native: Option<(usize, [Option<Charges>; 3], Instant)>,
+    /// The champion's native action (combat hook) and when it was sampled.
+    native: Option<(usize, Instant)>,
+    /// Q/W/R charges from the game's own cooldown read and when.
+    charges: Option<([Option<Charges>; 3], Instant)>,
+    /// Q/W/R not unlocked yet, from the same read, and when.
+    locked: Option<([bool; 3], Instant)>,
     wait_state: Option<(u64, Option<usize>, bool)>,
     attack_cycle: Option<(usize, usize, Instant)>, // hit tick, starting cooldown, start; no native pointers
     last_uses: [Option<(usize, usize, Instant)>; 3],
@@ -214,8 +239,21 @@ impl State {
     /// The champion's native action now, from a fresh sample.
     fn native_action(&self) -> Option<usize> {
         self.native
-            .filter(|(_, _, at)| at.elapsed() <= FRESH)
-            .map(|(action, _, _)| action)
+            .filter(|(_, at)| at.elapsed() <= FRESH)
+            .map(|(action, _)| action)
+    }
+    /// The slot is locked (not learned yet) by a fresh sample of the
+    /// game's cooldown read.
+    fn fresh_locked(&self, slot: usize) -> bool {
+        self.locked
+            .filter(|(_, at)| at.elapsed() <= FRESH)
+            .is_some_and(|(locked, _)| locked[slot])
+    }
+    /// The slot's charges from a fresh sample of the game's cooldown read.
+    fn fresh_charges(&self, slot: usize) -> Option<Charges> {
+        self.charges
+            .filter(|(_, at)| at.elapsed() <= FRESH)
+            .and_then(|(charges, _)| charges[slot])
     }
     fn cancel_logged(&mut self, reason: &str, log: &Logger) {
         if let Some(request) = self.pending.or(self.dispatched) {
@@ -406,9 +444,7 @@ impl Abilities {
             request.at.elapsed() <= BUFFER
                 && request.waiting
                 && s.level.is_some_and(|l| l >= [1, 3, 5][request.slot])
-                && s.native
-                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                    .and_then(|(_, c, _)| c[request.slot])
+                && s.fresh_charges(request.slot)
                     .is_some_and(|c| c.remaining(s.cooldowns[request.slot]) > 0)
         })
     }
@@ -466,9 +502,7 @@ impl Abilities {
                 .filter(|m| m.at.elapsed() <= FRESH)
                 .map_or([None; 3], |m| m.skills.map(|d| Some(d.is_some()))),
             uses: std::array::from_fn(|i| {
-                s.native
-                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                    .and_then(|(_, c, _)| c[i])
+                s.fresh_charges(i)
                     .map(|c| c.multi().then(|| c.remaining(s.cooldowns[i])))
                     .unwrap_or_else(|| {
                         s.last_uses[i]
@@ -477,9 +511,7 @@ impl Abilities {
                     })
             }),
             uses_max: std::array::from_fn(|i| {
-                s.native
-                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                    .and_then(|(_, c, _)| c[i])
+                s.fresh_charges(i)
                     .map(|c| c.multi().then_some(c.uses))
                     .unwrap_or_else(|| {
                         s.last_uses[i]
@@ -493,17 +525,9 @@ impl Abilities {
                 [None; 3]
             },
             ready: std::array::from_fn(|i| {
-                s.native
-                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                    .and_then(|(_, c, _)| c[i])
-                    .map(|c| c.remaining(s.cooldowns[i]) > 0)
+                s.fresh_charges(i).map(|c| c.remaining(s.cooldowns[i]) > 0)
             }),
-            wait: std::array::from_fn(|i| {
-                s.native
-                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                    .and_then(|(_, c, _)| c[i])
-                    .map(|c| c.wait(s.cooldowns[i]))
-            }),
+            wait: std::array::from_fn(|i| s.fresh_charges(i).map(|c| c.wait(s.cooldowns[i]))),
         }
     }
     pub fn update(
@@ -602,13 +626,9 @@ impl Abilities {
                 .metadata
                 .as_ref()
                 .is_some_and(|m| m.at.elapsed() <= FRESH && m.skills[slot].is_none());
-            let ready = s
-                .native
-                .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                .and_then(|(_, c, _)| c[slot])
-                .map_or(s.cooldowns[slot] == 0, |c| {
-                    c.remaining(s.cooldowns[slot]) > 0
-                });
+            let ready = s.fresh_charges(slot).map_or(s.cooldowns[slot] == 0, |c| {
+                c.remaining(s.cooldowns[slot]) > 0
+            });
             if unlearned || no_effect || !ready {
                 s.denied_at[slot] = Some(Instant::now());
             }
@@ -744,6 +764,8 @@ impl Abilities {
                 s.level = None;
                 s.champion = None;
                 s.native = None;
+                s.charges = None;
+                s.locked = None;
                 s.attack_cycle = None;
                 s.last_uses = [None; 3];
                 s.denied_at = [None; 3];
@@ -832,16 +854,28 @@ impl Abilities {
             s.geometry = Some((geometry, Instant::now()));
         }
     }
-    pub fn observe_native(
+    /// The champion's native action, from the combat hook's tick sample.
+    pub fn observe_native(&self, key: MatchKey, actor: usize, action: usize) {
+        if let Ok(mut s) = self.0.lock() {
+            if s.key == Some(key) && s.actor == Some(actor) {
+                if action != 3 {
+                    s.attack_cycle = None;
+                }
+                s.native = Some((action, Instant::now()));
+            }
+        }
+    }
+    /// Q/W/R charges from the game's own cooldown read (official
+    /// interface, ABI 10). True when they changed.
+    pub fn observe_charges(
         &self,
         key: MatchKey,
         actor: usize,
-        action: usize,
         charges: [Option<Charges>; 3],
     ) -> bool {
         if let Ok(mut s) = self.0.lock() {
             if s.key == Some(key) && s.actor == Some(actor) {
-                let changed = s.native.is_none_or(|(_, old, _)| old != charges);
+                let changed = s.charges.is_none_or(|(old, _)| old != charges);
                 for (i, c) in charges.iter().enumerate() {
                     if let Some(c) = c {
                         s.last_uses[i] = c
@@ -849,14 +883,19 @@ impl Abilities {
                             .then(|| (c.remaining(s.cooldowns[i]), c.uses, Instant::now()));
                     }
                 }
-                if action != 3 {
-                    s.attack_cycle = None;
-                }
-                s.native = Some((action, charges, Instant::now()));
+                s.charges = Some((charges, Instant::now()));
                 return changed;
             }
         }
         false
+    }
+    /// Which of Q/W/R the game's cooldown read reports as not unlocked yet.
+    pub fn observe_locked(&self, key: MatchKey, actor: usize, locked: [bool; 3]) {
+        if let Ok(mut s) = self.0.lock() {
+            if s.key == Some(key) && s.actor == Some(actor) {
+                s.locked = Some((locked, Instant::now()));
+            }
+        }
     }
     pub fn observe_metadata(
         &self,
@@ -891,7 +930,7 @@ impl Abilities {
         mut valid: impl FnMut(&InputV1) -> bool,
         log: &Logger,
     ) -> Option<InputV1> {
-        let (mut request, desc, level, cooldown, native, live_aim) = {
+        let (mut request, desc, level, cooldown, native, charge, locked, live_aim) = {
             let mut s = self.0.lock().ok()?;
             let request = s.pending.take()?;
             if !s.active
@@ -932,7 +971,9 @@ impl Abilities {
                 desc,
                 s.level,
                 s.cooldowns[request.slot],
-                s.native.filter(|(_, _, at)| at.elapsed() <= FRESH),
+                s.native_action(),
+                s.fresh_charges(request.slot),
+                s.fresh_locked(request.slot),
                 s.aim,
             )
         };
@@ -972,11 +1013,12 @@ impl Abilities {
             }
         }
         let mut approaching = None;
-        let busy = native.is_some_and(|(action, _, _)| action > 2);
-        let charged = native
-            .and_then(|(_, c, _)| c[request.slot])
-            .map_or(cooldown == 0, |c| c.remaining(cooldown) > 0);
-        let learned = level.is_none_or(|l| l >= [1, 3, 5][request.slot]);
+        let busy = native.is_some_and(|action| action > 2);
+        let charged = charge.map_or(cooldown == 0, |c| c.remaining(cooldown) > 0);
+        // Never send a skill that is not learned yet: on 0.6.5 the game's own
+        // input check accepts one, and casting it stopped the match (seen in
+        // game, 1.5.0-dev24, Crossbowman W below level 3).
+        let learned = !locked && level.is_none_or(|l| l >= [1, 3, 5][request.slot]);
         let mut reason = "metadata-unavailable-or-stale";
         let result = desc.and_then(|d| {
             reason = "native-validation-rejected";
@@ -1069,11 +1111,13 @@ impl Abilities {
                 return None;
             }
             let input = make(target);
-            if !busy && valid(&input) {
+            if learned && !busy && valid(&input) {
                 reason = "dispatched";
                 return Some(input);
             }
-            if !learned {
+            if locked {
+                reason = "locked-by-game";
+            } else if !learned {
                 reason = "unlearned";
             } else if !charged {
                 reason = "no-charge-or-cooldown";
@@ -1145,11 +1189,7 @@ impl Abilities {
                 return None;
             }
             if retain {
-                let wait_state = (
-                    request.stamp.id,
-                    native.map(|(action, _, _)| action),
-                    approaching.is_some(),
-                );
+                let wait_state = (request.stamp.id, native, approaching.is_some());
                 if s.wait_state != Some(wait_state) {
                     log.write(&format!("ABILITY WAIT {} trace_id={} reason={reason} native_action={:?} busy={busy} approaching={approaching:?} bound={:?} world={:?}", NAMES[request.slot], request.stamp.id, wait_state.1, request.bound, request.aim.map(|a| a.world)));
                     s.wait_state = Some(wait_state);
@@ -1184,7 +1224,7 @@ impl Abilities {
         if !retain {
             log.write(&format!(
                 "ABILITY RESULT {} trace_id={} reason={reason} native_action={:?} cooldown={cooldown} charged={charged} learned={learned} waiting={} bound={:?} normal_cast={} self_cast={} champion_only={} descriptor={desc:?} input={result:?} aim_world={:?} actor_position={position:?}; dispatched requests await native acknowledgement",
-                NAMES[request.slot], request.stamp.id, native.map(|(action, _, _)| action), request.waiting, request.bound, request.normal_cast, request.self_cast, request.champion_only, request.aim.map(|a| a.world)
+                NAMES[request.slot], request.stamp.id, native, request.waiting, request.bound, request.normal_cast, request.self_cast, request.champion_only, request.aim.map(|a| a.world)
             ));
         }
         result.or_else(|| {
@@ -1331,12 +1371,9 @@ impl Abilities {
         let metadata = s.metadata.as_ref().filter(|m| m.at.elapsed() <= FRESH)?;
         let desc = metadata.skills[slot]?;
         let ready = s.level.is_some_and(|level| level >= [1, 3, 5][slot])
-            && s.native
-                .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                .and_then(|(_, c, _)| c[slot])
-                .map_or(s.cooldowns[slot] == 0, |c| {
-                    c.remaining(s.cooldowns[slot]) > 0
-                });
+            && s.fresh_charges(slot).map_or(s.cooldowns[slot] == 0, |c| {
+                c.remaining(s.cooldowns[slot]) > 0
+            });
         let target = if !hover && desc.casting == 0 {
             let picked = if desc.target == 4 {
                 s.actor.map(InputTargetV1::target)
@@ -1428,12 +1465,9 @@ impl Abilities {
                 .filter(|m| m.at.elapsed() <= FRESH)?
                 .skills[slot]?;
             let ready = s.level.is_some_and(|l| l >= [1, 3, 5][slot])
-                && s.native
-                    .filter(|(_, _, at)| at.elapsed() <= FRESH)
-                    .and_then(|(_, c, _)| c[slot])
-                    .map_or(s.cooldowns[slot] == 0, |c| {
-                        c.remaining(s.cooldowns[slot]) > 0
-                    });
+                && s.fresh_charges(slot).map_or(s.cooldowns[slot] == 0, |c| {
+                    c.remaining(s.cooldowns[slot]) > 0
+                });
             if !ready {
                 return Some(SkillCursor::Invalid);
             }
@@ -1696,14 +1730,13 @@ mod tests {
         .multi());
         let (a, _camera, _log) = setup(2, 5);
         budget(&a, 0);
-        a.0.lock().unwrap().native.as_mut().unwrap().2 =
+        a.0.lock().unwrap().charges.as_mut().unwrap().1 =
             Instant::now() - Duration::from_millis(260);
         assert_eq!(a.hud_skills().uses[0], Some(3));
         assert_eq!(a.hud_skills().ready[0], None); // display retention never authorizes a cast.
-        a.observe_native(
+        a.observe_charges(
             (1, 33, 1),
             7,
-            0,
             [Some(Charges {
                 capacity: 3,
                 cost: 1,
@@ -1714,11 +1747,46 @@ mod tests {
         a.reset_session(Keys::default());
         assert_eq!(a.hud_skills().uses[0], None);
     }
+    #[test]
+    fn charges_follow_the_games_cooldown_read() {
+        let read = |cooltime, max_charges, unlocked| mod_api_stable::CooldownV1 {
+            cooltime,
+            max_charges,
+            unlocked,
+            ..Default::default()
+        };
+        // A 3-use slot on a 360-tick cycle: each use costs 120 ticks.
+        assert_eq!(
+            Charges::from_cooldown(read(360, 3, true)),
+            Some(Charges {
+                capacity: 360,
+                cost: 120,
+                uses: 3
+            })
+        );
+        // One use, and a slot with no cooldown at all.
+        assert_eq!(
+            Charges::from_cooldown(read(90, 1, true)).map(|c| c.uses),
+            Some(1)
+        );
+        assert_eq!(
+            Charges::from_cooldown(read(0, 2, true)).map(|c| c.uses),
+            Some(1)
+        );
+        // Locked (not learned yet) or an absurd count: nothing.
+        assert!(Charges::from_cooldown(read(360, 3, false)).is_none());
+        assert!(Charges::from_cooldown(read(360, 65, true)).is_none());
+        // The remaining uses follow the remaining cooldown, as before.
+        let c = Charges::from_cooldown(read(360, 3, true)).unwrap();
+        assert_eq!(c.remaining(0), 3);
+        assert_eq!(c.remaining(130), 1);
+        assert_eq!(c.remaining(360), 0);
+    }
     fn budget(a: &Abilities, action: usize) {
-        a.observe_native(
+        a.observe_native((1, 33, 1), 7, action);
+        a.observe_charges(
             (1, 33, 1),
             7,
-            action,
             [Some(Charges {
                 capacity: 360,
                 cost: 120,
@@ -2178,6 +2246,28 @@ mod tests {
         assert_eq!(a.hud_skills().denied_at, [None; 3]);
         a.observe_actor((1, 33, 1), Some(8), Some((200_000, 200_000)), [0; 3]);
         assert_eq!(a.0.lock().unwrap().denied_at, [None; 3]);
+    }
+    #[test]
+    fn an_unlearned_or_locked_skill_is_never_sent_even_when_the_game_accepts_it() {
+        // `valid` stands for the game's own input check, which on 0.6.5
+        // accepted a skill not learned yet (1.5.0-dev24, Crossbowman W).
+        let press = |level: usize, locked: Option<[bool; 3]>| {
+            let (a, camera, log) = setup(2, 5);
+            a.observe_level((1, 33, 1), 7, level);
+            if let Some(locked) = locked {
+                a.observe_locked((1, 33, 1), 7, locked);
+            }
+            budget(&a, 0);
+            a.update(keys(true, false), true, &camera, &log);
+            take(&a, &[], |_| true, &log).is_some()
+        };
+        // Below the slot's level (Q needs 1).
+        assert!(!press(0, None));
+        // Learned by level, but the game's cooldown read says locked.
+        assert!(!press(5, Some([true, false, false])));
+        // Learned and unlocked, or no lock reading yet: sent as before.
+        assert!(press(5, Some([false, true, true])));
+        assert!(press(5, None));
     }
     #[test]
     fn remaining_charge_is_usable_and_does_not_cue_a_denial() {

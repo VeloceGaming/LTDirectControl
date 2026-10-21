@@ -4,9 +4,9 @@
 //! whole instructions with a call into a private relay. The relay replays the
 //! displaced bytes, pushes the site's number and jumps to the bridge, which
 //! saves every register and calls `adjust`. `adjust` may change one register
-//! or one frame slot (at a shape-A floor, also the flags) and returns; the
-//! original code then carries on, so a site that does nothing leaves the
-//! game exactly as it was.
+//! or one frame slot (at a shape-A floor, also the flags; at a gate's band,
+//! its three band registers) and returns; the original code then carries
+//! on, so a site that does nothing leaves the game exactly as it was.
 //!
 //! Threads: every simulation thread runs these sites, hundreds of thousands
 //! of times a second. `adjust` therefore asks `athlete_rules::active_on`
@@ -16,14 +16,16 @@
 //! by the controlled player's tick. Nothing a hook is given is kept after it
 //! returns.
 use super::*;
-use crate::athlete_rules::{self as rules, Caster, Kind, Register, Rule, Source};
+use crate::athlete_rules::{self as rules, Caster, Dodging, Kind, Register, Rule, Source};
 use std::cell::Cell;
 
-/// What a gate's capture site remembers for its complete site. The two sites
-/// are straight-line code with no native call between them.
+/// What a gate's first site (`Capture`, `Inputs`) remembers for its last
+/// (`Complete`, `Band`). The two sites are straight-line code with no native
+/// call between them.
 #[derive(Clone, Copy)]
 struct Pending {
     capture: usize,
+    /// The gate's seed, for `Complete`; a `Band` reads its own.
     seed: u64,
     accuracy: u32,
     dodging: u32,
@@ -108,6 +110,15 @@ impl Registers {
 unsafe fn read(base: u64, offset: usize) -> Option<u64> {
     (base != 0 && base.is_multiple_of(8))
         .then(|| std::ptr::read_unaligned((base as usize + offset) as *const u64))
+}
+/// A dword from a register or the function's frame.
+unsafe fn source(c: &Registers, source: Source) -> u32 {
+    match source {
+        Source::Register(r) => c.get(r) as u32,
+        Source::Frame(offset) => {
+            std::ptr::read_unaligned((c.get(Register::Rbp) as usize + offset) as *const u32)
+        }
+    }
 }
 unsafe fn caster_id(c: &Registers, caster: Caster) -> Option<u64> {
     match caster {
@@ -198,10 +209,11 @@ unsafe extern "system" fn adjust(registers: *mut Registers) {
                 if !rules::controlled(thread, actor) {
                     return;
                 }
-                c.set(output, 0);
+                c.set(output, rules::NEUTRAL_DODGING * STAT_DODGING_FACTOR as u64);
                 if rules::applied(Rule::Dodging) {
                     log(&format!(
-                        "STATRULE dodging: derived Dodging of athlete {actor} set to 0"
+                        "STATRULE dodging: derived Dodging of athlete {actor} set to neutral (Dodging {})",
+                        rules::NEUTRAL_DODGING
                     ));
                 }
             }
@@ -216,17 +228,11 @@ unsafe extern "system" fn adjust(registers: *mut Registers) {
                     PENDING.set(None);
                     return;
                 };
-                let inverse = match inverse_dodge {
-                    Source::Register(r) => c.get(r) as u32,
-                    Source::Frame(offset) => std::ptr::read_unaligned(
-                        (c.get(Register::Rbp) as usize + offset) as *const u32,
-                    ),
-                };
                 PENDING.set(Some(Pending {
                     capture: c.site,
                     seed: rules::gate_seed(c.get(Register::Rax), age_mixed),
                     accuracy: (c.get(accuracy) as u32).min(100),
-                    dodging: 100 - inverse.min(100),
+                    dodging: rules::dodging_from(source(c, inverse_dodge), true),
                     actor,
                 }));
             }
@@ -235,22 +241,52 @@ unsafe extern "system" fn adjust(registers: *mut Registers) {
                     return;
                 };
                 let game = c.get(output);
-                let gap = p.accuracy as i32 - p.dodging as i32;
                 let (floor, ceiling) = rules::limits();
-                let gate = rules::reaction_gate(p.seed, gap, floor, ceiling);
+                let gate = rules::reaction_gate(p.seed, p.gap(), floor, ceiling);
                 c.set(output, u64::from(gate));
-                if rules::applied(Rule::Gate) {
-                    log(&format!(
-                        "STATRULE gate: first reaction of athlete {} gated at {gate} ticks (game {game})",
-                        p.actor
-                    ));
-                }
-                if crate::logging::verbose() && first_time(p.seed ^ capture as u64) {
-                    log(&format!(
-                        "STATRULE gate caster={} A={} D={} gap={gap} gate={gate} game_gate={game} seed={:#x}",
-                        p.actor, p.accuracy, p.dodging, p.seed
-                    ));
-                }
+                gate_note(&p, p.seed, u64::from(gate), game);
+            }
+            Kind::Inputs {
+                accuracy,
+                dodging,
+                caster,
+            } => {
+                let actor = caster_id(c, caster).filter(|a| rules::controlled(thread, *a));
+                let Some(actor) = actor else {
+                    PENDING.set(None);
+                    return;
+                };
+                let dodging = match dodging {
+                    Dodging::Value(s) => rules::dodging_from(source(c, s), false),
+                    Dodging::Inverse(s) => rules::dodging_from(source(c, s), true),
+                };
+                PENDING.set(Some(Pending {
+                    capture: c.site,
+                    seed: 0,
+                    accuracy: (c.get(accuracy) as u32).min(100),
+                    dodging,
+                    actor,
+                }));
+            }
+            Kind::Band {
+                inputs,
+                seed,
+                low,
+                range,
+                extra,
+            } => {
+                let Some(p) = PENDING.take().filter(|p| p.capture == inputs) else {
+                    return;
+                };
+                let seed = c.get(seed);
+                let game = rules::rolled_gate(seed, c.get(low), c.get(range), c.get(extra));
+                let (floor, ceiling) = rules::limits();
+                let (band_low, band_high) = rules::reaction_band(p.gap(), floor, ceiling);
+                c.set(low, u64::from(band_low));
+                c.set(range, u64::from(band_high - band_low));
+                c.set(extra, 0);
+                let gate = rules::rolled_gate(seed, c.get(low), c.get(range), 0);
+                gate_note(&p, seed, gate, game);
             }
             Kind::Collision {
                 output,
@@ -291,6 +327,35 @@ unsafe extern "system" fn adjust(registers: *mut Registers) {
             }
         }
     }));
+}
+
+impl Pending {
+    /// Caster Accuracy minus defender Dodging, -100..=100.
+    fn gap(&self) -> i32 {
+        self.accuracy as i32 - self.dodging as i32
+    }
+}
+
+/// The log lines of a replaced reaction gate: the first one since control
+/// began, and in Verbose each projectile-and-defender pair once, with the
+/// gate's address so the lines tell the gates apart.
+fn gate_note(p: &Pending, seed: u64, gate: u64, game: u64) {
+    if rules::applied(Rule::Gate) {
+        log(&format!(
+            "STATRULE gate: first reaction of athlete {} gated at {gate} ticks (game {game})",
+            p.actor
+        ));
+    }
+    if crate::logging::verbose() && first_time(seed ^ p.capture as u64) {
+        let site = STAT_SITES.get(p.capture).map_or(0, |s| s.rva);
+        log(&format!(
+            "STATRULE gate site={site:#x} caster={} A={} D={} gap={} gate={gate} game_gate={game} seed={seed:#x}",
+            p.actor,
+            p.accuracy,
+            p.dodging,
+            p.gap()
+        ));
+    }
 }
 
 /// The counter slot of a collision site.
@@ -602,6 +667,158 @@ mod tests {
             "ret",
         );
     }
+    /// Fills `c` and `memory` so that `caster` names `actor`.
+    fn place_caster(c: &mut Registers, memory: &mut [u64], caster: Caster, actor: u64) {
+        let base = memory.as_ptr() as u64;
+        match caster {
+            Caster::Field { reg, offset } => {
+                c.set(reg, base);
+                memory[offset / 8] = actor;
+            }
+            Caster::Shifted { reg, shift } => c.set(reg, actor << shift),
+            Caster::Mixed {
+                reg,
+                other,
+                offset,
+                shift,
+            } => {
+                let seed = 0x5eed_0000_1234;
+                c.set(other, base);
+                memory[offset / 8] = seed;
+                c.set(reg, (actor << shift) ^ seed);
+            }
+        }
+    }
+    /// Puts `value` where `source` reads it.
+    fn place(c: &mut Registers, memory: &mut [u64], source: Source, value: u64) {
+        match source {
+            Source::Register(r) => c.set(r, value),
+            Source::Frame(offset) => {
+                c.set(Register::Rbp, memory.as_ptr() as u64);
+                memory[offset / 8] = value;
+            }
+        }
+    }
+
+    #[test]
+    fn band_gates_get_the_human_band_for_the_controlled_caster_only() {
+        let _globals = rules::lock_for_tests();
+        let thread = crate::platform_input::thread_id();
+        rules::configure(true, 6, 22, rules::MARGIN_DEFAULT);
+        let pairs = STAT_SITES
+            .iter()
+            .enumerate()
+            .filter_map(|(band, s)| match s.kind {
+                Kind::Band { inputs, .. } => Some((inputs, band)),
+                _ => None,
+            });
+        for (inputs, band) in pairs {
+            let Kind::Inputs {
+                accuracy,
+                dodging,
+                caster,
+            } = STAT_SITES[inputs].kind
+            else {
+                panic!("site {band} names {inputs}, which is not an Inputs site");
+            };
+            let Kind::Band {
+                seed,
+                low,
+                range,
+                extra,
+                ..
+            } = STAT_SITES[band].kind
+            else {
+                unreachable!()
+            };
+            for controlled in [true, false] {
+                // Accuracy 80 against Dodging 30, in whichever form the gate
+                // holds it: a gap of +50 either way.
+                let mut memory = vec![0u64; 0x200];
+                let blank = Registers {
+                    values: [0; 15],
+                    flags: 0x202,
+                    site: inputs,
+                    return_address: 0,
+                };
+                let mut c = Registers { ..blank };
+                c.set(accuracy, 80);
+                match dodging {
+                    Dodging::Value(s) => place(&mut c, &mut memory, s, 30),
+                    Dodging::Inverse(s) => place(&mut c, &mut memory, s, 70),
+                }
+                place_caster(&mut c, &mut memory, caster, if controlled { 7 } else { 8 });
+                let before = c.values;
+                rules::stamp(thread, 7);
+                unsafe { adjust(&mut c) };
+                assert_eq!(c.values, before, "an Inputs site changes nothing");
+
+                let mut b = Registers {
+                    site: band,
+                    ..blank
+                };
+                b.set(seed, 0x1234_5678);
+                b.set(low, 40);
+                b.set(range, 20);
+                b.set(extra, 3);
+                let game = b.values;
+                rules::stamp(thread, 7);
+                unsafe { adjust(&mut b) };
+                if controlled {
+                    let (band_low, band_high) = rules::reaction_band(50, 6, 22);
+                    assert_eq!(b.get(low), u64::from(band_low), "site {band}");
+                    assert_eq!(b.get(range), u64::from(band_high - band_low));
+                    assert_eq!(b.get(extra), 0);
+                    assert_eq!(b.get(seed), 0x1234_5678, "the game's seed is kept");
+                    assert_eq!(
+                        rules::rolled_gate(0x1234_5678, b.get(low), b.get(range), b.get(extra)),
+                        u64::from(rules::reaction_gate(0x1234_5678, 50, 6, 22))
+                    );
+                } else {
+                    assert_eq!(b.values, game, "another caster's gate is the game's");
+                }
+            }
+        }
+        rules::clear();
+    }
+
+    #[test]
+    fn your_derived_dodging_is_a_neutral_athletes() {
+        let _globals = rules::lock_for_tests();
+        let thread = crate::platform_input::thread_id();
+        rules::configure(true, 6, 14, rules::MARGIN_DEFAULT);
+        let (site, Kind::DodgingProducer { output, entity }) = STAT_SITES
+            .iter()
+            .enumerate()
+            .find_map(|(n, s)| {
+                matches!(s.kind, Kind::DodgingProducer { .. }).then_some((n, s.kind))
+            })
+            .expect("every version has a Dodging producer")
+        else {
+            unreachable!()
+        };
+        for (actor, expected) in [
+            (7, rules::NEUTRAL_DODGING * STAT_DODGING_FACTOR as u64),
+            (8, 85 * STAT_DODGING_FACTOR as u64),
+        ] {
+            let mut memory = vec![0u64; 0x200];
+            memory[STAT_ENTITY_ID / 8] = actor;
+            let mut c = Registers {
+                values: [0; 15],
+                flags: 0x202,
+                site,
+                return_address: 0,
+            };
+            c.set(entity, memory.as_ptr() as u64);
+            // What the replayed `imul` left: Dodging 85.
+            c.set(output, 85 * STAT_DODGING_FACTOR as u64);
+            rules::stamp(thread, 7);
+            unsafe { adjust(&mut c) };
+            assert_eq!(c.get(output), expected, "actor {actor}");
+        }
+        rules::clear();
+    }
+
     #[test]
     fn instruction_bridge_preserves_volatile_registers_flags_and_xmm() {
         unsafe {

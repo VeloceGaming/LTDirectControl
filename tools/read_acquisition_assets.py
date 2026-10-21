@@ -6,8 +6,8 @@ from pathlib import Path
 from paths import GAME_DIR, GAME_EXE
 
 root = Path(__file__).resolve().parents[1]
-profile = json.loads((root / 'tools/native_profiles/0.6.3.json').read_text())
-assert hashlib.sha256(GAME_EXE.read_bytes()).hexdigest() == profile['executable_sha256']
+reviewed = {json.loads(p.read_text())['executable_sha256'] for p in (root / 'tools/native_profiles').glob('*.json')}
+assert hashlib.sha256(GAME_EXE.read_bytes()).hexdigest() in reviewed, 'not a reviewed game executable'
 rows = {}
 names = {}
 with (GAME_DIR / 'bundle.game_data').open('rb') as stream:

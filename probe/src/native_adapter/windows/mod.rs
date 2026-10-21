@@ -334,6 +334,12 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
                 (family, rva, holds)
             })
             .collect();
+        spots.extend(VIEW_DELAY_SITES.iter().map(|(rva, expected, _)| {
+            let holds = !on(family::SESSION)
+                || std::slice::from_raw_parts((base + rva) as *const u8, expected.len())
+                    == expected;
+            (family::SESSION, *rva, holds)
+        }));
         if on(family::OUTLINE) {
             spots.extend(OUTLINE_SITES.iter().map(|(rva, expected)| {
                 (family::OUTLINE, *rva, read_call(base + rva) == *expected)
@@ -427,7 +433,21 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
                 false,
             ),
         ];
-        let specs: Vec<_> = specs.into_iter().filter(|spec| on(spec.0)).collect();
+        // Every further worker send of this version goes to the same hook.
+        let extra = WORKER_EXTRA_SITES.iter().map(|(rva, bytes)| {
+            (
+                family::SESSION,
+                *rva,
+                *bytes,
+                worker_hook as *const () as usize,
+                false,
+            )
+        });
+        let specs: Vec<_> = specs
+            .into_iter()
+            .chain(extra)
+            .filter(|spec| on(spec.0))
+            .collect();
         for (_, rva, expected, _, _) in &specs {
             if read_call(base + rva) != *expected {
                 return Err("Native branch bytes differ; no hooks installed".into());
@@ -480,6 +500,11 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
                 relative_call(site, target)?
             };
             patches.push((site, expected.to_vec(), patch.to_vec()));
+        }
+        if on(family::SESSION) {
+            for (rva, expected, replacement) in VIEW_DELAY_SITES {
+                patches.push((base + rva, expected.to_vec(), replacement.to_vec()));
+            }
         }
         for (rva, expected) in outline_sites {
             let site = base + rva;
@@ -583,7 +608,7 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
                     "NATIVE OUTLINE stepped aside: another mod changed the unit renderer spots {taken:#x?}; hover and target outlines and the attack-click flash are off (ground rings stand in), every other family installed"
                 ));
             }
-            shared.logger.write(&format!("NATIVE PATCH_READBACK families={families:#x} sites={} worker_rva={WORKER_SITE:x} viewer_rva={VIEW_SITE:x} move_rva={MOVE_SITE:x} input_rva={INPUT_SITE:x} attack_rva={ATTACK_SITE:x} auto_attack_rva={AUTO_ATTACK_SITE:x} skill_rvas={SKILL_SITES:x?} steering_rva={STEER_SITE:x} aim_rva={AIM_SITE:x} outline_sites={} verified=true", patches.len(), outline_sites.len()));
+            shared.logger.write(&format!("NATIVE PATCH_READBACK families={families:#x} sites={} worker_rva={WORKER_SITE:x} worker_extra_rvas={:x?} view_delay_rvas={:x?} viewer_rva={VIEW_SITE:x} move_rva={MOVE_SITE:x} input_rva={INPUT_SITE:x} attack_rva={ATTACK_SITE:x} auto_attack_rva={AUTO_ATTACK_SITE:x} skill_rvas={SKILL_SITES:x?} steering_rva={STEER_SITE:x} aim_rva={AIM_SITE:x} outline_sites={} verified=true", patches.len(), WORKER_EXTRA_SITES.iter().map(|(rva, _)| *rva).collect::<Vec<_>>(), VIEW_DELAY_SITES.iter().map(|(rva, _, _)| *rva).collect::<Vec<_>>(), outline_sites.len()));
         }
         OUTLINE_READY.store(on(family::OUTLINE), Ordering::Release);
         if shop {

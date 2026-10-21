@@ -1,7 +1,9 @@
 # Athlete stats in combat, game 0.6.4
 
 Research date: 2026-10-15. Status: **read-only research pass on game 0.6.4**;
-nothing was built or played for it. Findings only; the design they feed is
+nothing was built or played for it. Game 0.6.5 changed the stats' scale,
+the Dodging factor and the reaction gates: see "Athlete stat rules: what
+0.6.5 changed" in [migration-0.6.5.md](migration-0.6.5.md). Findings only; the design they feed is
 recorded in [backlog.md](backlog.md) ("Athlete stat rules in manual
 matches"). This extends
 [investigation-athlete-stats-manual-control.md](investigation-athlete-stats-manual-control.md)

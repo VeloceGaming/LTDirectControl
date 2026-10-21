@@ -7,17 +7,17 @@
 //! the same moment (stage A); the log lives in `research.rs` (research
 //! builds only).
 //!
-//! Read from the code (0.6.4; the same table shape in 0.6.3 and 0.7.0): the
-//! skill objects at `entity + 0x578/0x588/0x598` (object, vtable), whose
-//! cooldown (+0x90) and use count (+0xa8) `read_charges` already calls,
-//! start their vtable with the patch methods:
+//! Read from the code (0.6.4 and 0.6.5; the same table shape in 0.6.3 and
+//! 0.7.0): the skill objects at `entity + 0x578/0x588/0x598` (object,
+//! vtable), whose vtable holds the cooldown method at +0x90, start their
+//! vtable with the patch methods:
 //! - +0x18 the skill's patch name (for example "hammerer_skill2"), returned
 //!   as (pointer, length) in rax/rdx;
 //! - +0x20 get(self, name pointer, name length): found in al, value in rdx.
 //!
 //! Both return two registers in the game's own convention, so they are
 //! called through `asm!` below rather than a declared `extern` signature.
-//! Like `read_charges`: only learned skills, nothing retained past the hook.
+//! Only learned skills are read, and nothing is retained past the hook.
 //!
 //! Safety, in this order: the verifier and the start-up guards check, per
 //! game version, that Hammerer W's method table holds these methods at
@@ -33,7 +33,7 @@ use std::collections::HashMap;
 /// reader reads it here too.
 pub(super) const ENTITY_STACK: usize = 0x648;
 pub(super) const SLOTS: [usize; 3] = [0x578, 0x588, 0x598];
-/// The level that unlocks each skill, as `read_charges` uses it.
+/// The level that unlocks each skill (Q at 1, W at 3, R at 5).
 pub(super) const UNLOCK: [usize; 3] = [1, 3, 5];
 
 /// What became of reading one skill's numbers in this match.

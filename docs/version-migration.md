@@ -90,6 +90,21 @@ Then, for what is left:
 | Tooltip anchors | `tools/migrate_tooltips.py` lists what it could not carry under `unresolved` |
 | Reading code around an address | `tools/show_code.py` |
 
+**When the draft leaves many unknowns** (0.6.4 to 0.6.5: 682 functions
+mapped, 129 unknown entries), seed the function map with every pair the
+draft already placed exactly (whole functions, old start = new start), plus
+the functions found by hand, and run the draft again. It reuses the map:
+
+```
+python tools/map_functions.py --old research/game-builds/0.6.4 --new research/game-builds/0.6.5     --report research/game-builds/migration-0.6.4-to-0.6.5.json --seed OLD=NEW ...     --output research/game-builds/function-map-0.6.4-to-0.6.5.json
+```
+
+On 0.6.5 this mapped 1216 functions and turned 126 "likely" entries into
+"exact". A function the draft calls "found, instruction not aligned" was
+usually rewritten: find the new site by what the instruction does (a
+field it reads, a constant), or by the same call in the same position in
+an aligned caller, never by a look-alike.
+
 Lines marked REVIEW are mostly functions the game recompiled. For each,
 check that the instruction at the new address does the same thing and
 that the arguments are set up the same way. A note that names a runner-up
@@ -112,7 +127,8 @@ pass over `stat_sites.rs` with `tools/verify_stat_sites.py`:
   shaped like a stat site: the shape-B consumers (`sub r, [e + 0x6a0]`
   then `test`), the shape-A floors (`sub` then `cmp r, 0x1389`), the
   Accuracy producers (`imul r, r, 0x46` stored to the frame), the Dodging
-  producer (`imul r, r, 0x96` stored to `+0x6a0`). The summary at the top
+  producer (`imul r, r, 0x96` or, from 0.6.5, `0xc8`, stored to
+  `+0x6a0`), and the two shapes of reaction gate (below). The summary at the top
   of the drafted file and in the console gives, per kind, how many the
   executable has and how many were drafted. A count that differs means
   the patch added or removed a hit test or a producer: that needs a look
@@ -122,10 +138,21 @@ pass over `stat_sites.rs` with `tools/verify_stat_sites.py`:
   with a REVIEW line. Two sites of one kind behave alike, so a swap among
   them does no harm.
 - **The reaction gates are never filled in.** Their constant is a common
-  hash; the census lists the gate-shaped places (each version so far has
-  the 4 hooked ones plus one that reads no Accuracy, `0xf803f6` on 0.7.0).
-  Choose by the Accuracy read (`+ 0x1f0`) before the hash, and keep each
-  `Capture` before its `Complete`.
+  hash; the census lists the gate-shaped places. Choose by the Accuracy
+  read (`+ 0x1f0`) before the hash. There are two shapes:
+  - **Replaced at the end** (to 0.6.4; census `Capture`): the gate ends in
+    `shr r, 0x11; add r, rax`. Hook it with `Capture` at the hash and
+    `Complete` there, the capture first. To 0.6.4 each version had the 4
+    hooked gates plus one that read no Accuracy (`0xf803f6` on 0.7.0).
+  - **Rolled in a band** (0.6.5; census `Band`): the gate ends in
+    `inc; je; mul` after the hash and compares at once. Hook it with
+    `Band` at the hash and `Inputs` earlier, where the gate holds both
+    Accuracy and Dodging in registers or the frame: after the last
+    instruction that changes Accuracy and before anything overwrites the
+    caster's id. No call, and no branch in or out, between the two. The
+    census finds the `Band` sites; choose each `Inputs` site by hand and
+    let the verifier confirm it. 0.6.5 has 5, all read Accuracy
+    ([migration-0.6.5.md](migration-0.6.5.md)).
 - **Other Dodging subtractions** that are neither shape are listed (on
   0.6.4, two `1 − frame slot` table indexes). Confirm they are not hit
   tests.
@@ -138,15 +165,30 @@ Measured:
 | 0.6.3 to 0.7.0 | 29 of 33 (27 by alignment, 2 from the census) | 0 | the 4 gate sites of the big AI function |
 
 The verifier (step 4) then checks every field again, and since 1.2.11
-also refuses a site that a branch of its function jumps to.
+also refuses a site that a branch of its function jumps to. Since
+1.5.0-dev23 a branch onto the first instruction of an Accuracy or Dodging
+producer is allowed: it runs the hook, which needs nothing the instruction
+before did. A branch into the middle of any site is always refused.
+
+The census only knows the shapes it has seen. In 0.6.5 it found no Dodging
+producer and no reaction gates, yet both were still there: the Dodging
+multiplier changed from `0x96` to `0xc8` and the gates gained a term, so
+Accuracy and Dodging are no longer in registers at the old capture point.
+A census count of zero is a reason to read the code, not proof that the
+code is gone ([migration-0.6.5.md](migration-0.6.5.md)). (Since
+1.5.0-dev23 the census knows both 0.6.5 shapes.)
 
 ## 3. Field offsets
 
 The hook files use entity, player and view field offsets directly
 (`+ 0x...` in `native_adapter/windows/`). They were equal in 0.6.3 and
 0.7.0; 0.6.4 moved two viewer fields, which are now per-version
-constants ([migration-0.6.4.md](migration-0.6.4.md)). For each hooked
-function that is not instruction-for-instruction equal, run:
+constants ([migration-0.6.4.md](migration-0.6.4.md)). 0.6.5 grew the
+player record by 0x20 bytes, which moved the shop's owned-item and
+build-plan fields (`PLAYER_ITEMS_*`, `PLAYER_PLAN_*`). Different objects
+reuse the same offsets, so a field's move counts only where the
+instruction reads the object the hook reads. For each hooked function
+that is not instruction-for-instruction equal, run:
 
 ```
 python tools/field_shifts.py --old research/game-builds/0.7.0 --new research/game-builds/0.7.1 OLD=NEW
@@ -154,6 +196,16 @@ python tools/field_shifts.py --old research/game-builds/0.7.0 --new research/gam
 
 If an offset moved, it has to become a constant in every version's
 `layout.rs` first, since the hook code is shared.
+
+Also check every enum the mod reads or builds itself. 0.6.5 changed the
+simulation's event list (a 0x38-byte element with an 8-byte tag became
+0x70 bytes with a 1-byte tag). The mod only calls the game's own event
+functions, so nothing broke, but a direct reader would have.
+
+A function the hooks redirect can gain a second caller path. 0.6.5's
+worker caller sends from a drain loop as well: such sends go in the
+version's `WORKER_EXTRA_SITES`, and the profile names each as
+`WORKER_EXTRA_BYTES_<n>`.
 
 ## 4. Add the version
 
