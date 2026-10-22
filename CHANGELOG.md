@@ -3,6 +3,67 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.5.2-dev3 (development build) — 2026-10-22
+
+**Seen in game 2026-10-22 by the author on 0.6.5 with 1.5.2-dev3: "all passed" (the bullet dash and jump back, grey when not ready, Bulldozer Q's custom preview). Development build, never for the Workshop.** The dash preview is the author's design K, "Bullet", and the shipped table carries the author's viewer work of today.
+
+### Why (the author, 2026-10-22)
+
+The chevron dash (since 1.3.x) was "terrible and borderline unreadable" in play (Bulldozer Q's custom preview). The author had the new look designed separately: `design/previews/dash-k.svg` (local, not in git), with its rules for any length.
+
+### Now
+
+- **Dash and jump back** (`skill_preview::dash`, read from the code; tests): one connected shape from the champion to where the dash ends, in world units scaled with the camera like every other preview. A body 10 wide in three equal strips at 14, 30 and 50 % between two dark edges at 5.75 each side (1.5 wide, 80 %); a nose `min(14, 0.3 x length)` long in four equal steps 10, 7.5, 5 and 2.5 wide (95 %), the last the white point, each over a dark step 3 wider (80 %). Yellow when ready, grey when not, the same rule as every piece. Every length uses this rule: the short-dash grip and the 22 px gap at the champion are gone (the author's choices of 2026-10-22: start at the champion, no special case).
+- **Style keys:** `dash_body_width`, `dash_body_opacity_1` to `_3`, `dash_edge_offset`, `dash_edge_width`, `dash_edge_opacity`, `dash_nose_length`, `dash_nose_share`, `dash_nose_opacity`, `dash_nose_ink_extra`, `dash_nose_ink_opacity` (overridable in the user's `preview_style.json`). Gone: `dash_short`, `dash_short_grip` and the twelve `chevron_*` keys (an override of them is ignored). `dash_start` stays for the cast cue.
+- **Viewer** (tool): draws the same bullet for dashes and jump backs (before, a cyan dashed line). Against the viewer before this change on the author's data, only the drawings of the 7 skills it shows with a dash or jump back changed (Archer Q and W, Dummy W, Ghost Q, Nightmare W, Nullifier Q, Zook W).
+- **Shipped preview table:** Bulldozer Q is the author's custom preview (box with `width`, the 84 hit line, an 84 dash) and Heavyblade R's width follows `width` (both from the author's viewer Saves today).
+- Unchanged: circles, lines and shots, cones, rectangles, blinks, the cast cue, the range ring, and which skills show a dash.
+
+## Custom previews in the viewer (tool only) — 2026-10-22
+
+**Seen in game 2026-10-22 by the author on 0.6.5 with 1.5.2-dev2 (log: `custom=1`): Bulldozer Q built in the viewer as box, hit line and a fixed 84 dash, drawn in game; its charge ends at 84 as the code says. The author: the dash's look is hard to read. Tool only: no mod build; the mod side is 1.5.2-dev2.** Stage 2 of custom previews built from pieces (the author's go-ahead of 2026-10-22).
+
+- **Custom (pieces):** a new preview type on every card. It starts as a copy of what the card draws now, with each size's source kept where the source gives that very value. The **Pieces** tab of the skill panel (also the new card button) lists the pieces: block (circle, line, shot, rectangle, cone, fan of lines, Dancer blades, dash path, blink, jump back, attack range ring), where it starts (at the champion, at the aim, ahead by, at the end of a dash of, where a jump lands; a dash or blink goes to the aim or a fixed distance), its sizes and options (for allies, projectile, passes through units). Pieces can be added (at most 8), duplicated, moved and removed; the card redraws as you type.
+- **Size sources per size:** a typed number, a game number (distances divided by 1000, times a factor), two game numbers multiplied, or the cast range; each row shows the value and whether it follows edits and patches. A cone's opening is typed in degrees. Names a skill holds more than once (Bulldozer Q: `speed` 7 and 4200, `tick` 1 and 20) cannot be asked of the game by name: they are shown but cannot be chosen, with their values listed for typing.
+- **Drawing as the mod draws:** a custom preview keeps every piece (no dash hidden beside an area); a shot that stops at the first unit ends in a bar; a dash of a fixed length shows its length. Shapes that start ahead of the caster, at a dash's end or at a landing are placed as the mod places them (`skill_preview.rs` `placed`): before, the viewer cut a dash's end at the cursor for point casts.
+- **Save:** the viewer checks every piece (`preview_viewer.py` `clean_custom`: known blocks, sizes in range, a recorded value for every named number, at most 8) and writes it to `skill-overrides.json`; the mod uses it at the next game start; the table rebuild ships it.
+- Read from the code and the tools, not seen by the author: 65 Python tool tests (new `tools/test_custom_previews.py`), 61 viewer checks, and on the author's data copied aside: 3,900 skill and assignment cases and 5,400 drawings unchanged against the viewer before this change. In a browser on that copy: Bulldozer Q switched to Custom (box and hit line copied, the box keeping `width`), a dash piece added at a fixed 84, and saved; the table rebuild then held Bulldozer Q as custom and nothing else changed. The table and the author's files were left as they were.
+
+## 1.5.2-dev2 (development build) — 2026-10-22
+
+**Seen in game 2026-10-22 by the author on 0.6.5: a custom preview from the author's own file (Bulldozer Q, log `custom=1`) is drawn with its dash beside the areas. Development build, never for the Workshop.** Stage 1 of custom previews built from pieces (the author's plan of 2026-10-22, all three recommended choices): the mod side. Nothing on screen changes yet: no custom preview exists until the viewer can build one (stage 2).
+
+### Why (the author, 2026-10-22)
+
+Fixing one skill at a time in code (Bulldozer Q's charge) leaves the next unseen kind of skill wrong again. The author wants to build a correct preview for any skill in the viewer, from pieces, without code reading each time, and without touching any preview already shipped.
+
+### Now (read from the code; tests)
+
+- **Custom previews:** a table entry `"from": "custom"` holds the author's list of `pieces`, in the same form as recorded shapes: a block (circle, strip, shot, rectangle, cone, spread, fan, dash, blink, backstep, reach), where it starts (caster, aim, forward, end, landing), its sizes and options (allies, projectile, pierce). The mod draws it exactly as listed: the rule that hides a dash beside an area (`main_purpose`) leaves it alone (`Geometry::exact`). An empty list draws nothing and still wins, like an assignment. At most 8 pieces, as for every preview.
+- **From the author's own file:** an entry of type `custom` in `skill-overrides.json` goes through the shipped table's path (sizes follow the game's numbers) and wins over the table, so a custom preview can be tried in game after a restart, before a build. The log's `PREVIEW OVERRIDES` line counts them (`custom=`).
+- **Size source "two numbers multiplied":** `{"name": "speed", "by": "tick", "recorded": 84}` is the first number as a distance (divided by 1000) times the second as a plain count, times `times` if given: a charge's length (speed per tick x ticks) follows balance patches. The mod asks the game for both names.
+- **Tools:** `build_preview_table.py` ships a custom preview's pieces as written (`preview_sources.skill` returns `from: custom`).
+- Unchanged: the shipped table (the table check finds no difference), the old preview types (kept as quick options) and every skill without a custom preview.
+- Not yet: the viewer's pieces editor and its drawing (stage 2); saving a custom preview from today's viewer is refused there.
+
+## 1.5.2-dev1 (development build) — 2026-10-22
+
+**Seen in game 2026-10-22 by the author on 0.6.5 with 1.5.2-dev2: Bulldozer Q and Swordman R show their correct width. Development build, never for the Workshop.** Line hits are drawn at their full width: twice as wide as before, for every skill that uses the game's line hit.
+
+### Why
+
+- **Seen in game (the author, 2026-10-22, 1.5.1):** Bulldozer Q's push area is extremely wide; the preview drew a 60-wide box.
+- **Read from the game's code (0.6.4 apply `0x1705730`, 0.6.5 `0x1537f40`):** the line hit (`LineRangeProjectile` in champion files; the live reader's "Swordman ult" family) hits the game's segment shape from the caster to `length` ahead, with `width` as the segment's radius. So it reaches `width` on each side of the line: Bulldozer Q (`width` 60000) is 120 wide, 30 deep. Both readers took `width` as the full width (a guess since 1.5.0-dev2 for the file reader; matched by eye to another mod's display for Swordman R in 1.1.x).
+
+### Now
+
+- **Live reader and champion-file reader:** a line hit's radius is its `width`, no longer half of it. About 70 Workshop skills use this effect (most League-style packs, Abbie W, Heavyblade R, Bulldozer Q), and base Swordman R.
+- **Shipped preview table:** eight skills twice as wide as before. Abbie W 27 (was 13.5), Bulldozer Q 60 (30), Heavyblade R 90 (45), Hunter R 20 (10), Magic Knight Q 5 (2.5), Spellbreaker Q 28 (14), Swordman R 40 (20), White Mage Q 16 (8); each is a radius, the line is twice as wide. Nothing else in the table changed.
+- **Recordings:** a recorded shot now carries `hit_radius`. The viewer and `tools/build_preview_table.py` double piercing shots recorded before this build (`preview_sources.widened`), except Bombardier, Ferryman, Gladiator and Hypnotist, whose shots come from another effect that always recorded the hit radius. The recording file itself is not rewritten.
+- **Size picks:** a pick of one of the game's numbers counts only while that number still gives the size (`preview_sources.still_fits`). The author's Bulldozer Q pick `width x 0.5` no longer fits and is ignored; the size now follows `width`. Heavyblade R's 90 fits both `range` and `width`, so it ships fixed at 90 until a pick (`width`) in the viewer.
+- Not changed: Bulldozer Q's charge stays a 20-wide line of the mod's assumed body size (`CHAMPION_RADIUS`); the rounded ends the game's segment may have are not drawn (guess, unchecked).
+- Not read: 0.7.0 Beta 2's line hit (the live reader is off there; the table and the file reader apply).
+
 ## 1.5.1 — 2026-10-22
 
 Release of the 1.5.1-dev1 to 1.5.1-dev3 development builds below, together with the three preview-viewer "tool only" entries (the two above the 1.5.0 heading and "Skill preview viewer (tool only)" just below it): the viewer's changes since 1.5.0-dev21, which 1.5.0 kept local, ship in this release's source. The last public build was 1.5.0. One DLL for game 0.6.4, 0.6.5 and 0.7.0 Beta 2.
@@ -697,7 +758,7 @@ Seen in game by the author: full matches on 0.6.5 (1.5.0-dev25) and 0.7.0 Beta 2
 - **Seen in game (1.5.0-dev1, the author):** played and let background match days run; no slowdown felt. **Read from its data:** projectile speed was consistent for 41 skills and range for 13; widths and areas from hits failed (hits spread over half the map); 25 skills had no projectile. Recorded in `docs/investigation-preview-sources.md` section 6. `skill_measure.rs` is removed with its perf label.
 - **Read from the code:** the mod already reads the champion files of every enabled mod (local and Workshop, in the enabled order, `hud_icons::enabled_assets`) and the preview uses them when the live reader cannot decode a skill; the live reader stays first because it sees in-game balance patches. **Read from the data** (26 data champions in the author's 11 enabled mods, 78 skills): 23 % decoded fully, 28 % decoded with a skipped part, 26 % used shape types the decoder did not know, 18 % have no area, 5 % only custom code.
 - **The file decoder now reads**, each tested with a trimmed example from the author's installed Workshop files:
-  - `LineRangeProjectile` (abbie W): a line from the caster, `width` wide and `length` long. Guess: `width` is the full width, as Astrologer W's `line_width`.
+  - `LineRangeProjectile` (abbie W): a line from the caster, `width` wide and `length` long. Guess: `width` is the full width, as Astrologer W's `line_width`. **Superseded 2026-10-22 (1.5.2-dev1):** read from the game's code, `width` is the hit's distance on each side of the line, so the line is twice `width` wide.
   - `MoveToTarget` (invincible Q, abbie R), `Rush`, `RushTime` (candygel R), `RushMoveToBack` (ruby Q): a dash to the aim, like `MoveTo`.
   - Movers' and `ParabolicProjectile`'s `end_effects` (league_annie R): circles they leave are drawn where the caster or the lob lands; `MoveTo` and `Teleport` now do this too (before, their landing areas were ignored).
   - `TargetSplashProjectile` (voidling Q, cf_void_mage W): a circle at the target. Guess: `range` is the splash radius.
@@ -1417,7 +1478,7 @@ Release of the 1.2.4 to 1.2.6 development builds below, as tested by the author.
 
 ## 1.1.21 — 2026-10-11
 
-- Development build for game 0.7.0. Swordman R: the strip is word 6 (40) wide and word 7 (150) long. 1.1.20 drew word 6 as the length at one champion's width, which was far too short and thin (user screenshots; the proportions now match the area another mod shows for the skill).
+- Development build for game 0.7.0. Swordman R: the strip is word 6 (40) wide and word 7 (150) long. **Superseded 2026-10-22 (1.5.2-dev1):** read from the game's code (0.6.4, 0.6.5), word 6 is the hit's distance on each side, so the strip is 80 wide. 1.1.20 drew word 6 as the length at one champion's width, which was far too short and thin (user screenshots; the proportions now match the area another mod shows for the skill).
 
 ## 1.1.20 — 2026-10-11
 

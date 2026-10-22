@@ -114,6 +114,17 @@ def valid_pick(pick, values):
     return isinstance(pick.get('name'), str) and pick['name'] in values
 
 
+def still_fits(pick, found):
+    """A pick of one of the game's numbers holds only while that number
+    still gives the size (1.5.2-dev1: Bulldozer Q's pick `width x 0.5`
+    stopped fitting when its recorded radius was corrected to the full
+    `width`). A fixed number or the cast range always holds."""
+    if 'name' not in pick:
+        return True
+    key = lambda c: (c.get('name'), c.get('times', 1), c.get('unit'))
+    return key(pick) in {key(c) for c in found}
+
+
 def decide(key, size, role, pair, unit_of, picks):
     """One size: its source, how sure, and the other numbers that fit."""
     entry = {'key': key, 'value': size}
@@ -128,7 +139,7 @@ def decide(key, size, role, pair, unit_of, picks):
     found = candidates(size, role, values, unit_of, pair.get('cast_range'))
     entry['candidates'] = found
     pick = (picks or {}).get(key)
-    if valid_pick(pick, values):
+    if valid_pick(pick, values) and still_fits(pick, found):
         source = dict(pick)
         status = 'picked'
     elif len(found) == 1:
@@ -153,6 +164,29 @@ def landed(shapes):
     if not moves:
         return shapes
     return [dict(s, at='aim') if s.get('kind') == 'circle' and s.get('at') == 'caster' else s
+            for s in shapes]
+
+
+# Champions whose piercing shots come from the game's champion-skill effect
+# (probe/src/native_adapter/windows/preview.rs, CHAMPION_SKILL): their radius
+# was always the hit radius.
+CHAMPION_SKILL = {'bombardier', 'ferryman', 'gladiator', 'hypnotist'}
+
+
+def widened(shapes, champion):
+    """Shots recorded before 1.5.2-dev1 with the line hit's true width.
+
+    Read from the game's code (0.6.4 and 0.6.5, 1.5.2-dev1): the game's
+    line hit (`LineRangeProjectile` in data files: Bulldozer Q, Abbie W;
+    Swordman R and other base skills) hits within its `width` on each side
+    of the line. The live reader halved it until 1.5.2-dev1, so a piercing
+    shot without `hit_radius` holds half the radius. Doubled here, marked,
+    so a second pass changes nothing. Shapes recorded since carry the mark."""
+    if champion in CHAMPION_SKILL:
+        return shapes
+    return [dict(s, radius=s['radius'] * 2, hit_radius=True)
+            if s.get('kind') == 'shot' and s.get('pierce') is True and not s.get('hit_radius')
+            and isinstance(s.get('radius'), (int, float)) else s
             for s in shapes]
 
 
@@ -198,9 +232,15 @@ def skill(champion, slot, table, rules, assignments, picks):
     mine = (picks or {}).get(f'{champion} {slot}') or {}
     cast = recorded.get('cast') or {}
     out = {'kind': (pair or {}).get('kind'), 'has_numbers': pair is not None}
-    live = landed((pair or {}).get('live') or recorded.get('shapes') or [])
+    live = landed(widened((pair or {}).get('live') or recorded.get('shapes') or [], champion))
     file = landed((recorded.get('file') or {}).get('shapes') or [])
     assignment = (assignments or {}).get(f'{champion} {slot}')
+    if isinstance(assignment, dict) and assignment.get('type') == 'custom':
+        # The author's own pieces (1.5.2-dev2): each size already names its
+        # source; shipped as written.
+        pieces = assignment.get('pieces')
+        return {**out, 'from': 'custom', 'pieces': pieces if isinstance(pieces, list) else [],
+                'sizes': []}
     if isinstance(assignment, dict) and assignment.get('type'):
         out.update({'from': 'assigned', 'assigned': assignment,
                     'sizes': assigned_sizes(assignment, pair, unit_of, mine)})

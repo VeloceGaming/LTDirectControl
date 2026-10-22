@@ -341,6 +341,25 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
 .icon-close { --icon: url("data:image/svg+xml,%3C%21--%20%40license%20lucide-static%20v1.34.0%20-%20ISC%20--%3E%0A%3Csvg%0A%20%20class%3D%22lucide%20lucide-x%22%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22currentColor%22%0A%20%20stroke-width%3D%222%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%3E%0A%20%20%3Cpath%20d%3D%22M18%206%206%2018%22%20/%3E%0A%20%20%3Cpath%20d%3D%22m6%206%2012%2012%22%20/%3E%0A%3C/svg%3E%0A"); }
 
 .results-count { display: block; margin: -14px 0 12px; }
+/* Custom previews built from pieces (1.5.2-dev2). */
+.piece { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 12px 0; display: grid; gap: 8px; min-width: 0; }
+.piece:first-child { border-top: 0; padding-top: 0; }
+.piece-head { display: flex; gap: 5px; align-items: center; }
+.piece-head strong { font: 11px ui-monospace,Consolas,monospace; color: var(--muted); width: 16px; }
+.piece-head select { flex: 1; min-height: 32px; }
+.piece-head button, .piece-add button { min-height: 30px; padding: 4px 8px; font-size: 11px; }
+.size-row { display: grid; grid-template-columns: minmax(84px,.8fr) minmax(0,1.4fr); gap: 4px 8px; align-items: center; font-size: 10px; }
+.size-row > select { min-height: 30px; padding: 4px 6px; font-size: 10px; }
+.size-inputs { grid-column: 2; display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.size-inputs select { flex: 1 1 100px; min-height: 30px; padding: 4px 6px; font-size: 10px; }
+.size-inputs input[type="number"] { width: 74px; min-height: 30px; padding: 4px 6px; font: 11px ui-monospace,Consolas,monospace; }
+.size-inputs input.invalid { border-color: var(--bad); }
+.size-note { grid-column: 2; font-size: 9px; line-height: 1.4; }
+.piece-flags { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 10px; color: var(--muted); }
+.piece-flags label { display: flex; align-items: center; gap: 5px; }
+.piece-add { display: flex; gap: 6px; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; }
+.piece-add select { flex: 1; min-height: 32px; }
+.custom-summary { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 10px; color: var(--muted); }
 </style></head><body>
 <a class="skip-link" href="#main">Skip to skills</a>
 <header class="topbar">
@@ -375,6 +394,7 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
         <li>Tick <b>Checked by me</b> after comparison. Editing a shape clears its check.</li>
       </ol>
       <p>Cast range follows the game and level. Empty length uses the cast range. Assignments replace the read shape; <b>Add to what the game reads</b> keeps both.</p>
+      <p><b>Custom (pieces):</b> build a preview from blocks (circle, line, shot, dash and more). Each size is a typed number, a game number (times a factor), two game numbers multiplied, or the cast range. The mod draws it exactly as listed. Edit it under <b>Pieces</b>; Save, then restart the game to try it.</p>
       <p><b>Size sources:</b> a named game value follows edits and patches; fixed values do not. Pick the correct source when two values fit. Missing numbers need a recorded match; background matches count.</p>
       <details><summary>How values are suggested</summary><p>The viewer learns which named game values match recorded shapes and tries those fields first. Missing values must be entered manually. Suggestions are guesses until you compare them with the game.</p><div id="learned"></div></details>
       <p class="legend small"><span><i class="sw" style="background:#fff6c2"></i>Cast range</span><span><i class="sw" style="background:#fdee00"></i>Shape</span><span><i class="sw" style="background:#53b8e4"></i>Allies</span><span><i class="sw" style="background:#5fd3e0"></i>Movement</span><span><i class="sw" style="background:#d4537e"></i>Target</span><span><i class="sw" style="background:#378ADD"></i>Your champion</span><span>Dashed white: unread</span></p>
@@ -407,17 +427,19 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
   <div class="inspector-tabs" role="tablist" aria-label="Skill inspector">
     <button id="inspectorTab-numbers" role="tab" data-inspector-tab="numbers" aria-selected="true" aria-controls="inspectorPanel-numbers">Numbers</button>
     <button id="inspectorTab-details" role="tab" data-inspector-tab="details" aria-selected="false" aria-controls="inspectorPanel-details" tabindex="-1">Details</button>
+    <button id="inspectorTab-pieces" role="tab" data-inspector-tab="pieces" aria-selected="false" aria-controls="inspectorPanel-pieces" tabindex="-1">Pieces</button>
   </div>
   <div class="inspector-content">
     <div id="inspectorPanel-numbers" class="inspector-panel" role="tabpanel" aria-labelledby="inspectorTab-numbers" tabindex="0"></div>
     <div id="inspectorPanel-details" class="inspector-panel" role="tabpanel" aria-labelledby="inspectorTab-details" tabindex="0" hidden></div>
+    <div id="inspectorPanel-pieces" class="inspector-panel" role="tabpanel" aria-labelledby="inspectorTab-pieces" tabindex="0" hidden></div>
   </div>
 </section>
 <script>
 "use strict";
 const EMBEDDED=/*DATA*/null;
 const SERVER=!EMBEDDED;
-let D,TABLE,ST,NUMBERS,NAMES,SOURCE,ATTACK={},saved={},assigned={};
+let D,TABLE,ST,NUMBERS,NAMES,SOURCE,ATTACK={},USES={},saved={},assigned={};
 /// Skills the author compared with the game ("Checked by me"), saved at once.
 let checked=new Set();
 /// Where each size comes from (tools/preview_sources.py, via the viewer) and
@@ -436,6 +458,7 @@ const TYPES={
   jump_back:{label:'Unit target + jump back',fields:['distance']},
   attack_reach:{label:'Ring at attack range + extra',fields:['extra']},
   no_preview:{label:'No preview',fields:[]},
+  custom:{label:'Custom (pieces)',fields:[]},
 };
 const FIELD_HELP={area_radius:'radius around the target (empty: none)',radius:'radius',width:'full width',depth:'depth',length:'length (empty or 0: the cast range)',
   count:'number of lines',spread:'total spread, degrees',angle:'opening angle, degrees',distance:'distance (empty: up to the aim)',extra:'added to your attack range'};
@@ -578,6 +601,7 @@ function typeFromShapes(shapes,cast){
 /// then what the game reads, then the champion file.
 function chosen(champ,slot,s){
   const a=assigned[`${champ} ${slot}`],c=s.cast;
+  if(a&&a.type==='custom')return{src:'assigned',type:'custom',shapes:resolvePieces(a,champ,slot,c),exact:true};
   if(a&&a.add){const r=readShape(champ,slot,s);return{src:'assigned',type:a.type,addedTo:r.type,shapes:[...r.shapes,...shapesOf(a)],hidden:a.type==='no_preview'}}
   if(a)return{src:'assigned',type:a.type,shapes:shapesOf(a),hidden:a.type==='no_preview'};
   if(c&&!(c.casting>=0&&c.casting<=3))return{src:'passive',type:'passive',shapes:[],hidden:true};
@@ -651,34 +675,54 @@ function draw(cv,s,pick,pointer,champ){
   const dot=()=>{g.beginPath();g.arc(O[0],O[1],8*px,0,7);g.fillStyle='#378ADD';g.fill()};
   if(pick.hidden){dot();g.fillStyle='rgba(255,255,255,0.7)';g.fillText(pick.src==='passive'?'passive: nothing drawn':'nothing drawn',8*px,42*px);return}
   const c=s.cast||{casting:2,target:6},range=rangeAt(c),unit=c.casting===0,allies=c.target<=4;
-  let dir=[Math.cos(-Math.PI/5),Math.sin(-Math.PI/5)],aimDist=c.casting===1?range*0.75:unit?range*0.66:range;
-  if(pointer){const dx=pointer[0]*px-O[0],dy=pointer[1]*px-O[1],d=Math.hypot(dx,dy);if(d>2){dir=[dx/d,dy/d];const w=d/k;aimDist=c.casting===1?Math.min(w,range):unit?w:range}}
+  let dir=[Math.cos(-Math.PI/5),Math.sin(-Math.PI/5)],aimDist=c.casting===1?range*0.75:unit?range*0.66:range,cursor=aimDist;
+  if(pointer){const dx=pointer[0]*px-O[0],dy=pointer[1]*px-O[1],d=Math.hypot(dx,dy);if(d>2){dir=[dx/d,dy/d];const w=d/k;cursor=w;aimDist=c.casting===1?Math.min(w,range):unit?w:range}}
   const at=d=>[O[0]+dir[0]*d*k,O[1]+dir[1]*d*k],aim=c.casting===3?O:at(aimDist);
-  const shapes=mainPurpose(pick.shapes,unit),yellow=allies?ST.ally:ST.yellow;
+  // A custom preview is drawn exactly as listed, as the mod does.
+  const shapes=pick.exact?pick.shapes:mainPurpose(pick.shapes,unit),yellow=allies?ST.ally:ST.yellow;
   if(range>0.5&&c.casting!==3){
     const rc=allies?ST.range_ally:ST.range_ready;
     g.beginPath();g.arc(O[0],O[1],range*k,0,7);g.fillStyle=hex(rc,ST.range_fill);g.fill();
     g.lineWidth=5*px;g.strokeStyle=hex(ST.ink,0.35);g.stroke();g.lineWidth=ST.range_width*px;g.strokeStyle=hex(rc,ST.range_opacity);g.stroke();
   }
   if(unit){g.beginPath();g.arc(aim[0],aim[1],7*px,0,7);g.fillStyle='#d4537e';g.fill()}
+  // Where a shape starts, as the mod places it (skill_preview.rs `placed`):
+  // ahead of the caster only for unit and point casts; a dash's end always
+  // its full length; a landing up to the cursor for point casts.
   const base=f=>{const p=f.at;if(p==='caster')return O;if(p==='aim')return aim;
-    if(p&&p.forward!==undefined)return at(p.forward);if(p&&p.end!==undefined)return unit?aim:at(Math.min(p.end,c.casting===1?aimDist:p.end));
-    if(p&&p.landing!==undefined)return unit||c.casting===1?aim:at(p.landing);return aim};
+    if(p&&p.forward!==undefined)return c.casting<=1?at(p.forward):O;
+    if(p&&p.end!==undefined)return unit?aim:at(p.end);
+    if(p&&p.landing!==undefined)return unit?aim:c.casting===3?O:at(c.casting===2?p.landing:Math.min(cursor,p.landing));return aim};
   const stroke=(col,w)=>{g.lineWidth=w*px;g.strokeStyle=col;g.stroke()};
   const fill=col=>{g.fillStyle=hex(col,ST.area_fill*2);g.fill();stroke(hex(col,0.95),2)};
   const strip=(b,ang,len,hw,col)=>{g.beginPath();g.save();g.translate(b[0],b[1]);g.rotate(ang);g.rect(0,-hw,len,hw*2);g.restore();fill(col)};
   const a0=Math.atan2(dir[1],dir[0]);
+  // Dash: the author's design K "Bullet" (design/previews/dash-k.svg), as the
+  // mod draws it (skill_preview.rs `dash`): a body in three strips between
+  // dark edges, then a nose of four steps narrowing to a white point.
+  const bullet=(from,to,col)=>{
+    const dx=to[0]-from[0],dy=to[1]-from[1],len=Math.hypot(dx,dy);if(len<0.01)return;
+    const S=(n,v)=>ST[n]??v,d=[dx/len,dy/len],L=len/k,N=Math.min(S('dash_nose_length',14),S('dash_nose_share',0.3)*L),B=L-N,W=S('dash_body_width',10),dark=ST.ink||'#25231b';
+    const p=(t,o)=>[from[0]+(d[0]*t-d[1]*o)*k,from[1]+(d[1]*t+d[0]*o)*k];
+    const seg=(a,b,w,c,o)=>{g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.lineWidth=w*k;g.strokeStyle=hex(c,o);g.stroke()};
+    [S('dash_body_opacity_1',0.14),S('dash_body_opacity_2',0.3),S('dash_body_opacity_3',0.5)].forEach((o,i)=>seg(p(B*i/3,0),p(B*(i+1)/3,0),W,col,o));
+    for(const side of[-1,1]){const o=side*S('dash_edge_offset',5.75);seg(p(0,o),p(B,o),S('dash_edge_width',1.5),dark,S('dash_edge_opacity',0.8))}
+    for(let i=0;i<4;i++)seg(p(B+N*i/4,0),p(B+N*(i+1)/4,0),W*(4-i)/4+S('dash_nose_ink_extra',3),dark,S('dash_nose_ink_opacity',0.8));
+    for(let i=0;i<4;i++)seg(p(B+N*i/4,0),p(B+N*(i+1)/4,0),W*(4-i)/4,i===3?(ST.white||'#fffdf1'):col,S('dash_nose_opacity',0.95));
+  };
   for(const f of shapes){
     const col=f.allies?ST.ally:yellow,b=base(f);g.beginPath();
     if(f.kind==='circle'){g.arc(b[0],b[1],f.radius*k,0,7);fill(col)}
-    else if(f.kind==='strip'||f.kind==='shot')strip(b,a0,(f.length>0?f.length:range)*k,Math.max(f.radius,1.5)*k,col);
+    else if(f.kind==='strip'||f.kind==='shot'){const len=(f.length>0?f.length:range)*k,hw=Math.max(f.radius,1.5)*k;strip(b,a0,len,hw,col);
+      // A shot that stops at the first unit ends in a bar, as in the game.
+      if(f.kind==='shot'&&!f.pierce){const e=[b[0]+Math.cos(a0)*len,b[1]+Math.sin(a0)*len],n=[-Math.sin(a0)*hw,Math.cos(a0)*hw];g.beginPath();g.moveTo(e[0]-n[0],e[1]-n[1]);g.lineTo(e[0]+n[0],e[1]+n[1]);stroke(hex(col,0.95),4)}}
     else if(f.kind==='rectangle'){g.save();g.translate(b[0],b[1]);g.rotate(a0);g.rect(-f.height*k/2,-f.width*k/2,f.height*k,f.width*k);g.restore();fill(col)}
     else if(f.kind==='cone'){const h=Math.acos(Math.max(-1,Math.min(1,f.cosine)));g.moveTo(b[0],b[1]);g.arc(b[0],b[1],f.radius*k,a0-h,a0+h);g.closePath();fill(col)}
     else if(f.kind==='fan'){for(const o of fanOffsets(f.count))strip(b,a0+o*Math.PI/180,f.length*k,Math.max(f.radius,1.5)*k,col)}
     else if(f.kind==='spread'){for(const o of spreadOffsets(f.count,f.degrees))strip(b,a0+o*Math.PI/180,(f.length>0?f.length:range)*k,Math.max(f.radius,1.5)*k,col)}
-    else if(f.kind==='dash'){g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(b[0],b[1]);stroke('#5fd3e0',3);g.setLineDash([])}
+    else if(f.kind==='dash')bullet(O,b,col);
     else if(f.kind==='blink'){g.arc(b[0],b[1],9*px,0,7);stroke('#5fd3e0',3)}
-    else if(f.kind==='backstep'){const e=[O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k];g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(e[0],e[1]);stroke('#5fd3e0',3);g.setLineDash([])}
+    else if(f.kind==='backstep')bullet(O,[O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k],col);
     else if(f.kind==='reach'){const base=ATTACK[champ]??range;g.setLineDash([4*px,4*px]);g.arc(O[0],O[1],(base+f.extra)*k,0,7);stroke(hex(col,0.8),2);g.setLineDash([]);label(`attack range ${+base.toFixed(1)} + ${+f.extra.toFixed(1)}`,O[0]+(base+f.extra)*k*0.7,O[1]+(base+f.extra)*k*0.7)}
   }
   if(pick.src==='unread'&&!pick.suggestion&&c.casting!==0&&c.casting!==3){g.beginPath();g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(aim[0],aim[1]);stroke(hex(ST.white,0.8),2);g.setLineDash([])}
@@ -686,7 +730,8 @@ function draw(cv,s,pick,pointer,champ){
   if(range>0.5&&c.casting!==3){const a=-Math.PI*0.75;label(`range ${+range.toFixed(1)}`,O[0]+Math.cos(a)*range*k-30*px,O[1]+Math.sin(a)*range*k)}
   for(const f of shapes){const b=base(f);
     if(f.kind==='circle'&&f.radius>0)label(`r ${+(+f.radius).toFixed(1)}`,b[0]+f.radius*k*0.71,b[1]+f.radius*k*0.71+12*px);
-    else if(f.kind==='backstep'&&f.length>0)label(`jump ${+(+f.length).toFixed(1)}`,O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k+16*px)}
+    else if(f.kind==='backstep'&&f.length>0)label(`jump ${+(+f.length).toFixed(1)}`,O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k+16*px);
+    else if(f.kind==='dash'&&f.at&&f.at.end>0&&!unit)label(`dash ${+(+f.at.end).toFixed(1)}`,b[0]+8*px,b[1]+16*px)}
   if(pick.suggestion){g.fillStyle='rgba(255,255,255,0.85)';g.font=`${12*px}px system-ui`;g.fillText('suggested shape',8*px,48*px)}
   dot();
 }
@@ -704,12 +749,13 @@ function skillCard(champ,slot){
       <div class="card-actions">
         <button data-open="numbers" title="Game numbers" aria-label="Game numbers for ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-numbers" aria-hidden="true"></span></button>
         <button data-open="details" title="Skill details" aria-label="Skill details for ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-details" aria-hidden="true"></span></button>
+        <button data-open="pieces" title="Pieces (custom preview)" aria-label="Pieces of the custom preview for ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-edit" aria-hidden="true"></span></button>
       </div>
     </div>
-    <div class="inspector-storage" hidden><div class="nums"></div><div class="skill-details"><div class="inspector-description"></div><div class="inspector-meta"></div></div></div>`;
+    <div class="inspector-storage" hidden><div class="nums"></div><div class="skill-details"><div class="inspector-description"></div><div class="inspector-meta"></div></div><div class="pieces"></div></div>`;
   const cv=div.querySelector('canvas');let pointer=null;
   const card={champ,slot,s,div,redraw:()=>draw(cv,s,chosen(champ,slot,s),pointer,champ)};
-  card.storage=div.querySelector('.inspector-storage');card.editor=div.querySelector('.edit');card.sizes=div.querySelector('.sizes');card.numbers=div.querySelector('.nums');card.details=div.querySelector('.skill-details');
+  card.storage=div.querySelector('.inspector-storage');card.editor=div.querySelector('.edit');card.sizes=div.querySelector('.sizes');card.numbers=div.querySelector('.nums');card.details=div.querySelector('.skill-details');card.pieces=div.querySelector('.pieces');
   card.details.querySelector('.inspector-description').textContent=nm['desc_'+slot]||'No description in the game data.';
   div.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>openInspector(card,button.dataset.open,button));
   cv.onmousemove=e=>{const r=cv.getBoundingClientRect();pointer=[e.clientX-r.left,e.clientY-r.top];card.redraw()};
@@ -751,12 +797,21 @@ function skillCard(champ,slot){
     const keepLabel=read.src==='unread'?'None (not readable yet)':`Use what the game reads (${TYPE_LABELS[read.type]})`;
     sel.innerHTML=`<option value="">${esc(keepLabel)}</option>`+Object.entries(TYPES).map(([t,v])=>`<option value="${t}">${esc(v.label)}</option>`).join('');
     sel.value=a?a.type:'';lab.appendChild(sel);head.appendChild(lab);
-    sel.onchange=()=>{if(!sel.value)delete assigned[key];else{const g=guess(sel.value,champ,slot);const v=g.value;if((a&&a.allies)||(g.allies&&AREA_TYPES.includes(sel.value)))v.allies=true;assigned[key]=v}changed(card)};
+    sel.onchange=()=>{if(!sel.value)delete assigned[key];
+      // Custom starts as a copy of what the card draws now.
+      else if(sel.value==='custom')assigned[key]={type:'custom',pieces:toPieces(champ,slot,s)};
+      else{const g=guess(sel.value,champ,slot);const v=g.value;if((a&&a.allies)||(g.allies&&AREA_TYPES.includes(sel.value)))v.allies=true;assigned[key]=v}changed(card);
+      if(sel.value==='custom')openInspector(card,'pieces',sel)};
     const p=chosen(champ,slot,s);
     if(!a&&p.suggestion){const b=document.createElement('button');b.className='small';b.textContent=`Use suggestion: ${TYPES[p.suggestion.type].label}`;b.onclick=()=>{assigned[key]=clone(p.suggestion);changed(card)};head.appendChild(b)}
     if(a){const b=document.createElement('button');b.className='small';b.textContent='Reset';b.title=read.src==='unread'?'Remove assignment':'Back to what the game reads';b.setAttribute('aria-label',`${nm.name||champ} ${slot}: ${b.title}`);b.onclick=()=>{delete assigned[key];changed(card)};head.appendChild(b)}
     edit.appendChild(head);
     if(!a)return;
+    if(a.type==='custom'){
+      const box=document.createElement('div');box.className='custom-summary';
+      const text=document.createElement('span');text.textContent=`${a.pieces.length} piece${a.pieces.length===1?'':'s'} · drawn exactly as listed`;
+      const b=document.createElement('button');b.className='small';b.textContent='Edit pieces';
+      b.onclick=()=>openInspector(card,'pieces',b);box.append(text,b);edit.appendChild(box);return}
     const g=guess(a.type,champ,slot),t=TYPES[a.type],box=document.createElement('div');box.className='fields edit-values';
     for(const f of t.fields){
       const l=document.createElement('label');l.title=FIELD_HELP[f]||'';l.append(f.replace('_',' '));
@@ -790,7 +845,196 @@ function skillCard(champ,slot){
   card.build();cards.push(card);return div;
 }
 /// A changed shape needs checking again, so its tick is cleared.
-function changed(card,keepEditor){if(!keepEditor)card.build();card.untick();card.refresh();store.set('draft',assigned);fillFilters();updateHeader();refreshSources()}
+function changed(card,keepEditor){if(!keepEditor)card.build();card.untick();card.refresh();store.set('draft',assigned);fillFilters();updateHeader();refreshSources();
+  if(!keepEditor&&activeInspector?.card===card&&card.pieces)renderPieces(card)}
+
+/* ---------- custom previews built from pieces (1.5.2-dev2) ---------- */
+/// The blocks the mod draws (probe/src/preview_table.rs `footprint`): each
+/// size as [field, label, role]. Roles: d a distance (any source), c a count
+/// and a an angle (typed or a game number as it is), cos a cone's opening
+/// (typed in degrees, kept as the cosine the mod reads).
+const BLOCKS={
+  circle:{label:'Circle',sizes:[['radius','Radius','d']],at:'aim'},
+  strip:{label:'Line',sizes:[['radius','Width each side','d'],['length','Length (0: cast range)','d']],at:'caster',projectile:true},
+  shot:{label:'Shot',sizes:[['radius','Width each side','d'],['length','Length','d']],at:'caster',projectile:true,pierce:true},
+  rectangle:{label:'Rectangle',sizes:[['width','Width','d'],['height','Depth','d']],at:'aim'},
+  cone:{label:'Cone',sizes:[['radius','Radius','d'],['cosine','Opening (degrees)','cos']],at:'caster'},
+  spread:{label:'Fan of lines',sizes:[['count','Lines','c'],['radius','Width each side','d'],['length','Length (0: cast range)','d'],['degrees','Total spread (degrees)','a']],at:'caster',projectile:true},
+  fan:{label:'Blades (Dancer R)',sizes:[['count','Blades','c'],['radius','Width each side','d'],['length','Length','d']],at:'caster',projectile:true},
+  dash:{label:'Dash path',sizes:[],at:'aim',places:['aim','end'],noAllies:true},
+  blink:{label:'Blink',sizes:[],at:'aim',places:['aim','end'],noAllies:true},
+  backstep:{label:'Jump back',sizes:[['length','Distance','d']],at:'caster',places:['caster'],noAllies:true},
+  reach:{label:'Attack range ring',sizes:[['extra','Added to attack range','d']],at:'caster',places:['caster']},
+};
+const MAX_PIECES=8;
+const PLACE_LABELS={caster:'At the champion',aim:'At the aim',forward:'Ahead of the champion by',end:'At the end of a dash of',landing:'Where a jump lands, up to'};
+const MOVE_PLACE_LABELS={aim:'To the aim',end:'A fixed distance of'};
+const SOURCE_MODES={typed:'Typed number',number:'Game number',two:'Two game numbers multiplied',cast:'Cast range'};
+const placeOf=at=>typeof at==='string'?at:at&&typeof at==='object'?Object.keys(at)[0]:'caster';
+/// The skill's numbers as the game keeps them (distances in thousandths).
+const rawNumbers=(champ,slot)=>(NUMBERS[champ]||{})[slot]||{};
+/// Names used with more than one value: the game cannot be asked by name.
+const repeated=(champ,slot)=>(USES[champ]||{})[slot]||{};
+function modeOf(src){return !src||typeof src!=='object'||'fixed' in src?'typed':src.cast_range?'cast':src.by!==undefined?'two':'number'}
+/// What a size source gives now, in world units (or a count, or degrees),
+/// as the mod computes it (preview_table.rs `value_of`); the recorded
+/// value when the number is not known.
+function sourceValue(src,champ,slot,cast,level1){
+  if(typeof src==='number')return src;
+  if(!src||typeof src!=='object')return NaN;
+  if('fixed' in src)return +src.fixed;
+  if(src.cast_range){const r=level1?(cast?.range||0):rangeAt(cast);return r>0?r:+src.recorded}
+  const n=rawNumbers(champ,slot),times=src.times??1;
+  if(src.by!==undefined){const a=n[src.name],b=n[src.by];return a!==undefined&&b!==undefined?a/1000*b*times:+src.recorded}
+  const a=n[src.name];if(a===undefined)return +src.recorded;
+  return src.unit?a:a/1000*times;
+}
+/// The pieces as shapes in world units, for drawing.
+function resolvePieces(a,champ,slot,cast){
+  return(a.pieces||[]).map(p=>{const out={};for(const[k,v]of Object.entries(p)){
+    if(k==='at')out.at=typeof v==='object'&&v?{[placeOf(v)]:sourceValue(Object.values(v)[0],champ,slot,cast)}:v;
+    else out[k]=v&&typeof v==='object'?sourceValue(v,champ,slot,cast):v}return out});
+}
+/// The recorded value of every source that names a number or the cast
+/// range: what the mod uses until it has read the game's number.
+function stampPieces(a,champ,slot,cast){
+  const stamp=src=>{if(src&&typeof src==='object'&&(src.name!==undefined||src.cast_range)){const v=sourceValue(src,champ,slot,cast,true);if(Number.isFinite(v))src.recorded=+v.toFixed(3)}};
+  for(const p of a.pieces||[])for(const[k,v]of Object.entries(p)){if(k==='at'&&v&&typeof v==='object')stamp(Object.values(v)[0]);else stamp(v)}
+}
+/// Why a custom preview cannot be saved (empty when it can).
+function customProblems(key,a){
+  const [champ,slot]=key.split(' '),cast=TABLE.champions[champ]?.[slot]?.cast,out=[];
+  if(!Array.isArray(a.pieces))return['no pieces'];
+  if(a.pieces.length>MAX_PIECES)out.push(`at most ${MAX_PIECES} pieces`);
+  a.pieces.forEach((p,i)=>{const b=BLOCKS[p.kind];if(!b){out.push(`piece ${i+1}: unknown block`);return}
+    for(const[field,,role]of b.sizes){const src=p[field];
+      if(src===undefined){if(!(field==='length'&&['strip','spread'].includes(p.kind)))out.push(`piece ${i+1}: ${field} missing`);continue}
+      const v=sourceValue(src,champ,slot,cast);
+      if(role==='cos'?!(v>=-1&&v<=1):!(v>=0&&v<=100000))out.push(`piece ${i+1}: ${field} is not a size`)}
+    if(p.at&&typeof p.at==='object'&&!(sourceValue(Object.values(p.at)[0],champ,slot,cast)>=0))out.push(`piece ${i+1}: distance is not a size`)});
+  return out;
+}
+const fixed=v=>({fixed:+(+v).toFixed(3)});
+/// A new piece of this block with sizes to start from.
+function newPiece(kind,old){
+  const b=BLOCKS[kind],p={kind,at:b.at},keep=old&&(b.places||Object.keys(PLACE_LABELS)).includes(placeOf(old.at));
+  const start={radius:20,length:0,width:40,height:20,count:3,degrees:30,extra:20};
+  for(const[field,,role]of b.sizes)p[field]=role==='cos'?fixed(Math.cos(Math.PI/6)):field==='radius'&&['strip','shot','spread','fan'].includes(kind)?fixed(10):fixed(start[field]??20);
+  if(kind==='backstep')p.length=fixed(30);
+  if(kind==='shot'){p.length={cast_range:true};p.pierce=true}
+  if(keep)p.at=clone(old.at);
+  if(old?.allies&&!b.noAllies)p.allies=true;
+  return p;
+}
+/// What the card draws now, as pieces whose sizes keep their sources.
+function toPieces(champ,slot,s){
+  const p=chosen(champ,slot,s);if(p.hidden||p.type==='custom')return p.type==='custom'?clone(assigned[`${champ} ${slot}`].pieces):[];
+  // A size keeps its source only where the source gives this very value.
+  const sizes=p.src==='live'||p.src==='file'?Object.fromEntries((SOURCES[champ]?.[slot]?.sizes||[]).map(z=>[z.key,z])):{};
+  const src=(key,value)=>sizes[key]&&Math.abs(sizes[key].value-value)<0.01?clone(sizes[key].source):fixed(value);
+  const out=[];
+  (p.shapes||[]).forEach((f,i)=>{
+    if(!BLOCKS[f.kind]||out.length>=MAX_PIECES)return; // a segment has absolute points: it cannot be shipped
+    const piece={kind:f.kind};
+    for(const[field,,role]of BLOCKS[f.kind].sizes){if(f[field]===undefined)continue;piece[field]=role==='cos'?fixed(f[field]):src(`${i}.${field}`,f[field])}
+    piece.at=f.at&&typeof f.at==='object'?{[placeOf(f.at)]:src(`${i}.at.${placeOf(f.at)}`,Object.values(f.at)[0])}:(f.at||BLOCKS[f.kind].at);
+    for(const flag of['allies','projectile','pierce'])if(f[flag])piece[flag]=true;
+    out.push(piece)});
+  return out;
+}
+/// One size: its source and, by the source, a typed number, the game's
+/// number(s) with a factor, or nothing (the cast range).
+function sizeRow(card,label,src,role,set,quiet,redo){
+  const {champ,slot,s}=card,cast=s.cast,row=document.createElement('div');row.className='size-row';
+  const name=document.createElement('span');name.textContent=label;
+  const modes=role==='d'?['typed','number','two','cast']:role==='cos'?['typed']:['typed','number'];
+  const mode=document.createElement('select');mode.setAttribute('aria-label',`${label}: source`);
+  mode.innerHTML=modes.map(m=>`<option value="${m}">${esc(SOURCE_MODES[m])}</option>`).join('');mode.value=modeOf(src);
+  const names=Object.keys(rawNumbers(champ,slot)).sort(),twice=repeated(champ,slot);
+  if(src&&src.name&&!names.includes(src.name))names.push(src.name);
+  const numberSelect=(value,labelText,onPick)=>{const sel=document.createElement('select');sel.setAttribute('aria-label',labelText);
+    sel.innerHTML=names.map(n=>{const many=twice[n];return`<option value="${esc(n)}"${many?' disabled':''}>${esc(n)} ${many?`(used ${many.length} times: ${many.join(', ')})`:`· ${rawNumbers(champ,slot)[n]??'not read'}`}</option>`}).join('');
+    sel.value=value;sel.onchange=()=>{onPick(sel.value);changedSize()};return sel};
+  mode.onchange=()=>{const now=sourceValue(src,champ,slot,cast),usable=names.filter(n=>!twice[n]);
+    const next=mode.value==='typed'?fixed(Number.isFinite(now)?now:0)
+      :mode.value==='cast'?{cast_range:true}
+      :mode.value==='two'?{name:usable[0]||'',by:usable[1]||usable[0]||''}
+      :Object.assign({name:usable[0]||''},role==='c'?{unit:'count'}:role==='a'?{unit:'degrees'}:{});
+    set(next);redo()};
+  const inputs=document.createElement('span');inputs.className='size-inputs';
+  const note=document.createElement('span');note.className='size-note small muted';
+  const factor=()=>{const i=document.createElement('input');i.type='number';i.step='any';i.value=src.times??1;i.title='Factor';i.setAttribute('aria-label',`${label}: factor`);
+    i.oninput=()=>{const v=parseFloat(i.value);if(isNaN(v)||v===1)delete src.times;else src.times=v;changedSize()};return i};
+  const m=modeOf(src);
+  if(m==='typed'){const i=document.createElement('input');i.type='number';i.step='any';i.setAttribute('aria-label',`${label}: value`);
+    i.value=role==='cos'?+(Math.acos(Math.max(-1,Math.min(1,src.fixed)))*360/Math.PI).toFixed(2):src.fixed;
+    i.oninput=()=>{const v=parseFloat(i.value);src.fixed=isNaN(v)?NaN:role==='cos'?+Math.cos(v/2*Math.PI/180).toFixed(6):v;changedSize()};inputs.append(i)}
+  else if(m==='number'){inputs.append(numberSelect(src.name,`${label}: game number`,n=>src.name=n));if(role==='d')inputs.append('×',factor())}
+  else if(m==='two'){inputs.append(numberSelect(src.name,`${label}: first number`,n=>src.name=n),'×',numberSelect(src.by,`${label}: second number`,n=>src.by=n),'×',factor())}
+  function changedSize(initial){const v=sourceValue(src,champ,slot,cast),bad=role==='cos'?!(v>=-1&&v<=1):!(v>=0&&v<=100000);
+    inputs.querySelectorAll?.('input').forEach(i=>i.classList.toggle('invalid',bad));
+    const shown=role==='cos'?`${+(Math.acos(Math.max(-1,Math.min(1,v)))*360/Math.PI).toFixed(1)}°`:Number.isFinite(v)?+v.toFixed(2):'?';
+    note.className='size-note small '+(bad?'bad':'muted');
+    note.textContent=bad?'Not a size: enter a value':m==='typed'?`= ${shown} · fixed: does not follow patches`:m==='cast'?`= ${shown} · follows level and patches`
+      :`= ${shown}`+(m==='two'?` (${src.name} ÷ 1000 × ${src.by}${src.times?` × ${src.times}`:''})`:role==='d'?` (${src.name} ÷ 1000${src.times?` × ${src.times}`:''})`:'')+' · follows edits and patches';
+    if(!initial)quiet()}
+  row.append(name,mode,inputs,note);changedSize(true);return row;
+}
+/// One piece: its block, where it starts, its sizes and options.
+function pieceEditor(card,a,piece,i,redo,quiet){
+  const b=BLOCKS[piece.kind],box=document.createElement('fieldset');box.className='piece';
+  const head=document.createElement('div');head.className='piece-head';
+  const number=document.createElement('strong');number.textContent=i+1;
+  const kind=document.createElement('select');kind.setAttribute('aria-label',`Piece ${i+1}: block`);
+  kind.innerHTML=Object.entries(BLOCKS).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join('');kind.value=piece.kind;
+  kind.onchange=()=>{a.pieces[i]=newPiece(kind.value,piece);redo()};
+  const button=(text,title,act,off)=>{const x=document.createElement('button');x.textContent=text;x.title=title;x.setAttribute('aria-label',`Piece ${i+1}: ${title}`);x.disabled=!!off;x.onclick=act;return x};
+  const swap=j=>{[a.pieces[i],a.pieces[j]]=[a.pieces[j],a.pieces[i]];redo()};
+  head.append(number,kind,
+    button('↑','Move up',()=>swap(i-1),i===0),
+    button('↓','Move down',()=>swap(i+1),i===a.pieces.length-1),
+    button('Copy','Duplicate',()=>{a.pieces.splice(i+1,0,clone(piece));redo()},a.pieces.length>=MAX_PIECES),
+    button('✕','Remove',()=>{a.pieces.splice(i,1);redo()}));
+  box.appendChild(head);
+  const places=b.places||Object.keys(PLACE_LABELS),place=placeOf(piece.at),labels=b.places&&b.places.includes('end')?MOVE_PLACE_LABELS:PLACE_LABELS;
+  if(places.length>1){const row=document.createElement('div');row.className='size-row';const l=document.createElement('span');l.textContent='Where';
+    const sel=document.createElement('select');sel.setAttribute('aria-label',`Piece ${i+1}: where it starts`);
+    sel.innerHTML=places.map(p=>`<option value="${p}">${esc(labels[p])}</option>`).join('');sel.value=place;
+    sel.onchange=()=>{piece.at=sel.value==='caster'||sel.value==='aim'?sel.value:{[sel.value]:fixed(30)};redo()};
+    row.append(l,sel);box.appendChild(row)}
+  if(piece.at&&typeof piece.at==='object')box.appendChild(sizeRow(card,'Distance',piece.at[place],'d',v=>piece.at={[place]:v},quiet,redo));
+  for(const[field,label,role]of b.sizes){if(piece[field]===undefined)piece[field]=fixed(field==='length'?0:20);
+    box.appendChild(sizeRow(card,label,piece[field],role,v=>piece[field]=v,quiet,redo))}
+  const flags=document.createElement('div');flags.className='piece-flags';
+  const flag=(name,text)=>{const l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';c.checked=!!piece[name];
+    c.onchange=()=>{if(c.checked)piece[name]=true;else delete piece[name];quiet()};l.append(c,text);flags.appendChild(l)};
+  if(!b.noAllies)flag('allies','For allies (blue)');
+  if(b.projectile)flag('projectile','Projectile (stat-rule margin)');
+  if(b.pierce)flag('pierce','Passes through units');
+  if(flags.children.length)box.appendChild(flags);
+  return box;
+}
+/// The Pieces panel of a card with a custom preview.
+function renderPieces(card){
+  const box=card.pieces;if(!box)return;box.innerHTML='';
+  const key=`${card.champ} ${card.slot}`,a=assigned[key];
+  if(!a||a.type!=='custom'){const p=document.createElement('p');p.className='no-content';
+    p.textContent='Choose "Custom (pieces)" as the preview type on the card to build this preview from pieces. It starts as a copy of what the card shows now.';box.appendChild(p);return}
+  const update=()=>{stampPieces(a,card.champ,card.slot,card.s.cast)};
+  const redo=()=>{update();changed(card)},quiet=()=>{update();changed(card,true)};
+  a.pieces.forEach((piece,i)=>{if(BLOCKS[piece.kind])box.appendChild(pieceEditor(card,a,piece,i,redo,quiet))});
+  const add=document.createElement('div');add.className='piece-add';
+  const pick=document.createElement('select');pick.setAttribute('aria-label','Block to add');
+  pick.innerHTML=Object.entries(BLOCKS).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join('');
+  const b=document.createElement('button');b.textContent='Add piece';b.disabled=a.pieces.length>=MAX_PIECES;
+  b.onclick=()=>{a.pieces.push(newPiece(pick.value));redo()};
+  add.append(pick,b);box.appendChild(add);
+  const notes=document.createElement('p');notes.className='note muted';
+  const twice=Object.entries(repeated(card.champ,card.slot));
+  notes.textContent=(a.pieces.length>=MAX_PIECES?`At most ${MAX_PIECES} pieces, as for every preview. `:'')
+    +(twice.length?`Numbers used more than once in this skill cannot follow patches by name; type their value: ${twice.map(([n,v])=>`${n} (${v.join(', ')})`).join('; ')}.`:'');
+  if(notes.textContent)box.appendChild(notes);
+}
 
 /* ---------- where each size comes from (step 4, stage A) ---------- */
 const sizesOf=(champ,slot)=>(SOURCES[champ]?.[slot]?.sizes)||[];
@@ -855,12 +1099,13 @@ function saveChecked(){
   checkTimer=setTimeout(()=>fetch('/api/checked',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({skills:[...checked]})})
     .then(r=>r.json()).then(r=>{if(!r.ok)throw 0}).catch(()=>{$('saveState').dataset.state='error';$('saveState').innerHTML='<span class="bad">Could not save the checked marks. Is the viewer window still open?</span>'}),300);
 }
-function invalidKeys(){return Object.entries(assigned).filter(([k,a])=>{const t=TYPES[a.type];if(!t)return true;return t.fields.some(f=>{const v=a[f];return v===undefined?!(t.optional||[]).includes(f):!(v>=0&&v<=10000)})}).map(([k])=>k)}
+function invalidKeys(){return Object.entries(assigned).filter(([k,a])=>{const t=TYPES[a.type];if(!t)return true;
+  if(a.type==='custom')return customProblems(k,a).length>0;return t.fields.some(f=>{const v=a[f];return v===undefined?!(t.optional||[]).includes(f):!(v>=0&&v<=10000)})}).map(([k])=>k)}
 
 
 /* ---------- floating skill inspector: never participates in gallery layout ---------- */
 let activeInspector=null;
-const INSPECTOR_TABS=['numbers','details'];
+const INSPECTOR_TABS=['numbers','details','pieces'];
 function positionInspector(){
   if(!activeInspector)return;
   const panel=$('inspector'),rect=activeInspector.card.div.getBoundingClientRect();
@@ -889,7 +1134,7 @@ function inspectorTab(tab,focus=false){
 function closeInspector(returnFocus=true){
   if(!activeInspector)return;
   const {card,button}=activeInspector;
-  card.storage.append(card.numbers,card.details);
+  card.storage.append(...[card.numbers,card.details,card.pieces].filter(Boolean));
   card.div.classList.remove('is-active');
   card.div.querySelectorAll('[data-open]').forEach(b=>b.setAttribute('aria-expanded','false'));
   $('inspector').hidden=true;activeInspector=null;
@@ -902,7 +1147,8 @@ function openInspector(card,tab,button){
   $('inspectorKey').textContent=card.slot;
   $('inspectorChampion').textContent=NAMES[card.champ]?.name||card.champ;
   $('inspectorTitle').textContent=NAMES[card.champ]?.['skill_'+card.slot]||TYPE_LABELS[chosen(card.champ,card.slot,card.s).type]||card.slot;
-  for(const [key,node]of [['numbers',card.numbers],['details',card.details]])$('inspectorPanel-'+key).appendChild(node);
+  for(const [key,node]of [['numbers',card.numbers],['details',card.details],['pieces',card.pieces]])if(node)$('inspectorPanel-'+key).appendChild(node);
+  if(card.pieces)renderPieces(card);
   card.div.classList.add('is-active');$('inspector').hidden=false;
   inspectorTab(tab,true);positionInspector();
 }
@@ -1010,7 +1256,7 @@ async function saveNow(){
 async function start(){
   try{D=EMBEDDED||await fetch('/api/data',{cache:'no-store'}).then(r=>r.json())}
   catch(e){$('list').innerHTML='<div class="empty">The viewer could not load its data. Start it again with tools\\preview_viewer.cmd.</div>';return}
-  TABLE=D.table||{};TABLE.champions=TABLE.champions||{};ST=D.style;NUMBERS=D.numbers||{};ATTACK=D.attack_ranges||{};NAMES=D.names||{};SOURCE=D.source||{};
+  TABLE=D.table||{};TABLE.champions=TABLE.champions||{};ST=D.style;NUMBERS=D.numbers||{};ATTACK=D.attack_ranges||{};NAMES=D.names||{};SOURCE=D.source||{};USES=D.number_uses||{};
   learn();
   saved=clone(D.saved||{});assigned=clone(saved);
   SOURCES=D.sources||{};picks=clone(D.picks||{});

@@ -121,6 +121,9 @@ pub struct Geometry {
     /// replacing it (the author, 2026-10-21: Zook W keeps its read blast
     /// around Zook and adds the jump away the game cannot be read for).
     pub adds: bool,
+    /// The author's custom preview (pieces built in the viewer, 1.5.2-dev2):
+    /// drawn exactly as listed, so `main_purpose` leaves it alone.
+    pub exact: bool,
 }
 impl Geometry {
     pub fn add(&mut self, shape: Shape, placement: Placement) {
@@ -358,6 +361,7 @@ fn load_overrides(log: &Logger) -> HashMap<(String, usize), Geometry> {
         return HashMap::new();
     };
     let mut out = HashMap::new();
+    let mut custom = HashMap::new();
     let (mut refused, mut shipped) = (0, 0);
     for (key, entry) in value
         .get("skills")
@@ -369,6 +373,18 @@ fn load_overrides(log: &Logger) -> HashMap<(String, usize), Geometry> {
             let slot = ["Q", "W", "R"].iter().position(|s| *s == slot)?;
             Some((champion.to_owned(), slot))
         });
+        // A custom preview (pieces with their size sources) goes through
+        // the shipped table's path, so its sizes follow the game's numbers
+        // like the table's; the author's file wins over the table.
+        if entry.get("type").and_then(Value::as_str) == Some("custom") {
+            match (skill, entry.get("pieces").filter(|p| p.is_array())) {
+                (Some(k), Some(pieces)) => {
+                    custom.insert(k, pieces.clone());
+                }
+                _ => refused += 1,
+            }
+            continue;
+        }
         // The shipped table holds this assignment with sizes that follow
         // the game's numbers: that copy is used (the author's own file).
         if let Some((champion, slot)) = &skill {
@@ -385,9 +401,11 @@ fn load_overrides(log: &Logger) -> HashMap<(String, usize), Geometry> {
         }
     }
     log.write(&format!(
-        "PREVIEW OVERRIDES skills={} refused={refused} shipped={shipped}",
-        out.len()
+        "PREVIEW OVERRIDES skills={} custom={} refused={refused} shipped={shipped}",
+        out.len(),
+        custom.len()
     ));
+    crate::preview_table::set_custom(custom);
     out
 }
 /// One assignment as a preview: a type and its values in world units.
@@ -545,6 +563,9 @@ pub fn resolve(native: Option<&Geometry>, declared: Geometry) -> Geometry {
 ///
 /// A projectile beside a dash is not an area left behind: both stay.
 pub fn main_purpose(mut geometry: Geometry, unit_target: bool) -> Geometry {
+    if geometry.exact {
+        return geometry;
+    }
     let leaves_areas = geometry
         .footprints
         .iter()
@@ -691,15 +712,15 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
                 out.issue("range projectile shape unresolved");
             }
         }
-        // A beam from the caster toward the aim (Workshop example: abbie W,
-        // `width` 27000 and `length` 100000 on a direction cast). Guess:
-        // `width` is the full width, as Astrologer W's `line_width`.
+        // A line hit from the caster toward the aim (Workshop examples:
+        // abbie W, `width` 27000 and `length` 100000; bulldozer Q). Read
+        // from the game's code (0.6.4 and 0.6.5, 1.5.2-dev1): `width` is
+        // the hit's distance on each side of the line (the radius of the
+        // game's segment shape), so the line is twice `width` wide. Before
+        // 1.5.2-dev1 this guessed `width` was the full width.
         "LineRangeProjectile" => match (number(v, "width"), number(v, "length")) {
-            (Some(width), Some(length)) => out.add_for(
-                Shape::Corridor {
-                    radius: width / 2.,
-                    length,
-                },
+            (Some(radius), Some(length)) => out.add_for(
+                Shape::Corridor { radius, length },
                 Placement::Caster,
                 declared_allies(v),
             ),
@@ -1376,64 +1397,81 @@ fn chevron(tip: Point, dir: Point, half: f32) -> [Point; 3] {
         (back.0 + n.0 * half, back.1 + n.1 * half),
     ]
 }
-/// Movement from `a` to `b`: up to three chevrons closing on `b`, the
-/// nearest the largest and brightest, and a faint dotted lead-in when there
-/// is room. A chevron that would start behind `a` is left out.
-fn chevrons(d: &mut Drawing, s: &Style, a: Point, b: Point, ink: Ink) {
-    let length = (b.0 - a.0).hypot(b.1 - a.1);
-    let Some(dir) = unit_vector(a, b) else {
+/// Dash (the author's design K, "Bullet", `design/previews/dash-k.svg`,
+/// 1.5.2-dev3): one connected shape from the caster to where the dash ends.
+/// In world units, scaled by `scale` (screen px per world unit) like every
+/// other preview: a body `dash_body_width` wide in three equal strips laid
+/// end to end, brightening toward the front, between two dark edges; then a
+/// nose `min(dash_nose_length, dash_nose_share x L)` long in four equal steps
+/// narrowing to a white point, each over a dark step a little wider. The
+/// same rule for every length: no separate mark for short dashes.
+fn dash(d: &mut Drawing, s: &Style, caster: Point, end: Point, ink: Ink, scale: f32) {
+    let Some(dir) = unit_vector(caster, end) else {
         return;
     };
-    let mut furthest = 0.;
-    for k in 0..3 {
-        let k = k as f32;
-        let half = s.chevron_half - s.chevron_shrink * k;
-        let back = 2. + s.chevron_step * k;
-        if half < 2. || back + half > length {
-            break;
-        }
-        furthest = back + half;
-        let points = chevron((b.0 - dir.0 * back, b.1 - dir.1 * back), dir, half);
-        let width = (s.chevron_width - s.chevron_thin * k).max(1.);
-        d.poly(
-            &points,
-            width + s.chevron_ink_extra,
-            alpha(s.ink, s.chevron_ink_opacity),
-            false,
+    if scale <= f32::EPSILON {
+        return;
+    }
+    let length = (end.0 - caster.0).hypot(end.1 - caster.1) / scale;
+    let nose = s.dash_nose_length.min(s.dash_nose_share * length);
+    let body = length - nose;
+    // A point `t` world units along the dash, `off` to its side.
+    let at = |t: f32, off: f32| {
+        (
+            caster.0 + (dir.0 * t - dir.1 * off) * scale,
+            caster.1 + (dir.1 * t + dir.0 * off) * scale,
+        )
+    };
+    for side in [-1., 1.] {
+        let off = side * s.dash_edge_offset;
+        d.line(
+            at(0., off),
+            at(body, off),
+            s.dash_edge_width * scale,
+            alpha(s.ink, s.dash_edge_opacity),
             Z_INK,
         );
-        d.poly(
-            &points,
-            width,
-            alpha(ink.col, 1. - s.chevron_fade * k),
-            false,
-            Z_MAIN,
+    }
+    let strips = [
+        s.dash_body_opacity_1,
+        s.dash_body_opacity_2,
+        s.dash_body_opacity_3,
+    ];
+    for (i, opacity) in strips.into_iter().enumerate() {
+        let (from, to) = (body * i as f32 / 3., body * (i + 1) as f32 / 3.);
+        d.line(
+            at(from, 0.),
+            at(to, 0.),
+            s.dash_body_width * scale,
+            alpha(ink.col, opacity),
+            Z_FILL,
         );
     }
-    let lead = length - furthest - 2. * s.chevron_lead_gap;
-    if furthest > 0. && lead >= 3. * (s.chevron_lead_dash + s.chevron_lead_gap) {
-        d.dashed(
-            a,
-            (a.0 + dir.0 * lead, a.1 + dir.1 * lead),
-            s.chevron_lead_width,
-            alpha(ink.col, s.chevron_lead_opacity),
-            s.chevron_lead_dash,
-            s.chevron_lead_gap,
+    for i in 0..4 {
+        let (from, to) = (
+            body + nose * i as f32 / 4.,
+            body + nose * (i + 1) as f32 / 4.,
         );
-    }
-}
-/// Dash: chevrons from just ahead of the caster to the landing point, or a
-/// compact grip when the dash is very short.
-fn dash(d: &mut Drawing, s: &Style, caster: Point, end: Point, ink: Ink) {
-    match unit_vector(caster, end) {
-        Some(dir) if (end.0 - caster.0).hypot(end.1 - caster.1) >= s.dash_short => {
-            let start = (
-                caster.0 + dir.0 * s.dash_start,
-                caster.1 + dir.1 * s.dash_start,
-            );
-            chevrons(d, s, start, end, ink);
-        }
-        _ => grip(d, s, end, ink, s.dash_short_grip),
+        let width = s.dash_body_width * (4 - i) as f32 / 4.;
+        d.line(
+            at(from, 0.),
+            at(to, 0.),
+            (width + s.dash_nose_ink_extra) * scale,
+            alpha(s.ink, s.dash_nose_ink_opacity),
+            Z_INK,
+        );
+        let (color, z) = if i == 3 {
+            (ink.white, Z_CORE)
+        } else {
+            (ink.col, Z_MAIN)
+        };
+        d.line(
+            at(from, 0.),
+            at(to, 0.),
+            width * scale,
+            alpha(color, s.dash_nose_opacity),
+            z,
+        );
     }
 }
 /// A skill whose area is not understood shows only how it is cast (the
@@ -1793,10 +1831,10 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 // Straight away from the aim (the target of a unit cast).
                 if let Some(dir) = unit_vector(aiming, origin) {
                     let end = (origin.0 + dir.0 * length, origin.1 + dir.1 * length);
-                    dash(&mut out, s, center, project(end), ink);
+                    dash(&mut out, s, center, project(end), ink, sx);
                 }
             }
-            Shape::Movement { blink: false } => dash(&mut out, s, center, at, ink),
+            Shape::Movement { blink: false } => dash(&mut out, s, center, at, ink, sx),
         }
     }
     if let Some(aim) = aim.filter(|_| !self_area && p.casting != 0) {
@@ -2201,43 +2239,117 @@ mod tests {
         assert!(strips(&[(0., 0.), (1., 1.)], 3.).is_empty());
     }
     #[test]
-    fn a_dash_is_chevrons_closing_on_the_landing_point() {
+    fn a_dash_is_the_bullet_of_design_k() {
         let st = style();
         let ink = Ink::of(st, true);
+        // The design's sample: 150 world units along +x at 1 px per unit.
         let mut d = Drawing::default();
-        // A 200 px dash along +x: three chevrons, the nearest with its
-        // point 2 px short of the end and the full half width.
-        chevrons(&mut d, st, (0., 0.), (200., 0.), ink);
-        let h = st.chevron_half;
-        let points = |d: &Drawing, tip: Point, half: f32| {
-            d.strokes
-                .iter()
-                .any(|s| s.z == Z_MAIN && near(s.a, (tip.0 - half, tip.1 - half)) && near(s.b, tip))
-                && d.strokes.iter().any(|s| {
-                    s.z == Z_MAIN && near(s.a, tip) && near(s.b, (tip.0 - half, tip.1 + half))
-                })
+        dash(&mut d, st, (0., 0.), (150., 0.), ink, 1.);
+        let has = |d: &Drawing, a: Point, b: Point, width: f32, color: u32, z: i32| {
+            d.strokes.iter().any(|s| {
+                near(s.a, a)
+                    && near(s.b, b)
+                    && (s.width - width).abs() < 0.01
+                    && s.color == color
+                    && s.z == z
+            })
         };
-        assert!(points(&d, (198., 0.), h));
-        assert!(points(
+        let dark = alpha(st.ink, 0.8);
+        // Edges, body strips (nose 14, body 136), nose steps and their ink.
+        assert!(has(&d, (0., -5.75), (136., -5.75), 1.5, dark, Z_INK));
+        assert!(has(&d, (0., 5.75), (136., 5.75), 1.5, dark, Z_INK));
+        let third = 136. / 3.;
+        assert!(has(
             &d,
-            (198. - st.chevron_step, 0.),
-            h - st.chevron_shrink
+            (0., 0.),
+            (third, 0.),
+            10.,
+            alpha(st.yellow, 0.14),
+            Z_FILL
         ));
-        assert!(points(
+        assert!(has(
             &d,
-            (198. - 2. * st.chevron_step, 0.),
-            h - 2. * st.chevron_shrink
+            (third, 0.),
+            (2. * third, 0.),
+            10.,
+            alpha(st.yellow, 0.3),
+            Z_FILL
         ));
-        // Nothing is drawn behind the start, however short the dash.
+        assert!(has(
+            &d,
+            (2. * third, 0.),
+            (136., 0.),
+            10.,
+            alpha(st.yellow, 0.5),
+            Z_FILL
+        ));
+        assert!(has(&d, (136., 0.), (139.5, 0.), 13., dark, Z_INK));
+        assert!(has(
+            &d,
+            (136., 0.),
+            (139.5, 0.),
+            10.,
+            alpha(st.yellow, 0.95),
+            Z_MAIN
+        ));
+        assert!(has(
+            &d,
+            (143., 0.),
+            (146.5, 0.),
+            5.,
+            alpha(st.yellow, 0.95),
+            Z_MAIN
+        ));
+        assert!(has(&d, (146.5, 0.), (150., 0.), 5.5, dark, Z_INK));
+        assert!(has(
+            &d,
+            (146.5, 0.),
+            (150., 0.),
+            2.5,
+            alpha(st.white, 0.95),
+            Z_CORE
+        ));
+        assert_eq!(d.strokes.len(), 2 + 3 + 8);
+        // Nothing behind the caster or past the end.
+        assert!(d
+            .strokes
+            .iter()
+            .all(|s| s.a.0 >= -0.01 && s.b.0 <= 150.01 && s.a.0 <= s.b.0));
+        // A short dash: the nose is 30 % of it (20 units: nose 6, body 14),
+        // and widths and lengths scale with the camera.
         let mut d = Drawing::default();
-        chevrons(&mut d, st, (0., 0.), (20., 0.), ink);
-        assert!(points(&d, (18., 0.), h));
-        assert!(d.strokes.iter().all(|s| s.a.0 >= -0.01 && s.b.0 >= -0.01));
-        // A very short dash is a grip, not chevrons.
+        dash(&mut d, st, (0., 0.), (40., 0.), ink, 2.);
+        assert!(has(
+            &d,
+            (28., 0.),
+            (31., 0.),
+            20.,
+            alpha(st.yellow, 0.95),
+            Z_MAIN
+        ));
+        assert!(has(
+            &d,
+            (37., 0.),
+            (40., 0.),
+            5.,
+            alpha(st.white, 0.95),
+            Z_CORE
+        ));
+        // Not ready: grey, with a grey point.
         let mut d = Drawing::default();
-        dash(&mut d, st, (0., 0.), (10., 0.), ink);
-        let top = (10., -st.dash_short_grip);
-        assert!(d.strokes.iter().any(|s| near(s.a, top)));
+        dash(&mut d, st, (0., 0.), (0., 150.), Ink::of(st, false), 1.);
+        assert!(has(
+            &d,
+            (0., 146.5),
+            (0., 150.),
+            2.5,
+            alpha(st.gray, 0.95),
+            Z_CORE
+        ));
+        // No length, nothing drawn.
+        let mut d = Drawing::default();
+        dash(&mut d, st, (5., 5.), (5., 5.), ink, 1.);
+        assert!(d.strokes.is_empty());
     }
     #[test]
     fn a_strip_ends_open_when_it_passes_through_and_capped_when_it_stops() {
@@ -2455,14 +2567,14 @@ mod tests {
         let one = |effect: serde_json::Value| {
             skills(&serde_json::json!({"skill": {"effect": effect}}))[0].clone()
         };
-        // abbie W: a beam from the caster.
+        // abbie W: a line hit from the caster, `width` on each side.
         let g = one(
             serde_json::json!({"type": "LineRangeProjectile", "width": 27000, "length": 100000, "applied_target": "Enemy"}),
         );
         assert_eq!(
             g.footprints[0].shape,
             Shape::Corridor {
-                radius: 13.5,
+                radius: 27.,
                 length: 100.
             }
         );

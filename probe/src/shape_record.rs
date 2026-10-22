@@ -438,11 +438,16 @@ fn footprint(f: &Footprint) -> Value {
         Shape::Segment { radius, from, to } => json!({"kind": "segment", "radius": r(radius),
             "from": [r(from.0), r(from.1)], "to": [r(to.0), r(to.1)]}),
         Shape::Movement { blink } => json!({"kind": if blink { "blink" } else { "dash" }}),
+        // `hit_radius`: the radius is the hit's distance on each side of the
+        // line. Shots recorded before 1.5.2-dev1 lack it, and those from the
+        // game's line hit hold half of it (tools/preview_sources.py
+        // `widened` doubles them).
         Shape::Shot {
             radius,
             length,
             pierce,
-        } => json!({"kind": "shot", "radius": r(radius), "length": r(length), "pierce": pierce}),
+        } => json!({"kind": "shot", "radius": r(radius), "length": r(length), "pierce": pierce,
+            "hit_radius": true}),
         Shape::Reach { extra } => json!({"kind": "reach", "extra": r(extra)}),
         Shape::Fan {
             count,
@@ -659,6 +664,21 @@ mod tests {
             skill(&shot),
             json!({"source": "live", "shapes": [
                 {"kind": "strip", "radius": 9.0, "length": 150.0, "at": "caster", "projectile": true}]})
+        );
+        // A shot says its radius is the hit radius on each side (1.5.2-dev1).
+        let mut line = Geometry::default();
+        line.add(
+            Shape::Shot {
+                radius: 60.,
+                length: 30.,
+                pierce: true,
+            },
+            Placement::Caster,
+        );
+        assert_eq!(
+            skill(&line)["shapes"][0],
+            json!({"kind": "shot", "radius": 60.0, "length": 30.0, "pierce": true,
+                "hit_radius": true, "at": "caster"})
         );
         let mut buff = Geometry::default();
         buff.family("AddCasterBuff");

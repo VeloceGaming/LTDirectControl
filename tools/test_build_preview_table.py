@@ -46,6 +46,14 @@ class UnionAndKeep(unittest.TestCase):
         self.assertEqual(out['champions']['hammerer']['Q'], {'from': 'old'})
         self.assertEqual(report['kept_skills'], ['hammerer Q'])
 
+    def test_a_custom_preview_ships_its_pieces_as_written(self):
+        pieces = [{'kind': 'shot', 'radius': {'name': 'attack_range', 'recorded': 60}, 'length': {'fixed': 30},
+                   'pierce': True, 'at': 'caster'},
+                  {'kind': 'dash', 'at': {'end': {'name': 'speed', 'by': 'tick', 'recorded': 84}}}]
+        out, _ = tool.build(recording('hammerer'), RULES, {'hammerer W': {'type': 'custom', 'pieces': pieces}}, {})
+        self.assertEqual(out['champions']['hammerer']['W'], {'from': 'custom', 'pieces': pieces,
+                                                             'kind': 'hammerer_skill2'})
+
     def test_an_assigned_champion_with_neither_recording_nor_shipped_entry_needs_a_match(self):
         assigned = {'ferryman W': {'type': 'aim_circle', 'radius': 20}}
         out, report = tool.build(recording('hammerer'), RULES, assigned, {}, shipped=shipped())

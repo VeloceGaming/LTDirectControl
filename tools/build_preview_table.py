@@ -70,6 +70,8 @@ def built_skill(champion, slot, entry, sheet):
         if entry.get('shapes'):
             kept['shapes'] = [preview_sources.with_sources(shape, entry['sizes'], f'{i}.')
                               for i, shape in enumerate(entry['shapes'])]
+    elif entry['from'] == 'custom':
+        kept['pieces'] = json.loads(json.dumps(entry['pieces']))
     elif entry['from'] in ('live', 'file'):
         kept['shapes'] = [preview_sources.with_sources(shape, entry['sizes'], f'{i}.')
                           for i, shape in enumerate(entry['shapes'])]
@@ -77,6 +79,8 @@ def built_skill(champion, slot, entry, sheet):
         return None
     most = ((sheet or {}).get(champion) or {}).get(slot, {}).get('max_count')
     for shape in kept.get('shapes', []):
+        # A recording's mark (`preview_sources.widened`), not a size.
+        shape.pop('hit_radius', None)
         # Fanned blades grow with the caster's stack up to this many.
         if shape.get('kind') == 'fan' and isinstance(most, (int, float)):
             shape['max_count'] = {'fixed': most}

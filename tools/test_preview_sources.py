@@ -1,6 +1,6 @@
 import unittest
 
-from preview_sources import all_skills, landed, skill, with_sources
+from preview_sources import all_skills, landed, skill, widened, with_sources
 from build_preview_table import build
 
 RULES = {'actions': {
@@ -99,6 +99,38 @@ class PreviewSourcesTest(unittest.TestCase):
                                             'at': 'aim'}]}})
         self.assertEqual(report['sizes'], {'named': 1})
         self.assertEqual(set(all_skills(t, RULES, {}, {})['hammerer']), {'Q', 'W', 'R'})
+
+
+    def test_line_hits_recorded_before_the_fix_get_their_full_width(self):
+        # Bulldozer Q as 1.5.1 recorded it: `width` 60 halved to radius 30.
+        old = [{'kind': 'shot', 'radius': 30.0, 'length': 30.0, 'pierce': True, 'at': 'caster'},
+               {'kind': 'strip', 'radius': 10.0, 'length': 84.0, 'at': 'caster'}]
+        fixed = widened(old, 'bulldozer')
+        self.assertEqual(fixed[0]['radius'], 60.0)
+        self.assertEqual(fixed[1], old[1])  # the charge is another rule
+        # Marked: a second pass, or a shot recorded since, stays as it is.
+        self.assertEqual(widened(fixed, 'bulldozer'), fixed)
+        new = [{'kind': 'shot', 'radius': 60.0, 'length': 30.0, 'pierce': True, 'hit_radius': True}]
+        self.assertEqual(widened(new, 'bulldozer'), new)
+        # The four champion-skill champions always recorded the hit radius.
+        self.assertEqual(widened(old, 'hypnotist'), old)
+
+    def test_a_pick_that_no_longer_fits_gives_way_to_the_number_that_does(self):
+        # The author picked `width x 0.5` for the halved radius; the true
+        # radius is the whole `width`.
+        t = table('bulldozer', 'Q', {'cast': {'casting': 2, 'range': 72}},
+                  {'kind': 'data_action', 'values': {'width': 60000, 'length': 30000},
+                   'cast_range': 72,
+                   'live': [{'kind': 'shot', 'radius': 30.0, 'length': 30.0, 'pierce': True, 'at': 'caster'}]})
+        picks = {'bulldozer Q': {'0.radius': {'name': 'width', 'times': 0.5}}}
+        sizes = {x['key']: x for x in skill('bulldozer', 'Q', t, RULES, {}, picks)['sizes']}
+        self.assertEqual(sizes['0.radius']['value'], 60.0)
+        self.assertEqual(sizes['0.radius']['source'], {'name': 'width', 'recorded': 60.0})
+        self.assertEqual(sizes['0.radius']['status'], 'named')
+        # A pick that still fits holds.
+        picks = {'bulldozer Q': {'0.radius': {'name': 'width'}}}
+        sizes = {x['key']: x for x in skill('bulldozer', 'Q', t, RULES, {}, picks)['sizes']}
+        self.assertEqual(sizes['0.radius']['status'], 'picked')
 
 
 if __name__ == '__main__':

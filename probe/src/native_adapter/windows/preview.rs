@@ -493,14 +493,22 @@ unsafe fn payload(
             out.add(Shape::Movement { blink: false }, Placement::Aim);
         }
         (Some(SWORDMAN_ULT), 88) => {
+            // The game's line hit (data files: `LineRangeProjectile`, e.g.
+            // Bulldozer Q; also Swordman R). Read from its apply (0.6.4
+            // 0x1705730, 0.6.5 0x1537f40, 1.5.2-dev1): it hits the game's
+            // segment shape (tag 1) from the caster to `length` (word 7)
+            // ahead, with word 6 (`width` in the files) as the segment's
+            // RADIUS, so the line is twice word 6 wide. Before 1.5.2-dev1 the
+            // mod took word 6 as the full width and drew half the area (the
+            // author, 2026-10-22: Bulldozer Q's push area is much wider).
             out.family("native Swordman ult");
             match (
                 distance(word(object + 48) as u64),
                 distance(word(object + 56) as u64),
             ) {
-                (Some(width), Some(length)) => out.add(
+                (Some(radius), Some(length)) => out.add(
                     Shape::Shot {
-                        radius: width / 2.,
+                        radius,
                         length,
                         pierce: true,
                     },

@@ -10,7 +10,17 @@
 //!   name divided by 1000 (distances are kept in thousandths), times
 //!   `times` if given; `"unit": "count"` or `"degrees"` take it as is;
 //! - `{"cast_range": true}`: the live cast range;
-//! - `{"fixed": 12}`: a number in world units.
+//! - `{"fixed": 12}`: a number in world units;
+//! - `{"name": "speed", "by": "tick", "recorded": 84}`: two of the game's
+//!   numbers multiplied, the first a distance (divided by 1000), the second
+//!   a plain count (a charge's speed per tick times its ticks), times
+//!   `times` if given.
+//!
+//! A custom preview (`"from": "custom"`, 1.5.2-dev2) is the author's own
+//! list of `pieces`, in the same form as recorded shapes, built in the
+//! viewer. It is drawn exactly as listed (`Geometry::exact`). The author's
+//! own file (`skill-overrides.json`, type `custom`) wins over the shipped
+//! table, so a custom preview can be tried in game before a build.
 //!
 //! The game's numbers are read from the controlled athlete's own skill
 //! objects (`native_adapter/windows/skill_numbers.rs`), so the preview
@@ -27,6 +37,18 @@ const SHIPPED: &str = include_str!("preview_table.json");
 /// win even when it draws nothing.
 pub const ASSIGNMENT: &str = "table assignment";
 static TABLE: OnceLock<HashMap<String, [Option<Value>; 3]>> = OnceLock::new();
+/// Custom previews from the author's own file, as table entries.
+static CUSTOM: OnceLock<HashMap<(String, usize), Value>> = OnceLock::new();
+/// At start-up: the author's custom previews by (champion, slot), each its
+/// list of pieces (`skill_preview::load_overrides`).
+pub fn set_custom(pieces: HashMap<(String, usize), Value>) {
+    let _ = CUSTOM.set(
+        pieces
+            .into_iter()
+            .map(|(k, p)| (k, serde_json::json!({"from": "custom", "pieces": p})))
+            .collect(),
+    );
+}
 
 fn table() -> &'static HashMap<String, [Option<Value>; 3]> {
     TABLE.get_or_init(|| parse(SHIPPED))
@@ -55,6 +77,12 @@ pub fn counts() -> (usize, usize) {
     (t.len(), t.values().flatten().flatten().count())
 }
 fn entry(champion: &str, slot: usize) -> Option<&'static Value> {
+    if let Some(own) = CUSTOM
+        .get()
+        .and_then(|c| c.get(&(champion.to_owned(), slot)))
+    {
+        return Some(own);
+    }
     table().get(champion)?.get(slot)?.as_ref()
 }
 /// What the combat hook knows of the controlled athlete's skill now.
@@ -79,13 +107,13 @@ pub fn names(champion: &str, slot: usize) -> Vec<String> {
 fn collect_names(v: &Value, out: &mut Vec<String>) {
     match v {
         Value::Object(o) => {
-            if let Some(name) = o
-                .get("name")
-                .and_then(Value::as_str)
-                .filter(|_| is_source(o))
-            {
-                if !out.iter().any(|n| n == name) {
-                    out.push(name.to_owned());
+            if is_source(o) {
+                for key in ["name", "by"] {
+                    if let Some(name) = o.get(key).and_then(Value::as_str) {
+                        if !out.iter().any(|n| n == name) {
+                            out.push(name.to_owned());
+                        }
+                    }
                 }
             }
             o.values().for_each(|v| collect_names(v, out));
@@ -97,7 +125,8 @@ fn collect_names(v: &Value, out: &mut Vec<String>) {
 fn is_source(o: &Map<String, Value>) -> bool {
     o.contains_key("fixed")
         || o.get("cast_range").is_some_and(|v| v == &Value::Bool(true))
-        || (o.contains_key("name") && (o.contains_key("recorded") || o.contains_key("unit")))
+        || (o.contains_key("name")
+            && (o.contains_key("recorded") || o.contains_key("unit") || o.contains_key("by")))
 }
 /// What a source gives now, in world units (or a count, or degrees).
 fn value_of(o: &Map<String, Value>, live: &Live) -> Option<f64> {
@@ -109,10 +138,19 @@ fn value_of(o: &Map<String, Value>, live: &Live) -> Option<f64> {
         return live.cast_range.map(f64::from).or(recorded);
     }
     let name = o.get("name")?.as_str()?;
+    let times = o.get("times").and_then(Value::as_f64).unwrap_or(1.);
+    if let Some(by) = o.get("by") {
+        let by = by.as_str()?;
+        let read = live
+            .numbers
+            .and_then(|n| Some((*n.get(name)?, *n.get(by)?)))
+            .map(|(a, b)| a as f64 / 1000. * b as f64 * times);
+        return read.or(recorded);
+    }
     let read = live.numbers.and_then(|n| n.get(name)).map(|&number| {
         match o.get("unit").and_then(Value::as_str) {
             Some("count" | "degrees") => number as f64,
-            _ => number as f64 / 1000. * o.get("times").and_then(Value::as_f64).unwrap_or(1.),
+            _ => number as f64 / 1000. * times,
         }
     });
     read.or(recorded)
@@ -133,18 +171,30 @@ fn resolved(v: &Value, live: &Live) -> Value {
 /// The shipped preview of `champion`'s skill in `slot` (0 Q, 1 W, 2 R), or
 /// `None` when the table has no entry (the mod then falls back as before).
 pub fn geometry(champion: &str, slot: usize, live: &Live) -> Option<Geometry> {
-    let e = resolved(entry(champion, slot)?, live);
+    of_entry(entry(champion, slot)?, live)
+}
+/// One table entry as a preview, its sizes from `live`.
+fn of_entry(entry: &Value, live: &Live) -> Option<Geometry> {
+    let e = resolved(entry, live);
     let mut g = Geometry::default();
     match e.get("from")?.as_str()? {
         "no_area" => g.family("table no area"),
         "live" | "file" => {
-            shapes(&e, live, &mut g);
+            shapes(&e, "shapes", live, &mut g);
             g.family("table");
+        }
+        // The author's pieces, drawn as listed; it wins even when it draws
+        // nothing, like an assignment.
+        "custom" => {
+            shapes(&e, "pieces", live, &mut g);
+            g.exact = true;
+            g.family("custom");
+            g.family(ASSIGNMENT);
         }
         "assigned" => {
             let a = crate::skill_preview::assigned(e.get("assigned")?)?;
             if a.adds {
-                shapes(&e, live, &mut g);
+                shapes(&e, "shapes", live, &mut g);
                 for f in a.footprints {
                     g.push(f.shape, f.placement, f.allies, f.projectile);
                 }
@@ -158,13 +208,8 @@ pub fn geometry(champion: &str, slot: usize, live: &Live) -> Option<Geometry> {
     }
     Some(g)
 }
-fn shapes(e: &Value, live: &Live, g: &mut Geometry) {
-    for s in e
-        .get("shapes")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-    {
+fn shapes(e: &Value, key: &str, live: &Live, g: &mut Geometry) {
+    for s in e.get(key).and_then(Value::as_array).into_iter().flatten() {
         match footprint(s, live) {
             Some((shape, placement)) => g.push(
                 shape,
@@ -289,14 +334,7 @@ mod tests {
     }
     fn geometry_of(entry: Value, live: &Live) -> Option<Geometry> {
         let t = table_of(entry);
-        let e = resolved(t.get("x")?[1].as_ref()?, live);
-        // Same steps as `geometry`, on a table other than the shipped one.
-        let mut g = Geometry::default();
-        match e.get("from")?.as_str()? {
-            "assigned" => g = crate::skill_preview::assigned(e.get("assigned")?)?,
-            _ => shapes(&e, live, &mut g),
-        }
-        Some(g)
+        of_entry(t.get("x")?[1].as_ref()?, live)
     }
     fn first(g: &Geometry) -> Footprint {
         g.footprints[0]
@@ -375,6 +413,65 @@ mod tests {
         let g = geometry_of(entry, &live).unwrap();
         assert_eq!(first(&g).shape, Shape::Circle { radius: 33. });
         assert_eq!(first(&g).placement, Placement::Aim);
+    }
+    #[test]
+    fn a_custom_preview_is_drawn_exactly_as_listed() {
+        // Bulldozer Q built from pieces: the box, the hit line of the charge
+        // and the charge's own path to its end, 84 = speed 4200 x 20 ticks.
+        let entry = json!({"from": "custom", "pieces": [
+            {"kind": "shot", "radius": {"name": "width", "recorded": 60}, "length": {"fixed": 30},
+                "pierce": true, "at": "caster"},
+            {"kind": "strip", "radius": {"fixed": 10}, "length": {"name": "rush_speed", "by": "ticks",
+                "recorded": 84}, "at": "caster"},
+            {"kind": "dash", "at": {"end": {"name": "rush_speed", "by": "ticks", "recorded": 84}}}]});
+        let numbers = HashMap::from([
+            ("width".to_owned(), 70_000),
+            ("rush_speed".to_owned(), 4_500),
+            ("ticks".to_owned(), 20),
+        ]);
+        let live = Live {
+            numbers: Some(&numbers),
+            ..Live::default()
+        };
+        let g = geometry_of(entry.clone(), &live).unwrap();
+        assert!(g.exact);
+        assert!(g.families.iter().any(|f| f == ASSIGNMENT));
+        assert_eq!(g.footprints.len(), 3);
+        assert_eq!(
+            g.footprints[0].shape,
+            Shape::Shot {
+                radius: 70.,
+                length: 30.,
+                pierce: true
+            }
+        );
+        // Two numbers multiplied follow both: 4.5 x 20 = 90.
+        assert_eq!(
+            g.footprints[1].shape,
+            Shape::Corridor {
+                radius: 10.,
+                length: 90.
+            }
+        );
+        assert_eq!(g.footprints[2].placement, Placement::End { length: 90. });
+        // The dash stays beside the areas: nothing is hidden by the usual
+        // main-purpose rule.
+        let kept = crate::skill_preview::main_purpose(g, false);
+        assert_eq!(kept.footprints.len(), 3);
+        // Numbers not read yet: the recorded values.
+        let g = geometry_of(entry, &Live::default()).unwrap();
+        assert_eq!(g.footprints[2].placement, Placement::End { length: 84. });
+        // An empty list draws nothing but still wins over what is read.
+        let none = geometry_of(json!({"from": "custom", "pieces": []}), &Live::default()).unwrap();
+        assert!(none.footprints.is_empty() && none.families.iter().any(|f| f == ASSIGNMENT));
+        // The names the mod asks the game for include both factors.
+        let mut names = Vec::new();
+        collect_names(
+            &json!({"pieces": [{"length": {"name": "rush_speed", "by": "ticks",
+            "recorded": 84}}]}),
+            &mut names,
+        );
+        assert_eq!(names, ["rush_speed", "ticks"]);
     }
     #[test]
     fn names_and_recorded_assignments_are_found() {

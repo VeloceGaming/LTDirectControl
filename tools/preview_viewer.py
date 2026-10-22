@@ -39,6 +39,7 @@ The page itself is tools/preview_viewer.html.
 """
 import argparse
 import json
+import math
 import os
 import re
 import struct
@@ -71,6 +72,18 @@ REQUIRED = {
 }
 OPTIONAL = {'unit_target': ['area_radius'], 'line': ['length'], 'fan': ['length'], 'dash': ['distance']}
 FLAGS = ['allies', 'blink', 'add']
+# A custom preview (1.5.2-dev2): the author's pieces, each a block the mod
+# draws (probe/src/preview_table.rs `footprint`) with its sizes as sources.
+PIECE_SIZES = {
+    'circle': ['radius'], 'strip': ['radius', 'length'], 'shot': ['radius', 'length'],
+    'rectangle': ['width', 'height'], 'cone': ['radius', 'cosine'],
+    'spread': ['count', 'radius', 'length', 'degrees'], 'fan': ['count', 'radius', 'length'],
+    'dash': [], 'blink': [], 'backstep': ['length'], 'reach': ['extra'],
+}
+PIECE_OPTIONAL = {'strip': ['length'], 'spread': ['length']}
+PIECE_FLAGS = ['allies', 'projectile', 'pierce']
+PLACES = ('forward', 'end', 'landing')
+MAX_PIECES = 8
 
 
 def read_json(path):
@@ -157,6 +170,9 @@ def mod_roots():
     return [(found[m][0], found[m][1], m in enabled) for m in order]
 
 
+# Names that hold more than one value in a skill's data, by champion and
+# slot, from the last read: the game cannot be asked for one of them by name.
+DUPLICATES = {}
 # The bundle's balance patch rules from the last read (which numbers are
 # distances), kept for recomputing sources between page loads.
 RULES = {}
@@ -251,6 +267,17 @@ def with_file_cards(table, playable):
     return out
 
 
+def note_duplicates(champion, slot, skill, replace):
+    """Keep the names used with more than one value in this skill (Bulldozer
+    Q: `speed` 7 for the push and 4200 for the charge)."""
+    seen = {}
+    all_values(skill, seen)
+    found = {name: sorted(values) for name, values in seen.items() if len(values) > 1}
+    slots = DUPLICATES.setdefault(champion, {})
+    if replace or slot not in slots:
+        slots[slot] = found
+
+
 def game_data():
     """Numbers, names and source of every champion the game and its mods
     know, which of them the player's game can field (the base game and
@@ -258,6 +285,7 @@ def game_data():
     numbers, names, source, playable = {}, {}, {}, set()
     FILE_CARDS.clear()
     ATTACK_RANGES.clear()
+    DUPLICATES.clear()
     lang = game_language()
     try:
         with (GAME / 'bundle.game_data').open('rb') as b:
@@ -293,6 +321,7 @@ def game_data():
                             found = {}
                             flatten(entry[key], found)
                             numbers.setdefault(champion, {})[slot] = found
+                            note_duplicates(champion, slot, entry[key], replace=True)
     except (OSError, ValueError, struct.error):
         pass
     for mod_name, folder, enabled in mod_roots():
@@ -311,6 +340,7 @@ def game_data():
                     found = {}
                     flatten(data[key], found)
                     numbers.setdefault(champion, {}).setdefault(slot, found)
+                    note_duplicates(champion, slot, data[key], replace=False)
         for path in folder.rglob('champion.i18n'):
             text = read_json(path)
             if isinstance(text, dict):
@@ -327,12 +357,14 @@ def data():
     """Everything the page shows, read fresh."""
     table = read_json(TABLE) or {}
     # Shapes recorded before 1.5.0-dev19, drawn with the readers' landing
-    # rule (tools/preview_sources.py `landed`), as the shipped table has them.
-    for slots in (table.get('champions') or {}).values():
+    # rule (tools/preview_sources.py `landed`), and line hits recorded before
+    # 1.5.2-dev1 at their true width (`widened`), as the shipped table has them.
+    for champion, slots in (table.get('champions') or {}).items():
         for entry in slots.values():
             if isinstance(entry, dict):
                 if entry.get('shapes'):
-                    entry['shapes'] = preview_sources.landed(entry['shapes'])
+                    entry['shapes'] = preview_sources.landed(
+                        preview_sources.widened(entry['shapes'], champion))
                 if isinstance(entry.get('file'), dict) and entry['file'].get('shapes'):
                     entry['file']['shapes'] = preview_sources.landed(entry['file']['shapes'])
     overrides = read_json(OVERRIDES) or {}
@@ -348,6 +380,9 @@ def data():
         'style': style(),
         'numbers': {c: numbers[c] for c in champions if c in numbers},
         'attack_ranges': {c: ATTACK_RANGES[c] for c in champions if c in ATTACK_RANGES},
+        # Names with more than one value in a skill: typed values only.
+        'number_uses': {c: {s: d for s, d in DUPLICATES[c].items() if d}
+                        for c in champions if c in DUPLICATES and any(DUPLICATES[c].values())},
         'names': {c: names[c] for c in list(champions) + missing if c in names},
         'source': {c: source.get(c, 'Unknown mod') for c in list(champions) + missing},
         # Champions the player's game can field that no match has shown yet.
@@ -405,6 +440,66 @@ def save_checked(body):
     return {'ok': True, 'checked': len(keys)}
 
 
+def number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def valid_source(source, low=0, high=100000):
+    """A custom size: a fixed number, the cast range, or one of the game's
+    numbers by name (with `recorded`, the value the mod uses until it has
+    read the number), maybe times another (`by`)."""
+    if not isinstance(source, dict):
+        return False
+    if 'fixed' in source:
+        return set(source) == {'fixed'} and number(source['fixed']) and low <= source['fixed'] <= high
+    if source.get('cast_range') is True:
+        return set(source) <= {'cast_range', 'recorded'} and number(source.get('recorded', 0))
+    if isinstance(source.get('name'), str) and source['name']:
+        return (set(source) <= {'name', 'times', 'by', 'unit', 'recorded'}
+                and number(source.get('recorded'))
+                and number(source.get('times', 1))
+                and ('by' not in source or (isinstance(source['by'], str) and bool(source['by'])))
+                and source.get('unit') in (None, 'count', 'degrees'))
+    return False
+
+
+def clean_custom(entry):
+    """A custom preview as the mod accepts it, or why not."""
+    pieces = entry.get('pieces')
+    if not isinstance(pieces, list):
+        return None, 'pieces missing'
+    if len(pieces) > MAX_PIECES:
+        return None, f'at most {MAX_PIECES} pieces'
+    out = []
+    for index, piece in enumerate(pieces, 1):
+        kind = piece.get('kind') if isinstance(piece, dict) else None
+        if kind not in PIECE_SIZES:
+            return None, f'piece {index}: unknown block {kind}'
+        clean = {'kind': kind}
+        for field in PIECE_SIZES[kind]:
+            if field not in piece:
+                if field in PIECE_OPTIONAL.get(kind, []):
+                    continue
+                return None, f'piece {index}: {field} missing'
+            low, high = (-1, 1) if field == 'cosine' else (0, 100000)
+            if not valid_source(piece[field], low, high):
+                return None, f'piece {index}: {field} is not a size'
+            clean[field] = piece[field]
+        at = piece.get('at')
+        if at in ('caster', 'aim'):
+            clean['at'] = at
+        elif (isinstance(at, dict) and len(at) == 1 and next(iter(at)) in PLACES
+              and valid_source(next(iter(at.values())))):
+            clean['at'] = at
+        else:
+            return None, f'piece {index}: where it starts is unknown'
+        for flag in PIECE_FLAGS:
+            if piece.get(flag) is True:
+                clean[flag] = True
+        out.append(clean)
+    return {'type': 'custom', 'pieces': out}, None
+
+
 def validate(skills):
     """The entries the mod would accept, and why the others are not."""
     good, problems = {}, []
@@ -415,6 +510,13 @@ def validate(skills):
             problems.append(f'{key}: not a skill')
             continue
         kind = entry.get('type')
+        if kind == 'custom':
+            clean, bad = clean_custom(entry)
+            if bad:
+                problems.append(f'{key}: {bad}')
+            else:
+                good[key] = clean
+            continue
         if kind not in REQUIRED:
             problems.append(f'{key}: unknown type {kind}')
             continue
