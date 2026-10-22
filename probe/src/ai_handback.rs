@@ -1,19 +1,16 @@
-//! AI control keeps the match paced at 1x, one frame ahead, so F11 can take
-//! control back on the next frame. The game's speed buttons and its "view
-//! result" button need the game to run ahead, so in AI control using either
-//! hands the match back to the game completely (as F12 does): speed and skip
-//! then work natively, and the match can no longer be taken back.
+//! AI control keeps the match paced a few ticks ahead, so F11 can take
+//! control back within a frame. The game's "view result" button needs the
+//! game to run the whole match ahead, so in AI control pressing it hands the
+//! match back to the game completely (as F12 does): the result then works
+//! natively, and the match can no longer be taken back.
+//!
+//! The game's speed buttons are not watched here: since 1.5.1-dev1 the AI
+//! phase follows the game's speed field (`native_timing`). The old check
+//! compared the buttons' selection state, which the SDK never reported
+//! (`ui_selectable_selected` was None for every button), so it never fired.
 use crate::{camera::Rect, native_timing, platform_input::Keys, Logger};
 use mod_api_stable::StableClient;
 
-const SPEEDS: [&str; 6] = [
-    "speed05x",
-    "speed1x",
-    "speed15x",
-    "speed2x",
-    "speed3x",
-    "speed_highlight",
-];
 /// The game's "view result now" buttons (compact panel, wide layout).
 const VIEW_RESULT: [&str; 2] = [
     "ingame.option_buttons.view_result",
@@ -22,8 +19,6 @@ const VIEW_RESULT: [&str; 2] = [
 
 #[derive(Default)]
 pub struct AiHandback {
-    /// Speed buttons' selection when AI control began; a change hands back.
-    entry: Option<[Option<bool>; 6]>,
     previous_click: bool,
 }
 impl AiHandback {
@@ -39,32 +34,31 @@ impl AiHandback {
         let pressed = click && !self.previous_click;
         self.previous_click = click;
         let ai = timing.client_session(None) && timing.phase() == Some(native_timing::Phase::Ai);
-        if !ai {
-            self.entry = None;
+        if !ai || !pressed {
             return;
         }
-        let speeds =
-            SPEEDS.map(|n| ctx.ui_selectable_selected(&format!("ingame.speed_buttons.{n}")));
-        let entry = *self.entry.get_or_insert(speeds);
-        let result = pressed
-            && keys.cursor.is_some_and(|p| {
-                VIEW_RESULT.iter().any(|path| {
-                    shown(ctx, path)
-                        && ctx
-                            .ui_node_rect(path)
-                            .is_some_and(|(x, y, w, h)| Rect { x, y, w, h }.contains(p))
-                })
-            });
-        let reason = if speeds != entry {
-            "Game speed changed in AI control; match handed back to the game"
-        } else if result {
-            "View result pressed in AI control; match handed back to the game"
-        } else {
-            return;
-        };
-        self.entry = None;
-        timing.cancel(reason, log);
+        let buttons =
+            VIEW_RESULT.map(|path| shown(ctx, path).then(|| ctx.ui_node_rect(path)).flatten());
+        if view_result_pressed(keys.cursor, &buttons) {
+            timing.cancel(
+                "View result pressed in AI control; match handed back to the game",
+                log,
+            );
+        }
     }
+}
+/// A new click at `cursor` lands on one of the shown "view result" buttons
+/// (`None`: hidden or not found).
+fn view_result_pressed(
+    cursor: Option<(f32, f32)>,
+    buttons: &[Option<(f32, f32, f32, f32)>],
+) -> bool {
+    cursor.is_some_and(|p| {
+        buttons
+            .iter()
+            .flatten()
+            .any(|&(x, y, w, h)| Rect { x, y, w, h }.contains(p))
+    })
 }
 /// The node and every ancestor are visible.
 fn shown(ctx: &StableClient<'_>, path: &str) -> bool {
@@ -72,4 +66,33 @@ fn shown(ctx: &StableClient<'_>, path: &str) -> bool {
         && path
             .match_indices('.')
             .all(|(end, _)| ctx.ui_visible(&path[..end]) != Some(false))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::logger;
+    #[test]
+    fn a_click_on_a_shown_view_result_button_counts_and_others_do_not() {
+        let compact = Some((100., 200., 50., 20.));
+        assert!(view_result_pressed(Some((120., 210.)), &[compact, None]));
+        assert!(view_result_pressed(Some((120., 210.)), &[None, compact]));
+        assert!(!view_result_pressed(Some((10., 10.)), &[compact, None]));
+        assert!(!view_result_pressed(Some((120., 210.)), &[None, None]));
+        assert!(!view_result_pressed(None, &[compact, compact]));
+    }
+    #[test]
+    fn view_result_still_hands_the_ai_match_back() {
+        // What `update` does on a hit: the session is released for good.
+        let log = logger("ai-view-result");
+        let t = native_timing::NativeTiming::running_test_worker((1, 2, 3));
+        t.cancel(
+            "View result pressed in AI control; match handed back to the game",
+            &log,
+        );
+        assert_eq!(
+            t.worker_phase((1, 2, 3)),
+            Some(native_timing::Phase::Released)
+        );
+    }
 }

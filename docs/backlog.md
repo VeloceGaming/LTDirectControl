@@ -311,6 +311,10 @@ addition (not to be copied).
 
 ## Done
 
+- Game speed buttons in AI control (1.5.1, 2026-10-22): after F12 the game's speed buttons work (seen in game by the author on 0.6.5 and 0.7.0 Beta 2); its pause works and F11 takes control back at 1x (seen in game on 0.6.5, with 1.5.1-dev1); control always runs at 1x. The highlight button stays without effect (the author's decision). Supersedes the 0.78.2 line below: a speed change no longer hands the match to the game. Design note: `design/pacing/spectator-speed-2026-10-22.md` (the author's local design folder, not in git).
+
+- Preview table protection (1.5.1, 2026-10-22; read from the code, the viewer Save and table check seen by the author on 0.7.0 Beta 2): skill-shape recordings merge instead of being replaced, the shipped table keeps every champion unless one is dropped by name, the viewer's Save rebuilds it, and `verify_build.py` fails while it is stale.
+
 - Ground ring rollback (1.3.19, 2026-10-18; read from the code, rollback not yet seen in game): restores the original 1.3.16 debug-based ring drawing and click pulse, removes the dedicated redesign module and its tests. Character-shaped outlines, compatibility settings and unrelated HUD changes are preserved. Play checklist: `local/testing/TESTING-1.3.19.md`.
 
 - **Rejected / superseded, 2026-10-18:** both Ground ring redesigns below are removed in 1.3.19 at the author's request. **Seen in game (1.3.18, author; game version not stated):** champion rings too wide and fading behind champions unsuccessful. The old implementation records below are retained as history; their earlier "not seen in game" statements describe their build stages.

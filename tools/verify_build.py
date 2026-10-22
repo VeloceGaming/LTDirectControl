@@ -1,6 +1,7 @@
 """Verify a staged build without a game host, then write dist/build-<version>.json.
 
-Checks: the DLL carries the reviewed executable guard, every native anchor in
+Checks: the shipped preview table is up to date
+(tools/build_preview_table.py --check), the DLL carries the reviewed executable guard, every native anchor in
 the profile matches the installed game, cursor/glyph/UI/font assets match their
 records in tools/records, and the DLL entry points reject a null host. Release
 notes come from the version's section in CHANGELOG.md.
@@ -42,6 +43,15 @@ section = re.search(rf'^## {re.escape(args.version)}\b.*?$(.*?)(?=^## |\Z)', cha
 assert section, f'CHANGELOG.md has no "## {args.version}" section'
 changes = [line[2:].strip() for line in section.group(1).splitlines() if line.startswith('- ')]
 assert changes, f'CHANGELOG.md section {args.version} has no "- " entries'
+
+# The shipped preview table must be what the viewer's data builds
+# (1.5.1-dev3): a stale one fails the build with the tool's own message.
+import subprocess
+check = subprocess.run([sys.executable, str(root / 'tools/build_preview_table.py'), '--check'],
+                       capture_output=True, text=True, encoding='utf-8', errors='replace', cwd=str(root))
+if check.returncode != 0:
+    sys.exit('Preview table check failed (tools/build_preview_table.py --check):\n' + check.stdout + check.stderr)
+preview_check = check.stdout.strip().splitlines()[-1]
 
 from verify_native_profile import verify
 # The DLL carries one table per supported game version. Each is verified
@@ -166,6 +176,7 @@ record = {
     'source_sha256': {p.relative_to(root).as_posix(): digest(p) for p in sources},
     'ui_asset_hashes': ui_art['files'],
     'font_check': font_check,
+    'preview_table_check': preview_check,
     'automated_checks': f'{args.probe_tests} probe tests passed; Clippy with warnings denied, formatting and release build passed; {len(anchors)} executable anchors, ABI 6/null-host rejection, {len(ui_art["files"])} UI/font assets and source fingerprints verified; {len(profile["layout_anchors"])} layout guards verified; fonts: {font_check}; ZIP verified separately.',
     'game_test': f'pending user test on {profile["game_version"]}; native rendering/gameplay not verified by automated tests',
     'installation': 'Package verified; installation pending.',
@@ -173,4 +184,5 @@ record = {
 (root / f'dist/build-{build}.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
 print(json.dumps({k: record[k] for k in ['version', 'variant', 'dll_sha256', 'metadata_sha256', 'probe_tests', 'dll_load']}, indent=2))
 print(f'Tables verified for game {", ".join(sorted(supported))}, each against its own executable.')
+print(preview_check)
 print(f'All {len(anchors)} native instruction/header anchors verified; ABI 6 and null-host rejection passed.')

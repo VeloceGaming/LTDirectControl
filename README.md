@@ -17,8 +17,8 @@ plays (mostly).
 
 ## Status
 
-- Version **1.4.0**, for game versions **0.6.4**, **0.6.3** and the **0.7.0**
-  beta on Windows x64 only. The mod checks the game executable's
+- Version **1.5.1**, for game versions **0.6.4**, **0.6.5** and the **0.7.0
+  Beta 2** on Windows x64 only. The mod checks the game executable's
   fingerprint and stays inactive on any other build; a game update needs a
   mod update.
 - Single player; one controlled athlete per match.
@@ -86,9 +86,9 @@ All bindings can be changed in the mod's Settings window (gear button).
   can pause the match while open.
 - **Session controls**: Start, Pause and Return to AI buttons. F12 hands the
   selected champion to AI; F11 or Take control reclaims the same champion in
-  that match. AI playback stays at 1x so the worker remains synchronized.
-  Changing the game speed or pressing View Match Result in AI control hands
-  the match fully to the game (it can no longer be reclaimed).
+  that match. While the AI drives, the game's speed buttons work; control
+  always runs at normal speed. Pressing View Match Result in AI control
+  hands the match fully to the game (it can no longer be reclaimed).
 - **Athlete stat rules** (experimental, off by default; Settings › Advanced
   › General): in matches you play, your skillshots get a fixed hit margin
   (*Collision margin*, default 2 units) instead of one decided by your

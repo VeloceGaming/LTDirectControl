@@ -14,6 +14,14 @@ static LEFT_MATCH: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::
 /// Most ticks the worker may run ahead of playback, and the most one client
 /// frame may play: the match keeps full speed down to 60 / MAX_LEAD fps.
 pub const MAX_LEAD: usize = 4;
+/// While the AI drives, the game's own speed field (0.5x to 3x) is followed:
+/// the worker may run `ceil(multiplier)` frame leads ahead, at most this many
+/// ticks (3x at the lowest frame rate the frame lead covers).
+pub const MAX_SPECTATOR_LEAD: usize = 12;
+/// `SPECTATOR fields` lines written per match.
+const FIELD_LINES: u32 = 200;
+/// The `SPECTATOR multiplier=` window.
+const SPECTATOR_WINDOW: Duration = Duration::from_secs(10);
 /// Share of each new frame time in the running average.
 const FRAME_WEIGHT: f32 = 0.1;
 /// The most one frame may exceed the running average by, in ticks.
@@ -67,6 +75,45 @@ fn lead_for(current: usize, ticks: f32) -> usize {
         needed(0.02)
     } else {
         current
+    }
+}
+/// The game's playback speed field (`config+0x14`) as a multiplier: the
+/// speed buttons write 0.5, 1, 1.5, 2 or 3 there (seen in game, 1.5.1-dev1,
+/// 0.6.5). Anything outside 0.25..=4, or not a number, counts as 1. The
+/// game's pause writes 0; [`NativeTiming::spectator_fields`] handles that
+/// before this is asked.
+pub fn spectator_multiplier(speed: f32) -> f32 {
+    if speed.is_finite() && (0.25..=4.).contains(&speed) {
+        speed
+    } else {
+        1.
+    }
+}
+/// AI phase: ticks the worker may run ahead at `multiplier` when the frame
+/// lead is `frame_lead`.
+fn spectator_lead(frame_lead: usize, multiplier: f32) -> usize {
+    let times = spectator_multiplier(multiplier).ceil() as usize;
+    (times * frame_lead.clamp(1, MAX_LEAD)).clamp(1, MAX_SPECTATOR_LEAD)
+}
+/// Which of the game's playback fields the viewer hook overwrites for one
+/// frame, besides sync off (`config+0`) and mode 0 (`config+0x10`), which
+/// are always forced (mode 0 keeps the game's highlight button dead). Only
+/// overwritten fields are put back afterwards, so a value the game writes to
+/// a field the hook leaves alone is kept.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PlaybackPlan {
+    /// Speed 1.0 (`config+0x14`).
+    pub force_speed: bool,
+    /// Pause cleared (`config+0x48`).
+    pub clear_pause: bool,
+}
+/// Control (and anything that is not the AI phase): speed and pause forced,
+/// as before. AI phase: speed and pause left to the game.
+pub fn playback_plan(phase: Option<Phase>) -> PlaybackPlan {
+    let ai = phase == Some(Phase::Ai);
+    PlaybackPlan {
+        force_speed: !ai,
+        clear_pause: !ai,
     }
 }
 fn key_id(key: MatchKey) -> u64 {
@@ -156,6 +203,35 @@ struct State {
     stalled: Option<Instant>,
     /// When the stalled worker's stack was last logged, and how many times.
     stack_logged: Option<(Instant, u8)>,
+    /// AI phase: the game's speed field as a multiplier (see
+    /// [`spectator_multiplier`]); 1 outside the AI phase.
+    spectator: f32,
+    /// The most ticks that can be queued now: the highest lead the worker
+    /// produced under until the queue fell back under the current lead. The
+    /// frame-count guard allows this many, so a lower lead (F11, a slower
+    /// speed button) never releases the session while the queue drains.
+    peak_lead: usize,
+    /// After F11 from the AI phase: the AI lead then and frames since,
+    /// logged once the queue is back under the control lead.
+    drain: Option<(usize, u32)>,
+    /// The multiplier changed, or the game was paused, since the playback
+    /// rate window began: that window is not judged slow (see `frame_at`).
+    rate_unsteady: bool,
+    /// The four raw playback fields last seen in the AI phase (sync, mode,
+    /// speed bits, paused) and `SPECTATOR fields` lines written this match.
+    fields_seen: Option<(u8, u32, u32, u8)>,
+    field_lines: u32,
+    window: SpectatorWindow,
+}
+/// AI-phase playback over one [`SPECTATOR_WINDOW`].
+#[derive(Default)]
+struct SpectatorWindow {
+    start: Option<Instant>,
+    frames: u32,
+    ticks: usize,
+    queue: usize,
+    multiplier: f32,
+    wait: Duration,
 }
 struct LeadTrace {
     change: (usize, usize),
@@ -243,8 +319,105 @@ impl NativeTiming {
                 progress: None,
                 stalled: None,
                 stack_logged: None,
+                spectator: 1.,
+                peak_lead: 1,
+                drain: None,
+                rate_unsteady: false,
+                fields_seen: None,
+                field_lines: 0,
+                window: SpectatorWindow::default(),
             }),
         }
+    }
+    /// Ticks the worker may run ahead now: the frame lead, times the game's
+    /// speed multiplier (rounded up) in the AI phase.
+    fn effective_lead(s: &State) -> usize {
+        if s.phase == Phase::Ai {
+            spectator_lead(s.lead, s.spectator)
+        } else {
+            s.lead
+        }
+    }
+    /// The most ticks one frame may play before the session is released:
+    /// never fewer than before this build ([`MAX_LEAD`]), and never fewer
+    /// than can be queued ([`State::peak_lead`]).
+    fn frame_limit(s: &State) -> usize {
+        MAX_LEAD.max(2).max(s.peak_lead)
+    }
+    /// Viewer: which playback fields to overwrite this frame.
+    pub fn playback_plan(&self) -> PlaybackPlan {
+        playback_plan(self.phase())
+    }
+    /// Viewer, each accepted frame, with the four raw playback fields as
+    /// read before the hook wrote anything. In the AI phase the speed field
+    /// becomes the multiplier, and every change is logged (Verbose).
+    pub fn spectator_fields(&self, sync: u8, mode: u32, speed: u32, paused: u8, log: &Logger) {
+        let Ok(mut s) = self.state.lock() else { return };
+        if s.phase != Phase::Ai {
+            s.fields_seen = None;
+            s.spectator = 1.;
+            return;
+        }
+        // The game's pause button writes speed 0 (seen in game, 1.5.1-dev1):
+        // the multiplier and the lead stay as they were, and no line is
+        // written, so resuming at the same speed is no change either.
+        if f32::from_bits(speed) == 0. {
+            s.rate_unsteady = true;
+            return;
+        }
+        let multiplier = spectator_multiplier(f32::from_bits(speed));
+        if multiplier != s.spectator {
+            s.spectator = multiplier;
+            s.rate_unsteady = true;
+            // A higher lead lets the worker run further ahead at once.
+            self.wake.notify_all();
+        }
+        let fields = (sync, mode, speed, paused);
+        if s.fields_seen == Some(fields) {
+            return;
+        }
+        s.fields_seen = Some(fields);
+        if s.field_lines >= FIELD_LINES {
+            return;
+        }
+        s.field_lines += 1;
+        log.write(&format!(
+            "SPECTATOR fields sync={sync} mode={mode} speed={} paused={paused} multiplier={multiplier} lead={}{}",
+            f32::from_bits(speed),
+            Self::effective_lead(&s),
+            if s.field_lines == FIELD_LINES {
+                "; later changes are not logged this match"
+            } else {
+                ""
+            }
+        ));
+    }
+    /// After a running frame in the AI phase: playback averages, written as
+    /// one `SPECTATOR multiplier=` line per [`SPECTATOR_WINDOW`].
+    fn spectator_window(s: &mut State, used: usize, queue: usize, log: &Logger) {
+        let now = Instant::now();
+        let start = *s.window.start.get_or_insert(now);
+        s.window.frames += 1;
+        s.window.ticks += used;
+        s.window.queue += queue;
+        s.window.multiplier += s.spectator;
+        let length = now.duration_since(start);
+        if length < SPECTATOR_WINDOW {
+            return;
+        }
+        let w = std::mem::take(&mut s.window);
+        let frames = w.frames.max(1) as f32;
+        log.write(&format!(
+            "SPECTATOR multiplier={:.2} ticks_per_frame={:.2} queue={:.2} worker_wait_pct={:.0} frames={} window_s={:.1} lead={} frame_lead={}",
+            w.multiplier / frames,
+            w.ticks as f32 / frames,
+            w.queue as f32 / frames,
+            100. * w.wait.as_secs_f32() / length.as_secs_f32(),
+            w.frames,
+            length.as_secs_f32(),
+            Self::effective_lead(s),
+            s.lead
+        ));
     }
     pub fn installed(&self, ok: bool, reason: &str, log: &Logger) {
         let Ok(mut s) = self.state.lock() else { return };
@@ -459,6 +632,13 @@ impl NativeTiming {
         s.rate = None;
         s.lead_changes = 0;
         s.slow_reports = 0;
+        s.spectator = 1.;
+        s.peak_lead = 1;
+        s.drain = None;
+        s.rate_unsteady = false;
+        s.fields_seen = None;
+        s.field_lines = 0;
+        s.window = SpectatorWindow::default();
         s.played_tick = 0;
         s.startup_shop_pending = false;
         s.role_fallback = false;
@@ -537,15 +717,31 @@ impl NativeTiming {
                 s.startup_shop_pending = false;
                 s.pending_action = None;
                 s.running.get_or_insert_with(Instant::now);
-                log.write("SESSION AI control; same match/player retained; pacing=1x; F11 reclaims control");
+                s.fields_seen = None;
+                s.window = SpectatorWindow::default();
+                log.write("SESSION AI control; same match/player retained; the game's speed buttons are followed; F11 reclaims control at 1x");
             }
             (SessionAction::Start, Phase::Ready)
             | (SessionAction::Resume, Phase::Paused)
             | (SessionAction::TakeControl, Phase::Ai) => {
-                s.phase = Phase::Running;
                 if action == SessionAction::TakeControl {
                     s.startup_shop_pending = false;
+                    // Control runs at 1x with the frame lead again; ticks
+                    // already queued play out at 1x while the worker waits.
+                    let ai_lead = Self::effective_lead(&s);
+                    let queue = s.produced.saturating_sub(s.consumed);
+                    log.write(&format!(
+                        "SPECTATOR take_control multiplier={} lead {ai_lead} -> {} queue={queue}",
+                        s.spectator, s.lead
+                    ));
+                    s.drain = Some((ai_lead, 0));
+                    s.spectator = 1.;
+                    // The rate window now straddles a speed change.
+                    s.rate_unsteady = true;
+                    s.fields_seen = None;
+                    s.window = SpectatorWindow::default();
                 }
+                s.phase = Phase::Running;
                 s.running.get_or_insert_with(Instant::now);
                 log.write(&format!("SESSION {action:?}; full-match pacing=1x"));
             }
@@ -600,7 +796,7 @@ impl NativeTiming {
         s.startup_shop_pending = manual_shop && !spectate;
         if s.phase == Phase::Ai {
             s.running = Some(Instant::now());
-            log.write("SESSION spectator start; no preparation hold; F11 takes control");
+            log.write("SESSION spectator start; no preparation hold; the game's speed buttons are followed; F11 takes control at 1x");
         }
         s.began = Instant::now();
         s.worker_bind_base = s.worker_calls;
@@ -698,7 +894,7 @@ impl NativeTiming {
             if !s.boundary_seen {
                 s.boundary_seen = true;
                 log.write(if s.phase == Phase::Ai {
-                    "NATIVE PUBLISHED first initialization frame; spectator playback=1x"
+                    "NATIVE PUBLISHED first initialization frame; spectator playback follows the game's speed field"
                 } else {
                     "NATIVE PUBLISHED first initialization frame; holding before next run_tick_ext"
                 });
@@ -723,7 +919,7 @@ impl NativeTiming {
             let wait = match s.phase {
                 Phase::Released | Phase::Armed => false,
                 Phase::Loading | Phase::Ready | Phase::Paused => true,
-                Phase::Running | Phase::Ai => s.produced.saturating_sub(s.consumed) >= s.lead,
+                Phase::Running | Phase::Ai => !Self::may_produce(&mut s),
             };
             if !wait {
                 return;
@@ -734,10 +930,22 @@ impl NativeTiming {
             let since = Instant::now();
             let waited = self.wake.wait_timeout(s, Duration::from_millis(25));
             crate::perf::waited(crate::perf::Wait::Pacing, since);
-            if waited.is_err() {
-                return;
+            let Ok((mut s, _)) = waited else { return };
+            if s.phase == Phase::Ai {
+                s.window.wait += since.elapsed();
             }
         }
+    }
+    /// Running or AI phase: the worker may simulate another tick while the
+    /// queue is under the effective lead.
+    fn may_produce(s: &mut State) -> bool {
+        let lead = Self::effective_lead(s);
+        let may = s.produced.saturating_sub(s.consumed) < lead;
+        if may {
+            // The next tick may fill the queue up to this lead.
+            s.peak_lead = s.peak_lead.max(lead);
+        }
+        may
     }
     fn check_limits(s: &mut State, log: &Logger) {
         match s.phase {
@@ -787,7 +995,9 @@ impl NativeTiming {
         }
     }
     /// Viewer, each running frame at `tps` ticks a second: keeps the
-    /// worker's lead matched to the frame rate. Returns the lead.
+    /// worker's lead matched to the frame rate. Returns the lead the frame
+    /// time is capped by: the frame lead, times the speed multiplier
+    /// (rounded up) in the AI phase.
     pub fn frame_time(&self, tps: usize, log: &Logger) -> usize {
         self.frame_at(Instant::now(), tps, log)
     }
@@ -802,8 +1012,9 @@ impl NativeTiming {
         // say nothing about the frame rate.
         let Some(frame) = frame.filter(|d| !d.is_zero() && *d < FRAME_GAP) else {
             s.rate = Some((now, s.consumed));
+            s.rate_unsteady = false;
             s.owed = 0.;
-            return s.lead;
+            return Self::effective_lead(&s);
         };
         // One long frame (a hitch) moves the average by less than the 5%
         // that raises the lead; a lasting change still gets there.
@@ -839,13 +1050,20 @@ impl NativeTiming {
         let window = now.duration_since(since);
         if window >= RATE_WINDOW {
             let rate = s.consumed.saturating_sub(from) as f32 / window.as_secs_f32();
+            // In the AI phase the game's speed button sets the expected rate,
+            // so 0.5x is not reported as slow playback. A window in which the
+            // speed changed or the game paused has no single expected rate:
+            // it is logged but not judged (1.5.1-dev2).
+            let target = tps as f32 * s.spectator;
+            let unsteady = std::mem::take(&mut s.rate_unsteady);
             let line = format!(
-                "playback {rate:.1} ticks/s of {tps} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms changes={} dropped={:.1} ticks this match",
+                "playback {rate:.1} ticks/s of {target:.0} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms changes={} dropped={:.1} ticks this match{}",
                 window.as_secs_f32(),
                 s.lead_changes,
-                s.dropped
+                s.dropped,
+                if unsteady { "; speed changed or paused in this window, not judged" } else { "" }
             );
-            if rate < tps as f32 * 0.95 && s.slow_reports < REPORTS {
+            if !unsteady && rate < target * 0.95 && s.slow_reports < REPORTS {
                 s.slow_reports += 1;
                 log.write(&format!("TIMING slow {line}"));
             } else {
@@ -853,7 +1071,7 @@ impl NativeTiming {
             }
             s.rate = Some((now, s.consumed));
         }
-        lead
+        Self::effective_lead(&s)
     }
     /// Viewer, before a running frame plays: the game's frame clock (in
     /// ticks) with whole owed ticks held back and paid back gently.
@@ -886,9 +1104,13 @@ impl NativeTiming {
         let previous_played = s.played_tick;
         s.played_tick = played;
         let used = before.saturating_sub(after);
+        let queue = s.produced.saturating_sub(s.consumed);
         s.consumed += used;
         if mode == ViewMode::Running {
             Self::trace_lead(&mut s, used, log);
+            if s.phase == Phase::Ai {
+                Self::spectator_window(&mut s, used, queue, log);
+            }
         }
         let consumed = s.consumed;
         while s
@@ -934,8 +1156,25 @@ impl NativeTiming {
                 ));
             }
         }
-        if used > MAX_LEAD.max(2) || s.consumed > s.produced + 1 {
+        if used > Self::frame_limit(&s) || s.consumed > s.produced + 1 {
             Self::release(&mut s, "Unexpected publication/playback frame counts", log);
+            return;
+        }
+        // The queue left now (plus a tick the worker may be sending) bounds
+        // what later frames can play; once it is under the current lead, the
+        // lead alone bounds it again.
+        let lead = Self::effective_lead(&s);
+        let queue = s.produced.saturating_sub(s.consumed);
+        s.peak_lead = lead.max(queue + 1);
+        if let Some((from, frames)) = s.drain {
+            let frames = frames + 1;
+            s.drain = Some((from, frames));
+            if queue <= lead {
+                s.drain = None;
+                log.write(&format!(
+                    "SPECTATOR drained lead {from} -> {lead} queue={queue} after {frames} frames"
+                ));
+            }
         }
     }
     /// After a lead change: one running frame played `used` ticks.
@@ -2161,5 +2400,390 @@ mod tests {
         let s = t.state.lock().unwrap();
         assert_eq!(s.phase, Phase::Released);
         assert!(!s.pause_acknowledged);
+    }
+
+    // 1.5.1-dev1: the AI phase follows the game's speed field.
+
+    /// A bound session in the AI phase, owned by this test thread as both
+    /// client and worker.
+    fn spectating() -> NativeTiming {
+        let t = NativeTiming::running_test_worker((1, 2, 3));
+        {
+            let mut s = t.state.lock().unwrap();
+            s.phase = Phase::Ai;
+            s.client = Some(crate::platform_input::thread_id());
+            s.view = Some(100);
+            s.boundary_seen = true;
+            s.bootstrap_applied = true;
+        }
+        t
+    }
+    /// The game's viewer as the stage-one design assumes it (guess): the
+    /// frame clock gains the capped frame time times the speed field, which
+    /// the override forces to 1 outside the AI phase, and one queued tick is
+    /// played per whole tick of clock. The worker fills the queue first.
+    struct Viewer {
+        now: Instant,
+        clock: f32,
+        played: usize,
+    }
+    impl Viewer {
+        fn new() -> Self {
+            Self {
+                now: Instant::now(),
+                clock: 0.,
+                played: 0,
+            }
+        }
+        /// One frame of `us` microseconds; returns ticks played.
+        fn frame(&mut self, t: &NativeTiming, us: u64, speed: f32, log: &Logger) -> usize {
+            {
+                let mut s = t.state.lock().unwrap();
+                s.heartbeat = Some(Instant::now());
+                while NativeTiming::may_produce(&mut s) {
+                    s.produced += 1;
+                }
+            }
+            t.spectator_fields(0, 0, speed.to_bits(), 0, log);
+            let speed = if t.playback_plan().force_speed {
+                1.
+            } else {
+                speed
+            };
+            self.now += Duration::from_micros(us);
+            let lead = t.frame_at(self.now, 60, log);
+            self.clock = t.smooth_clock(self.clock);
+            let dt = (us as f32 / 1e6).min(lead.max(2) as f32 / 60.);
+            self.clock += dt * 60. * speed;
+            let queued = {
+                let s = t.state.lock().unwrap();
+                s.produced - s.consumed
+            };
+            let n = (self.clock.floor() as usize).min(queued);
+            self.clock -= n as f32;
+            self.played += n;
+            t.after_view(ViewMode::Running, queued, queued - n, self.played, log);
+            n
+        }
+    }
+    fn take_control(t: &NativeTiming, log: &Logger) {
+        t.request_action(true);
+        let action = t.take_action().unwrap();
+        assert_eq!(action, SessionAction::TakeControl);
+        t.apply_action(action, log);
+    }
+    #[test]
+    fn the_speed_field_becomes_a_multiplier_and_odd_values_count_as_one() {
+        for speed in [0.5, 1., 1.5, 2., 3.] {
+            assert_eq!(spectator_multiplier(speed), speed);
+        }
+        assert_eq!(spectator_multiplier(0.25), 0.25);
+        assert_eq!(spectator_multiplier(4.), 4.);
+        for odd in [0., 0.2, 4.5, -1., 100., f32::NAN, f32::INFINITY] {
+            assert_eq!(spectator_multiplier(odd), 1., "{odd}");
+        }
+        // Raw bits that are not a speed at all (an unknown layout).
+        assert_eq!(spectator_multiplier(f32::from_bits(0xffff_ffff)), 1.);
+    }
+    #[test]
+    fn the_ai_lead_is_the_frame_lead_times_the_rounded_up_speed_capped() {
+        assert_eq!(spectator_lead(1, 0.5), 1);
+        assert_eq!(spectator_lead(1, 1.), 1);
+        assert_eq!(spectator_lead(1, 1.5), 2);
+        assert_eq!(spectator_lead(1, 2.), 2);
+        assert_eq!(spectator_lead(1, 3.), 3);
+        assert_eq!(spectator_lead(2, 3.), 6);
+        assert_eq!(spectator_lead(4, 3.), MAX_SPECTATOR_LEAD);
+        assert_eq!(spectator_lead(4, 4.), MAX_SPECTATOR_LEAD);
+        assert_eq!(spectator_lead(4, f32::NAN), 4);
+        // Only the AI phase multiplies.
+        let t = spectating();
+        let mut s = t.state.lock().unwrap();
+        (s.lead, s.spectator) = (2, 3.);
+        assert_eq!(NativeTiming::effective_lead(&s), 6);
+        s.phase = Phase::Running;
+        assert_eq!(NativeTiming::effective_lead(&s), 2);
+    }
+    #[test]
+    fn only_the_ai_phase_leaves_the_speed_and_pause_fields_to_the_game() {
+        let all = PlaybackPlan {
+            force_speed: true,
+            clear_pause: true,
+        };
+        for phase in [
+            None,
+            Some(Phase::Ready),
+            Some(Phase::Running),
+            Some(Phase::Paused),
+            Some(Phase::Loading),
+        ] {
+            assert_eq!(playback_plan(phase), all);
+        }
+        // Sync and mode are forced in every phase (the hook writes them
+        // unconditionally; `windows/tests.rs` checks the bytes).
+        let ai = playback_plan(Some(Phase::Ai));
+        assert!(!ai.force_speed && !ai.clear_pause);
+    }
+    #[test]
+    fn ai_fields_set_the_multiplier_and_each_change_is_logged_within_a_budget() {
+        let log = logger("spectator-fields");
+        let t = spectating();
+        t.spectator_fields(0, 0, 3f32.to_bits(), 0, &log);
+        assert_eq!(t.state.lock().unwrap().spectator, 3.);
+        // Unchanged fields write no line; each change writes one.
+        t.spectator_fields(0, 0, 3f32.to_bits(), 0, &log);
+        assert_eq!(t.state.lock().unwrap().field_lines, 1);
+        t.spectator_fields(0, 0, 3f32.to_bits(), 1, &log);
+        assert_eq!(t.state.lock().unwrap().field_lines, 2);
+        t.spectator_fields(0, 0, f32::NAN.to_bits(), 1, &log);
+        assert_eq!(t.state.lock().unwrap().spectator, 1.);
+        for i in 0..400u32 {
+            t.spectator_fields(0, i, 2f32.to_bits(), 0, &log);
+        }
+        assert_eq!(t.state.lock().unwrap().field_lines, FIELD_LINES);
+        assert_eq!(t.state.lock().unwrap().spectator, 2.);
+        // Outside the AI phase nothing is followed.
+        t.state.lock().unwrap().phase = Phase::Running;
+        t.spectator_fields(0, 0, 3f32.to_bits(), 0, &log);
+        let s = t.state.lock().unwrap();
+        assert_eq!((s.spectator, s.fields_seen), (1., None));
+    }
+    #[test]
+    fn the_frame_guard_follows_the_ai_lead_and_never_drops_below_the_old_limit() {
+        let log = logger("spectator-guard");
+        let t = spectating();
+        {
+            let mut s = t.state.lock().unwrap();
+            assert_eq!(NativeTiming::frame_limit(&s), MAX_LEAD);
+            (s.lead, s.spectator) = (4, 3.);
+            assert!(NativeTiming::may_produce(&mut s));
+            assert_eq!(NativeTiming::frame_limit(&s), MAX_SPECTATOR_LEAD);
+            s.produced = 12;
+        }
+        // A frame may play the whole queue the AI lead allowed...
+        t.after_view(ViewMode::Running, 12, 0, 12, &log);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Ai);
+        // ...but not more than could have been queued.
+        t.state.lock().unwrap().produced = 26;
+        t.after_view(ViewMode::Running, 14, 0, 26, &log);
+        assert_eq!(t.state.lock().unwrap().phase, Phase::Released);
+    }
+    #[test]
+    fn ai_playback_follows_each_speed_without_a_release() {
+        let log = logger("spectator-speeds");
+        for (us, frame_lead) in [(16_667, 1), (33_333, 2), (66_667, 4)] {
+            for speed in [0.5, 1., 1.5, 2., 3.] {
+                let t = spectating();
+                let mut viewer = Viewer::new();
+                // Let the frame lead settle at this frame rate.
+                for _ in 0..120 {
+                    viewer.frame(&t, us, speed, &log);
+                }
+                let before = viewer.played;
+                for _ in 0..120 {
+                    viewer.frame(&t, us, speed, &log);
+                }
+                let s = t.state.lock().unwrap();
+                assert_eq!(s.phase, Phase::Ai, "{us} us at {speed}x");
+                assert_eq!(s.lead, frame_lead, "{us} us at {speed}x");
+                let per_frame = (viewer.played - before) as f32 / 120.;
+                let expected = speed * us as f32 * 60. / 1e6;
+                assert!(
+                    (per_frame - expected).abs() <= 0.05 * expected,
+                    "{us} us at {speed}x: {per_frame} ticks per frame, expected {expected}"
+                );
+            }
+        }
+    }
+    #[test]
+    fn f11_at_3x_restores_control_pacing_and_drains_without_a_release() {
+        let log = logger("spectator-take-control");
+        // 60 fps: AI lead 3; after F11 no frame plays more than two ticks.
+        // 15 fps: AI lead 12; after F11 the queue drains at 1x.
+        for (us, max_after) in [(16_667, 2), (66_667, MAX_LEAD + 1)] {
+            let t = spectating();
+            let mut viewer = Viewer::new();
+            for _ in 0..200 {
+                viewer.frame(&t, us, 3., &log);
+            }
+            let frame_lead = t.state.lock().unwrap().lead;
+            let queued = {
+                // The worker has filled the queue when F11 arrives.
+                let mut s = t.state.lock().unwrap();
+                while NativeTiming::may_produce(&mut s) {
+                    s.produced += 1;
+                }
+                s.produced - s.consumed
+            };
+            assert_eq!(queued, spectator_lead(frame_lead, 3.), "{us} us");
+            take_control(&t, &log);
+            {
+                // The next frame forces 1x and the worker's lead is the frame lead.
+                let s = t.state.lock().unwrap();
+                assert_eq!(s.phase, Phase::Running);
+                assert_eq!(s.spectator, 1.);
+                assert_eq!(NativeTiming::effective_lead(&s), frame_lead);
+                assert!(s.drain.is_some());
+            }
+            assert!(t.playback_plan().force_speed);
+            let mut most = 0;
+            for _ in 0..120 {
+                most = most.max(viewer.frame(&t, us, 3., &log));
+                let s = t.state.lock().unwrap();
+                assert_eq!(s.phase, Phase::Running, "{us} us");
+            }
+            assert!(most <= max_after, "{us} us: {most} ticks in one frame");
+            let s = t.state.lock().unwrap();
+            assert!(s.drain.is_none(), "{us} us: queue never drained");
+            assert!(s.produced - s.consumed <= frame_lead);
+            assert_eq!(NativeTiming::frame_limit(&s), MAX_LEAD);
+        }
+    }
+    #[test]
+    fn a_slower_speed_button_at_a_low_frame_rate_drains_without_a_release() {
+        let log = logger("spectator-downshift");
+        let t = spectating();
+        let mut viewer = Viewer::new();
+        for _ in 0..200 {
+            viewer.frame(&t, 66_667, 3., &log);
+        }
+        for speed in [0.5, 2., 1., 3., 0.5] {
+            for _ in 0..60 {
+                viewer.frame(&t, 66_667, speed, &log);
+                assert_eq!(t.state.lock().unwrap().phase, Phase::Ai, "{speed}x");
+            }
+        }
+    }
+    #[test]
+    fn the_spectator_window_averages_ai_frames() {
+        let log = logger("spectator-window");
+        let t = spectating();
+        let mut s = t.state.lock().unwrap();
+        s.spectator = 2.;
+        NativeTiming::spectator_window(&mut s, 2, 3, &log);
+        NativeTiming::spectator_window(&mut s, 2, 1, &log);
+        assert_eq!((s.window.frames, s.window.ticks, s.window.queue), (2, 4, 4));
+        // Once the window is over, one line is written and it starts again.
+        s.window.start = Some(Instant::now() - SPECTATOR_WINDOW);
+        NativeTiming::spectator_window(&mut s, 2, 2, &log);
+        assert_eq!(s.window.frames, 0);
+        assert!(s.window.start.is_none());
+    }
+    // 1.5.1-dev2: the game's pause, and the playback-rate window.
+
+    #[test]
+    fn the_games_pause_keeps_the_multiplier_and_the_lead_and_logs_nothing() {
+        let log = logger("spectator-pause");
+        let t = spectating();
+        t.spectator_fields(0, 0, 2f32.to_bits(), 1, &log);
+        let (lead, lines) = {
+            let s = t.state.lock().unwrap();
+            (NativeTiming::effective_lead(&s), s.field_lines)
+        };
+        assert_eq!(lead, 2);
+        // The pause button writes speed 0 (seen in game, 1.5.1-dev1), +0 or -0.
+        for zero in [0f32, -0f32] {
+            t.spectator_fields(0, 0, zero.to_bits(), 1, &log);
+            let s = t.state.lock().unwrap();
+            assert_eq!(s.spectator, 2.);
+            assert_eq!(NativeTiming::effective_lead(&s), lead);
+            assert_eq!(s.field_lines, lines);
+        }
+        // Resuming at the same speed is no change: no line either.
+        t.spectator_fields(0, 0, 2f32.to_bits(), 1, &log);
+        assert_eq!(t.state.lock().unwrap().field_lines, lines);
+        // A different speed after the pause is a change.
+        t.spectator_fields(0, 0, 3f32.to_bits(), 1, &log);
+        let s = t.state.lock().unwrap();
+        assert_eq!((s.spectator, s.field_lines), (3., lines + 1));
+    }
+    #[test]
+    fn pause_and_resume_at_2x_play_on_without_a_release() {
+        let log = logger("spectator-pause-play");
+        let t = spectating();
+        let mut viewer = Viewer::new();
+        for speed in [2., 0., 2.] {
+            let before = viewer.played;
+            for _ in 0..120 {
+                viewer.frame(&t, 16_667, speed, &log);
+                assert_eq!(t.state.lock().unwrap().phase, Phase::Ai, "{speed}x");
+            }
+            let played = viewer.played - before;
+            if speed == 0. {
+                // The test viewer's model of the game (a guess): at most
+                // what its clock owed from before the pause still plays.
+                assert!(played <= 2, "{played} ticks while paused");
+            } else {
+                assert!(played >= 230, "{played} ticks in 2 s at 2x");
+            }
+            assert_eq!(t.state.lock().unwrap().spectator, 2.);
+        }
+    }
+    /// Runs the viewer's frame timing at 60 fps for `secs` seconds while the
+    /// game plays `ticks_per_frame` ticks a frame, switching the speed field
+    /// to the `(frame, speed)` values on the way. Returns slow reports.
+    fn rate_windows(
+        start: f32,
+        ticks_per_frame: &[(usize, f32)],
+        switches: &[(usize, f32)],
+    ) -> u32 {
+        let log = logger("spectator-rate");
+        let t = spectating();
+        t.spectator_fields(0, 0, start.to_bits(), 0, &log);
+        let mut now = Instant::now();
+        let mut owed = 0f32;
+        let mut per_frame = ticks_per_frame[0].1;
+        for frame in 0..=1200 {
+            if let Some(&(_, speed)) = switches.iter().find(|(f, _)| *f == frame) {
+                t.spectator_fields(0, 0, speed.to_bits(), 0, &log);
+            }
+            if let Some(&(_, n)) = ticks_per_frame.iter().find(|(f, _)| *f == frame) {
+                per_frame = n;
+            }
+            owed += per_frame;
+            let whole = owed.floor();
+            owed -= whole;
+            {
+                let mut s = t.state.lock().unwrap();
+                s.consumed += whole as usize;
+                s.produced = s.consumed;
+            }
+            t.frame_at(now, 60, &log);
+            now += Duration::from_micros(16_667);
+        }
+        let reports = t.state.lock().unwrap().slow_reports;
+        reports
+    }
+    #[test]
+    fn a_rate_window_in_which_the_speed_changed_is_not_judged_slow() {
+        // The stage-one artifact: 0.5x for half a window, then 3x, judged
+        // against 3x alone. Two windows of 600 frames; the switch is in the
+        // first, the second is steady at 3x.
+        assert_eq!(rate_windows(0.5, &[(0, 0.5), (300, 3.)], &[(300, 3.)]), 0);
+        // A pause in the window (the game plays nothing) is skipped too.
+        let paused = rate_windows(
+            2.,
+            &[(0, 2.), (100, 0.), (400, 2.)],
+            &[(100, 0.), (400, 2.)],
+        );
+        assert_eq!(paused, 0);
+        // F11 changes the expected rate as well.
+        let log = logger("spectator-rate-f11");
+        let t = spectating();
+        t.spectator_fields(0, 0, 3f32.to_bits(), 0, &log);
+        t.state.lock().unwrap().rate_unsteady = false;
+        take_control(&t, &log);
+        assert!(t.state.lock().unwrap().rate_unsteady);
+    }
+    #[test]
+    fn a_steady_window_that_plays_slow_is_still_reported() {
+        // 3x expected, 2 ticks a frame played: both windows are slow.
+        assert_eq!(rate_windows(3., &[(0, 2.)], &[]), 2);
+        // A skipped window does not hide the steady slow one after it.
+        assert_eq!(rate_windows(0.5, &[(0, 0.5), (300, 2.)], &[(300, 3.)]), 1);
+        // At the selected speed nothing is reported.
+        for speed in [0.5, 1., 1.5, 2., 3.] {
+            assert_eq!(rate_windows(speed, &[(0, speed)], &[]), 0, "{speed}x");
+        }
     }
 }

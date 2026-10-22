@@ -348,28 +348,38 @@ pub(crate) unsafe extern "system" fn worker_hook(output: usize, sender: usize, f
 
 /// Snapshot only these playback fields; their borrow belongs to the
 /// native caller and spans this call. Restore before that borrow is released.
+/// Only the fields the plan overwrote are put back, so a value the game
+/// writes to a field left alone (the speed in AI control) is kept.
 pub(crate) struct PlaybackOverride {
     config: usize,
-    sync: u8,
-    mode: u32,
-    speed: u32,
-    paused: u8,
+    plan: crate::native_timing::PlaybackPlan,
+    pub(crate) sync: u8,
+    pub(crate) mode: u32,
+    pub(crate) speed: u32,
+    pub(crate) paused: u8,
 }
 impl PlaybackOverride {
-    pub(crate) unsafe fn apply(config: usize, manual: bool) -> Self {
+    pub(crate) unsafe fn apply(config: usize, plan: crate::native_timing::PlaybackPlan) -> Self {
         let snapshot = Self {
             config,
+            plan,
             sync: std::ptr::read(config as *const u8),
             mode: std::ptr::read_unaligned((config + 0x10) as *const u32),
             speed: std::ptr::read_unaligned((config + 0x14) as *const u32),
             paused: std::ptr::read((config + 0x48) as *const u8),
         };
+        // Sync off and mode 0 in every phase; mode 0 keeps the game's
+        // highlight button dead in AI control (the author, 2026-10-22).
         std::ptr::write(config as *mut u8, 0);
         std::ptr::write_unaligned((config + 0x10) as *mut u32, 0);
-        std::ptr::write_unaligned((config + 0x14) as *mut f32, 1.0);
+        // AI control follows the game's speed buttons (1.5.1-dev1); control
+        // always plays at 1x.
+        if plan.force_speed {
+            std::ptr::write_unaligned((config + 0x14) as *mut f32, 1.0);
+        }
         // AI spectator pause remains usable. On reclaim, the coordinator's
         // own Running/Paused phase drives playback even if AI was paused.
-        if manual {
+        if plan.clear_pause {
             std::ptr::write((config + 0x48) as *mut u8, 0);
         }
         snapshot
@@ -380,8 +390,12 @@ impl Drop for PlaybackOverride {
         unsafe {
             std::ptr::write(self.config as *mut u8, self.sync);
             std::ptr::write_unaligned((self.config + 0x10) as *mut u32, self.mode);
-            std::ptr::write_unaligned((self.config + 0x14) as *mut u32, self.speed);
-            std::ptr::write((self.config + 0x48) as *mut u8, self.paused);
+            if self.plan.force_speed {
+                std::ptr::write_unaligned((self.config + 0x14) as *mut u32, self.speed);
+            }
+            if self.plan.clear_pause {
+                std::ptr::write((self.config + 0x48) as *mut u8, self.paused);
+            }
         }
     }
 }
@@ -557,10 +571,24 @@ pub(crate) unsafe fn view_hook_body(
         );
         return;
     };
-    let snapshot = PlaybackOverride::apply(
-        config,
-        shared.timing.phase() != Some(crate::native_timing::Phase::Ai),
-    );
+    let snapshot = PlaybackOverride::apply(config, shared.timing.playback_plan());
+    // AI control: the speed field becomes the pacing multiplier, and each
+    // change of the four raw fields is logged at Verbose.
+    if catch_unwind(AssertUnwindSafe(|| {
+        shared.timing.spectator_fields(
+            snapshot.sync,
+            snapshot.mode,
+            snapshot.speed,
+            snapshot.paused,
+            &shared.logger,
+        )
+    }))
+    .is_err()
+    {
+        shared
+            .timing
+            .cancel("Spectator speed diagnostic panic", &shared.logger);
+    }
     if camera
         && catch_unwind(AssertUnwindSafe(|| {
             prepare_camera(view, config, ingame_ui, mode, dt, shared)

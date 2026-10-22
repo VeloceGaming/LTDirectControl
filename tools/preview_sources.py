@@ -61,7 +61,7 @@ PLACEMENT_SIZES = {'forward': 'd', 'end': 'l', 'landing': 'l'}
 # The numbers of each assignment type (tools/preview_viewer.py `REQUIRED`).
 ASSIGNED_SIZES = {
     'area_radius': 'd', 'radius': 'd', 'depth': 'd', 'length': 'l', 'distance': 'l',
-    'count': 'c', 'spread': 'a', 'angle': 'a',
+    'count': 'c', 'spread': 'a', 'angle': 'a', 'extra': 'd',
 }
 
 

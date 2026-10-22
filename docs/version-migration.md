@@ -303,6 +303,9 @@ It is never for the Workshop.
 
 - `verify_build.py` checks every profile against its own executable: the
   installed game for its version, the kept copies for the others.
+- The skill preview table (`probe/src/preview_table.json`) is rebuilt on
+  every Save in the preview viewer, and `verify_build.py` fails while it is
+  stale (`python tools/build_preview_table.py --check`).
 - The hook tests run once per supported version, so the test count grows
   with each version. Test code in `native_adapter/windows/` must not
   define global symbols.

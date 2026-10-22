@@ -20,6 +20,9 @@ latest data, so there is nothing to regenerate:
 - skill-overrides.json in the mod's folder: the author's assignments, which
   "Save" rewrites (the previous file is kept as skill-overrides.json.bak).
   The mod reads it when the game starts (probe/src/skill_preview.rs).
+  Every Save (and every size pick) also runs tools/build_preview_table.py,
+  so probe/src/preview_table.json follows the viewer; its one-line result
+  shows at the top of the page. A failed build never undoes the save.
 - skill-checked.json in the mod's folder: the skills the author has ticked
   "Checked by me" after comparing them with the game (the viewer only).
 - skill-sources.json in the mod's folder: which of the game's numbers the
@@ -27,8 +30,10 @@ latest data, so there is nothing to regenerate:
   decides the rest, and tools/build_preview_table.py writes the table the mod
   ships from all of these.
 
-It also lists the champions the player's game can field (base game and
-enabled mods) that no match has recorded yet.
+Champions the player's game can field (base game and enabled mods) that no
+match has recorded get a card made from their data file when they have one
+(`with_file_cards`): how each skill is cast, its range and its numbers,
+marked as not seen in play. The others are listed as not recorded yet.
 
 The page itself is tools/preview_viewer.html.
 """
@@ -62,6 +67,7 @@ REQUIRED = {
     'unit_target': [], 'self_circle': ['radius'], 'aim_circle': ['radius'],
     'aim_rectangle': ['width', 'depth'], 'line': ['width'], 'fan': ['count', 'width', 'spread'],
     'cone': ['radius', 'angle'], 'dash': [], 'jump_back': ['distance'], 'no_preview': [],
+    'attack_reach': ['extra'],
 }
 OPTIONAL = {'unit_target': ['area_radius'], 'line': ['length'], 'fan': ['length'], 'dash': ['distance']}
 FLAGS = ['allies', 'blink', 'add']
@@ -154,6 +160,95 @@ def mod_roots():
 # The bundle's balance patch rules from the last read (which numbers are
 # distances), kept for recomputing sources between page loads.
 RULES = {}
+# Skill cards from data files (`file_card`), by champion, from the last read;
+# the base game's file first, then the first mod's.
+FILE_CARDS = {}
+# Each champion's basic attack range (world units) from the game's files, for
+# drawing the attack-range ring.
+ATTACK_RANGES = {}
+# The game's names for how a skill is cast and what it targets, as the
+# codes a recording uses (probe/src/shape_record.rs `Cast`;
+# mod-api-stable `CastingTargetV1`).
+CASTING = {'targeting': 0, 'position': 1, 'direction': 2, 'none': 3}
+TARGETS = {name.lower(): code for code, name in enumerate((
+    'Ally', 'AllyChampion', 'AllyChampionInCc', 'AllyNotSelf', 'AllyOnlySelf', 'Enemy',
+    'EnemyWithoutTower', 'EnemyChampion', 'EnemyChampionInCc', 'EnemyChampionRecentlyAttacked',
+    'Both', 'BothWithoutTower', 'BothChampion', 'None'))}
+
+
+def all_values(value, out, depth=0):
+    """Every numeric field in a skill's data, as name -> every value seen."""
+    if depth > 12:
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(item, bool):
+                continue
+            if isinstance(item, (int, float)):
+                out.setdefault(key, set()).add(item)
+            else:
+                all_values(item, out, depth + 1)
+    elif isinstance(value, list):
+        for item in value:
+            all_values(item, out, depth + 1)
+
+
+def file_card(data):
+    """{slot: {cast, kind, cast_range, values}} from a champion's data file.
+    A name that appears more than once with different values (nested
+    effects: Alchemist Q has two `radius`) is left out of the values: the
+    game answers only one of them in play. Skills with an unknown cast
+    kind are left out."""
+    card = {}
+    for key, slot in SLOTS.items():
+        skill = data.get(key)
+        if not isinstance(skill, dict) or slot in card:
+            continue
+        casting = CASTING.get(str(skill.get('casting_type', '')).lower())
+        target = TARGETS.get(str(skill.get('casting_target', '')).lower())
+        if casting is None or target is None:
+            continue
+        number = lambda name: skill.get(name) if isinstance(skill.get(name), (int, float)) \
+            and not isinstance(skill.get(name), bool) else 0
+        found = {}
+        all_values(skill, found)
+        card[slot] = {
+            'cast': {'casting': casting, 'target': target, 'range': number('range') / 1000,
+                     'growth': number('growth_range') / 1000},
+            'kind': skill.get('patch_type_name'),
+            'cast_range': number('range') / 1000,
+            'values': {name: next(iter(v)) for name, v in sorted(found.items()) if len(v) == 1},
+        }
+    return card
+
+
+def attack_range(champion, entry):
+    """Keep a champion's basic attack range from its sheet entry or file."""
+    attack = entry.get('attack') if isinstance(entry, dict) else None
+    value = attack.get('range') if isinstance(attack, dict) else None
+    if isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0:
+        ATTACK_RANGES.setdefault(champion, value / 1000)
+
+
+def with_file_cards(table, playable):
+    """The recorded table plus a card from the data file for every champion
+    the game can field that no match has recorded. A recording always wins.
+    `file_cards` lists the champions whose cards come from files."""
+    out = dict(table)
+    champions = dict(out.get('champions') or {})
+    numbers = dict(out.get('numbers') or {})
+    added = []
+    for champion in sorted(playable):
+        card = FILE_CARDS.get(champion)
+        if champion in champions or not card:
+            continue
+        champions[champion] = {slot: {'cast': entry['cast'], 'source': 'files'}
+                               for slot, entry in card.items()}
+        numbers[champion] = {slot: {'cast_range': entry['cast_range'], 'kind': entry['kind'],
+                                    'values': entry['values']} for slot, entry in card.items()}
+        added.append(champion)
+    out.update({'champions': champions, 'numbers': numbers, 'file_cards': added})
+    return out
 
 
 def game_data():
@@ -161,6 +256,8 @@ def game_data():
     know, which of them the player's game can field (the base game and
     the enabled mods), and the bundle's balance patch rules."""
     numbers, names, source, playable = {}, {}, {}, set()
+    FILE_CARDS.clear()
+    ATTACK_RANGES.clear()
     lang = game_language()
     try:
         with (GAME / 'bundle.game_data').open('rb') as b:
@@ -185,8 +282,11 @@ def game_data():
                     continue
                 entries = {k: v for k, v in data.items() if k != 'mod_champions'} \
                     if extension == 'champion_info_sheet' else {data.get('id'): data}
+                if extension == 'data_champion' and data.get('id'):
+                    FILE_CARDS.setdefault(data['id'], file_card(data))
                 for champion, entry in entries.items():
                     source.setdefault(champion, 'Base game')
+                    attack_range(champion, entry)
                     playable.add(champion)
                     for key, slot in SLOTS.items():
                         if isinstance(entry, dict) and isinstance(entry.get(key), dict):
@@ -204,6 +304,8 @@ def game_data():
             source.setdefault(champion, mod_name)
             if enabled:
                 playable.add(champion)
+            FILE_CARDS.setdefault(champion, file_card(data))
+            attack_range(champion, data)
             for key, slot in SLOTS.items():
                 if isinstance(data.get(key), dict):
                     found = {}
@@ -236,6 +338,7 @@ def data():
     overrides = read_json(OVERRIDES) or {}
     checked = read_json(CHECKED) or {}
     numbers, names, source, playable, lang = game_data()
+    table = with_file_cards(table, playable)
     champions = table.get('champions') or {}
     missing = sorted(c for c in playable if c not in champions)
     saved = overrides.get('skills') if isinstance(overrides, dict) else {}
@@ -244,6 +347,7 @@ def data():
         'table': table,
         'style': style(),
         'numbers': {c: numbers[c] for c in champions if c in numbers},
+        'attack_ranges': {c: ATTACK_RANGES[c] for c in champions if c in ATTACK_RANGES},
         'names': {c: names[c] for c in list(champions) + missing if c in names},
         'source': {c: source.get(c, 'Unknown mod') for c in list(champions) + missing},
         # Champions the player's game can field that no match has shown yet.
@@ -286,7 +390,7 @@ def save_picks(body):
                                          'written by tools/preview_viewer.py; read by tools/build_preview_table.py.',
                                 'picks': dict(sorted(clean.items()))}, indent=2), encoding='utf-8')
     temp.replace(PICKS)
-    return {'ok': True, 'picked': sum(len(v) for v in clean.values())}
+    return {'ok': True, 'picked': sum(len(v) for v in clean.values()), 'table': rebuild_table()}
 
 
 def save_checked(body):
@@ -335,6 +439,36 @@ def validate(skills):
     return good, problems
 
 
+# One table build at a time: picks save on their own, so two can overlap.
+REBUILD = threading.Lock()
+
+
+def rebuild_table():
+    """Run tools/build_preview_table.py after a save (1.5.1-dev3), so the
+    shipped table follows the viewer. It runs as its own process: it reads
+    the files just saved, and nothing it does can undo the save. Builds run
+    one at a time, each after the save that started it, so the last one
+    reads the newest files. Returns {ok, line}: its one-line result, or why
+    it failed."""
+    import subprocess
+    with REBUILD:
+        return run_build(subprocess)
+
+
+def run_build(subprocess):
+    try:
+        run = subprocess.run([sys.executable, str(Path(__file__).with_name('build_preview_table.py'))],
+                             capture_output=True, text=True, encoding='utf-8', errors='replace',
+                             timeout=300, cwd=str(ROOT))
+    except (OSError, subprocess.SubprocessError) as error:
+        return {'ok': False, 'line': f'Preview table not rebuilt: {error}'}
+    lines = [l for l in (run.stdout + '\n' + run.stderr).splitlines() if l.strip()]
+    if run.returncode == 0:
+        result = [l for l in lines if l.startswith('Preview table:')]
+        return {'ok': True, 'line': (result or lines or ['Preview table rebuilt'])[-1]}
+    return {'ok': False, 'line': 'Preview table not rebuilt (errors): ' + (lines[-1] if lines else f'exit {run.returncode}')}
+
+
 def save(body):
     good, problems = validate(body.get('skills'))
     body = {
@@ -348,7 +482,8 @@ def save(body):
     temp = OVERRIDES.with_name(OVERRIDES.name + '.tmp')
     temp.write_text(json.dumps(body, indent=2, ensure_ascii=False), encoding='utf-8')
     temp.replace(OVERRIDES)
-    return {'ok': True, 'saved': len(good), 'problems': problems, 'path': str(OVERRIDES)}
+    return {'ok': True, 'saved': len(good), 'problems': problems, 'path': str(OVERRIDES),
+            'table': rebuild_table()}
 
 
 class Handler(BaseHTTPRequestHandler):

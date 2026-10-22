@@ -1,6 +1,6 @@
 {
   "source": "design/cursor/index.html",
-  "source_sha256": "331516d2e89bb759d984aab6f3021514e1e7ce2d5e4c5b7a6c7684b0daf24b3a",
+  "source_sha256": "6e3cbf7cb93d083810d02492c05afae6950c6742c4eac7e9d70758ba00fe3965",
   "format": "64x64 premultiplied BGRA, top-down; embedded in DLL",
   "files": {
     "normal": {
@@ -16,7 +16,7 @@
         2,
         2
       ],
-      "sha256": "8a620abeed341687cf4c8347c0c07bf4eebc63bf52a9a7a2ed7e6d4a799b2cf7",
+      "sha256": "6db71b6a270ff8adc610cdf942b6d3c0255e273af39388c77b6eb311698d4ef6",
       "bytes": 16384
     },
     "amove": {
@@ -48,7 +48,7 @@
         2,
         2
       ],
-      "sha256": "782b2f4e7467f3bf2575390d56869b9a4983208b924f5a24bdc717c1271a17ac",
+      "sha256": "3ca032fa442dd1661afbfd6c9e52426157050f4c9660d5e3f7b80df392f8b917",
       "bytes": 16384
     },
     "achamp": {

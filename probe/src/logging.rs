@@ -32,6 +32,12 @@ const SAFETY: &[&str] = &[
     "WORKER STALL",
     "WORKER RESUMED",
     "WORKER ENDED",
+    // AI control and the game's speed buttons (1.5.1-dev2): entering AI
+    // control, and each retake's gap (F11 at a speed above 1x).
+    "SESSION AI control",
+    "SESSION spectator start",
+    "SPECTATOR take_control",
+    "SPECTATOR drained",
 ];
 /// Lines starting with one of these are written only at Verbose.
 const VERBOSE: &[&str] = &[
@@ -106,6 +112,10 @@ const VERBOSE: &[&str] = &[
     // Every purchase by all ten champions.
     "SHOP PURCHASE",
     "SIM ",
+    // AI control: the raw playback fields on each change, and the 10 s
+    // playback window (the 1.5.1-dev1 diagnostic).
+    "SPECTATOR fields",
+    "SPECTATOR multiplier=",
     "SPRITE PICKING",
     // The stats panel's raw numbers every 10 s (an investigation, backlog item 5).
     "STATS own raw",
@@ -159,6 +169,23 @@ mod tests {
     #[test]
     fn lines_are_classified_by_their_tag_and_failures_always_pass() {
         assert_eq!(level_of("NATIVE RELEASE reason=F12"), Level::Safety);
+        // AI control and the speed buttons (1.5.1-dev2): entry and the
+        // retake gap at every level, the field and window lines at Verbose.
+        for line in [
+            "SESSION AI control; same match/player retained; the game's speed buttons are followed; F11 reclaims control at 1x",
+            "SESSION spectator start; no preparation hold; the game's speed buttons are followed; F11 takes control at 1x",
+            "SPECTATOR take_control multiplier=3 lead 3 -> 1 queue=1",
+            "SPECTATOR drained lead 3 -> 1 queue=1 after 1 frames",
+        ] {
+            assert_eq!(level_of(line), Level::Safety, "{line}");
+        }
+        for line in [
+            "SPECTATOR fields sync=0 mode=0 speed=3 paused=0 multiplier=3 lead=3",
+            "SPECTATOR multiplier=3.00 ticks_per_frame=3.00 queue=2.00 worker_wait_pct=92 frames=600 window_s=10.0 lead=3 frame_lead=1",
+        ] {
+            assert_eq!(level_of(line), Level::Verbose, "{line}");
+        }
+        assert_eq!(level_of("SESSION Pause"), Level::Normal);
         assert_eq!(level_of("SHOP MODE first decision"), Level::Safety);
         assert_eq!(level_of("MANUAL CLICK player=2"), Level::Verbose);
         assert_eq!(level_of("MOVEMENT STEERING actor=20"), Level::Verbose);

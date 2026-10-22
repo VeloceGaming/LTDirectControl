@@ -14,7 +14,8 @@ use crate::skill_preview::{Footprint, Geometry, Placement, Shape};
 use crate::Logger;
 use serde_json::{json, Value};
 use std::cell::RefCell;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::path::Path;
 use std::sync::{Mutex, OnceLock};
 
 #[derive(Default)]
@@ -41,6 +42,11 @@ struct Table {
     /// `tools/build_preview_table.py` learn from these pairs which number
     /// each size is.
     numbers: BTreeMap<String, [Option<Value>; 3]>,
+    /// What this session recorded: only these replace what the file
+    /// already holds (1.5.1-dev3: `write` merges, so a champion that is not
+    /// loaded this session keeps its recording).
+    champions_now: BTreeSet<String>,
+    numbers_now: BTreeSet<(String, usize)>,
 }
 static TABLE: Mutex<Option<Table>> = Mutex::new(None);
 static GAME: OnceLock<String> = OnceLock::new();
@@ -153,47 +159,72 @@ pub fn record(name: String, skills: [Geometry; 3], casts: [Cast; 3], log: &Logge
         }
         entry
     });
+    table.champions_now.insert(name.clone());
     table.champions.insert(name, slots);
     write(table, log);
 }
 /// The table so far: what earlier sessions recorded on the same game
-/// version, so it grows across sessions; a different game version starts
-/// over.
+/// version counts as recorded, so it grows across sessions; a champion
+/// recorded on another game version is recorded again, and replaced in the
+/// file when it is. Nothing is dropped from the file here: `write` merges.
 fn load(log: &Logger) -> Table {
     let game = GAME.get().cloned().unwrap_or_default();
     let file = log
         .directory()
         .map(|root| root.join("research").join("skill-shapes.json"))
         .and_then(|path| std::fs::read(path).ok())
-        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok())
-        .filter(|v| v.get("game").and_then(Value::as_str) == Some(game.as_str()));
+        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok());
     Table {
-        champions: earlier(file.as_ref()),
-        numbers: earlier_numbers(file.as_ref()),
+        champions: earlier(file.as_ref(), &game),
+        numbers: earlier_numbers(file.as_ref(), &game),
         game,
+        champions_now: BTreeSet::new(),
+        numbers_now: BTreeSet::new(),
     }
 }
-fn earlier(file: Option<&Value>) -> BTreeMap<String, [Value; 3]> {
-    file.and_then(|v| v.get("champions")?.as_object().cloned())
+/// The game version an entry was recorded on: its own `game` (written
+/// since 1.5.1-dev3), else the file's.
+fn recorded_on<'a>(entry: &'a Value, file: &'a Value) -> Option<&'a str> {
+    entry
+        .get("game")
+        .or_else(|| file.get("game"))
+        .and_then(Value::as_str)
+}
+fn earlier(file: Option<&Value>, game: &str) -> BTreeMap<String, [Value; 3]> {
+    let Some(file) = file else {
+        return BTreeMap::new();
+    };
+    file.get("champions")
+        .and_then(Value::as_object)
         .map(|champions| {
             champions
-                .into_iter()
+                .iter()
+                .filter(|(_, slots)| recorded_on(slots, file) == Some(game))
                 .filter_map(|(name, slots)| {
                     // Entries from 1.5.0-dev8 lack `cast`: record them again.
                     let slot = |s: &str| slots.get(s).filter(|v| v.get("cast").is_some()).cloned();
-                    Some((name, [slot("Q")?, slot("W")?, slot("R")?]))
+                    Some((name.clone(), [slot("Q")?, slot("W")?, slot("R")?]))
                 })
                 .collect()
         })
         .unwrap_or_default()
 }
-fn earlier_numbers(file: Option<&Value>) -> BTreeMap<String, [Option<Value>; 3]> {
-    file.and_then(|v| v.get("numbers")?.as_object())
+fn earlier_numbers(file: Option<&Value>, game: &str) -> BTreeMap<String, [Option<Value>; 3]> {
+    let Some(file) = file else {
+        return BTreeMap::new();
+    };
+    file.get("numbers")
+        .and_then(Value::as_object)
         .map(|numbers| {
             numbers
                 .iter()
                 .map(|(name, slots)| {
-                    let slot = |s: &str| slots.get(s).filter(|v| v.is_object()).cloned();
+                    let slot = |s: &str| {
+                        slots
+                            .get(s)
+                            .filter(|v| v.is_object() && recorded_on(v, file) == Some(game))
+                            .cloned()
+                    };
                     (name.clone(), [slot("Q"), slot("W"), slot("R")])
                 })
                 .collect()
@@ -239,6 +270,7 @@ pub fn record_numbers(
         .filter_map(|(field, v)| Some((field.clone(), json!((*v)?))))
         .collect();
     slots[slot] = Some(numbers_entry(kind, answered, cast_range, live));
+    table.numbers_now.insert((name.to_owned(), slot));
     log.write(&format!(
         "SHAPE NUMBERS champion={name} slot={} type={kind} live={}",
         ["Q", "W", "R"][slot],
@@ -265,34 +297,120 @@ fn write(table: &Table, log: &Logger) {
     if std::fs::create_dir_all(&folder).is_err() {
         return;
     }
-    let champions: serde_json::Map<String, Value> = table
-        .champions
-        .iter()
-        .map(|(name, [q, w, r])| (name.clone(), json!({"Q": q, "W": w, "R": r})))
-        .collect();
-    let numbers: serde_json::Map<String, Value> = table
-        .numbers
-        .iter()
-        .map(|(name, slots)| {
-            let mut entry = serde_json::Map::new();
-            for (slot, value) in ["Q", "W", "R"].iter().zip(slots) {
-                if let Some(value) = value {
-                    entry.insert(slot.to_string(), value.clone());
-                }
+    for line in write_merged(&folder.join("skill-shapes.json"), table) {
+        log.write(&line);
+    }
+}
+/// Rewrites `path` with what it already holds plus what this session
+/// recorded (1.5.1-dev3; the author, 2026-10-22: a champion pack is enabled
+/// only to record it, then disabled, and must keep its recordings). Every
+/// champion, and every skill's numbers, that this session did not record
+/// is kept as it is, stamped with the game version it was recorded on; the
+/// ones it did record replace them, and what it knows that the file lacks
+/// is added. The text goes to a temporary file that
+/// is then renamed over the old one, so a crash cannot leave it empty. An
+/// old file that cannot be parsed is renamed aside (`.bad`) first, which
+/// also keeps this from being logged again; one that cannot be read at all
+/// (locked, say) is left alone and nothing is written. Returns log lines.
+fn write_merged(path: &Path, table: &Table) -> Vec<String> {
+    let mut lines = Vec::new();
+    let old = match std::fs::read(path) {
+        Ok(bytes) => match serde_json::from_slice::<Value>(&bytes) {
+            Ok(value) if value.is_object() => value,
+            _ => {
+                let aside = path.with_extension("json.bad");
+                let moved = match std::fs::rename(path, &aside) {
+                    Ok(()) => format!("renamed to {}", aside.display()),
+                    Err(error) => format!("could not be renamed aside ({error})"),
+                };
+                lines.push(format!(
+                    "SHAPE RECORD unreadable {} {moved}; written with this session's recordings only",
+                    path.display()
+                ));
+                json!({})
             }
-            (name.clone(), Value::Object(entry))
+        },
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => json!({}),
+        Err(error) => {
+            lines.push(format!(
+                "SHAPE RECORD could not read {} ({error}); left as it is, not written",
+                path.display()
+            ));
+            return lines;
+        }
+    };
+    let old_game = old.get("game").cloned().unwrap_or(Value::Null);
+    let stamp = |entry: &Value| {
+        let mut entry = entry.clone();
+        if entry.is_object() && entry.get("game").is_none() {
+            entry["game"] = old_game.clone();
+        }
+        entry
+    };
+    let mut champions: serde_json::Map<String, Value> = old
+        .get("champions")
+        .and_then(Value::as_object)
+        .map(|c| c.iter().map(|(name, v)| (name.clone(), stamp(v))).collect())
+        .unwrap_or_default();
+    // Recorded now: replaced. Known from earlier on this version but gone
+    // from the file (deleted while the game ran): written back.
+    for (name, [q, w, r]) in &table.champions {
+        if table.champions_now.contains(name) || !champions.contains_key(name) {
+            champions.insert(
+                name.clone(),
+                json!({"game": table.game, "Q": q, "W": w, "R": r}),
+            );
+        }
+    }
+    let mut numbers: serde_json::Map<String, Value> = old
+        .get("numbers")
+        .and_then(Value::as_object)
+        .map(|n| {
+            n.iter()
+                .map(|(name, slots)| {
+                    let slots = match slots.as_object() {
+                        Some(slots) => Value::Object(
+                            slots.iter().map(|(k, v)| (k.clone(), stamp(v))).collect(),
+                        ),
+                        None => json!({}),
+                    };
+                    (name.clone(), slots)
+                })
+                .collect()
         })
-        .collect();
+        .unwrap_or_default();
+    for (name, values) in &table.numbers {
+        for (slot, value) in values.iter().enumerate() {
+            let Some(value) = value else { continue };
+            let key = ["Q", "W", "R"][slot];
+            let entry = numbers.entry(name.clone()).or_insert_with(|| json!({}));
+            let now = table.numbers_now.contains(&(name.clone(), slot));
+            if now || entry.get(key).is_none() {
+                let mut value = value.clone();
+                value["game"] = json!(table.game);
+                entry[key] = value;
+            }
+        }
+    }
     let report = json!({
-        "about": "Skill shapes as the live reader decoded them (source live) and, under `file`, as the champion file declares them. Sizes in world units. `cast` is how the game casts the skill (casting 0 unit, 1 point, 2 direction, 3 none; target: mod-api-stable CastingTargetV1; range at level 1 and growth per level); at play these stay live. `numbers`: each skill's patch name (`kind`) and the numbers it answered by name (`values`, as the game keeps them: distances in thousandths), with the live cast range (`cast_range`) and the shapes the live reader read at the same moment (`live`), for learning which number each size is.",
+        "about": "Skill shapes as the live reader decoded them (source live) and, under `file`, as the champion file declares them. Sizes in world units. `cast` is how the game casts the skill (casting 0 unit, 1 point, 2 direction, 3 none; target: mod-api-stable CastingTargetV1; range at level 1 and growth per level); at play these stay live. `numbers`: each skill's patch name (`kind`) and the numbers it answered by name (`values`, as the game keeps them: distances in thousandths), with the live cast range (`cast_range`) and the shapes the live reader read at the same moment (`live`), for learning which number each size is. `game` on a champion and on a skill's numbers: the game version it was recorded on. The file keeps every champion ever recorded (1.5.1-dev3); the top-level `game` is the version of the last session that wrote it.",
         "game": table.game,
         "mod": env!("CARGO_PKG_VERSION"),
         "champions": champions,
         "numbers": numbers,
     });
-    if let Ok(text) = serde_json::to_string_pretty(&report) {
-        let _ = std::fs::write(folder.join("skill-shapes.json"), text);
+    let Ok(text) = serde_json::to_string_pretty(&report) else {
+        return lines;
+    };
+    let temp = path.with_extension("json.tmp");
+    if let Err(error) = std::fs::write(&temp, text).and_then(|()| std::fs::rename(&temp, path)) {
+        let _ = std::fs::remove_file(&temp);
+        lines.push(format!(
+            "SHAPE RECORD could not write {} ({error})",
+            path.display()
+        ));
     }
+    lines
 }
 /// One skill: its shapes, or why it could not be read.
 pub fn skill(g: &Geometry) -> Value {
@@ -404,9 +522,128 @@ mod tests {
             numbers_entry("x", values, 0, &Geometry::default()),
             json!({"kind": "x", "values": {"attack_range": 62000}, "cast_range": 0.0})
         );
-        let file = json!({"numbers": {"hammerer": {"W": {"kind": "hammerer_skill2"}}}});
-        let loaded = earlier_numbers(Some(&file));
+        let file = json!({"game": "0.6.4", "numbers": {"hammerer": {
+            "W": {"kind": "hammerer_skill2"}, "R": {"kind": "x", "game": "0.6.5"}}}});
+        let loaded = earlier_numbers(Some(&file), "0.6.4");
         assert!(loaded["hammerer"][0].is_none() && loaded["hammerer"][1].is_some());
+        // Recorded on another game version: asked again on this one.
+        assert!(loaded["hammerer"][2].is_none());
+    }
+    fn fake_folder(name: &str) -> std::path::PathBuf {
+        let folder =
+            std::env::temp_dir().join(format!("lt-shape-record-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&folder);
+        std::fs::create_dir_all(&folder).unwrap();
+        folder
+    }
+    fn slots(tag: &str) -> [Value; 3] {
+        [0, 1, 2].map(|i| {
+            json!({"source": "live", "shapes": [], "tag": tag, "slot": i,
+            "cast": {"casting": 1}})
+        })
+    }
+    fn session(game: &str) -> Table {
+        Table {
+            game: game.to_owned(),
+            champions: BTreeMap::new(),
+            numbers: BTreeMap::new(),
+            champions_now: BTreeSet::new(),
+            numbers_now: BTreeSet::new(),
+        }
+    }
+    fn read(path: &Path) -> Value {
+        serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap()
+    }
+    #[test]
+    fn a_write_keeps_every_champion_this_session_did_not_record() {
+        let folder = fake_folder("keep");
+        let path = folder.join("skill-shapes.json");
+        // A file from before 1.5.1-dev3: no per-champion game.
+        let old = json!({"game": "0.6.4", "champions": {
+                "bombardier": {"Q": {"tag": "old"}, "W": {}, "R": {}},
+                "archer": {"Q": {"tag": "old"}, "W": {}, "R": {}}},
+            "numbers": {"bombardier": {"Q": {"kind": "b1"}},
+                "archer": {"Q": {"kind": "old_q"}, "W": {"kind": "old_w"}}}});
+        std::fs::write(&path, old.to_string()).unwrap();
+        let mut table = session("0.6.5");
+        table.champions.insert("archer".into(), slots("new"));
+        table.champions_now.insert("archer".into());
+        table.numbers.entry("archer".into()).or_default()[0] = Some(json!({"kind": "new_q"}));
+        table.numbers_now.insert(("archer".into(), 0));
+        assert!(write_merged(&path, &table).is_empty());
+        let file = read(&path);
+        assert_eq!(file["game"], json!("0.6.5"));
+        // Not loaded this session: kept, with the version it was recorded on.
+        assert_eq!(file["champions"]["bombardier"]["Q"]["tag"], json!("old"));
+        assert_eq!(file["champions"]["bombardier"]["game"], json!("0.6.4"));
+        assert_eq!(file["numbers"]["bombardier"]["Q"]["kind"], json!("b1"));
+        assert_eq!(file["numbers"]["bombardier"]["Q"]["game"], json!("0.6.4"));
+        // Re-recorded: replaced, on this game version.
+        assert_eq!(file["champions"]["archer"]["Q"]["tag"], json!("new"));
+        assert_eq!(file["champions"]["archer"]["game"], json!("0.6.5"));
+        // Numbers merge per skill: Q replaced, W kept.
+        assert_eq!(file["numbers"]["archer"]["Q"]["kind"], json!("new_q"));
+        assert_eq!(file["numbers"]["archer"]["Q"]["game"], json!("0.6.5"));
+        assert_eq!(file["numbers"]["archer"]["W"]["kind"], json!("old_w"));
+        assert!(!path.with_extension("json.tmp").exists());
+        // Read back by the next session on 0.6.5: only archer counts as
+        // recorded there; bombardier waits for a 0.6.5 match.
+        let loaded = earlier(Some(&file), "0.6.5");
+        assert_eq!(loaded.keys().collect::<Vec<_>>(), ["archer"]);
+        let _ = std::fs::remove_dir_all(&folder);
+    }
+    #[test]
+    fn a_corrupt_file_is_set_aside_and_does_not_stop_the_write() {
+        let folder = fake_folder("corrupt");
+        let path = folder.join("skill-shapes.json");
+        std::fs::write(&path, b"{\"champions\": {\"arch").unwrap();
+        let mut table = session("0.6.5");
+        table.champions.insert("archer".into(), slots("new"));
+        table.champions_now.insert("archer".into());
+        let lines = write_merged(&path, &table);
+        assert_eq!(lines.len(), 1);
+        assert!(lines[0].contains("renamed to"), "{}", lines[0]);
+        assert_eq!(
+            std::fs::read(path.with_extension("json.bad")).unwrap(),
+            b"{\"champions\": {\"arch"
+        );
+        assert_eq!(read(&path)["champions"]["archer"]["Q"]["tag"], json!("new"));
+        // The next write finds a good file: nothing more to log.
+        assert!(write_merged(&path, &table).is_empty());
+        let _ = std::fs::remove_dir_all(&folder);
+    }
+    #[test]
+    fn a_missing_file_is_written_from_everything_this_session_knows() {
+        let folder = fake_folder("missing");
+        let path = folder.join("skill-shapes.json");
+        let mut table = session("0.6.4");
+        table.champions.insert("archer".into(), slots("new"));
+        table.champions_now.insert("archer".into());
+        // Loaded from the file at start, which was deleted since: written
+        // back from memory.
+        table.champions.insert("knight".into(), slots("memory"));
+        assert!(write_merged(&path, &table).is_empty());
+        let file = read(&path);
+        assert_eq!(
+            file["champions"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .collect::<Vec<_>>(),
+            ["archer", "knight"]
+        );
+        // Loaded and still in the file: the file's copy stays.
+        std::fs::write(
+            &path,
+            json!({"game": "0.6.4", "champions": {"knight": {"Q": {"tag": "file"}}}}).to_string(),
+        )
+        .unwrap();
+        write_merged(&path, &table);
+        assert_eq!(
+            read(&path)["champions"]["knight"]["Q"]["tag"],
+            json!("file")
+        );
+        let _ = std::fs::remove_dir_all(&folder);
     }
     #[test]
     fn skills_are_written_as_shapes_no_area_or_unread() {

@@ -1,5 +1,5 @@
 {
- "about": "Skill preview shapes the mod ships, written by tools/build_preview_table.py from the shapes and numbers recorded in play, the author's assignments and picks. Sizes: {\"name\"} is the game's number by name (distances divided by 1000, times \"times\"), {\"cast_range\"} the live cast range, {\"fixed\"} a number in world units; \"recorded\" is the value when it was recorded. Do not edit by hand: change the assignments or picks in tools/preview_viewer.py and run the tool again.",
+ "about": "Skill preview shapes the mod ships, written by tools/build_preview_table.py from the shapes and numbers recorded in play, the author's assignments and picks. Sizes: {\"name\"} is the game's number by name (distances divided by 1000, times \"times\"), {\"cast_range\"} the live cast range, {\"fixed\"} a number in world units; \"recorded\" is the value when it was recorded. Champions no recording covers keep their entry from the table before. Do not edit by hand: change the assignments or picks in tools/preview_viewer.py and run the tool again.",
  "game": "0.6.4",
  "champions": {
   "abbie": {
@@ -143,6 +143,17 @@
      }
     ],
     "kind": "archer_skill"
+   },
+   "W": {
+    "from": "assigned",
+    "assigned": {
+     "type": "jump_back",
+     "distance": {
+      "cast_range": true,
+      "recorded": 30
+     }
+    },
+    "kind": "archer_skill2"
    }
   },
   "astrologer": {

@@ -1065,7 +1065,9 @@ fn scoped_config_restores_every_overridden_bit() {
     config[0x10..0x14].copy_from_slice(&1u32.to_le_bytes());
     config[0x14..0x18].copy_from_slice(&3.0f32.to_bits().to_le_bytes());
     let before = config;
-    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, true) };
+    use crate::native_timing::{playback_plan, Phase};
+    let control = playback_plan(Some(Phase::Running));
+    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, control) };
     assert_eq!(config[0], 0);
     assert_eq!(config[0x48], 0);
     assert_eq!(
@@ -1074,10 +1076,49 @@ fn scoped_config_restores_every_overridden_bit() {
     );
     drop(snapshot);
     assert_eq!(config, before);
-    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, false) };
+    let ai = playback_plan(Some(Phase::Ai));
+    let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, ai) };
     assert_eq!(config[0x48], 1); // Spectator pause survives AI handoff.
+    assert_eq!((config[0], config[0x10]), (0, 0)); // Sync and mode still forced.
+    assert_eq!(snapshot.speed, 3.0f32.to_bits());
+    // The game's speed field is left alone in AI control (1.5.1-dev1).
+    assert_eq!(
+        u32::from_le_bytes(config[0x14..0x18].try_into().unwrap()),
+        3.0f32.to_bits()
+    );
     drop(snapshot);
     assert_eq!(config, before);
+}
+#[test]
+fn only_overwritten_playback_fields_are_put_back() {
+    use crate::native_timing::{playback_plan, Phase};
+    let mut config = [0u8; 0x60];
+    config[0] = 1;
+    config[0x10..0x14].copy_from_slice(&2u32.to_le_bytes());
+    config[0x14..0x18].copy_from_slice(&1.0f32.to_bits().to_le_bytes());
+    let speed =
+        |c: &[u8; 0x60]| f32::from_bits(u32::from_le_bytes(c[0x14..0x18].try_into().unwrap()));
+    // AI control: a speed the game writes during the viewer update stays.
+    let snapshot = unsafe {
+        PlaybackOverride::apply(config.as_mut_ptr() as usize, playback_plan(Some(Phase::Ai)))
+    };
+    config[0x14..0x18].copy_from_slice(&2.0f32.to_bits().to_le_bytes());
+    config[0x48] = 1;
+    drop(snapshot);
+    assert_eq!(speed(&config), 2.0);
+    assert_eq!(config[0x48], 1);
+    assert_eq!((config[0], config[0x10]), (1, 2)); // Forced fields restored.
+                                                   // Control: a speed written during the viewer update is undone.
+    let snapshot = unsafe {
+        PlaybackOverride::apply(
+            config.as_mut_ptr() as usize,
+            playback_plan(Some(Phase::Running)),
+        )
+    };
+    assert_eq!(speed(&config), 1.0);
+    config[0x14..0x18].copy_from_slice(&3.0f32.to_bits().to_le_bytes());
+    drop(snapshot);
+    assert_eq!(speed(&config), 2.0);
 }
 #[test]
 fn stack_capture_is_available_and_logs_module_relative_frames() {

@@ -284,7 +284,12 @@ The shipped table is learned from play, then reviewed in a viewer:
    same folder.
 3. Run `python tools/build_preview_table.py`: it writes
    `probe/src/preview_table.json` and lists what still needs a pick or has
-   no numbers yet. Build the public mod as usual.
+   no numbers yet. Build the public mod as usual. The viewer's Save runs it
+   for you and shows its one-line result, and `tools/verify_build.py` fails
+   while the table is stale. It never drops a champion: one no recording
+   covers keeps its shipped entry (only `--drop <champion>` removes one),
+   and a pack's champion with a data file needs only the pack enabled to
+   edit, no match.
 
 A Workshop champion that is not in the table is drawn from its champion
 file, with the file's numbers (they do not follow patches).

@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Athlete Cursor Set</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,7 +105,7 @@ button:focus-visible{outline:2px solid var(--t1);outline-offset:2px}
     <div>
       <div class="tele">// Mod cursor set · 32 × 32 at 1080p · 64 × 64 at 4K</div>
       <h1>ATHLETE CURSOR SET</h1>
-      <p class="intro">Six cursors built from three ideas. The light arrow is for moving and clicking. Over an enemy the arrow becomes a sword, and orange always means an attack will happen. The yellow badge means champion-only targeting is on and minions and monsters are ignored. Every cursor has a 1.5 px warm-black outline so it holds up on both the pale stone paths and the dark jungle.</p>
+      <p class="intro">Six cursors built from three ideas. The light arrow is for moving and clicking. Over an enemy the arrow becomes an orange strike dart, and orange always means an attack will happen. The yellow badge means champion-only targeting is on and minions and monsters are ignored. Every cursor has a 1.5 px warm-black outline so it holds up on both the pale stone paths and the dark jungle.</p>
     </div>
   </header>
 
@@ -157,15 +157,17 @@ function brackets(o,i,col){ /* o = outer edge offset, i = arm length */
   const d=`M${a} ${a+s}V${a}H${a+s}M${b-s} ${a}H${b}V${a+s}M${b} ${b-s}V${b}H${b-s}M${a+s} ${b}H${a}V${b-s}`;
   return `<path d="${d}" fill="none" stroke="${C.ink}" stroke-width="4.5" stroke-linecap="square"/><path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="square"/>`;
 }
-function sword(){ /* blade tip = hotspot (2,2); scaled so the champion badge fits the same corner */
-  const g=`<path d="M2 2L7.8 4.2L19.8 16.2L16.2 19.8L4.2 7.8Z" fill="${C.warn}"/>`+
-    `<path d="M4.6 4.6L17.4 17.4" stroke="${C.light}" stroke-width="1.3"/>`+
-    `<path d="M19.4 21.6L21.6 19.4L26.6 24.4L24.4 26.6Z" fill="${C.ink}"/>`+
-    `<path d="M22.1 13.7L24.3 15.9L15.9 24.3L13.7 22.1Z" fill="${C.light}"/>`+
-    `<path d="M27.5 25L30 27.5L27.5 30L25 27.5Z" fill="${C.warn}"/>`;
-  const outline=`<g fill="none" stroke="${C.ink}" stroke-width="1.5" stroke-linejoin="miter"><path d="M2 2L7.8 4.2L19.8 16.2L16.2 19.8L4.2 7.8Z"/><path d="M19.4 21.6L21.6 19.4L26.6 24.4L24.4 26.6Z"/><path d="M22.1 13.7L24.3 15.9L15.9 24.3L13.7 22.1Z"/><path d="M27.5 25L30 27.5L27.5 30L25 27.5Z"/></g>`;
-  const t='translate(2 2) scale(.84) translate(-2 -2)';
-  return `<g transform="translate(1 1.5)" opacity=".45"><g transform="${t}"><path d="M2 2L7.8 4.2L19.8 16.2L16.2 19.8L4.2 7.8ZM22.1 13.7L24.3 15.9L15.9 24.3L13.7 22.1ZM19.4 21.6L21.6 19.4L26.6 24.4L24.4 26.6ZM27.5 25L30 27.5L27.5 30L25 27.5Z" fill="${C.ink}"/></g></g><g transform="${t}">${outline}${g}</g>`;
+function strike(bars){ /* the attack dart: slender swallow-tailed arrowhead, tip = hotspot (2,2) */
+  const DART='M2 2L8.08 2L16.35 10.27L10.27 10.27L10.27 16.35L2 8.08Z'; /* narrowed ~20%, corners still square */ /* square front corner; tail notch squared to match */ /* front edges parallel to the swallow tail; tail tips line up with the bars */
+  const bar=(a)=>{const c=2+a/Math.SQRT2;return `M${(c-2.43).toFixed(2)} ${(c+2.43).toFixed(2)}L${(c+2.43).toFixed(2)} ${(c-2.43).toFixed(2)}`;};
+  const B=[bar(18.5),bar(23)].slice(0,bars).join('');
+  const S='translate(2 2) scale(1.2) translate(-2 -2)'; /* 20% larger, grown from the tip so the hotspot stays put */
+  return `<g transform="translate(1 1.5)" opacity=".45"><g transform="${S}"><path d="${DART}" fill="${C.ink}"/>`+
+    `<path d="${B}" stroke="${C.ink}" stroke-width="3"/></g></g>`+
+    `<g transform="${S}"><path d="${DART}" fill="${C.warn}" stroke="${C.ink}" stroke-width="1.25" stroke-linejoin="miter"/>`+
+    `<path d="M2 2L7.66 7.66" stroke="${C.ink}" stroke-width="1.4"/>`+
+    `<path d="M10.27 10.27L12.67 12.67" stroke="${C.ink}" stroke-width="1.2"/>`+
+    `<path d="${B}" stroke="${C.ink}" stroke-width="3.9" stroke-linecap="square"/><path d="${B}" stroke="${C.warn}" stroke-width="1.8" stroke-linecap="square"/></g>`;
 }
 function reticle(locked){
   if(!locked) return brackets(5,6,C.warn)+`<rect x="14.5" y="14.5" width="3" height="3" fill="${C.warn}" stroke="${C.ink}" stroke-width="1.2"/>`;
@@ -177,11 +179,11 @@ function badge(){
 }
 const CUR={
   normal:{name:'Normal',hot:[3,2],when:'Default. Moving, clicking the HUD, hovering ground or allies.',svg:()=>arrow(C.light,C.yellow)},
-  hostile:{name:'Normal · over enemy',hot:[2,2],when:'Hovering anything a left-click would attack. The arrow becomes an orange sword: new silhouette, new colour, same tip position, so the click point never moves.',svg:()=>sword()},
+  hostile:{name:'Normal · over enemy',hot:[2,2],when:'Hovering anything a left-click would attack. The arrow turns into a slim orange strike dart with a swallow tail and two hazard bars behind it: a sharper, narrower silhouette that reads as “attack” even out of the corner of your eye. The tip stays on the click point.',svg:()=>strike(2)},
   amove:{name:'Attack-move',hot:[16,16],when:'A is held. Click ground and you walk there, attacking the nearest enemy on the way.',svg:()=>reticle(false)},
   alock:{name:'Attack-move · on target',hot:[16,16],when:'A is held over a valid target. The brackets close in and the centre fills, so you know the click will hit that unit.',svg:()=>reticle(true)},
   champ:{name:'Champion only',hot:[3,2],when:'Champion-only is on. The badge stays in the corner the whole time, so you always know minions are being ignored.',svg:()=>arrow(C.light,C.yellow)+badge()},
-  champHostile:{name:'Champion only · over champion',hot:[2,2],when:'Champion-only is on and you are over an enemy champion: the sword, with the badge in the same corner. Minions and monsters keep the plain badged arrow.',svg:()=>sword()+badge()}
+  champHostile:{name:'Champion only · over champion',hot:[2,2],when:'Champion-only is on and you are over an enemy champion: the strike dart with one hazard bar, so the badge keeps its usual corner. Minions and monsters keep the plain badged arrow.',svg:()=>strike(1)+badge()}
 };
 const svg=(k,w)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${w}" viewBox="0 0 32 32">${CUR[k].svg()}</svg>`;
 const combo=(k,w)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${w}" viewBox="0 0 32 32">${k}</svg>`;
