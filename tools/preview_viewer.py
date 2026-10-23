@@ -55,6 +55,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGE = Path(__file__).resolve().parent / 'preview_viewer.html'
 MOD_FOLDER = Path(os.environ.get('LOCALAPPDATA', '')) / 'LTDirectControl'
 TABLE = MOD_FOLDER / 'research' / 'skill-shapes.json'
+# What the mod's champion-file reader found at the last game start (1.5.2).
+FILE_SHAPES = MOD_FOLDER / 'file-shapes.json'
 OVERRIDES = MOD_FOLDER / 'skill-overrides.json'
 # Skills the author has compared with the game ("Checked by me").
 CHECKED = MOD_FOLDER / 'skill-checked.json'
@@ -81,7 +83,7 @@ PIECE_SIZES = {
     'dash': [], 'blink': [], 'backstep': ['length'], 'reach': ['extra'],
 }
 PIECE_OPTIONAL = {'strip': ['length'], 'spread': ['length']}
-PIECE_FLAGS = ['allies', 'projectile', 'pierce']
+PIECE_FLAGS = ['allies', 'projectile', 'pierce', 'rounded']
 PLACES = ('forward', 'end', 'landing')
 MAX_PIECES = 8
 
@@ -353,8 +355,39 @@ def read_picks():
     return picks.get('picks') if isinstance(picks, dict) and isinstance(picks.get('picks'), dict) else {}
 
 
-def data():
-    """Everything the page shows, read fresh."""
+def with_file_shapes(table):
+    """Skills no match has recorded, with what the mod's champion-file
+    reader found at the last game start (`file-shapes.json`, written by the
+    mod since 1.5.2): what the game draws for them when no shipped preview
+    covers them (the author's choice A, 2026-10-22: Jhin Q's bounce circle).
+    A recording keeps its own `file` entry: the shipped table is built from
+    it, so the viewer shows what the game draws."""
+    read = (read_json(FILE_SHAPES) or {}).get('champions') or {}
+    for name, slots in (table.get('champions') or {}).items():
+        found = read.get(name)
+        if not isinstance(found, dict) or not isinstance(slots, dict):
+            continue
+        for slot, entry in slots.items():
+            skill = found.get(slot)
+            if not isinstance(entry, dict) or not isinstance(skill, dict) or 'file' in entry:
+                continue
+            if skill.get('shapes'):
+                entry['file'] = {'shapes': preview_sources.rounded_projectiles(skill['shapes']),
+                                 'source': 'file'}
+            elif skill.get('no_area'):
+                entry['file'] = {'shapes': [], 'no_area': True, 'source': 'file'}
+    return table
+
+
+# The champions the player's game can field, from the last full read, for
+# the sources of assignments not saved yet.
+PLAYABLE = set()
+
+
+def viewer_table():
+    """The recordings as the page shows them: older shapes with the readers'
+    current rules, cards for unrecorded champions, and the file reader's
+    shapes for skills no match has recorded."""
     table = read_json(TABLE) or {}
     # Shapes recorded before 1.5.0-dev19, drawn with the readers' landing
     # rule (tools/preview_sources.py `landed`), and line hits recorded before
@@ -363,14 +396,22 @@ def data():
         for entry in slots.values():
             if isinstance(entry, dict):
                 if entry.get('shapes'):
-                    entry['shapes'] = preview_sources.landed(
-                        preview_sources.widened(entry['shapes'], champion))
+                    entry['shapes'] = preview_sources.landed(preview_sources.rounded_projectiles(
+                        preview_sources.widened(entry['shapes'], champion)))
                 if isinstance(entry.get('file'), dict) and entry['file'].get('shapes'):
-                    entry['file']['shapes'] = preview_sources.landed(entry['file']['shapes'])
+                    entry['file']['shapes'] = preview_sources.landed(
+                        preview_sources.rounded_projectiles(entry['file']['shapes']))
+    return with_file_shapes(with_file_cards(table, PLAYABLE))
+
+
+def data():
+    """Everything the page shows, read fresh."""
+    numbers, names, source, playable, lang = game_data()
+    PLAYABLE.clear()
+    PLAYABLE.update(playable)
+    table = viewer_table()
     overrides = read_json(OVERRIDES) or {}
     checked = read_json(CHECKED) or {}
-    numbers, names, source, playable, lang = game_data()
-    table = with_file_cards(table, playable)
     champions = table.get('champions') or {}
     missing = sorted(c for c in playable if c not in champions)
     saved = overrides.get('skills') if isinstance(overrides, dict) else {}
@@ -399,7 +440,7 @@ def data():
 
 def sources(body):
     """Sources for assignments and picks not saved yet (nothing is written)."""
-    table = read_json(TABLE) or {}
+    table = viewer_table()
     skills = body.get('skills') if isinstance(body.get('skills'), dict) else {}
     picks = body.get('picks') if isinstance(body.get('picks'), dict) else {}
     return {'ok': True, 'sources': preview_sources.all_skills(table, RULES, skills, picks)}

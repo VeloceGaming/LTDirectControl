@@ -125,11 +125,58 @@ function runtime(source, input = data, standalone = false) {
   equal(app.run("assigned['tester W'].pieces[0]"), {kind: 'shot', radius: {name: 'width', recorded: 60}, length: {cast_range: true, recorded: 90}, at: 'caster'}, 'Recorded values follow the numbers for the mod to fall back on');
   equal(app.run("newPiece('cone').cosine"), {fixed: 0.866}, 'A new cone opens 60 degrees');
   equal(app.run("newPiece('circle',{at:{end:{fixed:40}},allies:true})"), {kind: 'circle', at: {end: {fixed: 40}}, radius: {fixed: 20}, allies: true}, 'A changed block keeps where it starts and its side');
+  equal(app.run("newPiece('shot',{kind:'strip',radius:{name:'w',recorded:11},length:{fixed:0},at:'caster',projectile:true})"), {kind: 'shot', at: 'caster', radius: {name: 'w', recorded: 11}, length: {fixed: 0}, pierce: true, projectile: true}, 'Line to Shot keeps its width and length with their sources, and its flat ends');
+  equal(app.run("[newPiece('strip').rounded,newPiece('shot').rounded,newPiece('shot',{kind:'circle',radius:{fixed:5},at:'aim'}).rounded,newPiece('spread').rounded]"), [true, true, true, true], 'A new line, shot or fan has rounded ends by default');
+  equal(app.run("describe({kind:'spread',count:10,radius:8,length:120,degrees:45,rounded:true},120)"), 'fan: 10 lines, 16 wide, 120 long, 45° spread, rounded tips', 'Rounded fan tips in words');
+  equal(app.run("newPiece('circle',{kind:'strip',radius:{fixed:6},length:{fixed:90},at:'caster'})"), {kind: 'circle', at: 'caster', radius: {fixed: 6}}, 'Only the sizes the new block has are kept');
   app.run('assigned={}');
   equal(app.run("toPieces('tester','W',TABLE.champions.tester.W)"), [{kind: 'strip', radius: {fixed: 5}, length: {fixed: 0}, at: 'caster'}], 'Custom starts as a copy of what the card draws');
   app.run("SOURCES={tester:{W:{sizes:[{key:'0.radius',value:5,source:{name:'width',times:0.5,recorded:5}},{key:'0.length',value:7,source:{name:'other',recorded:7}}]}}}");
   equal(app.run("toPieces('tester','W',TABLE.champions.tester.W)[0]"), {kind: 'strip', radius: {name: 'width', times: 0.5, recorded: 5}, length: {fixed: 0}, at: 'caster'}, 'A copied size keeps its source only where the source gives the same value');
   app.run("SOURCES={};NUMBERS={};USES={};assigned={}");
+  // Two parts of a skill (2026-10-22): the cast, from the game, and what it hits.
+  equal(app.run("castSummary(TABLE.champions.tester.R.cast)"), 'Cast on a unit · on enemies · range 100', 'The cast in words, from the game');
+  equal(app.run("castSummary({casting:2,target:2,range:90,growth:5})"), 'Aimed in a direction · on allies · range 90 (+5 per level)', 'An ally skill aimed in a direction');
+  equal(app.run("castSummary({casting:3,target:13,range:0})"), 'No aim', 'A skill without aiming');
+  // Old preview types become the pieces that draw the same.
+  const legacy = (slot, a) => app.run(`legacyPieces('tester','${slot}',TABLE.champions.tester.${slot},${JSON.stringify(a)})`);
+  equal(legacy('Q', {type: 'line', width: 10}), [{kind: 'strip', radius: {fixed: 5}, length: {fixed: 0}, at: 'caster'}], 'A line: half its width each side, the cast range long');
+  equal(legacy('Q', {type: 'aim_circle', radius: 12, allies: true}), [{kind: 'circle', radius: {fixed: 12}, at: 'aim', allies: true}], 'A circle at the aim for allies');
+  equal(legacy('Q', {type: 'dash', distance: 30}), [{kind: 'dash', at: {end: {fixed: 30}}}], 'A dash of a fixed length on a point cast');
+  equal(legacy('R', {type: 'dash'}), [], 'A dash on a unit cast stays hidden, as before');
+  equal(legacy('Q', {type: 'jump_back', distance: 30, add: true}), [{kind: 'circle', radius: {fixed: 20}, at: 'aim'}, {kind: 'backstep', length: {fixed: 30}, at: 'caster'}], 'Added to what the game reads: both');
+  equal(legacy('Q', {type: 'no_preview'}), null, 'No preview stays as it is');
+  app.run("SOURCES={tester:{W:{sizes:[{key:'assigned.width',value:10,source:{name:'w',times:2,recorded:10}}]}}}");
+  equal(legacy('W', {type: 'line', width: 10}), [{kind: 'strip', radius: {name: 'w', recorded: 5}, length: {fixed: 0}, at: 'caster'}], 'A named width keeps following its number, halved');
+  app.run("SOURCES={};assigned={'tester Q':{type:'self_circle',radius:8},'gone Q':{type:'aim_circle',radius:5},'tester R':{type:'no_preview'}}");
+  equal(app.run('convertLegacy()'), [1, 1], 'Loaded champions convert; others are kept as saved');
+  equal(app.run("assigned['tester Q']"), {type: 'custom', pieces: [{kind: 'circle', radius: {fixed: 8}, at: 'caster'}]}, 'Converted in memory');
+  equal(app.run("[assigned['gone Q'].type,assigned['tester R'].type]"), ['aim_circle', 'no_preview'], 'Kept as saved');
+  // The game's recorded answer is used for a name it holds twice.
+  app.run("NUMBERS={tester:{W:{speed:7,tick:1}}};USES={tester:{W:{speed:[7,4200]}}};TABLE.numbers={tester:{W:{values:{speed:4200}}}}");
+  equal(app.run("rawNumbers('tester','W')"), {speed: 4200, tick: 1}, 'Recorded answers come before the file');
+  equal(app.run("sourceValue({name:'speed',by:'tick',recorded:0},'tester','W',TABLE.champions.tester.W.cast)"), 4.2, 'A repeated name sized by what the game answers');
+  // The ring of a skill aimed in a direction shows how far it reaches.
+  // Rounded ends: one capsule, and the ring reaches past the line's end.
+  app.run("delete TABLE.numbers;NUMBERS={};USES={};assigned={'tester W':{type:'custom',pieces:[{kind:'strip',radius:{fixed:35},length:{fixed:35},rounded:true,at:'caster'}]}}");
+  ops.length = 0;
+  app.run("draw(canvas,TABLE.champions.tester.W,chosen('tester','W',TABLE.champions.tester.W),null,'tester')");
+  equal(ops.filter(op => op[0] === 'arc' && Math.abs(op[3] - 35 * scale) < 1e-6).length, 1, 'A rounded line is an Aurum lane: one filled half circle past its end, none behind');
+  equal(ops.some(op => op[0] === 'set' && op[1] === 'lineWidth' && Math.abs(op[2] - 2.4) < 1e-6), true, 'Its bright core edge');
+  equal(ops.some(op => op[0] === 'arc' && Math.abs(op[3] - 90 * scale) < 1e-6), true, 'Its ring stays at the cast range when 35 + 35 is shorter');
+  equal(app.run("describe({kind:'strip',radius:35,length:35,rounded:true},90)"), 'line 70 wide, 35 long, rounded ends', 'Rounded ends in words');
+  equal(app.run("newPiece('shot',{kind:'strip',radius:{fixed:35},length:{fixed:35},rounded:true,at:'caster'}).rounded"), true, 'Line to Shot keeps rounded ends');
+  equal(app.run("'rounded' in newPiece('circle',{kind:'strip',radius:{fixed:35},length:{fixed:35},rounded:true,at:'caster'})"), false, 'A circle has no rounded ends');
+  app.run("assigned={'tester W':{type:'custom',pieces:[{kind:'strip',radius:{fixed:30},length:{fixed:80},rounded:true,at:'caster'}]}}");
+  ops.length = 0;
+  app.run("draw(canvas,TABLE.champions.tester.W,chosen('tester','W',TABLE.champions.tester.W),null,'tester')");
+  equal(ops.some(op => op[0] === 'arc' && Math.abs(op[3] - 110 * scale) < 1e-6), true, 'A rounded line reaches 80 + 30: the ring follows');
+  app.run("delete TABLE.numbers;NUMBERS={};USES={};assigned={'tester W':{type:'custom',pieces:[{kind:'strip',radius:{fixed:5},length:{fixed:150},at:'caster'}]}}");
+  ops.length = 0;
+  app.run("draw(canvas,TABLE.champions.tester.W,chosen('tester','W',TABLE.champions.tester.W),null,'tester')");
+  equal(ops.some(op => op[0] === 'arc' && Math.abs(op[3] - 150 * scale) < 1e-6), true, 'The ring reaches the 150 line, past the cast range of 90');
+  equal(ops.some(op => op[0] === 'fillText' && String(op[1]).startsWith('reach 150 (cast range 90)')), true, 'The label says reach and cast range');
+  app.run("assigned={}");
   equal(app.run("shapesOf({type:'attack_reach',extra:50})"), [{kind: 'reach', extra: 50, at: 'caster'}], 'Attack-range ring');
   equal(app.run("shapesOf({type:'dash',blink:true,distance:30})"), [{kind: 'blink', at: {end: 30}}], 'Blink');
   equal(app.run("shapesOf({type:'no_preview'})"), [], 'No preview');
@@ -141,7 +188,15 @@ function runtime(source, input = data, standalone = false) {
   app.run("assigned={};checked=new Set(['tester Q'])");
   equal(app.run("matches('tester','Q',{q:'test circle',status:'all',type:'',mod:''})"), true, 'Search finds skill names');
   equal(app.run("matches('tester','W',{q:'',status:'checked',type:'',mod:''})"), false, 'Checked filter');
-  equal(app.run("matches('tester','Q',{q:'',status:'all',type:'line',mod:''})"), false, 'Shape filter');
+  equal(app.run("matches('tester','Q',{q:'',status:'all',hits:'line',mod:''})"), false, 'Hits filter: Q hits a circle, not a line');
+  equal(app.run("matches('tester','Q',{q:'',status:'all',hits:'circle',mod:''})"), true, 'Hits filter: Q hits a circle');
+  equal(app.run("matches('tester','W',{q:'',status:'all',cast:'direction',mod:''})"), true, 'Cast filter: W is aimed in a direction');
+  equal(app.run("matches('tester','W',{q:'',status:'all',cast:'unit',mod:''})"), false, 'Cast filter: W is not cast on a unit');
+  equal(app.run("[castKind(TABLE.champions.tester.R.cast),castKind({casting:9}),hitKinds(chosen('tester','R',TABLE.champions.tester.R),TABLE.champions.tester.R.cast)]"), ['unit', 'passive', ['nothing']], 'Cast kinds; an unreadable unit-cast skill hits the target only');
+  equal(app.run("hitsSummary(chosen('tester','Q',TABLE.champions.tester.Q),TABLE.champions.tester.Q.cast)"), {text: 'circle, radius 20, at the aim', from: 'what the game reads'}, 'What it hits, in words, and where from');
+  equal(app.run("assigned={'tester W':{type:'custom',pieces:[{kind:'strip',radius:{fixed:5},length:{fixed:0},at:'caster'},{kind:'dash',at:'aim'}]}};[hitKinds(chosen('tester','W',TABLE.champions.tester.W),TABLE.champions.tester.W.cast),hitsSummary(chosen('tester','W',TABLE.champions.tester.W),TABLE.champions.tester.W.cast).from]"), [['line', 'dash'], 'your pieces'], 'A skill with two kinds of piece counts under both');
+  equal(app.run("assigned={'tester R':{type:'no_preview'}};hitsSummary(chosen('tester','R',TABLE.champions.tester.R),TABLE.champions.tester.R.cast)"), {text: 'Nothing', from: 'your choice: nothing'}, 'Nothing, by choice');
+  app.run("assigned={}");
   equal(app.run("matches('tester','Q',{q:'',status:'all',type:'',mod:'Another mod'})"), false, 'Source filter');
   app.run("setSpan(1)"); equal(app.run('view.span'), 60, 'Minimum zoom');
   app.run("setSpan(9999)"); equal(app.run('view.span'), 1200, 'Maximum zoom');

@@ -45,10 +45,12 @@ class CustomPreviews(unittest.TestCase):
 
     def test_unknown_keys_and_flags_are_dropped(self):
         entry = {'type': 'custom', 'extra': 1, 'pieces': [
-            {'kind': 'circle', 'radius': {'fixed': 5}, 'at': 'aim', 'allies': True, 'blink': True, 'colour': 'red'}]}
+            {'kind': 'circle', 'radius': {'fixed': 5}, 'at': 'aim', 'allies': True, 'blink': True, 'colour': 'red'},
+            {'kind': 'strip', 'radius': {'fixed': 35}, 'length': {'fixed': 35}, 'at': 'caster', 'rounded': True}]}
         good, _ = viewer.validate({'x Q': entry})
         self.assertEqual(good['x Q'], {'type': 'custom', 'pieces': [
-            {'kind': 'circle', 'radius': {'fixed': 5}, 'at': 'aim', 'allies': True}]})
+            {'kind': 'circle', 'radius': {'fixed': 5}, 'at': 'aim', 'allies': True},
+            {'kind': 'strip', 'radius': {'fixed': 35}, 'length': {'fixed': 35}, 'at': 'caster', 'rounded': True}]})
 
     def test_names_held_twice_in_a_skill_are_noted(self):
         viewer.DUPLICATES.clear()
@@ -59,6 +61,38 @@ class CustomPreviews(unittest.TestCase):
         viewer.note_duplicates('bulldozer', 'Q', {'speed': 1}, replace=False)
         self.assertEqual(viewer.DUPLICATES['bulldozer']['Q'], {'speed': [7, 4200], 'tick': [1, 20]})
         viewer.DUPLICATES.clear()
+
+    def test_unrecorded_skills_take_what_the_mods_file_reader_found(self):
+        import json, tempfile
+        from pathlib import Path
+        from unittest import mock
+        report = {'champions': {
+            'test_mod_jhin': {'Q': {'source': 'file', 'shapes': [{'kind': 'circle', 'radius': 35.0, 'at': 'aim'}]},
+                              'W': {'source': 'file', 'shapes': [], 'no_area': True},
+                              'R': {'source': 'file', 'unread': 'opaque Native'}},
+            'archer': {'Q': {'source': 'file', 'shapes': [{'kind': 'circle', 'radius': 9.0, 'at': 'aim'}]}}}}
+        table = {'champions': {
+            'test_mod_jhin': {'Q': {'cast': {'casting': 0}, 'source': 'files'}, 'W': {'source': 'files'},
+                              'R': {'source': 'files'}},
+            'archer': {'Q': {'shapes': [], 'file': {'shapes': [{'kind': 'circle', 'radius': 7.0, 'at': 'aim'}]}}}}}
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'file-shapes.json'
+            path.write_text(json.dumps(report), encoding='utf-8')
+            with mock.patch.object(viewer, 'FILE_SHAPES', path):
+                out = viewer.with_file_shapes(table)
+        jhin = out['champions']['test_mod_jhin']
+        self.assertEqual(jhin['Q']['file']['shapes'], [{'kind': 'circle', 'radius': 35.0, 'at': 'aim'}])
+        self.assertTrue(jhin['W']['file']['no_area'])
+        self.assertNotIn('file', jhin['R'])  # unreadable: nothing to show
+        # A recording keeps its own: the shipped table is built from it.
+        self.assertEqual(out['champions']['archer']['Q']['file']['shapes'][0]['radius'], 7.0)
+
+    def test_no_report_changes_nothing(self):
+        from pathlib import Path
+        from unittest import mock
+        table = {'champions': {'x': {'Q': {'source': 'files'}}}}
+        with mock.patch.object(viewer, 'FILE_SHAPES', Path('does-not-exist.json')):
+            self.assertEqual(viewer.with_file_shapes(table), {'champions': {'x': {'Q': {'source': 'files'}}}})
 
 
 if __name__ == '__main__':

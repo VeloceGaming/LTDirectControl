@@ -234,6 +234,13 @@ fn footprint(s: &Value, live: &Live) -> Option<(Shape, Placement)> {
         "circle" => Shape::Circle {
             radius: n("radius")?,
         },
+        // A line or shot with rounded ends (the author's pieces, 1.5.2).
+        "strip" | "shot" if s.get("rounded").and_then(Value::as_bool) == Some(true) => {
+            Shape::Capsule {
+                radius: n("radius")?,
+                length: n("length").unwrap_or(0.),
+            }
+        }
         "strip" => Shape::Corridor {
             radius: n("radius")?,
             length: n("length").unwrap_or(0.),
@@ -263,6 +270,7 @@ fn footprint(s: &Value, live: &Live) -> Option<(Shape, Placement)> {
                 count: (base + live.stack).min(most.max(base)).clamp(1, 16),
                 radius: n("radius")?,
                 length: n("length")?,
+                rounded: s.get("rounded").and_then(Value::as_bool) == Some(true),
             }
         }
         "spread" => Shape::Spread {
@@ -270,6 +278,7 @@ fn footprint(s: &Value, live: &Live) -> Option<(Shape, Placement)> {
             radius: n("radius")?,
             length: n("length").unwrap_or(0.),
             degrees: n("degrees")?.min(360.),
+            rounded: s.get("rounded").and_then(Value::as_bool) == Some(true),
         },
         "backstep" => Shape::Backstep {
             length: n("length")?,
@@ -396,7 +405,8 @@ mod tests {
                 Shape::Fan {
                     count: blades,
                     radius: 10.,
-                    length: 130.
+                    length: 130.,
+                    rounded: false
                 }
             );
         }
@@ -461,6 +471,20 @@ mod tests {
         // Numbers not read yet: the recorded values.
         let g = geometry_of(entry, &Live::default()).unwrap();
         assert_eq!(g.footprints[2].placement, Placement::End { length: 84. });
+        // Rounded ends make a line or shot one capsule (Kassadin W).
+        let kassadin = geometry_of(
+            json!({"from": "custom", "pieces": [{"kind": "strip", "rounded": true,
+                "radius": {"fixed": 35}, "length": {"fixed": 35}, "at": "caster"}]}),
+            &Live::default(),
+        )
+        .unwrap();
+        assert_eq!(
+            kassadin.footprints[0].shape,
+            Shape::Capsule {
+                radius: 35.,
+                length: 35.
+            }
+        );
         // An empty list draws nothing but still wins over what is read.
         let none = geometry_of(json!({"from": "custom", "pieces": []}), &Live::default()).unwrap();
         assert!(none.footprints.is_empty() && none.families.iter().any(|f| f == ASSIGNMENT));

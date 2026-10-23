@@ -181,12 +181,32 @@ def widened(shapes, champion):
     Swordman R and other base skills) hits within its `width` on each side
     of the line. The live reader halved it until 1.5.2-dev1, so a piercing
     shot without `hit_radius` holds half the radius. Doubled here, marked,
-    so a second pass changes nothing. Shapes recorded since carry the mark."""
+    so a second pass changes nothing. Shapes recorded since carry the mark.
+
+    Every such shot is a line hit, which also reaches its radius past both
+    ends (docs/investigation-line-hit.md), so it gets rounded ends (1.5.2,
+    the author's default; recordings since are rounded strips already)."""
     if champion in CHAMPION_SKILL:
         return shapes
-    return [dict(s, radius=s['radius'] * 2, hit_radius=True)
-            if s.get('kind') == 'shot' and s.get('pierce') is True and not s.get('hit_radius')
-            and isinstance(s.get('radius'), (int, float)) else s
+    out = []
+    for s in shapes:
+        if s.get('kind') == 'shot' and s.get('pierce') is True:
+            if not s.get('hit_radius') and isinstance(s.get('radius'), (int, float)):
+                s = dict(s, radius=s['radius'] * 2, hit_radius=True)
+            s = dict(s, rounded=True)
+        out.append(s)
+    return out
+
+
+def rounded_projectiles(shapes):
+    """A projectile's line or a fan of projectiles (1.5.3), recorded before
+    the mod drew them rounded, with rounded ends:
+    the game checks the projectile's circle at every step of its flight, its
+    last one included, so it reaches its radius past the end (read from the
+    code, docs/investigation-line-hit.md; the author's default, 2026-10-23).
+    The mod writes them rounded itself since."""
+    return [dict(s, rounded=True)
+            if s.get('kind') in ('strip', 'shot', 'spread', 'fan') and s.get('projectile') is True else s
             for s in shapes]
 
 
@@ -232,8 +252,9 @@ def skill(champion, slot, table, rules, assignments, picks):
     mine = (picks or {}).get(f'{champion} {slot}') or {}
     cast = recorded.get('cast') or {}
     out = {'kind': (pair or {}).get('kind'), 'has_numbers': pair is not None}
-    live = landed(widened((pair or {}).get('live') or recorded.get('shapes') or [], champion))
-    file = landed((recorded.get('file') or {}).get('shapes') or [])
+    live = landed(rounded_projectiles(widened((pair or {}).get('live') or recorded.get('shapes') or [],
+                                              champion)))
+    file = landed(rounded_projectiles((recorded.get('file') or {}).get('shapes') or []))
     assignment = (assignments or {}).get(f'{champion} {slot}')
     if isinstance(assignment, dict) and assignment.get('type') == 'custom':
         # The author's own pieces (1.5.2-dev2): each size already names its

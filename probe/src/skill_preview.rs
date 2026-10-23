@@ -77,6 +77,9 @@ pub enum Shape {
         count: usize,
         radius: f32,
         length: f32,
+        /// Each blade ends in a half circle (a projectile reaches its radius
+        /// past its end; 1.5.3).
+        rounded: bool,
     },
     /// `count` lines from the caster spread evenly over `degrees` in total,
     /// each with hit radius `radius` over `length` (0: the cast range);
@@ -86,9 +89,20 @@ pub enum Shape {
         radius: f32,
         length: f32,
         degrees: f32,
+        /// Each line ends in a half circle (1.5.3).
+        rounded: bool,
     },
     /// A jump straight back, away from the aim, `length` long (Archer W).
     Backstep {
+        length: f32,
+    },
+    /// A line with rounded ends: everything within `radius` of the segment
+    /// from where it starts to `length` toward the aim (0: the cast range).
+    /// Read from the game's shape check (docs/investigation-line-hit.md):
+    /// how a line hit reaches. Drawn as one shape when the author's piece
+    /// asks for rounded ends (1.5.2; Kassadin W, 35 each side on a 35 line).
+    Capsule {
+        radius: f32,
         length: f32,
     },
 }
@@ -130,7 +144,44 @@ impl Geometry {
         self.add_for(shape, placement, false);
     }
     /// A shape that is the path of a projectile (see `Footprint::projectile`).
+    /// A single projectile's line has rounded ends: the game checks the
+    /// projectile's circle at every step of its flight, its last one
+    /// included, so it reaches its radius past the end (read from the code,
+    /// docs/investigation-line-hit.md; the author's default, 2026-10-23).
+    /// Fans of several projectiles keep their lines.
     pub fn add_projectile(&mut self, shape: Shape, placement: Placement) {
+        let shape = match shape {
+            Shape::Corridor { radius, length } | Shape::Shot { radius, length, .. } => {
+                Shape::Capsule { radius, length }
+            }
+            // Each projectile of a fan reaches its radius past its end too
+            // (1.5.3, the author's default).
+            Shape::Fan {
+                count,
+                radius,
+                length,
+                ..
+            } => Shape::Fan {
+                count,
+                radius,
+                length,
+                rounded: true,
+            },
+            Shape::Spread {
+                count,
+                radius,
+                length,
+                degrees,
+                ..
+            } => Shape::Spread {
+                count,
+                radius,
+                length,
+                degrees,
+                rounded: true,
+            },
+            other => other,
+        };
         self.push(shape, placement, false, true);
     }
     pub fn add_for(&mut self, shape: Shape, placement: Placement, allies: bool) {
@@ -173,6 +224,7 @@ impl Geometry {
                         f.shape,
                         Shape::Corridor { .. }
                             | Shape::Shot { .. }
+                            | Shape::Capsule { .. }
                             | Shape::Cone { .. }
                             | Shape::Movement { .. }
                             | Shape::Fan { .. }
@@ -200,6 +252,7 @@ impl Geometry {
                     Shape::Reach { .. } => "reach",
                     Shape::Fan { .. } | Shape::Spread { .. } => "fan",
                     Shape::Backstep { .. } => "backstep",
+                    Shape::Capsule { .. } => "capsule",
                 };
                 if !kinds.contains(&kind) {
                     kinds.push(kind);
@@ -286,7 +339,7 @@ fn bundle_champions(log: &Logger) -> Vec<(String, Value)> {
     }
     champions
 }
-pub fn initialize(log: &Logger) {
+pub fn initialize(log: &Logger, game: &str) {
     let mut shapes = HashMap::new();
     let mut base = bundle_champions(log);
     let source = if base.is_empty() {
@@ -337,6 +390,14 @@ pub fn initialize(log: &Logger) {
         .filter(|s| !s.footprints.is_empty())
         .count();
     log.write(&format!("PREVIEW declared_slots={count}; runtime effect geometry preferred; input and footprint independent"));
+    // What the files gave, for the preview viewer (champions no match has
+    // recorded show what the game draws).
+    if let Some(root) = log.directory() {
+        let path = root.join("file-shapes.json");
+        if let Err(error) = crate::shape_json::write_file_shapes(&path, game, &shapes) {
+            log.write(&format!("PREVIEW FILE SHAPES not written ({error})"));
+        }
+    }
     let _ = SHAPES.set(shapes);
     let (champions, skills) = crate::preview_table::counts();
     log.write(&format!(
@@ -463,6 +524,7 @@ pub fn assigned(v: &Value) -> Option<Geometry> {
                 radius: n("width")? / 2.,
                 length: n("length").unwrap_or(0.),
                 degrees: n("spread")?.min(360.),
+                rounded: false,
             },
             Placement::Caster,
             allies,
@@ -717,10 +779,12 @@ fn collect(v: &Value, inherited: Placement, out: &mut Geometry, depth: usize) {
         // from the game's code (0.6.4 and 0.6.5, 1.5.2-dev1): `width` is
         // the hit's distance on each side of the line (the radius of the
         // game's segment shape), so the line is twice `width` wide. Before
-        // 1.5.2-dev1 this guessed `width` was the full width.
+        // 1.5.2-dev1 this guessed `width` was the full width. The game's
+        // shape check also reaches `width` past both ends of the line, so it
+        // has rounded ends by default (the author, 2026-10-23: Taliyah R).
         "LineRangeProjectile" => match (number(v, "width"), number(v, "length")) {
             (Some(radius), Some(length)) => out.add_for(
-                Shape::Corridor { radius, length },
+                Shape::Capsule { radius, length },
                 Placement::Caster,
                 declared_allies(v),
             ),
@@ -1304,17 +1368,16 @@ fn area(d: &mut Drawing, s: &Style, center: Point, radius: f32, ink: Ink, with_g
 }
 /// A skillshot's hit corridor: a faint full-width body with thin white
 /// edges (the direction arrow is drawn separately).
-/// How a strip ends.
+/// How a strip ends (fans of lines and fixed-position lines; a single line
+/// is a lane, `lane`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum End {
     /// Not a direction of travel (absolute endpoints): closed, no chevrons.
     Still,
-    /// Nothing is known about what stops it: a thin closing edge.
+    /// A direction of travel: chevrons along it and a thin closing edge.
     Plain,
-    /// It passes through units: both edges trail on past the end.
-    Open,
-    /// It stops at the first unit it hits: a solid bar.
-    Capped,
+    /// A direction of travel ending in a half circle (a fan's projectile).
+    Round,
 }
 /// A strip at its true width: fill, both edges, chevrons along it for the
 /// direction it travels, and its end.
@@ -1354,38 +1417,303 @@ fn corridor_body(
             x += s.corridor_chevron_step;
         }
     }
-    match end {
-        End::Still | End::Plain => d.line(body[1], body[2], s.corridor_edge_width, edge, Z_CORE),
-        End::Open => {
-            let reach = 2. * (s.corridor_open_dash + s.corridor_open_gap);
-            for corner in [body[1], body[2]] {
-                let start = (
-                    corner.0 + dir.0 * s.corridor_open_gap,
-                    corner.1 + dir.1 * s.corridor_open_gap,
-                );
-                let stop = (corner.0 + dir.0 * reach, corner.1 + dir.1 * reach);
-                d.dashed(
-                    start,
-                    stop,
-                    s.corridor_edge_width,
-                    edge,
-                    s.corridor_open_dash,
-                    s.corridor_open_gap,
+    if end == End::Round {
+        // A half circle past the end instead of the closing edge.
+        let facing = dir.1.atan2(dir.0);
+        let cap = arc(
+            to,
+            half,
+            facing - std::f32::consts::FRAC_PI_2,
+            facing + std::f32::consts::FRAC_PI_2,
+            12,
+        );
+        d.fill(s, &cap, ink.col, s.corridor_fill);
+        d.poly(&cap, s.corridor_edge_width, edge, false, Z_CORE);
+    } else {
+        d.line(body[1], body[2], s.corridor_edge_width, edge, Z_CORE);
+    }
+}
+/// `c` blended toward `to` by `t` (0..1), both 0xRRGGBB00.
+fn mix(c: u32, to: u32, t: f32) -> u32 {
+    let t = t.clamp(0., 1.);
+    let channel = |shift: u32| {
+        let (x, y) = ((c >> shift) & 0xff, (to >> shift) & 0xff);
+        ((x as f32 + (y as f32 - x as f32) * t).round() as u32) << shift
+    };
+    channel(24) | channel(16) | channel(8)
+}
+/// An ease in and out over 0..1.
+fn smooth(t: f32) -> f32 {
+    let t = t.clamp(0., 1.);
+    t * t * (3. - 2. * t)
+}
+/// `pieces` points along a circle arc from angle `a` to `b` (radians).
+fn arc(center: Point, radius: f32, a: f32, b: f32, pieces: usize) -> Vec<Point> {
+    (0..=pieces)
+        .map(|i| {
+            let t = a + (b - a) * i as f32 / pieces as f32;
+            (center.0 + radius * t.cos(), center.1 + radius * t.sin())
+        })
+        .collect()
+}
+/// A four-pointed star of outer radius `outer` px, upright on screen: a
+/// filled shape, a dark outline and a white centre (design "Aurum").
+fn star(d: &mut Drawing, s: &Style, c: Point, outer: f32, color: u32, opacity: f32) {
+    let inner = outer * 0.212;
+    let points: Vec<Point> = (0..8)
+        .map(|i| {
+            let r = if i % 2 == 0 { outer } else { inner };
+            let a = i as f32 * std::f32::consts::FRAC_PI_4 - std::f32::consts::FRAC_PI_2;
+            (c.0 + r * a.cos(), c.1 + r * a.sin())
+        })
+        .collect();
+    for (a, b, h) in strips(&points, 1.) {
+        d.line(a, b, h, alpha(color, opacity), Z_TOP);
+    }
+    d.poly(&points, 1.2, alpha(s.ink, 0.55 * opacity), true, Z_TOP);
+    d.line(
+        (c.0 - 0.8, c.1),
+        (c.0 + 0.8, c.1),
+        1.6,
+        alpha(0xffff_ff00, opacity),
+        Z_TOP,
+    );
+}
+/// A single line skill: the author's design "Aurum"
+/// (`design/previews/skillshot-aurum.svg`, 1.5.3-dev1). A lane from just
+/// ahead of the caster to the end of the line, `half` out on each side, in
+/// screen px: a soft fill that fades in near the caster, two thin crescents,
+/// a bright edge (shadow, glow and a core that brightens toward the end) with
+/// a pale inner edge, dots and small stars along the centre, a star on each
+/// edge and one at the tip. `rounded`: a half circle past the end (a line
+/// hit or a projectile, which reach that far) with a fine ring inside it;
+/// otherwise a straight end. Nothing behind the caster (the author,
+/// 2026-10-23). The design's sizes are scaled to each skill: the start gap,
+/// the fade-in and the crescents with the line's length, the inner edge and
+/// ring with its width; edge widths and stars are fixed px.
+fn lane(d: &mut Drawing, s: &Style, from: Point, to: Point, half: f32, rounded: bool, ink: Ink) {
+    use std::f32::consts::FRAC_PI_2;
+    let Some(dir) = unit_vector(from, to) else {
+        return;
+    };
+    let length = (to.0 - from.0).hypot(to.1 - from.1);
+    let facing = dir.1.atan2(dir.0);
+    let at = |t: f32, side: f32| {
+        (
+            from.0 + dir.0 * t - dir.1 * side,
+            from.1 + dir.1 * t + dir.0 * side,
+        )
+    };
+    let gold = ink.col;
+    let pale = mix(ink.col, ink.white, s.lane_pale);
+    let deep = mix(s.ink, gold, s.lane_core_deep);
+    let start = s.lane_start.min(0.2 * length);
+    let fade = s.lane_fade.min(0.3 * (length - start)).max(0.);
+    let body = start + fade;
+    let root = |i: usize| smooth((i as f32 + 0.5) / 8.);
+    let piece = |i: usize| {
+        (
+            start + fade * i as f32 / 8.,
+            start + fade * (i + 1) as f32 / 8.,
+        )
+    };
+    // Fill: fading in over the root, then even; a half disc past the end.
+    for i in 0..8 {
+        let (a, b) = piece(i);
+        d.line(
+            at(a, 0.),
+            at(b, 0.),
+            2. * half,
+            alpha(gold, s.lane_fill * root(i)),
+            Z_FILL,
+        );
+    }
+    d.line(
+        at(body, 0.),
+        to,
+        2. * half,
+        alpha(gold, s.lane_fill),
+        Z_FILL,
+    );
+    let cap = |r: f32, pieces: usize| arc(to, r, facing - FRAC_PI_2, facing + FRAC_PI_2, pieces);
+    if rounded {
+        d.fill(s, &cap(half, 16), gold, s.lane_cap_fill);
+    }
+    // Two thin crescents near the root, bulging toward the end: only on a
+    // lane long for its width (a short wide one, Kassadin W, would be all
+    // crescent).
+    let rr = 1.25 * half;
+    let bend = (half / rr).asin();
+    for (share, opacity) in [
+        (0.17, s.lane_crescent_opacity),
+        (0.34, 0.8 * s.lane_crescent_opacity),
+    ] {
+        let x0 = start + share * (length - start);
+        if length - start >= 3. * half && x0 + 0.5 * half < length {
+            let c = at(x0 - rr * bend.cos(), 0.);
+            let points = arc(c, rr, facing - bend, facing + bend, 10);
+            d.poly(
+                &points,
+                s.lane_crescent_width,
+                alpha(pale, opacity),
+                false,
+                Z_CORE,
+            );
+        }
+    }
+    // The outer edge on both sides, and round the end or across it.
+    let end_edge = |d: &mut Drawing, width: f32, color: u32, z: i32| {
+        if rounded {
+            d.poly(&cap(half, 16), width, color, false, z);
+        } else {
+            d.line(at(length, -half), at(length, half), width, color, z);
+        }
+    };
+    for (width, color, opacity, cap_opacity, z) in [
+        (
+            s.lane_shadow_width,
+            s.ink,
+            s.lane_shadow_opacity,
+            s.lane_shadow_cap_opacity,
+            Z_INK,
+        ),
+        (
+            s.lane_glow_width,
+            gold,
+            s.lane_glow_opacity,
+            s.lane_glow_cap_opacity,
+            Z_GLOW,
+        ),
+    ] {
+        for side in [-half, half] {
+            for i in 0..8 {
+                let (a, b) = piece(i);
+                d.line(
+                    at(a, side),
+                    at(b, side),
+                    width,
+                    alpha(color, opacity * root(i)),
+                    z,
                 );
             }
-        }
-        End::Capped => {
-            let n = (-dir.1, dir.0);
-            let over = half + s.corridor_cap_over;
             d.line(
-                (to.0 - n.0 * over, to.1 - n.1 * over),
-                (to.0 + n.0 * over, to.1 + n.1 * over),
-                s.corridor_cap_width,
-                alpha(ink.col, 1.),
+                at(body, side),
+                at(length, side),
+                width,
+                alpha(color, opacity),
+                z,
+            );
+        }
+        end_edge(d, width, alpha(color, cap_opacity), z);
+    }
+    let pieces = 24;
+    let step = (length - body) / pieces as f32;
+    for side in [-half, half] {
+        for i in 0..8 {
+            let (a, b) = piece(i);
+            d.line(
+                at(a, side),
+                at(b, side),
+                s.lane_core_width,
+                alpha(deep, root(i)),
+                Z_MAIN,
+            );
+        }
+        for j in 0..pieces {
+            let a = body + step * j as f32;
+            let b = if j + 1 == pieces {
+                length
+            } else {
+                a + step + 0.4
+            };
+            let color = mix(deep, gold, (j as f32 + 0.5) / pieces as f32);
+            d.line(
+                at(a, side),
+                at(b, side),
+                s.lane_core_width,
+                alpha(color, 1.),
                 Z_MAIN,
             );
         }
     }
+    end_edge(d, s.lane_core_width, alpha(gold, 1.), Z_MAIN);
+    // A pale inner edge, brightening toward the end.
+    let inset = half - s.lane_inner_inset;
+    if inset > 2. {
+        for side in [-inset, inset] {
+            for i in 0..4 {
+                let (a, b) = (
+                    body + (length - body) * i as f32 / 4.,
+                    body + (length - body) * (i + 1) as f32 / 4.,
+                );
+                let opacity = s.lane_inner_opacity * (i + 1) as f32 / 4.;
+                d.line(
+                    at(a, side),
+                    at(b, side),
+                    s.lane_inner_width,
+                    alpha(pale, opacity),
+                    Z_CORE,
+                );
+            }
+        }
+        if rounded {
+            d.poly(
+                &cap(inset, 14),
+                s.lane_inner_width,
+                alpha(pale, s.lane_inner_cap_opacity),
+                false,
+                Z_CORE,
+            );
+        }
+    }
+    // A fine ring inside the rounded end.
+    let ring = s.lane_ring_scale * half;
+    if rounded && ring >= 3. {
+        let points = arc(to, ring, 0., std::f32::consts::TAU, 24);
+        d.poly(
+            &points,
+            s.lane_ring_width,
+            alpha(pale, s.lane_ring_opacity),
+            false,
+            Z_CORE,
+        );
+    }
+    // Dots along the centre, growing and brightening toward the end.
+    let (c0, c1) = (
+        start + 0.9 * fade,
+        length - if rounded { ring } else { 0. } - 6.,
+    );
+    if c1 > c0 && s.lane_dot_step >= 2. {
+        let mut p = c0;
+        while p < c1 {
+            let k = (p - c0) / (c1 - c0);
+            let r = 0.9 + 0.7 * k;
+            d.line(
+                at(p - r, 0.),
+                at(p + r, 0.),
+                2. * r,
+                alpha(pale, 0.25 + 0.6 * k),
+                Z_CORE,
+            );
+            p += s.lane_dot_step;
+        }
+        for k in [0.34, 0.67] {
+            star(
+                d,
+                s,
+                at(c0 + k * (c1 - c0), 0.),
+                s.lane_star * (0.8 + 0.6 * k),
+                gold,
+                0.65 + 0.3 * k,
+            );
+        }
+    }
+    let x = start + 0.6 * (length - start);
+    for side in [-half, half] {
+        star(d, s, at(x, side), s.lane_star, gold, s.lane_star_opacity);
+    }
+    let tip = if rounded { length + half } else { length };
+    star(d, s, at(tip, 0.), s.lane_tip_star, gold, 1.);
 }
 /// A chevron pointing along `dir` with its point at `tip`.
 fn chevron(tip: Point, dir: Point, half: f32) -> [Point; 3] {
@@ -1649,6 +1977,52 @@ fn beyond(d: &mut Drawing, s: &Style, end: Point, aim: Point, ready: bool) {
     let ring = arc_points(aim, s.beyond_ring, s.beyond_ring, 0., std::f32::consts::TAU);
     d.poly(&ring, s.beyond_width, color, true, Z_MAIN);
 }
+/// The range ring's radius in world units. A skill aimed in a direction has
+/// no cast-range limit for the player (the mod sends the game only the
+/// direction), so its ring shows how far the skill reaches: the longest
+/// line, shot or fan from the caster, or a dash of a fixed length, never
+/// less than the cast range (the author's choice A, 2026-10-22: Tale Q's
+/// shot flies 180 on a cast range of 100). Every other skill: the cast range.
+fn ring_radius(p: &Preview) -> f32 {
+    let range = p.range as f32 / 1000.;
+    if p.casting != 2 {
+        return range;
+    }
+    p.geometry
+        .footprints
+        .iter()
+        .map(|f| match (f.shape, f.placement) {
+            (
+                Shape::Spread {
+                    length,
+                    radius,
+                    rounded: true,
+                    ..
+                }
+                | Shape::Fan {
+                    length,
+                    radius,
+                    rounded: true,
+                    ..
+                },
+                Placement::Caster,
+            ) => (if length > 0. { length } else { range }) + radius,
+            (
+                Shape::Corridor { length, .. }
+                | Shape::Shot { length, .. }
+                | Shape::Spread { length, .. }
+                | Shape::Fan { length, .. },
+                Placement::Caster,
+            ) => length,
+            // A rounded end reaches its radius past the line.
+            (Shape::Capsule { radius, length }, Placement::Caster) => {
+                (if length > 0. { length } else { range }) + radius
+            }
+            (Shape::Movement { .. }, Placement::End { length }) => length,
+            _ => 0.,
+        })
+        .fold(range, f32::max)
+}
 pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let mut out = Drawing::default();
     if !frame.valid() || p.geometry.hidden {
@@ -1664,7 +2038,7 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
     let self_area = p.self_target || p.casting == 3 || p.geometry.self_area();
     if range > 0. && !self_area {
         let color = range_color(s, p.ready, p.allies);
-        range_ring(&mut out, s, center, range * sx, color);
+        range_ring(&mut out, s, center, ring_radius(&p) * sx, color);
     }
     let world_target = p
         .target
@@ -1752,23 +2126,31 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 let length = if length > 0. { length } else { range };
                 let end = project(endpoint(base, aiming, length, true));
                 let half = (radius.max(1.5) + margin) * sx;
-                corridor_body(&mut out, s, at, end, half, ink, End::Plain);
+                lane(&mut out, s, at, end, half, false, ink);
             }
-            Shape::Shot {
-                radius,
-                length,
-                pierce,
-            } => {
+            Shape::Shot { radius, length, .. } => {
                 let end = project(endpoint(base, aiming, length, true));
-                let cap = if pierce { End::Open } else { End::Capped };
-                corridor_body(
+                lane(
                     &mut out,
                     s,
                     at,
                     end,
                     (radius.max(1.5) + margin) * sx,
+                    false,
                     ink,
-                    cap,
+                );
+            }
+            Shape::Capsule { radius, length } => {
+                let length = if length > 0. { length } else { range };
+                let end = project(endpoint(base, aiming, length, true));
+                lane(
+                    &mut out,
+                    s,
+                    at,
+                    end,
+                    (radius.max(1.5) + margin) * sx,
+                    true,
+                    ink,
                 );
             }
             Shape::Segment { radius, from, to } => {
@@ -1794,20 +2176,14 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 count,
                 radius,
                 length,
+                rounded,
             } => {
+                let end_kind = if rounded { End::Round } else { End::Plain };
                 if let Some(dir) = unit_vector(base, aiming) {
                     for offset in fan_offsets(count) {
                         let d = turned(dir, offset);
                         let end = project((base.0 + d.0 * length, base.1 + d.1 * length));
-                        corridor_body(
-                            &mut out,
-                            s,
-                            at,
-                            end,
-                            (radius + margin) * sx,
-                            ink,
-                            End::Plain,
-                        );
+                        corridor_body(&mut out, s, at, end, (radius + margin) * sx, ink, end_kind);
                     }
                 }
             }
@@ -1816,14 +2192,16 @@ pub fn drawing(frame: CameraFrame, p: Preview) -> Drawing {
                 radius,
                 length,
                 degrees,
+                rounded,
             } => {
                 let length = if length > 0. { length } else { range };
+                let end_kind = if rounded { End::Round } else { End::Plain };
                 if let Some(dir) = unit_vector(base, aiming) {
                     for offset in spread_offsets(count, degrees) {
                         let d = turned(dir, offset);
                         let end = project((base.0 + d.0 * length, base.1 + d.1 * length));
                         let half = (radius.max(1.5) + margin) * sx;
-                        corridor_body(&mut out, s, at, end, half, ink, End::Plain);
+                        corridor_body(&mut out, s, at, end, half, ink, end_kind);
                     }
                 }
             }
@@ -1897,7 +2275,7 @@ pub fn hover_drawing(frame: CameraFrame, p: Preview) -> Drawing {
     if p.range > 0 && !self_area {
         // No aim while the pointer is on the HUD: the range is the whole
         // preview, so its rim is also drawn in the skill's own colour.
-        let radius = p.range as f32 / 1000. * sx;
+        let radius = ring_radius(&p) * sx;
         range_ring(
             &mut out,
             s,
@@ -2082,10 +2460,17 @@ mod tests {
             .strokes
             .iter()
             .any(|s| rgb(s.color) == st.yellow && s.width == st.hover_range_width));
+        // A skill aimed in a direction: the ring is how far it reaches, the
+        // 80 line on a cast range of 45 (the author's choice A, 2026-10-22;
+        // before 1.5.2 the ring was the cast range, 90 px here).
         assert!(d
             .strokes
             .iter()
-            .all(|s| (s.a.0 - 960.).hypot(s.a.1 - 540.) <= 90.01));
+            .all(|s| (s.a.0 - 960.).hypot(s.a.1 - 540.) <= 160.01));
+        assert!(d
+            .strokes
+            .iter()
+            .any(|s| (s.a.0 - 960.).hypot(s.a.1 - 540.) > 150.));
     }
     #[test]
     fn hud_hover_self_area_is_centered_and_unknown_shape_does_not_invent_area() {
@@ -2352,33 +2737,31 @@ mod tests {
         assert!(d.strokes.is_empty());
     }
     #[test]
-    fn a_strip_ends_open_when_it_passes_through_and_capped_when_it_stops() {
+    fn a_travelling_strip_has_chevrons_and_a_still_one_none() {
         let st = style();
         let ink = Ink::of(st, true);
-        let bar = |d: &Drawing| {
-            d.strokes.iter().any(|s| {
-                s.width == st.corridor_cap_width && near(s.a, (100., -8. - st.corridor_cap_over))
-            })
-        };
-        let beyond = |d: &Drawing| d.strokes.iter().any(|s| s.a.0 > 100.5 || s.b.0 > 100.5);
-        let mut d = Drawing::default();
-        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Capped);
-        assert!(bar(&d) && !beyond(&d));
-        let mut d = Drawing::default();
-        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Open);
-        assert!(!bar(&d) && beyond(&d));
-        // Chevrons along a travelling strip, none on a still one.
         let inner = |d: &Drawing| {
             d.strokes
                 .iter()
                 .filter(|s| rgb(s.color) == st.white && s.width == st.corridor_chevron_width)
                 .count()
         };
+        let mut d = Drawing::default();
+        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Plain);
         assert!(inner(&d) >= 4);
         let mut d = Drawing::default();
         corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Still);
         assert_eq!(inner(&d), 0);
-        assert!(!bar(&d) && !beyond(&d));
+        assert!(d.strokes.iter().all(|s| s.a.0 <= 100.5 && s.b.0 <= 100.5));
+        // A fan's projectile ends in a half circle its width past the end.
+        let mut d = Drawing::default();
+        corridor_body(&mut d, st, (0., 0.), (100., 0.), 8., ink, End::Round);
+        let ahead = d
+            .strokes
+            .iter()
+            .flat_map(|s| [s.a.0, s.b.0])
+            .fold(f32::MIN, f32::max);
+        assert!((ahead - 108.).abs() < 0.1);
     }
     #[test]
     fn a_cone_at_the_caster_sweeps_toward_the_aim() {
@@ -2430,6 +2813,7 @@ mod tests {
                 count: 4,
                 radius: 10.,
                 length: 134.,
+                rounded: false,
             },
             Placement::Caster,
         );
@@ -2477,6 +2861,144 @@ mod tests {
         let mut unknown = Geometry::default();
         unknown.issue("unsupported native apply=1 size=8");
         assert!(!drawing(frame(), preview(unknown, 50000)).strokes.is_empty());
+    }
+    #[test]
+    fn a_line_is_an_aurum_lane() {
+        let st = style();
+        let ink = Ink::of(st, true);
+        // Kassadin W at 2 px per unit: 70 px each side of a 70 px line.
+        let mut d = Drawing::default();
+        lane(&mut d, st, (0., 0.), (70., 0.), 70., true, ink);
+        let reach = |d: &Drawing, f: fn(Point) -> f32| {
+            d.strokes
+                .iter()
+                .flat_map(|s| [s.a, s.b])
+                .map(f)
+                .fold(f32::MIN, f32::max)
+        };
+        // The core edge runs round the rounded end, 70 px past the line.
+        let core = |s: &&Stroke| s.z == Z_MAIN && (s.width - st.lane_core_width).abs() < 1e-6;
+        let ahead = d.strokes.iter().filter(core).flat_map(|s| [s.a.0, s.b.0]);
+        assert!((ahead.fold(f32::MIN, f32::max) - 140.).abs() < 0.5);
+        // Nothing behind the caster: the lane starts just ahead of it.
+        assert!(reach(&d, |p| -p.0) < 0.01);
+        // The tip star sits at the end of the rounded part.
+        assert!(d
+            .strokes
+            .iter()
+            .any(|s| s.z == Z_TOP && (s.a.0 - (140. + st.lane_tip_star)).abs() < 0.5));
+        // The core brightens from deep to the skill's colour.
+        let deep = mix(st.ink, st.yellow, st.lane_core_deep);
+        assert!(d
+            .strokes
+            .iter()
+            .any(|s| rgb(s.color) == rgb(mix(deep, st.yellow, 0.5 / 24.))));
+        // A flat line ends straight: nothing past it but the tip star.
+        let mut d = Drawing::default();
+        lane(&mut d, st, (0., 0.), (200., 0.), 10., false, ink);
+        assert!(d
+            .strokes
+            .iter()
+            .filter(|s| s.z != Z_TOP)
+            .all(|s| s.a.0 <= 200.01 && s.b.0 <= 200.01));
+        // No crescents on that short, wide lane; a long one has two.
+        let crescent = |d: &Drawing| {
+            d.strokes
+                .iter()
+                .filter(|s| (s.width - st.lane_crescent_width).abs() < 1e-6)
+                .count()
+        };
+        let mut d = Drawing::default();
+        lane(&mut d, st, (0., 0.), (70., 0.), 70., true, ink);
+        assert_eq!(crescent(&d), 0);
+        let mut d = Drawing::default();
+        lane(&mut d, st, (0., 0.), (300., 0.), 20., true, ink);
+        assert_eq!(crescent(&d), 20);
+        // A thin, short line still draws and stays within the stroke budget.
+        let mut d = Drawing::default();
+        lane(&mut d, st, (0., 0.), (12., 0.), 2., true, ink);
+        assert!(!d.strokes.is_empty() && d.strokes.len() < 600);
+        // Grey when not ready.
+        let mut d = Drawing::default();
+        lane(
+            &mut d,
+            st,
+            (0., 0.),
+            (100., 0.),
+            10.,
+            true,
+            Ink::of(st, false),
+        );
+        assert!(d.strokes.iter().all(|s| rgb(s.color) != st.yellow));
+    }
+    #[test]
+    fn a_direction_skill_ring_shows_how_far_it_reaches() {
+        let preview = |casting, geometry| Preview {
+            origin: (0, 0),
+            aim: None,
+            casting,
+            self_target: false,
+            allies: false,
+            range: 100000,
+            ready: true,
+            geometry,
+            target: None,
+        };
+        // Tale Q: a 180 shot on a cast range of 100, a flat line here.
+        let mut tale = Geometry::default();
+        tale.add(
+            Shape::Corridor {
+                radius: 5.,
+                length: 180.,
+            },
+            Placement::Caster,
+        );
+        assert_eq!(ring_radius(&preview(2, tale.clone())), 180.);
+        // As a projectile it has rounded ends: its radius further.
+        let mut shot = Geometry::default();
+        shot.add_projectile(
+            Shape::Corridor {
+                radius: 5.,
+                length: 180.,
+            },
+            Placement::Caster,
+        );
+        assert_eq!(
+            shot.footprints[0].shape,
+            Shape::Capsule {
+                radius: 5.,
+                length: 180.
+            }
+        );
+        assert!(shot.footprints[0].projectile);
+        assert_eq!(ring_radius(&preview(2, shot)), 185.);
+        // Cast at a point or on a unit: the cast range still limits it.
+        assert_eq!(ring_radius(&preview(1, tale.clone())), 100.);
+        assert_eq!(ring_radius(&preview(0, tale)), 100.);
+        // A dash of a fixed length; a line as long as the cast range; a
+        // circle at the aim: never less than the cast range.
+        let mut bulldozer = Geometry::default();
+        bulldozer.add(
+            Shape::Movement { blink: false },
+            Placement::End { length: 84. },
+        );
+        // Bulldozer Q's 84 charge on its cast range of 72.
+        let charge = Preview {
+            range: 72000,
+            ..preview(2, bulldozer.clone())
+        };
+        assert_eq!(ring_radius(&charge), 84.);
+        assert_eq!(ring_radius(&preview(2, bulldozer)), 100.);
+        let mut line = Geometry::default();
+        line.add(
+            Shape::Corridor {
+                radius: 5.,
+                length: 0.,
+            },
+            Placement::Caster,
+        );
+        line.add(Shape::Circle { radius: 300. }, Placement::Aim);
+        assert_eq!(ring_radius(&preview(2, line)), 100.);
     }
     #[test]
     fn wall_fills_with_one_strip_and_brightens_its_short_ends() {
@@ -2573,7 +3095,7 @@ mod tests {
         );
         assert_eq!(
             g.footprints[0].shape,
-            Shape::Corridor {
+            Shape::Capsule {
                 radius: 27.,
                 length: 100.
             }
@@ -2683,7 +3205,8 @@ mod tests {
                 count: 5,
                 radius: 9.,
                 length: 0.,
-                degrees: 36.
+                degrees: 36.,
+                rounded: false
             }
         );
         // Archer W: a 30-unit jump back.
@@ -2864,7 +3387,7 @@ mod tests {
         assert_eq!(
             skills(&base["nightmare"])[0].footprints[0],
             Footprint {
-                shape: Shape::Corridor {
+                shape: Shape::Capsule {
                     radius: 5.,
                     length: 46.
                 },
@@ -3023,9 +3546,10 @@ mod tests {
             serde_json::json!({"type": "Native", "effect_ref": "crossbowman_skill2",
             "speed": 6000, "range": 150000, "projectile_radius": 6000}),
         );
+        // A projectile: rounded ends (1.5.2).
         assert_eq!(
             g.footprints[0].shape,
-            Shape::Corridor {
+            Shape::Capsule {
                 radius: 6.,
                 length: 150.
             }
@@ -3034,7 +3558,7 @@ mod tests {
         let g = shot(serde_json::json!({"type": "Native", "projectile_radius": 11000}));
         assert_eq!(
             g.footprints[0].shape,
-            Shape::Corridor {
+            Shape::Capsule {
                 radius: 11.,
                 length: 0.
             }

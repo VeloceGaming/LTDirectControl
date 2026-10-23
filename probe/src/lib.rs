@@ -68,6 +68,7 @@ mod season_fix;
 mod session_ui;
 mod settings;
 mod settings_ui;
+mod shape_json;
 #[cfg(feature = "research")]
 mod shape_record;
 mod shop;
@@ -253,15 +254,13 @@ fn init(host: &StableHost) -> StableMod {
         host.abi_level(),
         env!("CARGO_PKG_VERSION")
     ));
+    let game = format!("{}.{}.{}", version.major, version.minor, version.patch);
     #[cfg(feature = "research")]
-    shape_record::set_game(format!(
-        "{}.{}.{}",
-        version.major, version.minor, version.patch
-    ));
+    shape_record::set_game(game.clone());
     sprite_picking::initialize(&logger);
     preview_style::load(&logger);
     acquisition::initialize(&logger);
-    skill_preview::initialize(&logger);
+    skill_preview::initialize(&logger, &game);
     logger.write(
         "TIMING native_enabled=true wait=after_frame_publication bootstrap=one_frame explicit_start=true full_match=true loading_guard_seconds=15 heartbeat_guard_seconds=2 maximum_frame_lead=4 movement_enabled=true"
     );

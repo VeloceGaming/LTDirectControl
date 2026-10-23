@@ -359,6 +359,16 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
 .piece-flags label { display: flex; align-items: center; gap: 5px; }
 .piece-add { display: flex; gap: 6px; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; }
 .piece-add select { flex: 1; min-height: 32px; }
+/* The two parts of a skill, first on the card and in the Edit panel. */
+.skill-parts { display: grid; gap: 7px; margin: 0 0 14px; }
+.part { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; align-items: baseline; }
+.part-label { color: var(--muted); text-transform: uppercase; font-size: 9px; font-weight: 750; letter-spacing: 1.1px; }
+.part-text { font-size: 13px; font-weight: 650; line-height: 1.4; letter-spacing: -.2px; overflow-wrap: anywhere; }
+.part-from { display: block; font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.edit-section { display: grid; gap: 10px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.edit-section:last-child { border-bottom: 0; margin-bottom: 0; }
+.edit-section h3 { margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 1.1px; color: var(--muted); font-weight: 750; }
+.edit-section .part-text { font-size: 15px; }
 .custom-summary { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 10px; color: var(--muted); }
 </style></head><body>
 <a class="skip-link" href="#main">Skip to skills</a>
@@ -377,7 +387,8 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
     <div class="filter-stack">
       <label class="control search-control"><span class="control-label">Search</span><input id="find" type="search" placeholder="Champion, skill, mod" autocomplete="off"></label>
       <label class="control"><span class="control-label">Status</span><select id="status" title="Which skills to show"></select></label>
-      <label class="control"><span class="control-label">Shape</span><select id="type" title="Preview type"></select></label>
+      <label class="control"><span class="control-label">Cast</span><select id="cast" title="How the skill is cast"></select></label>
+      <label class="control"><span class="control-label">Hits</span><select id="hits" title="What the skill hits"></select></label>
       <label class="control"><span class="control-label">Source</span><select id="mod" title="Where the champion comes from"></select></label>
     </div>
     <button id="clear">Reset filters</button>
@@ -385,11 +396,12 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
   </aside>
   <main id="main" tabindex="-1">
     <div id="restore" class="banner" hidden></div>
+    <div id="converted" class="banner" role="status" hidden></div>
     <div id="help" class="help" hidden>
       <div class="help-heading"><h2>How to use</h2><button id="closeHelp" class="small">Close</button></div>
       <ol>
         <li>Find a skill. Move over its drawing to aim; scroll to zoom. Level changes ranges that grow with level.</li>
-        <li>Compare with the game. Click <b>Edit</b> to change the preview type or sizes. The panel also has <b>Sources</b>, <b>Numbers</b> and full skill <b>Details</b>.</li>
+        <li>Compare with the game. Each card has two parts: <b>Cast</b>, how the game aims the skill (from the game, not editable), and <b>What it hits</b>: what the game reads, your pieces, or nothing. <b>Edit</b> (the gear) shows both and holds your pieces; the panel also has <b>Numbers</b> and <b>Details</b>. Filter by <b>Cast</b> and <b>Hits</b>.</li>
         <li><b>Save</b> writes assignments for the next game start. Checked marks and size-source picks save automatically.</li>
         <li>Tick <b>Checked by me</b> after comparison. Editing a shape clears its check.</li>
       </ol>
@@ -427,7 +439,7 @@ summary { cursor: pointer; padding: 10px 0; font-size: 11px; } details p { line-
   <div class="inspector-tabs" role="tablist" aria-label="Skill inspector">
     <button id="inspectorTab-numbers" role="tab" data-inspector-tab="numbers" aria-selected="true" aria-controls="inspectorPanel-numbers">Numbers</button>
     <button id="inspectorTab-details" role="tab" data-inspector-tab="details" aria-selected="false" aria-controls="inspectorPanel-details" tabindex="-1">Details</button>
-    <button id="inspectorTab-pieces" role="tab" data-inspector-tab="pieces" aria-selected="false" aria-controls="inspectorPanel-pieces" tabindex="-1">Pieces</button>
+    <button id="inspectorTab-pieces" role="tab" data-inspector-tab="pieces" aria-selected="false" aria-controls="inspectorPanel-pieces" tabindex="-1">Edit</button>
   </div>
   <div class="inspector-content">
     <div id="inspectorPanel-numbers" class="inspector-panel" role="tabpanel" aria-labelledby="inspectorTab-numbers" tabindex="0"></div>
@@ -458,7 +470,7 @@ const TYPES={
   jump_back:{label:'Unit target + jump back',fields:['distance']},
   attack_reach:{label:'Ring at attack range + extra',fields:['extra']},
   no_preview:{label:'No preview',fields:[]},
-  custom:{label:'Custom (pieces)',fields:[]},
+  custom:{label:'My pieces',fields:[]},
 };
 const FIELD_HELP={area_radius:'radius around the target (empty: none)',radius:'radius',width:'full width',depth:'depth',length:'length (empty or 0: the cast range)',
   count:'number of lines',spread:'total spread, degrees',angle:'opening angle, degrees',distance:'distance (empty: up to the aim)',extra:'added to your attack range'};
@@ -623,10 +635,10 @@ function describe(f,range){
   switch(f.kind){
     case'circle':return`circle, radius ${ok(f.radius)?r(f.radius):missing}${f.at==='caster'?', around the caster':f.at==='aim'?', at the aim':''}${f.allies?', for allies':''}`;
     case'rectangle':return`rectangle ${ok(f.width)?r(f.width):missing} wide × ${ok(f.height)?r(f.height):missing} deep, at the aim`;
-    case'strip':case'shot':return`line ${ok(f.radius)?r(f.radius*2):missing} wide, ${len(f.length)}`;
+    case'strip':case'shot':return`line ${ok(f.radius)?r(f.radius*2):missing} wide, ${len(f.length)}${f.rounded?', rounded ends':''}`;
     case'cone':return`cone, radius ${r(f.radius)}, ${r(Math.acos(Math.max(-1,Math.min(1,f.cosine)))*360/Math.PI)}° wide`;
-    case'spread':return`fan: ${ok(f.count)?f.count:missing} lines, ${ok(f.radius)?r(f.radius*2):missing} wide, ${len(f.length)}, ${ok(f.degrees)?r(f.degrees):missing}° spread`;
-    case'fan':return`fan: ${f.count} blades, ${r(f.radius*2)} wide, ${r(f.length)} long`;
+    case'spread':return`fan: ${ok(f.count)?f.count:missing} lines, ${ok(f.radius)?r(f.radius*2):missing} wide, ${len(f.length)}, ${ok(f.degrees)?r(f.degrees):missing}° spread${f.rounded?', rounded tips':''}`;
+    case'fan':return`fan: ${f.count} blades, ${r(f.radius*2)} wide, ${r(f.length)} long${f.rounded?', rounded tips':''}`;
     case'dash':return`dash${f.at&&f.at.end?` ${r(f.at.end)} long`:' to the aim'}`;
     case'blink':return'blink to the aim';
     case'backstep':return`jump back ${ok(f.length)?r(f.length):missing}`;
@@ -680,9 +692,14 @@ function draw(cv,s,pick,pointer,champ){
   const at=d=>[O[0]+dir[0]*d*k,O[1]+dir[1]*d*k],aim=c.casting===3?O:at(aimDist);
   // A custom preview is drawn exactly as listed, as the mod does.
   const shapes=pick.exact?pick.shapes:mainPurpose(pick.shapes,unit),yellow=allies?ST.ally:ST.yellow;
-  if(range>0.5&&c.casting!==3){
+  // A skill aimed in a direction has no cast-range limit for the player:
+  // its ring shows how far it really reaches (the author's choice A,
+  // 2026-10-22), the longest line, shot or fan from the champion or a dash
+  // of a fixed length, and never less than the cast range.
+  const ring=c.casting===2?Math.max(range,...shapes.map(f=>['strip','shot','spread','fan'].includes(f.kind)&&f.at==='caster'?((f.length>0?f.length:f.rounded?range:0)+(f.rounded?f.radius:0)):['dash','blink'].includes(f.kind)&&f.at&&f.at.end>0?f.at.end:0)):range;
+  if(ring>0.5&&c.casting!==3){
     const rc=allies?ST.range_ally:ST.range_ready;
-    g.beginPath();g.arc(O[0],O[1],range*k,0,7);g.fillStyle=hex(rc,ST.range_fill);g.fill();
+    g.beginPath();g.arc(O[0],O[1],ring*k,0,7);g.fillStyle=hex(rc,ST.range_fill);g.fill();
     g.lineWidth=5*px;g.strokeStyle=hex(ST.ink,0.35);g.stroke();g.lineWidth=ST.range_width*px;g.strokeStyle=hex(rc,ST.range_opacity);g.stroke();
   }
   if(unit){g.beginPath();g.arc(aim[0],aim[1],7*px,0,7);g.fillStyle='#d4537e';g.fill()}
@@ -697,6 +714,49 @@ function draw(cv,s,pick,pointer,champ){
   const fill=col=>{g.fillStyle=hex(col,ST.area_fill*2);g.fill();stroke(hex(col,0.95),2)};
   const strip=(b,ang,len,hw,col)=>{g.beginPath();g.save();g.translate(b[0],b[1]);g.rotate(ang);g.rect(0,-hw,len,hw*2);g.restore();fill(col)};
   const a0=Math.atan2(dir[1],dir[0]);
+  // A single line skill: the author's design "Aurum" (skill_preview.rs
+  // `lane`, design/previews/skillshot-aurum.svg), drawn as the mod draws it.
+  const mixHex=(a,b,t)=>{t=Math.max(0,Math.min(1,t));const x=parseInt(a.slice(1),16),y=parseInt(b.slice(1),16);
+    const c=sh=>Math.round(((x>>sh)&255)+(((y>>sh)&255)-((x>>sh)&255))*t);return'#'+[16,8,0].map(sh=>c(sh).toString(16).padStart(2,'0')).join('')};
+  const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
+  const seg=(a,b,w,c,o)=>{if(!(o>0)||!(w>0))return;g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.lineCap='butt';g.lineWidth=w;g.strokeStyle=hex(c,o);g.stroke()};
+  const poly=(pts,w,c,o,closed)=>{if(!(o>0))return;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);for(const p of pts.slice(1))g.lineTo(p[0],p[1]);if(closed)g.closePath();g.lineWidth=w;g.strokeStyle=hex(c,o);g.stroke()};
+  const arcPts=(c,r,a,b,n)=>Array.from({length:n+1},(_,i)=>{const t=a+(b-a)*i/n;return[c[0]+r*Math.cos(t),c[1]+r*Math.sin(t)]});
+  const starAt=(c,outer,color,o)=>{const pts=Array.from({length:8},(_,i)=>{const r=i%2?outer*0.212:outer,a=i*Math.PI/4-Math.PI/2;return[c[0]+r*Math.cos(a),c[1]+r*Math.sin(a)]});
+    g.beginPath();g.moveTo(pts[0][0],pts[0][1]);for(const p of pts.slice(1))g.lineTo(p[0],p[1]);g.closePath();g.fillStyle=hex(color,o);g.fill();
+    g.lineWidth=1.2*px;g.strokeStyle=hex(ST.ink||'#25231b',0.55*o);g.stroke();seg([c[0]-0.8*px,c[1]],[c[0]+0.8*px,c[1]],1.6*px,'#ffffff',o)};
+  const lane=(b,ang,len,hw,col,rounded)=>{
+    const S=(n,v)=>(ST[n]??v),d=[Math.cos(ang),Math.sin(ang)],at=(t,o)=>[b[0]+d[0]*t-d[1]*o,b[1]+d[1]*t+d[0]*o];
+    if(!(len>0))return;
+    const dark=ST.ink||'#25231b',white=ST.white||'#fffdf1',pale=mixHex(col,white,S('lane_pale',0.75)),deep=mixHex(dark,col,S('lane_core_deep',0.55));
+    const start=Math.min(S('lane_start',14)*px,0.2*len),fade=Math.max(0,Math.min(S('lane_fade',40)*px,0.3*(len-start))),body=start+fade;
+    const root=i=>smooth((i+0.5)/8),piece=i=>[start+fade*i/8,start+fade*(i+1)/8],end=at(len,0);
+    const cap=(r,n)=>arcPts(end,r,ang-Math.PI/2,ang+Math.PI/2,n);
+    for(let i=0;i<8;i++){const[a,c]=piece(i);seg(at(a,0),at(c,0),2*hw,col,S('lane_fill',0.16)*root(i))}
+    seg(at(body,0),end,2*hw,col,S('lane_fill',0.16));
+    if(rounded){g.beginPath();g.arc(end[0],end[1],hw,ang-Math.PI/2,ang+Math.PI/2);g.closePath();g.fillStyle=hex(col,S('lane_cap_fill',0.24));g.fill()}
+    const endEdge=(w,c,o)=>{if(rounded)poly(cap(hw,16),w,c,o,false);else seg(at(len,-hw),at(len,hw),w,c,o)};
+    for(const[w,c,o,co]of[[S('lane_shadow_width',6.5),dark,S('lane_shadow_opacity',0.27),S('lane_shadow_cap_opacity',0.32)],[S('lane_glow_width',6),col,S('lane_glow_opacity',0.1),S('lane_glow_cap_opacity',0.12)]]){
+      for(const side of[-hw,hw]){for(let i=0;i<8;i++){const[a,e]=piece(i);seg(at(a,side),at(e,side),w*px,c,o*root(i))}seg(at(body,side),at(len,side),w*px,c,o)}
+      endEdge(w*px,c,co)}
+    const cw=S('lane_core_width',2.4)*px,step=(len-body)/24;
+    for(const side of[-hw,hw]){for(let i=0;i<8;i++){const[a,e]=piece(i);seg(at(a,side),at(e,side),cw,deep,root(i))}
+      for(let j=0;j<24;j++){const a=body+step*j,e=j===23?len:a+step+0.4*px;seg(at(a,side),at(e,side),cw,mixHex(deep,col,(j+0.5)/24),1)}}
+    endEdge(cw,col,1);
+    const rr=1.25*hw,bend=Math.asin(hw/rr);
+    for(const[share,o]of len-start>=3*hw?[[0.17,S('lane_crescent_opacity',0.38)],[0.34,0.8*S('lane_crescent_opacity',0.38)]]:[]){const x0=start+share*(len-start);
+      if(x0+0.5*hw<len)poly(arcPts(at(x0-rr*Math.cos(bend),0),rr,ang-bend,ang+bend,10),S('lane_crescent_width',1.3)*px,pale,o,false)}
+    const inset=hw-S('lane_inner_inset',4.5)*px;
+    if(inset>2*px){for(const side of[-inset,inset])for(let i=0;i<4;i++)seg(at(body+(len-body)*i/4,side),at(body+(len-body)*(i+1)/4,side),S('lane_inner_width',1)*px,pale,S('lane_inner_opacity',0.45)*(i+1)/4);
+      if(rounded)poly(cap(inset,14),S('lane_inner_width',1)*px,pale,S('lane_inner_cap_opacity',0.5),false)}
+    const ring=S('lane_ring_scale',0.58)*hw;
+    if(rounded&&ring>=3*px)poly(arcPts(end,ring,0,Math.PI*2,24),S('lane_ring_width',1.1)*px,pale,S('lane_ring_opacity',0.55),false);
+    const c0=start+0.9*fade,c1=len-(rounded?ring:0)-6*px,dstep=S('lane_dot_step',11)*px;
+    if(c1>c0&&dstep>=2*px){for(let p=c0;p<c1;p+=dstep){const kk=(p-c0)/(c1-c0),r=(0.9+0.7*kk)*px;seg(at(p-r,0),at(p+r,0),2*r,pale,0.25+0.6*kk)}
+      for(const kk of[0.34,0.67])starAt(at(c0+kk*(c1-c0),0),S('lane_star',5)*(0.8+0.6*kk)*px,col,0.65+0.3*kk)}
+    const xs=start+0.6*(len-start);for(const side of[-hw,hw])starAt(at(xs,side),S('lane_star',5)*px,col,S('lane_star_opacity',0.85));
+    starAt(at(rounded?len+hw:len,0),S('lane_tip_star',11)*px,col,1);
+  };
   // Dash: the author's design K "Bullet" (design/previews/dash-k.svg), as the
   // mod draws it (skill_preview.rs `dash`): a body in three strips between
   // dark edges, then a nose of four steps narrowing to a white point.
@@ -713,13 +773,14 @@ function draw(cv,s,pick,pointer,champ){
   for(const f of shapes){
     const col=f.allies?ST.ally:yellow,b=base(f);g.beginPath();
     if(f.kind==='circle'){g.arc(b[0],b[1],f.radius*k,0,7);fill(col)}
-    else if(f.kind==='strip'||f.kind==='shot'){const len=(f.length>0?f.length:range)*k,hw=Math.max(f.radius,1.5)*k;strip(b,a0,len,hw,col);
-      // A shot that stops at the first unit ends in a bar, as in the game.
-      if(f.kind==='shot'&&!f.pierce){const e=[b[0]+Math.cos(a0)*len,b[1]+Math.sin(a0)*len],n=[-Math.sin(a0)*hw,Math.cos(a0)*hw];g.beginPath();g.moveTo(e[0]-n[0],e[1]-n[1]);g.lineTo(e[0]+n[0],e[1]+n[1]);stroke(hex(col,0.95),4)}}
+    else if(f.kind==='strip'||f.kind==='shot')lane(b,a0,(f.length>0?f.length:range)*k,Math.max(f.radius,1.5)*k,col,!!f.rounded);
     else if(f.kind==='rectangle'){g.save();g.translate(b[0],b[1]);g.rotate(a0);g.rect(-f.height*k/2,-f.width*k/2,f.height*k,f.width*k);g.restore();fill(col)}
     else if(f.kind==='cone'){const h=Math.acos(Math.max(-1,Math.min(1,f.cosine)));g.moveTo(b[0],b[1]);g.arc(b[0],b[1],f.radius*k,a0-h,a0+h);g.closePath();fill(col)}
-    else if(f.kind==='fan'){for(const o of fanOffsets(f.count))strip(b,a0+o*Math.PI/180,f.length*k,Math.max(f.radius,1.5)*k,col)}
-    else if(f.kind==='spread'){for(const o of spreadOffsets(f.count,f.degrees))strip(b,a0+o*Math.PI/180,(f.length>0?f.length:range)*k,Math.max(f.radius,1.5)*k,col)}
+    else if(f.kind==='fan'||f.kind==='spread'){
+      // Each line of a fan; a rounded one ends in a half circle (1.5.3).
+      const offs=f.kind==='fan'?fanOffsets(f.count):spreadOffsets(f.count,f.degrees),len=(f.length>0?f.length:range)*k,hw=Math.max(f.radius,1.5)*k;
+      for(const o of offs){const a=a0+o*Math.PI/180;strip(b,a,len,hw,col);
+        if(f.rounded){const e=[b[0]+Math.cos(a)*len,b[1]+Math.sin(a)*len];g.beginPath();g.arc(e[0],e[1],hw,a-Math.PI/2,a+Math.PI/2);fill(col)}}}
     else if(f.kind==='dash')bullet(O,b,col);
     else if(f.kind==='blink'){g.arc(b[0],b[1],9*px,0,7);stroke('#5fd3e0',3)}
     else if(f.kind==='backstep')bullet(O,[O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k],col);
@@ -727,7 +788,7 @@ function draw(cv,s,pick,pointer,champ){
   }
   if(pick.src==='unread'&&!pick.suggestion&&c.casting!==0&&c.casting!==3){g.beginPath();g.setLineDash([6*px,5*px]);g.moveTo(O[0],O[1]);g.lineTo(aim[0],aim[1]);stroke(hex(ST.white,0.8),2);g.setLineDash([])}
   // Values on the drawing, so sizes read at a glance at any zoom.
-  if(range>0.5&&c.casting!==3){const a=-Math.PI*0.75;label(`range ${+range.toFixed(1)}`,O[0]+Math.cos(a)*range*k-30*px,O[1]+Math.sin(a)*range*k)}
+  if(ring>0.5&&c.casting!==3){const a=-Math.PI*0.75;label(ring>range+0.05?`reach ${+ring.toFixed(1)} (cast range ${+range.toFixed(1)})`:`range ${+range.toFixed(1)}`,O[0]+Math.cos(a)*ring*k-30*px,O[1]+Math.sin(a)*ring*k)}
   for(const f of shapes){const b=base(f);
     if(f.kind==='circle'&&f.radius>0)label(`r ${+(+f.radius).toFixed(1)}`,b[0]+f.radius*k*0.71,b[1]+f.radius*k*0.71+12*px);
     else if(f.kind==='backstep'&&f.length>0)label(`jump ${+(+f.length).toFixed(1)}`,O[0]-dir[0]*f.length*k,O[1]-dir[1]*f.length*k+16*px);
@@ -741,7 +802,8 @@ const cards=[];
 function skillCard(champ,slot){
   const s=TABLE.champions[champ][slot],key=`${champ} ${slot}`,nm=NAMES[champ]||{};
   const div=document.createElement('div');div.className='skill';
-  div.innerHTML=`<div class="skill-heading"><span class="key">${slot}</span><div><div class="skill-name">${esc(nm['skill_'+slot]||'')}</div><span class="chip type"></span></div></div>
+  div.innerHTML=`<div class="skill-heading"><span class="key">${slot}</span><div><div class="skill-name">${esc(nm['skill_'+slot]||'')}</div></div></div>
+    <div class="skill-parts"><div class="part"><span class="part-label">Cast</span><span class="part-text part-cast"></span></div><div class="part"><span class="part-label">Hits</span><span class="part-text part-hits"></span></div></div>
     <div class="stage"><canvas tabindex="0" role="img" aria-label="${esc((nm.name||champ)+' '+slot+' skill preview')}" title="Move to aim · scroll to zoom"></canvas><div class="stage-status"><span class="chip src"></span></div></div>
     <div class="info"></div>
     <div class="quick-edit"><div class="edit"></div><div class="sizes"></div></div>
@@ -749,7 +811,7 @@ function skillCard(champ,slot){
       <div class="card-actions">
         <button data-open="numbers" title="Game numbers" aria-label="Game numbers for ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-numbers" aria-hidden="true"></span></button>
         <button data-open="details" title="Skill details" aria-label="Skill details for ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-details" aria-hidden="true"></span></button>
-        <button data-open="pieces" title="Pieces (custom preview)" aria-label="Pieces of the custom preview for ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-edit" aria-hidden="true"></span></button>
+        <button data-open="pieces" title="Edit: the cast and what it hits" aria-label="Edit ${esc((nm.name||champ)+' '+slot)}" aria-expanded="false" aria-controls="inspector"><span class="icon icon-edit" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="inspector-storage" hidden><div class="nums"></div><div class="skill-details"><div class="inspector-description"></div><div class="inspector-meta"></div></div><div class="pieces"></div></div>`;
@@ -770,10 +832,12 @@ function skillCard(champ,slot){
   const edit=card.editor;
   card.refresh=()=>{
     const p=chosen(champ,slot,s),c=s.cast||{};
-    div.querySelector('.skill-name').textContent=nm['skill_'+slot]||TYPE_LABELS[p.type]||p.type;
-    if(activeInspector?.card===card)$('inspectorTitle').textContent=nm['skill_'+slot]||TYPE_LABELS[p.type]||p.type;
-    div.querySelector('.chip.type').hidden=!nm['skill_'+slot];
-    div.querySelector('.chip.type').textContent=(p.addedTo?`${TYPE_LABELS[p.addedTo]} + `:'')+(TYPE_LABELS[p.type]||p.type);
+    div.querySelector('.skill-name').textContent=nm['skill_'+slot]||`Skill ${slot}`;
+    if(activeInspector?.card===card)$('inspectorTitle').textContent=nm['skill_'+slot]||`Skill ${slot}`;
+    // The two parts of the skill lead the card.
+    div.querySelector('.part-cast').textContent=castSummary(c);
+    const hits=hitsSummary(p,c),hitsEl=div.querySelector('.part-hits');
+    hitsEl.textContent=hits.text;const from=document.createElement('span');from.className='part-from';from.textContent=hits.from;hitsEl.appendChild(from);
     const src=div.querySelector('.chip.src');src.textContent=SOURCE_LABEL[p.src]+(p.suggestion?' · suggestion shown':'');src.className='chip src'+(p.src==='unread'?' need':p.src==='assigned'?' mine':'');
     const rng=rangeAt(c),kinds=p.shapes.map(f=>describe(f,rng)).join('; ');
     const info=div.querySelector('.info');
@@ -783,64 +847,19 @@ function skillCard(champ,slot){
     info.title=info.textContent+(p.reason?` · Reader detail: ${p.reason}`:'');
     cv.setAttribute('aria-label',`${nm.name||champ} ${slot}: ${info.title}`);
     card.details.querySelector('.inspector-meta').textContent=info.title;
-    info.textContent=[['Unit target','Point target','Directional','No aim'][c.casting]||'Passive',rng>0.5?`Range ${+rng.toFixed(1)}${c.growth?` (+${c.growth}/level)`:''}`:'',
-      p.reason?readerReason(p.reason):'',s.source==='files'?'From files · unrecorded':''].filter(Boolean).join(' · ');
-    renderSizes(card);
+    // Below the drawing only what the two parts do not say.
+    info.textContent=[p.reason?readerReason(p.reason):'',s.source==='files'?'From the champion file: no match has recorded it':''].filter(Boolean).join(' · ');
+    info.hidden=!info.textContent;
     card.redraw();
   };
   card.build=()=>{
-    edit.innerHTML='';const a=assigned[key],read=readShape(champ,slot,s);
+    edit.innerHTML='';
     const head=document.createElement('div');head.className='fields edit-toolbar';
-    const lab=document.createElement('label');lab.textContent='Preview type';
-    const sel=document.createElement('select');
-    sel.setAttribute('aria-label',`${champ} ${slot} preview type`);
-    const keepLabel=read.src==='unread'?'None (not readable yet)':`Use what the game reads (${TYPE_LABELS[read.type]})`;
-    sel.innerHTML=`<option value="">${esc(keepLabel)}</option>`+Object.entries(TYPES).map(([t,v])=>`<option value="${t}">${esc(v.label)}</option>`).join('');
-    sel.value=a?a.type:'';lab.appendChild(sel);head.appendChild(lab);
-    sel.onchange=()=>{if(!sel.value)delete assigned[key];
-      // Custom starts as a copy of what the card draws now.
-      else if(sel.value==='custom')assigned[key]={type:'custom',pieces:toPieces(champ,slot,s)};
-      else{const g=guess(sel.value,champ,slot);const v=g.value;if((a&&a.allies)||(g.allies&&AREA_TYPES.includes(sel.value)))v.allies=true;assigned[key]=v}changed(card);
-      if(sel.value==='custom')openInspector(card,'pieces',sel)};
-    const p=chosen(champ,slot,s);
-    if(!a&&p.suggestion){const b=document.createElement('button');b.className='small';b.textContent=`Use suggestion: ${TYPES[p.suggestion.type].label}`;b.onclick=()=>{assigned[key]=clone(p.suggestion);changed(card)};head.appendChild(b)}
-    if(a){const b=document.createElement('button');b.className='small';b.textContent='Reset';b.title=read.src==='unread'?'Remove assignment':'Back to what the game reads';b.setAttribute('aria-label',`${nm.name||champ} ${slot}: ${b.title}`);b.onclick=()=>{delete assigned[key];changed(card)};head.appendChild(b)}
+    head.append(hitsChoice(card));
+    const b=document.createElement('button');b.className='small';b.textContent='Edit';
+    b.title='Edit both parts: the cast and what it hits';b.setAttribute('aria-label',`${nm.name||champ} ${slot}: edit`);
+    b.onclick=()=>openInspector(card,'pieces',b);head.appendChild(b);
     edit.appendChild(head);
-    if(!a)return;
-    if(a.type==='custom'){
-      const box=document.createElement('div');box.className='custom-summary';
-      const text=document.createElement('span');text.textContent=`${a.pieces.length} piece${a.pieces.length===1?'':'s'} · drawn exactly as listed`;
-      const b=document.createElement('button');b.className='small';b.textContent='Edit pieces';
-      b.onclick=()=>openInspector(card,'pieces',b);box.append(text,b);edit.appendChild(box);return}
-    const g=guess(a.type,champ,slot),t=TYPES[a.type],box=document.createElement('div');box.className='fields edit-values';
-    for(const f of t.fields){
-      const l=document.createElement('label');l.title=FIELD_HELP[f]||'';l.append(f.replace('_',' '));
-      const i=document.createElement('input');i.type='number';i.step='any';i.min='0';i.max='10000';i.value=a[f]??'';
-      i.setAttribute('aria-label',`${nm.name||champ} ${slot} ${f.replace('_',' ')}`);
-      const rng=rangeAt(s.cast);
-      // An empty optional box says what it means.
-      i.placeholder=f==='length'?`${+rng.toFixed(1)} (cast range)`:f==='distance'&&a.type==='dash'?'to the aim':f==='area_radius'?'none':'';
-      const hint=document.createElement('span');hint.className='small muted';
-      const check=()=>{const v=a[f],need=!(t.optional||[]).includes(f);const bad=v===undefined?need:!(v>=0&&v<=10000);i.classList.toggle('invalid',bad);
-        hint.title=g.from[f]||'';
-        hint.textContent=bad?(v===undefined?'Enter a value':'Must be 0–10000'):(g.from[f]&&v===g.value[f]?`from ${g.from[f].split(', learned')[0]}`:v===undefined?'':'your value');
-        hint.className='small '+(bad?'bad':'muted')};
-      i.oninput=()=>{const v=parseFloat(i.value);if(isNaN(v))delete a[f];else a[f]=v;check();changed(card,true)};
-      check();l.append(i,hint);box.appendChild(l);
-    }
-    for(const fl of[...(t.flags||[]),...(AREA_TYPES.includes(a.type)?['allies']:[])]){const l=document.createElement('label');const i=document.createElement('input');i.type='checkbox';i.checked=!!a[fl];
-      i.onchange=()=>{if(i.checked)a[fl]=true;else delete a[fl];changed(card,true)};l.append(i,FLAG_LABELS[fl]);box.appendChild(l)}
-    edit.appendChild(box);
-    if(read.shapes.length&&(read.src==='live'||read.src==='file')){
-      // Replace what the game reads, or keep it and draw this on top.
-      const what=`${TYPE_LABELS[read.type]} (${read.shapes.map(f=>describe(f,rangeAt(s.cast))).join('; ')})`;
-      const mode=document.createElement('div');mode.className='fields edit-modes';
-      for(const[v,l]of[['replace','Replace'],['add','Add to game preview']]){
-        const lab=document.createElement('label');const r=document.createElement('input');r.type='radio';r.name=`mode-${key}`;r.checked=(v==='add')===!!a.add;
-        r.onchange=()=>{if(v==='add')a.add=true;else delete a.add;changed(card)};lab.append(r,l);mode.appendChild(lab)}
-      edit.appendChild(mode);
-      const nt=document.createElement('div');nt.className='note '+(a.add?'muted':'warn');
-      nt.title=a.add?`Drawn on top of what the game reads: ${what}.`:`This replaces what the game reads: ${what}.`;nt.textContent=a.add?'Keeps the game preview underneath.':'Replaces the game preview.';edit.appendChild(nt)}
   };
   card.build();cards.push(card);return div;
 }
@@ -855,12 +874,12 @@ function changed(card,keepEditor){if(!keepEditor)card.build();card.untick();card
 /// (typed in degrees, kept as the cosine the mod reads).
 const BLOCKS={
   circle:{label:'Circle',sizes:[['radius','Radius','d']],at:'aim'},
-  strip:{label:'Line',sizes:[['radius','Width each side','d'],['length','Length (0: cast range)','d']],at:'caster',projectile:true},
-  shot:{label:'Shot',sizes:[['radius','Width each side','d'],['length','Length','d']],at:'caster',projectile:true,pierce:true},
+  strip:{label:'Line',sizes:[['radius','Width each side','d'],['length','Length (0: cast range)','d']],at:'caster',projectile:true,rounded:true},
+  shot:{label:'Shot',sizes:[['radius','Width each side','d'],['length','Length','d']],at:'caster',projectile:true,pierce:true,rounded:true},
   rectangle:{label:'Rectangle',sizes:[['width','Width','d'],['height','Depth','d']],at:'aim'},
   cone:{label:'Cone',sizes:[['radius','Radius','d'],['cosine','Opening (degrees)','cos']],at:'caster'},
-  spread:{label:'Fan of lines',sizes:[['count','Lines','c'],['radius','Width each side','d'],['length','Length (0: cast range)','d'],['degrees','Total spread (degrees)','a']],at:'caster',projectile:true},
-  fan:{label:'Blades (Dancer R)',sizes:[['count','Blades','c'],['radius','Width each side','d'],['length','Length','d']],at:'caster',projectile:true},
+  spread:{label:'Fan of lines',sizes:[['count','Lines','c'],['radius','Width each side','d'],['length','Length (0: cast range)','d'],['degrees','Total spread (degrees)','a']],at:'caster',projectile:true,rounded:true},
+  fan:{label:'Blades (Dancer R)',sizes:[['count','Blades','c'],['radius','Width each side','d'],['length','Length','d']],at:'caster',projectile:true,rounded:true},
   dash:{label:'Dash path',sizes:[],at:'aim',places:['aim','end'],noAllies:true},
   blink:{label:'Blink',sizes:[],at:'aim',places:['aim','end'],noAllies:true},
   backstep:{label:'Jump back',sizes:[['length','Distance','d']],at:'caster',places:['caster'],noAllies:true},
@@ -871,8 +890,12 @@ const PLACE_LABELS={caster:'At the champion',aim:'At the aim',forward:'Ahead of 
 const MOVE_PLACE_LABELS={aim:'To the aim',end:'A fixed distance of'};
 const SOURCE_MODES={typed:'Typed number',number:'Game number',two:'Two game numbers multiplied',cast:'Cast range'};
 const placeOf=at=>typeof at==='string'?at:at&&typeof at==='object'?Object.keys(at)[0]:'caster';
-/// The skill's numbers as the game keeps them (distances in thousandths).
-const rawNumbers=(champ,slot)=>(NUMBERS[champ]||{})[slot]||{};
+/// What the game answered by name in a recorded match (its balance
+/// patches included), which is what the mod reads.
+const recordedNumbers=(champ,slot)=>TABLE.numbers?.[champ]?.[slot]?.values||{};
+/// The skill's numbers as the game keeps them (distances in thousandths):
+/// the recorded answers first, then the champion's file.
+const rawNumbers=(champ,slot)=>Object.assign({},(NUMBERS[champ]||{})[slot]||{},recordedNumbers(champ,slot));
 /// Names used with more than one value: the game cannot be asked by name.
 const repeated=(champ,slot)=>(USES[champ]||{})[slot]||{};
 function modeOf(src){return !src||typeof src!=='object'||'fixed' in src?'typed':src.cast_range?'cast':src.by!==undefined?'two':'number'}
@@ -924,11 +947,25 @@ function newPiece(kind,old){
   if(kind==='shot'){p.length={cast_range:true};p.pierce=true}
   if(keep)p.at=clone(old.at);
   if(old?.allies&&!b.noAllies)p.allies=true;
+  // A changed block keeps every size the new block also has, with its
+  // source (Line to Shot keeps its width and length), and the projectile
+  // look where the new block has it (the author, 2026-10-22).
+  if(old)for(const[field]of b.sizes)if(old[field]!==undefined&&BLOCKS[old.kind]?.sizes.some(([f])=>f===field))p[field]=clone(old[field]);
+  if(old?.projectile&&b.projectile)p.projectile=true;
+  // Rounded ends by default for a line or shot (the game's line hit reaches
+  // its width past both ends; the author, 2026-10-23); a changed block that
+  // had the choice keeps it.
+  if(b.rounded&&(BLOCKS[old?.kind]?.rounded?old.rounded:true))p.rounded=true;
   return p;
 }
 /// What the card draws now, as pieces whose sizes keep their sources.
 function toPieces(champ,slot,s){
-  const p=chosen(champ,slot,s);if(p.hidden||p.type==='custom')return p.type==='custom'?clone(assigned[`${champ} ${slot}`].pieces):[];
+  const p=chosen(champ,slot,s);if(p.type==='custom')return clone(assigned[`${champ} ${slot}`].pieces);
+  return piecesOf(p,champ,slot);
+}
+/// Shapes as drawn (`chosen`), as pieces whose sizes keep their sources.
+function piecesOf(p,champ,slot){
+  if(p.hidden)return[];
   // A size keeps its source only where the source gives this very value.
   const sizes=p.src==='live'||p.src==='file'?Object.fromEntries((SOURCES[champ]?.[slot]?.sizes||[]).map(z=>[z.key,z])):{};
   const src=(key,value)=>sizes[key]&&Math.abs(sizes[key].value-value)<0.01?clone(sizes[key].source):fixed(value);
@@ -936,11 +973,102 @@ function toPieces(champ,slot,s){
   (p.shapes||[]).forEach((f,i)=>{
     if(!BLOCKS[f.kind]||out.length>=MAX_PIECES)return; // a segment has absolute points: it cannot be shipped
     const piece={kind:f.kind};
-    for(const[field,,role]of BLOCKS[f.kind].sizes){if(f[field]===undefined)continue;piece[field]=role==='cos'?fixed(f[field]):src(`${i}.${field}`,f[field])}
+    for(const[field,,role]of BLOCKS[f.kind].sizes){if(f[field]===undefined)continue;piece[field]=role==='cos'?{fixed:f[field]}:src(`${i}.${field}`,f[field])}
     piece.at=f.at&&typeof f.at==='object'?{[placeOf(f.at)]:src(`${i}.at.${placeOf(f.at)}`,Object.values(f.at)[0])}:(f.at||BLOCKS[f.kind].at);
-    for(const flag of['allies','projectile','pierce'])if(f[flag])piece[flag]=true;
+    for(const flag of['allies','projectile','pierce','rounded'])if(f[flag])piece[flag]=true;
     out.push(piece)});
   return out;
+}
+/// An old preview type (before 1.5.2) as the pieces that draw the same:
+/// sizes keep their sources (`SOURCES`, the author's picks included); a
+/// line's or fan's full width becomes half on each side; on top of what the
+/// game reads when it was added; and a dash the old rule hid (a unit cast,
+/// or one beside an area: `main_purpose` in the mod) is left out, since
+/// pieces are drawn exactly as listed. None for "no preview" and pieces.
+function legacyPieces(champ,slot,s,a){
+  if(!a||a.type==='custom'||a.type==='no_preview'||!TYPES[a.type])return null;
+  const c=s?.cast||{},sizes=Object.fromEntries((SOURCES[champ]?.[slot]?.sizes||[]).map(z=>[z.key,z]));
+  const src=(name)=>{const v=a[name],z=sizes[`assigned.${name}`];return z&&Math.abs(z.value-v)<0.01?clone(z.source):{fixed:v}};
+  const half=x=>{if('fixed' in x)return{fixed:x.fixed/2};const o=clone(x);if(o.name!==undefined){o.times=(o.times??1)*0.5;if(o.times===1)delete o.times;if(o.recorded!==undefined)o.recorded=o.recorded/2;return o}return{fixed:sourceValue(x,champ,slot,c)/2}};
+  const out=a.add?piecesOf(readShape(champ,slot,s),champ,slot):[],side=p=>(a.allies&&!['dash','blink','backstep','reach'].includes(p.kind)?Object.assign(p,{allies:true}):p);
+  const put=p=>out.push(side(p));
+  switch(a.type){
+    case'unit_target':if(a.area_radius>0)put({kind:'circle',radius:src('area_radius'),at:'aim'});break;
+    case'self_circle':put({kind:'circle',radius:src('radius'),at:'caster'});break;
+    case'aim_circle':put({kind:'circle',radius:src('radius'),at:'aim'});break;
+    case'aim_rectangle':put({kind:'rectangle',width:src('width'),height:src('depth'),at:'aim'});break;
+    case'line':put({kind:'strip',radius:half(src('width')),length:a.length!==undefined?src('length'):{fixed:0},at:'caster'});break;
+    case'fan':put({kind:'spread',count:src('count'),radius:half(src('width')),length:a.length!==undefined?src('length'):{fixed:0},degrees:src('spread'),at:'caster'});break;
+    case'cone':put({kind:'cone',radius:src('radius'),cosine:{fixed:Math.cos(a.angle/2*Math.PI/180)},at:'caster'});break;
+    case'dash':put({kind:a.blink?'blink':'dash',at:a.distance>0?{end:src('distance')}:'aim'});break;
+    case'jump_back':put({kind:'backstep',length:src('distance'),at:'caster'});break;
+    case'attack_reach':put({kind:'reach',extra:src('extra'),at:'caster'});break;
+  }
+  const areas=out.some(p=>!p.projectile&&!['dash','blink'].includes(p.kind));
+  return c.casting===0||areas?out.filter(p=>!['dash','blink'].includes(p.kind)):out;
+}
+/// Every saved old preview type whose champion is loaded, as pieces (in
+/// memory: the author's file changes on Save). Returns [converted, kept].
+function convertLegacy(){
+  let converted=0,kept=0;
+  for(const[key,a]of Object.entries(assigned)){
+    if(!a||a.type==='custom'||a.type==='no_preview')continue;
+    const[champ,slot]=key.split(' '),s=TABLE.champions[champ]?.[slot];
+    if(!s){kept++;continue}
+    const pieces=legacyPieces(champ,slot,s,a);
+    if(pieces){const p={type:'custom',pieces};stampPieces(p,champ,slot,s.cast);assigned[key]=p;converted++}
+  }
+  return[converted,kept];
+}
+function showConverted([converted,kept]){
+  const b=$('converted');if(!b)return;b.hidden=!converted;
+  b.textContent=`${converted} saved preview${converted===1?'':'s'} changed to pieces (they draw the same). Save to keep them.`
+    +(kept?` ${kept} kept as saved: their champion is not loaded (enable its pack to change them).`:'');
+}
+/// The choice for part 2: what the game reads, the author's pieces, or
+/// nothing. The same control on the card and in the Edit panel.
+function hitsChoice(card){
+  const {champ,slot,s}=card,key=`${champ} ${slot}`,a=assigned[key],read=readShape(champ,slot,s);
+  const lab=document.createElement('label');lab.textContent='What it hits';
+  const sel=document.createElement('select');sel.setAttribute('aria-label',`${champ} ${slot}: what it hits`);
+  const readLabel=read.src==='unread'?'Not readable yet (cast cue only)':read.hidden?'Nothing (passive or instant)':'What the game reads';
+  sel.innerHTML=`<option value="">${esc(readLabel)}</option><option value="custom">My pieces</option><option value="no_preview">Nothing (no preview, no range)</option>`;
+  sel.value=!a?'':a.type==='no_preview'?'no_preview':'custom';
+  sel.onchange=()=>{if(!sel.value)delete assigned[key];
+    // My pieces start as a copy of what the card draws now.
+    else if(sel.value==='custom')assigned[key]={type:'custom',pieces:toPieces(champ,slot,s)};
+    else assigned[key]={type:'no_preview'};
+    changed(card);if(sel.value==='custom'&&activeInspector?.card!==card)openInspector(card,'pieces',sel)};
+  lab.appendChild(sel);return lab;
+}
+/// The shapes drawn for a skill: pieces as listed, anything else by the
+/// mod's main-purpose rule (as `draw` does).
+const shownShapes=(p,c)=>p.exact?p.shapes:mainPurpose(p.shapes,(c||{}).casting===0);
+/// Part 2 of a skill in words: what it hits, and where that comes from.
+function hitsSummary(p,c){
+  const rng=rangeAt(c),shapes=shownShapes(p,c);
+  const from={live:'what the game reads',file:'from the champion file',unit:'what the game reads',instant:'no aim',passive:'passive: never cast',unread:'not readable yet'}[p.src]
+    ||(p.type==='no_preview'?'your choice: nothing':p.type==='custom'?'your pieces':'your saved preview');
+  if(p.src==='unread')return{text:p.suggestion?`Suggested: ${shapes.map(f=>describe(f,rng)).join('; ')}`:'Not readable yet',from:p.suggestion?'a guess from its numbers, not saved':from};
+  if(!shapes.length)return{text:p.hidden?'Nothing':c&&c.casting===0?'The target only':'Nothing',from};
+  return{text:shapes.map(f=>describe(f,rng)).join('; '),from};
+}
+/// The kinds of piece a skill's drawing holds, for the Hits filter.
+const HIT_KINDS={circle:'Circle',line:'Line',shot:'Shot',rectangle:'Rectangle',cone:'Cone',fan:'Fan of lines',dash:'Dash',blink:'Blink',jump_back:'Jump back',ring:'Attack range ring',nothing:'Nothing or the target only',unread:'Not readable yet'};
+function hitKinds(p,c){
+  if(p.src==='unread')return['unread'];
+  const kinds=new Set(shownShapes(p,c).map(f=>({circle:'circle',strip:'line',segment:'line',shot:'shot',rectangle:'rectangle',cone:'cone',spread:'fan',fan:'fan',dash:'dash',blink:'blink',backstep:'jump_back',reach:'ring'})[f.kind]).filter(Boolean));
+  return kinds.size?[...kinds]:['nothing'];
+}
+/// The cast kinds, for the Cast filter.
+const CAST_KINDS={unit:'Cast on a unit',point:'Cast at a point',direction:'Aimed in a direction',none:'No aim',passive:'Passive'};
+const castKind=c=>(['unit','point','direction','none'][(c||{}).casting])||'passive';
+/// Part 1 of a skill: how it is cast, in words (from the game).
+function castSummary(c){
+  const how=['Cast on a unit','Cast at a point','Aimed in a direction','No aim'][c.casting]||'Passive (never cast)';
+  const side=c.target===undefined||c.casting===3||!(c.casting>=0&&c.casting<=3)?'':c.target<=4?' · on allies':c.target<=9?' · on enemies':c.target<=12?' · on anyone':'';
+  const rng=rangeAt(c);
+  return how+side+(rng>0.5&&c.casting!==3?` · range ${+rng.toFixed(1)}${c.growth?` (+${c.growth} per level)`:''}`:'');
 }
 /// One size: its source and, by the source, a typed number, the game's
 /// number(s) with a factor, or nothing (the cast range).
@@ -953,13 +1081,16 @@ function sizeRow(card,label,src,role,set,quiet,redo){
   const names=Object.keys(rawNumbers(champ,slot)).sort(),twice=repeated(champ,slot);
   if(src&&src.name&&!names.includes(src.name))names.push(src.name);
   const numberSelect=(value,labelText,onPick)=>{const sel=document.createElement('select');sel.setAttribute('aria-label',labelText);
-    sel.innerHTML=names.map(n=>{const many=twice[n];return`<option value="${esc(n)}"${many?' disabled':''}>${esc(n)} ${many?`(used ${many.length} times: ${many.join(', ')})`:`· ${rawNumbers(champ,slot)[n]??'not read'}`}</option>`}).join('');
+    // A name used more than once: the game answers one of its values by
+    // name; a recorded match says which.
+    const answered=recordedNumbers(champ,slot);
+    sel.innerHTML=names.map(n=>{const many=twice[n];return`<option value="${esc(n)}">${esc(n)} ${many?(answered[n]!==undefined?`· the game answers ${answered[n]} (of ${many.join(', ')})`:`· ${many.join(' or ')}: which one is unknown until a match records it`):`· ${rawNumbers(champ,slot)[n]??'not read'}`}</option>`}).join('');
     sel.value=value;sel.onchange=()=>{onPick(sel.value);changedSize()};return sel};
   mode.onchange=()=>{const now=sourceValue(src,champ,slot,cast),usable=names.filter(n=>!twice[n]);
     const next=mode.value==='typed'?fixed(Number.isFinite(now)?now:0)
       :mode.value==='cast'?{cast_range:true}
-      :mode.value==='two'?{name:usable[0]||'',by:usable[1]||usable[0]||''}
-      :Object.assign({name:usable[0]||''},role==='c'?{unit:'count'}:role==='a'?{unit:'degrees'}:{});
+      :mode.value==='two'?{name:usable[0]||names[0]||'',by:usable[1]||usable[0]||names[0]||''}
+      :Object.assign({name:usable[0]||names[0]||''},role==='c'?{unit:'count'}:role==='a'?{unit:'degrees'}:{});
     set(next);redo()};
   const inputs=document.createElement('span');inputs.className='size-inputs';
   const note=document.createElement('span');note.className='size-note small muted';
@@ -976,7 +1107,8 @@ function sizeRow(card,label,src,role,set,quiet,redo){
     const shown=role==='cos'?`${+(Math.acos(Math.max(-1,Math.min(1,v)))*360/Math.PI).toFixed(1)}°`:Number.isFinite(v)?+v.toFixed(2):'?';
     note.className='size-note small '+(bad?'bad':'muted');
     note.textContent=bad?'Not a size: enter a value':m==='typed'?`= ${shown} · fixed: does not follow patches`:m==='cast'?`= ${shown} · follows level and patches`
-      :`= ${shown}`+(m==='two'?` (${src.name} ÷ 1000 × ${src.by}${src.times?` × ${src.times}`:''})`:role==='d'?` (${src.name} ÷ 1000${src.times?` × ${src.times}`:''})`:'')+' · follows edits and patches';
+      :`= ${shown}`+(m==='two'?` (${src.name} ÷ 1000 × ${src.by}${src.times?` × ${src.times}`:''})`:role==='d'?` (${src.name} ÷ 1000${src.times?` × ${src.times}`:''})`:'')+' · follows edits and patches'
+      +([src.name,src.by].some(n=>n&&twice[n]&&recordedNumbers(champ,slot)[n]===undefined)?' · a name used more than once: the game\'s choice is unknown until a match records it':'');
     if(!initial)quiet()}
   row.append(name,mode,inputs,note);changedSize(true);return row;
 }
@@ -1011,15 +1143,28 @@ function pieceEditor(card,a,piece,i,redo,quiet){
   if(!b.noAllies)flag('allies','For allies (blue)');
   if(b.projectile)flag('projectile','Projectile (stat-rule margin)');
   if(b.pierce)flag('pierce','Passes through units');
+  // The game's line hit: everything within the width of the line, so it
+  // also reaches that far behind its start and past its end (1.5.2).
+  if(b.rounded)flag('rounded','Rounded ends (reaches its width past both ends)');
   if(flags.children.length)box.appendChild(flags);
   return box;
 }
 /// The Pieces panel of a card with a custom preview.
 function renderPieces(card){
-  const box=card.pieces;if(!box)return;box.innerHTML='';
-  const key=`${card.champ} ${card.slot}`,a=assigned[key];
-  if(!a||a.type!=='custom'){const p=document.createElement('p');p.className='no-content';
-    p.textContent='Choose "Custom (pieces)" as the preview type on the card to build this preview from pieces. It starts as a copy of what the card shows now.';box.appendChild(p);return}
+  let box=card.pieces;if(!box)return;box.innerHTML='';
+  const key=`${card.champ} ${card.slot}`,a=assigned[key],c=card.s.cast||{};
+  const section=(title)=>{const sec=document.createElement('section');sec.className='edit-section';const h=document.createElement('h3');h.textContent=title;sec.appendChild(h);box.appendChild(sec);return sec};
+  const text=(cls,t)=>{const e=document.createElement('div');e.className=cls;e.textContent=t;return e};
+  // 1. How it is cast: from the game, so the preview matches how the mod aims.
+  const cast=section('1 · Cast');
+  cast.append(text('part-text',castSummary(c)),text('note muted','From the game: how the mod aims this skill. It cannot be changed here.'));
+  if(c.casting===0)cast.appendChild(text('note muted','The game marks the target. "Aim" means the target unit; the pieces show while a unit is under the cursor.'));
+  // 2. What it hits.
+  const hitsBox=section('2 · What it hits');
+  hitsBox.appendChild(hitsChoice(card));
+  if(!a||a.type!=='custom'){const p=chosen(card.champ,card.slot,card.s),h=hitsSummary(p,c);
+    hitsBox.append(text('part-text',h.text),text('note muted',a&&a.type==='no_preview'?'Nothing is drawn, not even the range.':'Choose "My pieces" to change it: they start as a copy of this.'));return}
+  box=hitsBox;
   const update=()=>{stampPieces(a,card.champ,card.slot,card.s.cast)};
   const redo=()=>{update();changed(card)},quiet=()=>{update();changed(card,true)};
   a.pieces.forEach((piece,i)=>{if(BLOCKS[piece.kind])box.appendChild(pieceEditor(card,a,piece,i,redo,quiet))});
@@ -1029,11 +1174,8 @@ function renderPieces(card){
   const b=document.createElement('button');b.textContent='Add piece';b.disabled=a.pieces.length>=MAX_PIECES;
   b.onclick=()=>{a.pieces.push(newPiece(pick.value));redo()};
   add.append(pick,b);box.appendChild(add);
-  const notes=document.createElement('p');notes.className='note muted';
-  const twice=Object.entries(repeated(card.champ,card.slot));
-  notes.textContent=(a.pieces.length>=MAX_PIECES?`At most ${MAX_PIECES} pieces, as for every preview. `:'')
-    +(twice.length?`Numbers used more than once in this skill cannot follow patches by name; type their value: ${twice.map(([n,v])=>`${n} (${v.join(', ')})`).join('; ')}.`:'');
-  if(notes.textContent)box.appendChild(notes);
+  if(a.pieces.length>=MAX_PIECES){const notes=document.createElement('p');notes.className='note muted';
+    notes.textContent=`At most ${MAX_PIECES} pieces, as for every preview.`;box.appendChild(notes)}
 }
 
 /* ---------- where each size comes from (step 4, stage A) ---------- */
@@ -1082,7 +1224,7 @@ function savePicks(){
 function refreshSources(now){
   if(!SERVER)return;clearTimeout(sourcesTimer);
   sourcesTimer=setTimeout(()=>fetch('/api/sources',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({skills:assigned,picks})})
-    .then(r=>r.json()).then(r=>{if(!r.ok)throw 0;SOURCES=r.sources||{};cards.forEach(renderSizes);fillFilters();updateHeader();showNumbersBox()}).catch(()=>{}),now?0:300);
+    .then(r=>r.json()).then(r=>{if(!r.ok)throw 0;SOURCES=r.sources||{};fillFilters();updateHeader();showNumbersBox()}).catch(()=>{}),now?0:300);
 }
 function showNumbersBox(){
   const waiting=Object.keys(TABLE.champions).filter(c=>SLOTS.some(k=>sizesOf(c,k).some(z=>z.status==='no_numbers')));
@@ -1146,7 +1288,7 @@ function openInspector(card,tab,button){
   activeInspector={card,tab,button};
   $('inspectorKey').textContent=card.slot;
   $('inspectorChampion').textContent=NAMES[card.champ]?.name||card.champ;
-  $('inspectorTitle').textContent=NAMES[card.champ]?.['skill_'+card.slot]||TYPE_LABELS[chosen(card.champ,card.slot,card.s).type]||card.slot;
+  $('inspectorTitle').textContent=NAMES[card.champ]?.['skill_'+card.slot]||`Skill ${card.slot}`;
   for(const [key,node]of [['numbers',card.numbers],['details',card.details],['pieces',card.pieces]])if(node)$('inspectorPanel-'+key).appendChild(node);
   if(card.pieces)renderPieces(card);
   card.div.classList.add('is-active');$('inspector').hidden=false;
@@ -1167,14 +1309,15 @@ function matches(champ,slot,f){
   if(f.status==='checked'||f.status==='unchecked'){if(checked.has(key)!==(f.status==='checked'))return false}
   else if(f.status==='pick'||f.status==='nonumbers'){const want=f.status==='pick'?'pick':'no_numbers';if(!sizesOf(champ,slot).some(z=>z.status===want))return false}
   else if(f.status!=='all'&&statusOf(p)!==f.status)return false;
-  if(f.type&&p.type!==f.type)return false;
+  if(f.cast&&castKind(s.cast)!==f.cast)return false;
+  if(f.hits&&!hitKinds(p,s.cast).includes(f.hits))return false;
   if(f.mod&&SOURCE[champ]!==f.mod)return false;
   if(f.q){const hay=[champ,nm.name,SOURCE[champ],nm['skill_'+slot],slot].join(' ').toLowerCase();if(!hay.includes(f.q))return false}
   return true;
 }
-function filters(){return{q:$('find').value.trim().toLowerCase(),status:$('status').value||'all',type:$('type').value,mod:$('mod').value}}
+function filters(){return{q:$('find').value.trim().toLowerCase(),status:$('status').value||'all',cast:$('cast').value,hits:$('hits').value,mod:$('mod').value}}
 function render(){
-  const f=filters();store.set('filters',{status:f.status,type:f.type,mod:f.mod,q:$('find').value,level:view.level,span:view.span});
+  const f=filters();store.set('filters',{status:f.status,cast:f.cast,hits:f.hits,mod:f.mod,q:$('find').value,level:view.level,span:view.span});
   closeInspector(false);
   const list=$('list');list.innerHTML='';cards.length=0;
   const names=Object.keys(TABLE.champions).sort((a,b)=>(NAMES[a]?.name||a).localeCompare(NAMES[b]?.name||b));
@@ -1193,16 +1336,19 @@ function render(){
   fillFilters();updateHeader(shown);
 }
 function fillFilters(){
-  const counts={status:{},type:{},mod:{}};
-  for(const c of Object.keys(TABLE.champions))for(const k of SLOTS){const p=chosen(c,k,TABLE.champions[c][k]);
-    const st=statusOf(p);counts.status[st]=(counts.status[st]||0)+1;counts.type[p.type]=(counts.type[p.type]||0)+1;counts.mod[SOURCE[c]]=(counts.mod[SOURCE[c]]||0)+1}
+  const counts={status:{},cast:{},hits:{},mod:{}};
+  for(const c of Object.keys(TABLE.champions))for(const k of SLOTS){const s=TABLE.champions[c][k],p=chosen(c,k,s);
+    const st=statusOf(p);counts.status[st]=(counts.status[st]||0)+1;counts.mod[SOURCE[c]]=(counts.mod[SOURCE[c]]||0)+1;
+    const ck=castKind(s.cast);counts.cast[ck]=(counts.cast[ck]||0)+1;
+    for(const h of hitKinds(p,s.cast))counts.hits[h]=(counts.hits[h]||0)+1}
   const total=Object.values(counts.status).reduce((a,b)=>a+b,0);
   const ticked=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>checked.has(`${c} ${k}`)).length,0);
   counts.status.checked=ticked;counts.status.unchecked=total-ticked;
   for(const[st,want]of[['pick','pick'],['nonumbers','no_numbers']])counts.status[st]=Object.keys(TABLE.champions).reduce((n,c)=>n+SLOTS.filter(k=>sizesOf(c,k).some(z=>z.status===want)).length,0);
   const set=(id,first,entries)=>{const el=$(id),v=el.value;el.innerHTML=`<option value="${id==='status'?'all':''}">${first}</option>`+entries.map(([k,l,n])=>`<option value="${esc(k)}">${esc(l)} (${n})</option>`).join('');el.value=[...el.options].some(o=>o.value===v)?v:el.options[0].value};
   set('status',`Show: all skills (${total})`,Object.entries(STATUS).filter(([k])=>k!=='all'&&(counts.status[k]||['unchecked','checked','need'].includes(k))).map(([k,l])=>[k,'Show: '+l,counts.status[k]||0]));
-  set('type','Every preview type',Object.keys(TYPE_LABELS).filter(t=>counts.type[t]).map(t=>[t,TYPE_LABELS[t],counts.type[t]]));
+  set('cast','Every cast',Object.keys(CAST_KINDS).filter(t=>counts.cast[t]).map(t=>[t,CAST_KINDS[t],counts.cast[t]]));
+  set('hits','Everything',Object.keys(HIT_KINDS).filter(t=>counts.hits[t]).map(t=>[t,HIT_KINDS[t],counts.hits[t]]));
   set('mod','Every source',Object.keys(counts.mod).sort((a,b)=>a==='Base game'?-1:b==='Base game'?1:a.localeCompare(b)).map(m=>[m,m,counts.mod[m]]));
 }
 function updateHeader(shown){
@@ -1225,7 +1371,7 @@ function updateHeader(shown){
   $('saveState').dataset.state=bad.length?'invalid':d?'dirty':'saved';
   $('saveState').innerHTML=bad.length?`<span class="bad">${bad.length} invalid · not saved</span>`:d?'<span class="warn">Unsaved changes</span>':'<span class="muted">Saved</span>';
 }
-function clearFilters(){$('find').value='';$('status').value='all';$('type').value='';$('mod').value='';render()}
+function clearFilters(){$('find').value='';$('status').value='all';$('cast').value='';$('hits').value='';$('mod').value='';render()}
 
 /* ---------- saving ---------- */
 /// The shipped preview table's rebuild after a save (tools/build_preview_table.py):
@@ -1270,16 +1416,19 @@ async function start(){
   const draft=store.get('draft',null);
   if(draft&&!same(draft,saved)){const b=$('restore');b.hidden=false;
     b.innerHTML=`<span>You have unsaved changes from last time (${Object.keys(draft).length} assignment(s)).</span><button id="restoreYes">Restore them</button><button id="restoreNo">Discard</button>`;
-    $('restoreYes').onclick=()=>{assigned=clone(draft);b.hidden=true;render();refreshSources(true)};$('restoreNo').onclick=()=>{store.del('draft');b.hidden=true}}
+    $('restoreYes').onclick=()=>{assigned=clone(draft);showConverted(convertLegacy());b.hidden=true;render();refreshSources(true)};$('restoreNo').onclick=()=>{store.del('draft');b.hidden=true}}
   const f=store.get('filters',{});
   $('find').value=f.q||'';view.level=f.level||1;view.span=Math.min(SPAN_MAX,Math.max(SPAN_MIN,+f.span||SPAN_DEFAULT));$('level').value=view.level;$('levelValue').textContent=view.level;$('zoom').value=zoomOf(view.span);$('zoomValue').textContent=`${Math.round(view.span)} units across`;
   // Keep guidance available on demand; the drawings lead on first load.
-  fillFilters();if(f.status)$('status').value=f.status;if(f.type)$('type').value=f.type;if(f.mod)$('mod').value=f.mod;
+  fillFilters();if(f.status)$('status').value=f.status;if(f.cast)$('cast').value=f.cast;if(f.hits)$('hits').value=f.hits;if(f.mod)$('mod').value=f.mod;
+  // Old preview types become pieces (the author, 2026-10-22: one way of
+  // working, the cast and what it hits).
+  showConverted(convertLegacy());
   render();showNumbersBox();setLoading(false);
   // Restored unsaved assignments change which sizes are drawn.
   if(!same(assigned,saved))refreshSources(true);
 }
-$('find').oninput=render;['status','type','mod'].forEach(id=>$(id).onchange=render);$('clear').onclick=clearFilters;
+$('find').oninput=render;['status','cast','hits','mod'].forEach(id=>$(id).onchange=render);$('clear').onclick=clearFilters;
 $('level').oninput=()=>{view.level=+$('level').value;$('levelValue').textContent=view.level;cards.forEach(c=>c.refresh());store.set('filters',Object.assign(store.get('filters',{}),{level:view.level}))};
 $('zoom').oninput=()=>setSpan(spanOf(+$('zoom').value));
 function showHelp(show){if(show){closeInspector(false);$('help').style.maxWidth=`${(document.documentElement.clientWidth||innerWidth)-24}px`}$('help').hidden=!show;$('helpButton').setAttribute('aria-expanded',String(show));if(show)$('closeHelp').focus({preventScroll:true})}

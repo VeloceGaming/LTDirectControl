@@ -1,6 +1,6 @@
 import unittest
 
-from preview_sources import all_skills, landed, skill, widened, with_sources
+from preview_sources import all_skills, landed, rounded_projectiles, skill, widened, with_sources
 from build_preview_table import build
 
 RULES = {'actions': {
@@ -107,13 +107,24 @@ class PreviewSourcesTest(unittest.TestCase):
                {'kind': 'strip', 'radius': 10.0, 'length': 84.0, 'at': 'caster'}]
         fixed = widened(old, 'bulldozer')
         self.assertEqual(fixed[0]['radius'], 60.0)
+        self.assertTrue(fixed[0]['rounded'])  # a line hit: rounded ends by default
         self.assertEqual(fixed[1], old[1])  # the charge is another rule
         # Marked: a second pass, or a shot recorded since, stays as it is.
         self.assertEqual(widened(fixed, 'bulldozer'), fixed)
         new = [{'kind': 'shot', 'radius': 60.0, 'length': 30.0, 'pierce': True, 'hit_radius': True}]
-        self.assertEqual(widened(new, 'bulldozer'), new)
+        self.assertEqual(widened(new, 'bulldozer'), [dict(new[0], rounded=True)])
         # The four champion-skill champions always recorded the hit radius.
         self.assertEqual(widened(old, 'hypnotist'), old)
+
+    def test_single_projectile_lines_get_rounded_ends(self):
+        shapes = [{'kind': 'strip', 'radius': 15.0, 'length': 100.0, 'projectile': True, 'at': 'caster'},
+                  {'kind': 'strip', 'radius': 10.0, 'length': 84.0, 'at': 'caster'},  # a dash sweep
+                  {'kind': 'spread', 'count': 3, 'radius': 5.0, 'projectile': True, 'at': 'caster'},
+                  {'kind': 'shot', 'radius': 7.0, 'length': 60.0, 'pierce': False, 'projectile': True}]
+        out = rounded_projectiles(shapes)
+        # A fan of projectiles gets rounded tips too (1.5.3).
+        self.assertEqual([s.get('rounded') for s in out], [True, None, True, True])
+        self.assertEqual(rounded_projectiles(out), out)
 
     def test_a_pick_that_no_longer_fits_gives_way_to_the_number_that_does(self):
         # The author picked `width x 0.5` for the halved radius; the true

@@ -17,7 +17,8 @@
       "radius": {
        "name": "width",
        "recorded": 27.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -73,7 +74,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 12.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "alchemist_ult"
@@ -85,24 +87,27 @@
     "kind": "data_action"
    },
    "W": {
-    "from": "live",
-    "shapes": [
+    "from": "custom",
+    "pieces": [
      {
-      "at": "aim",
-      "kind": "dash"
+      "kind": "dash",
+      "at": "aim"
      }
     ],
     "kind": "data_action"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "unit_target",
-     "area_radius": {
-      "name": "radius",
-      "recorded": 43
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 43
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "data_action"
    }
   },
@@ -144,14 +149,17 @@
     "kind": "archer_skill"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "jump_back",
-     "distance": {
-      "cast_range": true,
-      "recorded": 30
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "backstep",
+      "length": {
+       "cast_range": true,
+       "recorded": 30
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "archer_skill2"
    }
   },
@@ -241,34 +249,51 @@
   },
   "barrier_magician": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_rectangle",
-     "width": {
-      "fixed": 40
-     },
-     "depth": {
-      "fixed": 40
-     },
-     "allies": true
-    },
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "rectangle",
+      "width": {
+       "fixed": 40
+      },
+      "height": {
+       "fixed": 40
+      },
+      "at": "aim",
+      "allies": true
+     }
+    ],
     "kind": "barrier_magician_skill"
    },
    "W": {
-    "from": "live",
-    "shapes": [
+    "from": "custom",
+    "pieces": [
      {
-      "at": "aim",
-      "height": {
-       "fixed": 48.0
-      },
       "kind": "rectangle",
       "width": {
-       "fixed": 48.0
-      }
+       "fixed": 48
+      },
+      "height": {
+       "fixed": 48
+      },
+      "at": "aim",
+      "allies": true
      }
     ],
     "kind": "barrier_magician_skill2"
+   },
+   "R": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "fixed": 20
+      },
+      "at": "aim"
+     }
+    ],
+    "kind": "barrier_magician_ult"
    }
   },
   "beastman": {
@@ -338,36 +363,45 @@
   },
   "bombardier": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "attack_reach",
-     "extra": {
-      "name": "move_distance",
-      "recorded": 50
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "reach",
+      "extra": {
+       "name": "move_distance",
+       "recorded": 50
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "bombardier_skill1"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "radius",
-      "recorded": 22
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 22
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "bombardier_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "radius",
-      "recorded": 35
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 35
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "bombardier_ult"
    }
   },
@@ -440,7 +474,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 18.0
-      }
+      },
+      "rounded": true
      },
      {
       "at": {
@@ -458,32 +493,46 @@
     "kind": "boomerang_hunter_skill"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "cone",
-     "radius": {
-      "name": "attack_range",
-      "recorded": 14
-     },
-     "angle": {
-      "fixed": 100
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "spread",
+      "count": {
+       "fixed": 3
+      },
+      "radius": {
+       "name": "attack_range",
+       "recorded": 14
+      },
+      "length": {
+       "name": "range",
+       "recorded": 100
+      },
+      "degrees": {
+       "fixed": 90
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "boomerang_hunter_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "line",
-     "width": {
-      "name": "attack_range",
-      "recorded": 14
-     },
-     "length": {
-      "cast_range": true,
-      "recorded": 90
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 14
+      },
+      "length": {
+       "name": "range",
+       "recorded": 90
+      },
+      "at": "caster",
+      "rounded": true
      }
-    },
+    ],
     "kind": "boomerang_hunter_ult"
    }
   },
@@ -542,7 +591,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 3.5
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -648,6 +698,93 @@
     "kind": "cavalry_knight_ult"
    }
   },
+  "cf_ahri": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "radius",
+       "recorded": 15
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "radius",
+       "recorded": 13.5
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "R": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "blink",
+      "at": "aim"
+     }
+    ]
+   }
+  },
+  "cf_alistar": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 20
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "dash",
+      "at": "aim"
+     }
+    ]
+   },
+   "R": {
+    "from": "assigned",
+    "assigned": {
+     "type": "no_preview"
+    }
+   }
+  },
+  "cf_annie": {
+   "R": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "fixed": 40
+      },
+      "at": "aim"
+     }
+    ]
+   }
+  },
   "cf_archangel": {
    "Q": {
     "from": "live",
@@ -662,7 +799,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 10.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -686,6 +824,137 @@
     "kind": "data_action"
    }
   },
+  "cf_ashe": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "spread",
+      "count": {
+       "fixed": 10
+      },
+      "radius": {
+       "fixed": 8
+      },
+      "length": {
+       "name": "range",
+       "recorded": 120
+      },
+      "degrees": {
+       "fixed": 45
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "R": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "shot",
+      "radius": {
+       "name": "radius",
+       "recorded": 30
+      },
+      "length": {
+       "name": "range",
+       "recorded": 900
+      },
+      "at": "caster",
+      "rounded": true
+     }
+    ]
+   }
+  },
+  "cf_caitlyn": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "shot",
+      "radius": {
+       "name": "radius",
+       "recorded": 12
+      },
+      "length": {
+       "cast_range": true,
+       "recorded": 130
+      },
+      "at": "caster",
+      "pierce": true
+     }
+    ]
+   },
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "shot",
+      "radius": {
+       "name": "radius",
+       "recorded": 15
+      },
+      "length": {
+       "cast_range": true,
+       "recorded": 80
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "R": {
+    "from": "custom",
+    "pieces": []
+   }
+  },
+  "cf_lee_sin": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "shot",
+      "radius": {
+       "name": "radius",
+       "recorded": 12
+      },
+      "length": {
+       "name": "range",
+       "recorded": 120
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 45
+      },
+      "at": "aim"
+     },
+     {
+      "kind": "dash",
+      "at": "aim"
+     }
+    ]
+   },
+   "R": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "fixed": 35
+      },
+      "at": "aim"
+     }
+    ]
+   }
+  },
   "cf_spirit_latcher": {
    "Q": {
     "from": "no_area",
@@ -704,7 +973,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 7.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -738,7 +1008,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 10.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -784,7 +1055,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 15.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -823,7 +1095,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 15.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "chef_skill"
@@ -844,7 +1117,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 8.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "circus_blade_skill"
@@ -917,7 +1191,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 3.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "crossbowman_skill1"
@@ -936,7 +1211,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 6.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "crossbowman_skill2"
@@ -955,7 +1231,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 8.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "crossbowman_ult"
@@ -976,7 +1253,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 10.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "dancer_skill"
@@ -997,6 +1275,7 @@
        "name": "attack_range",
        "recorded": 10.0
       },
+      "rounded": true,
       "max_count": {
        "fixed": 10
       }
@@ -1020,7 +1299,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 12.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "dark_mage_skill"
@@ -1046,14 +1326,17 @@
   },
   "demon": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "attack_range",
-      "recorded": 18
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 18
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "demon_skill"
    },
    "W": {
@@ -1093,7 +1376,8 @@
       "projectile": true,
       "radius": {
        "fixed": 6.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "dokkaebi_ult"
@@ -1101,17 +1385,20 @@
   },
   "druid": {
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "line",
-     "width": {
-      "fixed": 12
-     },
-     "length": {
-      "cast_range": true,
-      "recorded": 80
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "fixed": 6
+      },
+      "length": {
+       "cast_range": true,
+       "recorded": 80
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "druid_ult"
    }
   },
@@ -1130,7 +1417,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 20.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "dual_blader_skill"
@@ -1181,36 +1469,36 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 13.5
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "self_circle",
-     "radius": {
-      "name": "radius",
-      "recorded": 34
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 34
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "data_action"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "unit_target",
-     "area_radius": {
-      "name": "radius",
-      "recorded": 46
-     },
-     "add": true
-    },
-    "shapes": [
+    "from": "custom",
+    "pieces": [
      {
-      "at": "aim",
-      "kind": "dash"
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 46
+      },
+      "at": "aim"
      }
     ],
     "kind": "data_action"
@@ -1273,7 +1561,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 5.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "executioner_skill"
@@ -1324,35 +1613,44 @@
   },
   "ferryman": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "line",
-     "width": {
-      "name": "line_width",
-      "recorded": 14
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "line_width",
+       "recorded": 7,
+       "times": 0.5
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "ferryman_skill1"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "line",
-     "width": {
-      "name": "line_width",
-      "recorded": 24
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "line_width",
+       "recorded": 12,
+       "times": 0.5
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "ferryman_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "unit_target",
-     "area_radius": {
-      "fixed": 0
-     }
-    },
+    "from": "custom",
+    "pieces": [],
     "kind": "ferryman_ult"
    }
   },
@@ -1430,7 +1728,8 @@
       "projectile": true,
       "radius": {
        "fixed": 3.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "gambler_skill1"
@@ -1468,7 +1767,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 35.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "gambler_ult"
@@ -1543,37 +1843,43 @@
   },
   "gladiator": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "cone",
-     "radius": {
-      "name": "range",
-      "recorded": 45
-     },
-     "angle": {
-      "name": "fan_angle",
-      "unit": "degrees",
-      "recorded": 70
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "cone",
+      "radius": {
+       "name": "range",
+       "recorded": 45
+      },
+      "cosine": {
+       "fixed": 0.8191520442889918
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "gladiator_skill1"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "line",
-     "width": {
-      "name": "line_width",
-      "recorded": 10
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "line_width",
+       "recorded": 5,
+       "times": 0.5
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "gladiator_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "unit_target"
-    },
+    "from": "custom",
+    "pieces": [],
     "kind": "gladiator_ult"
    }
   },
@@ -1665,7 +1971,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 11.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "harpooner_skill1"
@@ -1683,35 +1990,38 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 11.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "harpooner_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "fan",
-     "count": {
-      "name": "projectile_count",
-      "unit": "count",
-      "recorded": 5
-     },
-     "width": {
-      "name": "projectile_radius",
-      "times": 2,
-      "recorded": 18
-     },
-     "spread": {
-      "name": "fan_angle",
-      "unit": "degrees",
-      "recorded": 36
-     },
-     "length": {
-      "cast_range": true,
-      "recorded": 130
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "spread",
+      "count": {
+       "name": "projectile_count",
+       "unit": "count",
+       "recorded": 5
+      },
+      "radius": {
+       "name": "projectile_radius",
+       "recorded": 9
+      },
+      "length": {
+       "cast_range": true,
+       "recorded": 130
+      },
+      "degrees": {
+       "name": "fan_angle",
+       "unit": "degrees",
+       "recorded": 36
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "harpooner_ult"
    }
   },
@@ -1794,7 +2104,8 @@
       "radius": {
        "name": "width",
        "recorded": 90.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -1814,7 +2125,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 6.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -1862,7 +2174,8 @@
       "pierce": true,
       "radius": {
        "fixed": 20.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "hunter_ult"
@@ -1870,36 +2183,49 @@
   },
   "hypnotist": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "line",
-     "width": {
-      "name": "line_width",
-      "recorded": 25
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "line_width",
+       "recorded": 12.5,
+       "times": 0.5
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "hypnotist_skill1"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "radius",
-      "recorded": 20
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 20
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "hypnotist_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "radius",
-      "recorded": 40
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 40
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "hypnotist_ult"
    }
   },
@@ -1953,7 +2279,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 20.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "illusionist_skill"
@@ -2057,13 +2384,8 @@
   },
   "kharazim": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "unit_target",
-     "area_radius": {
-      "fixed": 0
-     }
-    },
+    "from": "custom",
+    "pieces": [],
     "kind": "data_action"
    },
    "W": {
@@ -2184,7 +2506,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 5.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "magic_knight_skill"
@@ -2312,7 +2635,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 5.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "nightmare_skill"
@@ -2343,7 +2667,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 10.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "ninja_skill"
@@ -2530,14 +2855,17 @@
     "kind": "pole_warrior_skill"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "attack_range",
-      "recorded": 32
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 32
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "pole_warrior_skill2"
    },
    "R": {
@@ -2583,7 +2911,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 15.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "prisoner_skill"
@@ -2698,7 +3027,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 3.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -2779,7 +3109,8 @@
       "projectile": true,
       "radius": {
        "fixed": 8.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "shadowmancer_ult"
@@ -2834,7 +3165,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 30.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "soldier_ult"
@@ -2855,7 +3187,8 @@
       "radius": {
        "name": "width",
        "recorded": 28.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "spellbreaker_skill1"
@@ -2933,15 +3266,18 @@
     "kind": "strongman_skill2"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "radius",
-      "recorded": 30
-     },
-     "allies": true
-    },
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "radius",
+       "recorded": 30
+      },
+      "at": "aim",
+      "allies": true
+     }
+    ],
     "kind": "strongman_ult"
    }
   },
@@ -2960,7 +3296,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 30.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "swordman_skill"
@@ -2982,7 +3319,8 @@
       "pierce": true,
       "radius": {
        "fixed": 40.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "swordman_ult"
@@ -3002,7 +3340,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 8.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -3036,10 +3375,124 @@
       "projectile": true,
       "radius": {
        "fixed": 8.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "taoist_ult"
+   }
+  },
+  "test_mod_aatrox": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "width",
+       "recorded": 11
+      },
+      "length": {
+       "fixed": 0
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "dash",
+      "at": "aim"
+     }
+    ]
+   }
+  },
+  "test_mod_ezreal": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "shot",
+      "radius": {
+       "name": "radius",
+       "recorded": 6
+      },
+      "length": {
+       "cast_range": true,
+       "recorded": 140
+      },
+      "at": "caster"
+     }
+    ]
+   },
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "blink",
+      "at": "aim"
+     }
+    ]
+   },
+   "R": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "shot",
+      "radius": {
+       "name": "radius",
+       "recorded": 16
+      },
+      "length": {
+       "cast_range": true,
+       "recorded": 900
+      },
+      "at": "caster",
+      "pierce": true
+     }
+    ]
+   }
+  },
+  "test_mod_lucian": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "width",
+       "recorded": 15
+      },
+      "length": {
+       "name": "length",
+       "recorded": 110
+      },
+      "at": "caster",
+      "rounded": true
+     }
+    ]
+   }
+  },
+  "test_mod_varus": {
+   "Q": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "width",
+       "recorded": 28
+      },
+      "length": {
+       "name": "range",
+       "recorded": 130
+      },
+      "at": "caster",
+      "rounded": true
+     }
+    ]
    }
   },
   "vampire": {
@@ -3111,7 +3564,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 1.600000023841858
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -3136,20 +3590,24 @@
       "radius": {
        "name": "attack_range",
        "recorded": 5.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "voodoo_shaman_skill1"
    },
    "R": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "range",
-      "recorded": 50
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "range",
+       "recorded": 50
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "voodoo_shaman_ult"
    }
   },
@@ -3245,7 +3703,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 16.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "white_mage_skill"
@@ -3278,7 +3737,8 @@
       "radius": {
        "name": "attack_range",
        "recorded": 15.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "white_mage_ult"
@@ -3286,32 +3746,40 @@
   },
   "wind_mage": {
    "Q": {
-    "from": "assigned",
-    "assigned": {
-     "type": "aim_circle",
-     "radius": {
-      "name": "attack_range",
-      "recorded": 30
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "circle",
+      "radius": {
+       "name": "attack_range",
+       "recorded": 30
+      },
+      "at": "aim"
      }
-    },
+    ],
     "kind": "wind_mage_skill1"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "fan",
-     "count": {
-      "fixed": 5
-     },
-     "width": {
-      "name": "attack_range",
-      "times": 2,
-      "recorded": 16
-     },
-     "spread": {
-      "fixed": 70
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "spread",
+      "count": {
+       "fixed": 5
+      },
+      "radius": {
+       "name": "attack_range",
+       "recorded": 8
+      },
+      "length": {
+       "fixed": 0
+      },
+      "degrees": {
+       "fixed": 70
+      },
+      "at": "caster"
      }
-    },
+    ],
     "kind": "wind_mage_skill2"
    }
   },
@@ -3329,7 +3797,8 @@
       "radius": {
        "name": "projectile_radius",
        "recorded": 15.0
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -3337,6 +3806,26 @@
    "R": {
     "from": "no_area",
     "kind": "data_action"
+   }
+  },
+  "wythm_kassadin": {
+   "W": {
+    "from": "custom",
+    "pieces": [
+     {
+      "kind": "strip",
+      "radius": {
+       "name": "width",
+       "recorded": 35
+      },
+      "length": {
+       "name": "length",
+       "recorded": 35
+      },
+      "at": "caster",
+      "rounded": true
+     }
+    ]
    }
   },
   "yang": {
@@ -3353,7 +3842,8 @@
       "projectile": true,
       "radius": {
        "fixed": 3.5
-      }
+      },
+      "rounded": true
      }
     ],
     "kind": "data_action"
@@ -3375,22 +3865,22 @@
     "kind": "data_action"
    },
    "W": {
-    "from": "assigned",
-    "assigned": {
-     "type": "jump_back",
-     "distance": {
-      "fixed": 64
-     },
-     "add": true
-    },
-    "shapes": [
+    "from": "custom",
+    "pieces": [
      {
-      "at": "caster",
       "kind": "circle",
       "radius": {
        "name": "radius",
-       "recorded": 32.0
-      }
+       "recorded": 32
+      },
+      "at": "caster"
+     },
+     {
+      "kind": "backstep",
+      "length": {
+       "fixed": 64
+      },
+      "at": "caster"
      }
     ],
     "kind": "data_action"

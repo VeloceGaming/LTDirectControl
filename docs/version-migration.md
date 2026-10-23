@@ -288,16 +288,19 @@ cd probe
 cargo fmt
 cargo clippy --offline --all-targets -- -D warnings
 cargo test --offline --release
-cargo build --release --offline
 cd ..
+python tools/build_dll.py
 python tools/stage_package.py
 python tools/verify_build.py --version X --probe-tests N
 python tools/package_mod.py --version X
 .\tools\install_verified_build.ps1 -Version X -PreviousVersion Y
 ```
 
-A research build (`cargo build --release --features research`) goes
-through the same steps; the tools read the variant from the DLL and name
+`tools/build_dll.py` runs `cargo build --release --offline` with the
+builder's user folder and the project folder rewritten to neutral names, so
+the DLL carries no personal path (1.5.2); `verify_build.py` refuses a DLL
+that still holds one. A research build (`python tools/build_dll.py
+--research`) goes through the same steps; the tools read the variant from the DLL and name
 its record and package `X-research` (install with `-Version X-research`).
 It is never for the Workshop.
 

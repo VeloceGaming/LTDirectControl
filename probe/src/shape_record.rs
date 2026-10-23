@@ -10,7 +10,7 @@
 //! on the same thread knows them. `observe_roster` stores that thread's
 //! actor names; `wanted` and `record` are asked from the hook.
 use crate::native_timing::MatchKey;
-use crate::skill_preview::{Footprint, Geometry, Placement, Shape};
+use crate::skill_preview::Geometry;
 use crate::Logger;
 use serde_json::{json, Value};
 use std::cell::RefCell;
@@ -287,7 +287,11 @@ fn numbers_entry(
     let mut entry = json!({"kind": kind, "values": values,
         "cast_range": cast_range as f64 / 1000.});
     if !live.footprints.is_empty() {
-        entry["live"] = json!(live.footprints.iter().map(footprint).collect::<Vec<_>>());
+        entry["live"] = json!(live
+            .footprints
+            .iter()
+            .map(crate::shape_json::footprint)
+            .collect::<Vec<_>>());
     }
     entry
 }
@@ -412,76 +416,15 @@ fn write_merged(path: &Path, table: &Table) -> Vec<String> {
     }
     lines
 }
-/// One skill: its shapes, or why it could not be read.
+/// One skill as the live reader read it (`shape_json::skill`).
 pub fn skill(g: &Geometry) -> Value {
-    if !g.footprints.is_empty() {
-        json!({"source": "live", "shapes": g.footprints.iter().map(footprint).collect::<Vec<_>>()})
-    } else if g.known_without_area() {
-        json!({"source": "live", "shapes": [], "no_area": true})
-    } else {
-        json!({"source": "live", "unread": g.issues.first().cloned().unwrap_or_default()})
-    }
-}
-fn footprint(f: &Footprint) -> Value {
-    let r = |x: f32| (x * 100.).round() / 100.;
-    let mut v = match f.shape {
-        Shape::Circle { radius } => json!({"kind": "circle", "radius": r(radius)}),
-        Shape::Corridor { radius, length } => {
-            json!({"kind": "strip", "radius": r(radius), "length": r(length)})
-        }
-        Shape::Rectangle { width, height } => {
-            json!({"kind": "rectangle", "width": r(width), "height": r(height)})
-        }
-        Shape::Cone { radius, cosine } => {
-            json!({"kind": "cone", "radius": r(radius), "cosine": (cosine * 1000.).round() / 1000.})
-        }
-        Shape::Segment { radius, from, to } => json!({"kind": "segment", "radius": r(radius),
-            "from": [r(from.0), r(from.1)], "to": [r(to.0), r(to.1)]}),
-        Shape::Movement { blink } => json!({"kind": if blink { "blink" } else { "dash" }}),
-        // `hit_radius`: the radius is the hit's distance on each side of the
-        // line. Shots recorded before 1.5.2-dev1 lack it, and those from the
-        // game's line hit hold half of it (tools/preview_sources.py
-        // `widened` doubles them).
-        Shape::Shot {
-            radius,
-            length,
-            pierce,
-        } => json!({"kind": "shot", "radius": r(radius), "length": r(length), "pierce": pierce,
-            "hit_radius": true}),
-        Shape::Reach { extra } => json!({"kind": "reach", "extra": r(extra)}),
-        Shape::Fan {
-            count,
-            radius,
-            length,
-        } => json!({"kind": "fan", "count": count, "radius": r(radius), "length": r(length)}),
-        Shape::Spread {
-            count,
-            radius,
-            length,
-            degrees,
-        } => json!({"kind": "spread", "count": count, "radius": r(radius), "length": r(length),
-            "degrees": r(degrees)}),
-        Shape::Backstep { length } => json!({"kind": "backstep", "length": r(length)}),
-    };
-    v["at"] = match f.placement {
-        Placement::Caster => json!("caster"),
-        Placement::Aim => json!("aim"),
-        Placement::Forward { offset } => json!({"forward": r(offset)}),
-        Placement::End { length } => json!({"end": r(length)}),
-        Placement::Landing { length } => json!({"landing": r(length)}),
-    };
-    if f.allies {
-        v["allies"] = json!(true);
-    }
-    if f.projectile {
-        v["projectile"] = json!(true);
-    }
-    v
+    crate::shape_json::skill(g, "live")
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::skill_preview::{Placement, Shape};
     #[test]
     fn each_actor_is_handled_once_per_match_and_named_from_the_roster() {
         observe_roster((1, 2, 3), || vec![(7, "crossbowman".into())]);
@@ -663,7 +606,8 @@ mod tests {
         assert_eq!(
             skill(&shot),
             json!({"source": "live", "shapes": [
-                {"kind": "strip", "radius": 9.0, "length": 150.0, "at": "caster", "projectile": true}]})
+                {"kind": "strip", "radius": 9.0, "length": 150.0, "rounded": true, "at": "caster",
+                    "projectile": true}]})
         );
         // A shot says its radius is the hit radius on each side (1.5.2-dev1).
         let mut line = Geometry::default();

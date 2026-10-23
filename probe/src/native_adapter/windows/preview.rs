@@ -478,10 +478,12 @@ unsafe fn payload(
                 distance(word(object + 40) as u64),
             ) {
                 (Some(length), Some(radius)) if (1..=16).contains(&count) => out.add_projectile(
+                    // A projectile per blade: rounded tips (add_projectile).
                     Shape::Fan {
                         count,
                         radius,
                         length,
+                        rounded: true,
                     },
                     Placement::Caster,
                 ),
@@ -501,19 +503,18 @@ unsafe fn payload(
             // RADIUS, so the line is twice word 6 wide. Before 1.5.2-dev1 the
             // mod took word 6 as the full width and drew half the area (the
             // author, 2026-10-22: Bulldozer Q's push area is much wider).
+            // It reaches `radius` past both ends of its segment too (the
+            // shape check, docs/investigation-line-hit.md): rounded ends by
+            // default (the author, 2026-10-23, after Taliyah R hit a monster
+            // just past the drawn end).
             out.family("native Swordman ult");
             match (
                 distance(word(object + 48) as u64),
                 distance(word(object + 56) as u64),
             ) {
-                (Some(radius), Some(length)) => out.add(
-                    Shape::Shot {
-                        radius,
-                        length,
-                        pierce: true,
-                    },
-                    Placement::Caster,
-                ),
+                (Some(radius), Some(length)) => {
+                    out.add(Shape::Capsule { radius, length }, Placement::Caster)
+                }
                 _ => out.issue("invalid native swordman dash"),
             }
         }
@@ -817,7 +818,7 @@ mod tests {
         let g = decode(LINEAR, 152, &shot, Placement::Aim);
         assert_eq!(
             g.footprints[0].shape,
-            Shape::Corridor {
+            Shape::Capsule {
                 radius: 0.,
                 length: 50.
             }
@@ -897,7 +898,8 @@ mod tests {
             Shape::Fan {
                 count: 4,
                 radius: 10.,
-                length: 134.
+                length: 134.,
+                rounded: true
             }
         );
         // Stacks add blades up to the maximum.
@@ -1214,7 +1216,7 @@ mod tests {
         }
         assert_eq!(
             g.footprints[0].shape,
-            Shape::Corridor {
+            Shape::Capsule {
                 radius: 6.,
                 length: 75.
             }

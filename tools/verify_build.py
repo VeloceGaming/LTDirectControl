@@ -96,6 +96,12 @@ assert version == args.version, f'staged mod.mod_info is {version}, not {args.ve
 library = (package / 'lt_direct_control.dll').read_bytes()
 for game, sha in supported.items():
     assert sha.encode() in library, f'DLL lacks the executable guard of game {game}'
+# No folder of the build machine (1.5.2): Rust keeps source paths for its
+# error messages; tools/build_dll.py rewrites them to neutral names.
+for folder in (Path.home(), root):
+    for text in {str(folder), str(folder).replace('\\', '/')}:
+        assert text.lower().encode() not in library.lower(), (
+            'The DLL holds a folder of the build machine: build it with tools/build_dll.py')
 
 # Cursor artwork embedded in the DLL.
 cursor_art = load('cursor-assets.json')
