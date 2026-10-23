@@ -137,6 +137,12 @@ Proposed three groups:
   HUD/roster sampling, shop publishing, purchase tracing and input.
 - These two callbacks have no automated coverage (they need a live game), so
   splitting them must be pure moves with a play-test after each step.
+- **Superseded 2026-10-23:** the two files above were split (stages 4 and
+  5), but five others have since grown past 3,000 lines (`movement.rs`
+  about 4,100, `skill_preview.rs`, `shop_ui.rs`, `player_hud.rs`,
+  `abilities.rs`). The author declined a further refactor on 2026-10-23 on
+  the condition that they stop growing: see [backlog.md](backlog.md)
+  (Declined) and [modding.md](modding.md) ("Keep files small").
 
 ### 5. Game-version knowledge is scattered (high)
 

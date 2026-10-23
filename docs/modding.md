@@ -83,6 +83,24 @@ order or hold) and validate it with the SDK.
 
 ## Common changes
 
+### Keep files small
+
+Five files were already over 3,000 lines on 2026-10-23 (`movement.rs`,
+`abilities.rs`, `player_hud.rs`, `shop_ui.rs`, `skill_preview.rs`), with
+functions of 200 to 320 lines at the movement and input plug-in points.
+The author declined a refactor on the condition that they stop growing
+([backlog.md](backlog.md), Declined). So:
+
+- A new feature goes in its own module with its own tests. The existing
+  file takes only the few lines that wire it in.
+- A long function you must change gives up the part you touch to a named
+  helper. Nothing more: a refactor is its own stage with its own test
+  sheet.
+- `python tools/check_source_size.py` refuses a `.rs` file under
+  `probe/src` over 3,000 lines, or over its own ceiling for the five above;
+  `tools/verify_build.py` runs it. When a file is split, lower its ceiling
+  in that script.
+
 ### Add or change a key binding
 
 1. Add a `bind!(...)` entry to `BINDINGS` in `settings.rs`: a key name, a

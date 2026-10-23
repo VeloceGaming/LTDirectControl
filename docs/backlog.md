@@ -364,6 +364,17 @@ addition (not to be copied).
 
 ## Declined
 
+- A refactor of the five source files over 3,000 lines (`movement.rs`,
+  `abilities.rs`, `player_hud.rs`, `shop_ui.rs`, `skill_preview.rs`) and
+  their 200 to 320 line functions, found by the brief code review of
+  2026-10-23 (format, lint with warnings denied and 624 tests pass; hooks
+  guarded; the problem is reading size, not safety). The author,
+  2026-10-23: drop the refactor, on the condition that the files stop
+  growing. The rule is in docs/modding.md ("Keep files small");
+  `tools/check_source_size.py` enforces it from `tools/verify_build.py`.
+  A split stays possible later as a stage of pure moves with its own test
+  sheet, after the 1.5.x preview work lands.
+
 - Working out the health part of a skill value ("100 + 50% AP + 10% max
   health" as one number, like the attack and ability power parts since
   1.4.3). The author, 2026-10-21 (option A): keep the game's wording. The

@@ -53,6 +53,13 @@ if check.returncode != 0:
     sys.exit('Preview table check failed (tools/build_preview_table.py --check):\n' + check.stdout + check.stderr)
 preview_check = check.stdout.strip().splitlines()[-1]
 
+# No source file over its size limit (2026-10-23: the author declined a
+# refactor of the big files on the condition that they stop growing).
+check = subprocess.run([sys.executable, str(root / 'tools/check_source_size.py')],
+                       capture_output=True, text=True, encoding='utf-8', errors='replace', cwd=str(root))
+if check.returncode != 0:
+    sys.exit('Source size check failed (tools/check_source_size.py):\n' + check.stdout + check.stderr)
+
 from verify_native_profile import verify
 # The DLL carries one table per supported game version. Each is verified
 # against its own executable: the installed game for its version, a kept

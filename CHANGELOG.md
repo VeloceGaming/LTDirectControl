@@ -3,6 +3,14 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## Source size check (tool and documents only) — 2026-10-23
+
+**No mod build.** A brief code review (2026-10-23) found the mod healthy (format, lint with warnings denied and 624 tests pass; the movement hooks guarded and filtered; the verifier keeps addresses out of shared code) but five source files over 3,000 lines, with 200 to 320 line functions at the movement and input plug-in points where a WASD mode would go. The author declined a refactor on the condition that the files stop growing.
+
+- **Rule:** docs/modding.md "Keep files small": a new feature is its own module with its own tests; an existing file takes only the wiring; a long function you must change gives up the touched part to a helper.
+- **Check:** `tools/check_source_size.py` refuses a `.rs` file under `probe/src` over 3,000 lines, or over its own ceiling for the five files already past it (their size that day plus a little room for wiring: movement 4,150, skill preview 3,700, shop UI 3,550, player HUD 3,200, abilities 3,200); `tools/verify_build.py` runs it after the preview table check. Tests: `tools/test_check_source_size.py` (3).
+- **Recorded:** docs/backlog.md (Declined) and a superseded note in docs/codebase-review-66.md section 4.
+
 ## 1.5.2-dev3 (development build) — 2026-10-22
 
 **Seen in game 2026-10-22 by the author on 0.6.5 with 1.5.2-dev3: "all passed" (the bullet dash and jump back, grey when not ready, Bulldozer Q's custom preview). Development build, never for the Workshop.** The dash preview is the author's design K, "Bullet", and the shipped table carries the author's viewer work of today.
