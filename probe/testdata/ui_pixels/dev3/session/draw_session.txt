@@ -1,0 +1,2172 @@
+## 0
+## 1
+## 2
+## 3
+I 944,962 1104 smooth asset/lt_direct_control/ui/hourglass
+## 4
+= as before
+## 5
+= as before
+## 6
+= as before
+## 7
+= as before
+## 8
+R 704,942,72,72 1102 r=2 #4b4a49ff
+R 705,943,70,70 1102 r=1 #1c1a18ff
+R 784,942,72,72 1102 r=2 #fced00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fced00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 9
+R 704,942,72,72 1102 r=2 #4b4a49ff
+R 705,943,70,70 1102 r=1 #1c1a18ff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 10
+= as before
+## 11
+= as before
+## 12
+= as before
+## 13
+= as before
+## 14
+R 704,942,72,72 1102 r=2 #5d5c5bff
+R 705,943,70,70 1102 r=1 #1f1d1bff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 15
+R 704,942,72,72 1102 r=2 #848382ff
+R 705,943,70,70 1102 r=1 #252322ff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 16
+R 704,942,72,72 1102 r=2 #b7b7b6ff
+R 705,943,70,70 1102 r=1 #2e2c2bff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 17
+R 704,942,72,72 1102 r=2 #e1e1e1ff
+R 705,943,70,70 1102 r=1 #353332ff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 18
+R 704,942,72,72 1102 r=2 #f8f8f8ff
+R 705,943,70,70 1102 r=1 #393736ff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 19
+R 704,942,72,72 1102 r=2 #ffffffff
+R 705,943,70,70 1102 r=1 #3a3837ff
+R 784,942,72,72 1102 r=2 #fdee00ff
+R 786,944,68,68 1102 r=0 #1c1a18ff
+R 864,942,72,72 1102 r=2 #4b4a49ff
+R 865,943,70,70 1102 r=1 #1c1a18ff
+R 944,942,72,72 1102 r=2 #4b4a49ff
+R 945,943,70,70 1102 r=1 #1c1a18ff
+R 1024,942,72,72 1102 r=2 #4b4a49ff
+R 1025,943,70,70 1102 r=1 #1c1a18ff
+R 1112,954,48,48 1102 r=2 #fdee00ff
+R 1113,955,46,46 1102 r=1 #fdee00ff
+I 1123,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_1c1a18
+R 1168,954,48,48 1102 r=2 #4b4a49ff
+R 1169,955,46,46 1102 r=1 #1c1a18ff
+I 1179,965 1105 smooth asset/lt_direct_control/ui/drawn_ef_eye_26_eeecec
+## 20
+= as before
+## 21
+= as before
+## 22
+= as before
+## 23
+R 8,1030,44,44 1102 r=2 #fdee00ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 24
+R 8,1030,44,44 1102 r=2 #918a2c64
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 25
+R 8,1030,44,44 1102 r=2 #68653d29
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 26
+R 8,1030,44,44 1102 r=2 #57554411
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 27
+R 8,1030,44,44 1102 r=2 #4f4e4706
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 28
+R 8,1030,44,44 1102 r=2 #4c4b4901
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 29
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 30
+= as before
+## 31
+= as before
+## 32
+= as before
+## 33
+= as before
+## 34
+R 8,1030,44,44 1102 r=2 #5d5c5b19
+R 9,1031,42,42 1102 r=1 #1f1d1bff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 35
+R 8,1030,44,44 1102 r=2 #84838250
+R 9,1031,42,42 1102 r=1 #252322ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 36
+R 8,1030,44,44 1102 r=2 #b7b7b699
+R 9,1031,42,42 1102 r=1 #2e2c2bff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 37
+R 8,1030,44,44 1102 r=2 #e1e1e1d5
+R 9,1031,42,42 1102 r=1 #353332ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 38
+R 8,1030,44,44 1102 r=2 #f8f8f8f6
+R 9,1031,42,42 1102 r=1 #393736ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 39
+R 8,1030,44,44 1102 r=2 #ffffffff
+R 9,1031,42,42 1102 r=1 #3a3837ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 40
+= as before
+## 41
+= as before
+## 42
+= as before
+## 43
+= as before
+## 44
+= as before
+## 45
+= as before
+## 46
+= as before
+## 47
+= as before
+## 48
+= as before
+## 49
+R 8,1030,44,44 1102 r=2 #ffffffff
+R 9,1031,42,42 1102 r=1 #3e3d3cff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 50
+R 8,1030,44,44 1102 r=2 #ffffffff
+R 9,1031,42,42 1102 r=1 #484747ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 51
+R 8,1030,44,44 1102 r=2 #ffffffff
+R 9,1031,42,42 1102 r=1 #535252ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 52
+R 8,1030,44,44 1102 r=2 #ededede6
+R 9,1031,42,42 1102 r=1 #4f4e4eff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #5d5c5b19
+R 105,1031,42,42 1102 r=1 #1f1d1bff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 53
+R 8,1030,44,44 1102 r=2 #c6c6c6af
+R 9,1031,42,42 1102 r=1 #434241ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #84838250
+R 105,1031,42,42 1102 r=1 #252322ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 54
+R 8,1030,44,44 1102 r=2 #93929266
+R 9,1031,42,42 1102 r=1 #31302eff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #b7b7b699
+R 105,1031,42,42 1102 r=1 #2e2c2bff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 55
+R 8,1030,44,44 1102 r=2 #6968672a
+R 9,1031,42,42 1102 r=1 #23211fff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #e1e1e1d5
+R 105,1031,42,42 1102 r=1 #353332ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 56
+R 8,1030,44,44 1102 r=2 #52515009
+R 9,1031,42,42 1102 r=1 #1d1b19ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #f8f8f8f6
+R 105,1031,42,42 1102 r=1 #393736ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 57
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #ffffffff
+R 105,1031,42,42 1102 r=1 #3a3837ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 58
+= as before
+## 59
+= as before
+## 60
+= as before
+## 61
+= as before
+## 62
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #ededede6
+R 105,1031,42,42 1102 r=1 #373534ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b518
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 63
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #c6c6c6af
+R 105,1031,42,42 1102 r=1 #312f2dff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b550
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 64
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #93929266
+R 105,1031,42,42 1102 r=1 #282624ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b599
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 65
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #6968672a
+R 105,1031,42,42 1102 r=1 #211f1dff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b5d4
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 66
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 104,1030,44,44 1102 r=2 #52515009
+R 105,1031,42,42 1102 r=1 #1d1b19ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b5f5
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 67
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b5ff
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 68
+= as before
+## 69
+= as before
+## 70
+= as before
+## 71
+= as before
+## 72
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b5e6
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5b18
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 73
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b5ae
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5b50
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 74
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b565
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5b99
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 75
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b52a
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5bd4
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 76
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 210,1032,40,40 1103 r=2 #b8b6b509
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5bf5
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 77
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5bff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 78
+= as before
+## 79
+= as before
+## 80
+= as before
+## 81
+= as before
+## 82
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #5d5c5b19
+R 595,1031,66,42 1102 r=1 #1f1d1bff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5be6
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 83
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #84838250
+R 595,1031,66,42 1102 r=1 #252322ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5bae
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 84
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #b7b7b699
+R 595,1031,66,42 1102 r=1 #2e2c2bff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5b65
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 85
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #e1e1e1d5
+R 595,1031,66,42 1102 r=1 #353332ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5b2a
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 86
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #f8f8f8f6
+R 595,1031,66,42 1102 r=1 #393736ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 302,1032,40,40 1103 r=2 #5b5b5b09
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 87
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #ffffffff
+R 595,1031,66,42 1102 r=1 #3a3837ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 88
+= as before
+## 89
+= as before
+## 90
+= as before
+## 91
+= as before
+## 92
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #ededede6
+R 595,1031,66,42 1102 r=1 #373534ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #f0eeeeff
+R 10,962,52,52 1102 r=0 #1f1d1bff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 93
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #c6c6c6af
+R 595,1031,66,42 1102 r=1 #312f2dff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #f3f2f2ff
+R 10,962,52,52 1102 r=0 #252322ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 94
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #93929266
+R 595,1031,66,42 1102 r=1 #282624ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #f8f7f7ff
+R 10,962,52,52 1102 r=0 #2e2c2bff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 95
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #6968672a
+R 595,1031,66,42 1102 r=1 #211f1dff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fcfcfcff
+R 10,962,52,52 1102 r=0 #353332ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 96
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 594,1030,68,44 1102 r=2 #52515009
+R 595,1031,66,42 1102 r=1 #1d1b19ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fefefeff
+R 10,962,52,52 1102 r=0 #393736ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 97
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #ffffffff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 98
+= as before
+## 99
+= as before
+## 100
+= as before
+## 101
+= as before
+## 102
+= as before
+## 103
+= as before
+## 104
+= as before
+## 105
+= as before
+## 106
+R 8,848.14,56,56 1102 r=2 #8a8886ff
+R 9,849.14,54,54 1102 r=1 #1c1a18ff
+R 8,870.51,56,56 1102 r=2 #fdee00ff
+R 10,872.51,52,52 1102 r=0 #1c1a18ff
+R 8,892.88,56,56 1102 r=2 #8a8886ff
+R 9,893.88,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #faf49dff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 107
+R 8,777.91,56,56 1102 r=2 #8a8886ff
+R 9,778.91,54,54 1102 r=1 #1c1a18ff
+R 8,814.33,56,56 1102 r=2 #fdee00ff
+R 10,816.33,52,52 1102 r=0 #1c1a18ff
+R 8,850.75,56,56 1102 r=2 #8a8886ff
+R 9,851.75,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fcf149ff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 108
+R 8,735.44,56,56 1102 r=2 #8a8886ff
+R 9,736.44,54,54 1102 r=1 #1c1a18ff
+R 8,780.35,56,56 1102 r=2 #fdee00ff
+R 10,782.35,52,52 1102 r=0 #1c1a18ff
+R 8,825.26,56,56 1102 r=2 #8a8886ff
+R 9,826.26,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fcef20ff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 109
+R 8,708.81,56,56 1102 r=2 #8a8886ff
+R 9,709.81,54,54 1102 r=1 #1c1a18ff
+R 8,759.05,56,56 1102 r=2 #fdee00ff
+R 10,761.05,52,52 1102 r=0 #1c1a18ff
+R 8,809.29,56,56 1102 r=2 #8a8886ff
+R 9,810.29,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fdee0bff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 110
+R 8,691.44,56,56 1102 r=2 #8a8886ff
+R 9,692.44,54,54 1102 r=1 #1c1a18ff
+R 8,745.15,56,56 1102 r=2 #fdee00ff
+R 10,747.15,52,52 1102 r=0 #1c1a18ff
+R 8,798.87,56,56 1102 r=2 #8a8886ff
+R 9,799.87,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fdee02ff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 111
+R 8,679.85,56,56 1102 r=2 #8a8886ff
+R 9,680.85,54,54 1102 r=1 #1c1a18ff
+R 8,735.88,56,56 1102 r=2 #fdee00ff
+R 10,737.88,52,52 1102 r=0 #1c1a18ff
+R 8,791.91,56,56 1102 r=2 #8a8886ff
+R 9,792.91,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fdee00ff
+R 10,962,52,52 1102 r=0 #3a3837ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 112
+R 8,672.04,56,56 1102 r=2 #8a8886ff
+R 9,673.04,54,54 1102 r=1 #1c1a18ff
+R 8,729.63,56,56 1102 r=2 #fdee00ff
+R 10,731.63,52,52 1102 r=0 #1c1a18ff
+R 8,787.22,56,56 1102 r=2 #8a8886ff
+R 9,788.22,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #fdee00ff
+R 10,962,52,52 1102 r=0 #3c3a39ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 113
+R 8,779.41,56,56 1102 r=2 #8a8886ff
+R 9,780.41,54,54 1102 r=1 #1c1a18ff
+R 8,815.53,56,56 1102 r=2 #fdee00ff
+R 10,817.53,52,52 1102 r=0 #1c1a18ff
+R 8,851.65,56,56 1102 r=2 #8a8886ff
+R 9,852.65,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #f9f4beff
+R 10,962,52,52 1102 r=0 #434241ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 114
+R 8,846.82,56,56 1102 r=2 #8a8886ff
+R 9,847.82,54,54 1102 r=1 #1c1a18ff
+R 8,869.46,56,56 1102 r=2 #fdee00ff
+R 10,871.46,52,52 1102 r=0 #1c1a18ff
+R 8,892.09,56,56 1102 r=2 #8a8886ff
+R 9,893.09,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #f5f2d9ff
+R 10,962,52,52 1102 r=0 #3b3a39ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 115
+R 8,887.59,56,56 1102 r=2 #8a8886ff
+R 9,888.59,54,54 1102 r=1 #1c1a18ff
+R 8,902.07,56,56 1102 r=2 #fdee00ff
+R 10,904.07,52,52 1102 r=0 #1c1a18ff
+R 8,916.55,56,56 1102 r=2 #8a8886ff
+R 9,917.55,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #f1efe1ff
+R 10,962,52,52 1102 r=0 #2f2e2cff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 116
+R 8,913.15,56,56 1102 r=2 #8a8886ff
+R 9,914.15,54,54 1102 r=1 #1c1a18ff
+R 8,922.52,56,56 1102 r=2 #fdee00ff
+R 10,924.52,52,52 1102 r=0 #1c1a18ff
+R 8,931.89,56,56 1102 r=2 #8a8886ff
+R 9,932.89,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #efede8ff
+R 10,962,52,52 1102 r=0 #242220ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 117
+R 8,929.82,56,56 1102 r=2 #8a8886ff
+R 9,930.82,54,54 1102 r=1 #1c1a18ff
+R 8,935.85,56,56 1102 r=2 #fdee00ff
+R 10,937.85,52,52 1102 r=0 #1c1a18ff
+R 8,941.89,56,56 1102 r=2 #8a8886ff
+R 9,942.89,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeecebff
+R 10,962,52,52 1102 r=0 #1d1b1aff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 118
+R 8,940.95,56,56 1102 r=2 #8a8886ff
+R 9,941.95,54,54 1102 r=1 #1c1a18ff
+R 8,944.76,56,56 1102 r=2 #fdee00ff
+R 10,946.76,52,52 1102 r=0 #1c1a18ff
+R 8,948.57,56,56 1102 r=2 #8a8886ff
+R 9,949.57,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 119
+R 8,948.45,56,56 1102 r=2 #8a8886ff
+R 9,949.45,54,54 1102 r=1 #1c1a18ff
+R 8,950.76,56,56 1102 r=2 #fdee00ff
+R 10,952.76,52,52 1102 r=0 #1c1a18ff
+R 8,953.07,56,56 1102 r=2 #8a8886ff
+R 9,954.07,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 120
+R 8,953.47,56,56 1102 r=2 #8a8886ff
+R 9,954.47,54,54 1102 r=1 #1c1a18ff
+R 8,954.77,56,56 1102 r=2 #fdee00ff
+R 10,956.77,52,52 1102 r=0 #1c1a18ff
+R 8,956.08,56,56 1102 r=2 #8a8886ff
+R 9,957.08,54,54 1102 r=1 #1c1a18ff
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 121
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 122
+= as before
+## 123
+= as before
+## 124
+= as before
+## 125
+= as before
+## 126
+= as before
+## 127
+= as before
+## 128
+R 9,1031,42,42 1102 r=1 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 129
+R 8,1030,44,44 1102 r=2 #5d5c5b19
+R 9,1031,42,42 1102 r=1 #1f1d1bff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 130
+R 8,1030,44,44 1102 r=2 #84838250
+R 9,1031,42,42 1102 r=1 #252322ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 131
+R 8,1030,44,44 1102 r=2 #b7b7b699
+R 9,1031,42,42 1102 r=1 #2e2c2bff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 132
+R 8,1030,44,44 1102 r=2 #e1e1e1d5
+R 9,1031,42,42 1102 r=1 #353332ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 133
+R 8,1030,44,44 1102 r=2 #f8f8f8f6
+R 9,1031,42,42 1102 r=1 #393736ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 134
+R 8,1030,44,44 1102 r=2 #ffffffff
+R 9,1031,42,42 1102 r=1 #3a3837ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 135
+= as before
+## 136
+= as before
+## 137
+= as before
+## 138
+R 8,1030,260,44 1102 r=2 #ffffffff
+R 10,1032,256,40 1102 r=0 #3a3837ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 139
+R 8,1030,260,44 1102 r=2 #d1cb6dbe
+R 10,1032,256,40 1102 r=0 #373534ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 140
+R 8,1030,260,44 1102 r=2 #e3d827db
+R 10,1032,256,40 1102 r=0 #312f2dff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 141
+R 8,1030,260,44 1102 r=2 #f1e40cee
+R 10,1032,256,40 1102 r=0 #282624ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 142
+R 8,1030,260,44 1102 r=2 #f9ea03f9
+R 10,1032,256,40 1102 r=0 #211f1dff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 143
+R 8,1030,260,44 1102 r=2 #fced00fe
+R 10,1032,256,40 1102 r=0 #1d1b19ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 144
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #1c1a18ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 145
+= as before
+## 146
+= as before
+## 147
+= as before
+## 148
+= as before
+## 149
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #1f1d1bff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 150
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #252322ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 151
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #2e2c2bff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 152
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #353332ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 153
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #393736ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 154
+R 8,1030,260,44 1102 r=2 #fdee00ff
+R 10,1032,256,40 1102 r=0 #3a3837ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_play_26_eeecec
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+T 60,1030,204,44 1106 numeric 18 #eeececff LC "Take control · F11"
+## 155
+= as before
+## 156
+= as before
+## 157
+= as before
+## 158
+R 8,1030,44,44 1102 r=2 #fdee00ff
+R 9,1031,42,42 1102 r=1 #3a3837ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 159
+R 8,1030,44,44 1102 r=2 #cdcaa0b9
+R 9,1031,42,42 1102 r=1 #373534ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 160
+R 8,1030,44,44 1102 r=2 #bfbdaca4
+R 9,1031,42,42 1102 r=1 #312f2dff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 161
+R 8,1030,44,44 1102 r=2 #96948a6a
+R 9,1031,42,42 1102 r=1 #282624ff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 162
+R 8,1030,44,44 1102 r=2 #6b6b652e
+R 9,1031,42,42 1102 r=1 #211f1dff
+I 17,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_pause_26_eeecec
+R 57,1031,42,42 1102 r=1 #1c1a18ff
+I 65,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_cpu_26_eeecec
+R 105,1031,42,42 1102 r=1 #1c1a18ff
+I 113,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_camera_26_cbc9c7
+R 153,1031,42,42 1102 r=1 #1c1a18ff
+I 161,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_settings_26_eeecec
+R 595,1031,66,42 1102 r=1 #1c1a18ff
+I 632,1039 1105 smooth asset/lt_direct_control/ui/drawn_ef_list_26_eeecec
+R 214,1043,3,18 1104 r=0 #53b8e4ff
+R 260,1043,3,18 1104 r=0 #ff642eff
+R 8,960,56,56 1102 r=2 #eeececff
+R 10,962,52,52 1102 r=0 #1c1a18ff
+I 20,972 1105 smooth asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec
+R 600,1041,30,22 1104 r=2 #eeececff
+T 600,1041,30,22 1105 numeric 13 #393939ff CC "Tab"
+R 202,1041,1,22 1101 r=0 #4b4a49ff
+R 350,1041,1,22 1101 r=0 #4b4a49ff
+R 208,1030,136,44 1101 r=3 #3a3837ff
+R 210,1032,40,40 1102 r=2 #eeececff
+## 163
+## 164
+## 165
+## 166
+## 167
+## 168

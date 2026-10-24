@@ -1,0 +1,3 @@
+lt_state_plate:empty { x: 902px; y: 100px; width: 116px; height: 48px; z: 1120; visible: false; ignore_event: true;
+#glyph:image { x: 20px; y: 9px; width: 30px; height: 30px; z: 1121; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececff; ignore_event: true; }
+}

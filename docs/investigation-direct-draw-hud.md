@@ -318,4 +318,4 @@ Small things to tidy (read from the log): the `DRAW origin` self-check
 compared against a root rectangle of 0 × 0 at (0, 0) on the frame the
 root was spawned, so it logged DIFFERENT once per window although the
 drawn places were right; it should skip an unlaid-out root.
-`tools/verify_ui_graphics.py` is stale since dev2 (older asset counts).
+`tools/verify_ui_graphics.py` is stale since dev2 (older asset counts). (Both done in 1.6.0-dev4, 2026-10-24: `check_origin` skips a root with zero width or height and compares on the next frame; `verify_ui_graphics.py` was retired and `tools/verify_build.py` is the one asset check, see CHANGELOG.)

@@ -1,0 +1,20 @@
+lt_stats_target:empty { x: 8px; y: 56px; width: 292px; height: 129px; z: 1000; ignore_event: true; visible: false;
+#panel:empty { x: 0px; y: 0px; width: 292px; height: 129px; ignore_event: true; z: 1001;
+#face:empty { x: 10px; y: 46px; width: 64px; height: 64px; ignore_event: true; z: 1003;
+#portrait:image { x: 1px; y: 1px; width: 62px; height: 62px; sample_linear: false; visible: false; ignore_event: true; z: 1005; }
+#unit:image { x: 11px; y: 11px; width: 40px; height: 40px; source: "asset/lt_direct_control/ui/hud_minion"; color: #cbc9c7ff; visible: false; ignore_event: true; z: 1005; }
+}
+#i0:image { x: 84px; y: 38px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "ad_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i1:image { x: 152px; y: 38px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "ap_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i2:image { x: 220px; y: 38px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "attack_speed_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i3:image { x: 84px; y: 59px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "armor_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i4:image { x: 152px; y: 59px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "magic resistance_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i5:image { x: 220px; y: 59px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "haste_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i6:image { x: 84px; y: 80px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "crit_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i7:image { x: 152px; y: 80px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "speed_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i8:image { x: 220px; y: 80px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "range_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i9:image { x: 84px; y: 101px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "lifesteal_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i10:image { x: 152px; y: 101px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "armor_pen_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#i11:image { x: 220px; y: 101px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "mr_pen_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+}
+}

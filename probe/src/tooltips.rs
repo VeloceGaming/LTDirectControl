@@ -436,10 +436,14 @@ fn resolve_skill(text: &str, champion: &str, slot: usize, spec: Option<&Value>) 
         resolve(text, spec)
     }
 }
+/// The slot letter a skill title starts with ("Q   Name"; the name alone
+/// when the game has none). The skills' names, not their keys: the HUD
+/// strips it and shows the bound key in the tooltip's corner instead.
+pub const SKILL_LETTERS: [&str; 3] = ["Q", "W", "R"];
 pub fn skill(ctx: &StableClient<'_>, champion: &str, slot: usize, spec: Option<&Value>) -> String {
     let tag = ["skill", "skill2", "ult"][slot];
     let name_tag = ["skill1", "skill2", "ult"][slot];
-    let key = ["Q", "W", "R"][slot];
+    let key = SKILL_LETTERS[slot];
     let name = translated(
         ctx,
         &format!("#asset/base/text/champion?skill_name.{champion}.{name_tag}"),

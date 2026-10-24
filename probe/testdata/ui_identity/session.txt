@@ -189,42 +189,42 @@ P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color
 ## frame 50
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 51
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d00;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff00;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffff00;
 T ingame.lt_session_controls.tooltip.text = Lock camera · Y
-Hold Space to follow
+Hold Spc to follow
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 52
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d10;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff13;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffff13;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 53
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d34;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff3d;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffff3d;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 54
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d67;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff79;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffff79;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 55
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d9a;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffffb5;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffffb5;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 56
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dbe;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffffe0;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffffe0;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 57
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dd2;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #fffffff7;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #fffffff7;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 58
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dd8;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #fffffffe;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #fffffffe;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 59
-P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dd9;
-P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffffff;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 342.10px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 318.1px; height: 52px; color: #ffffffff;
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
 ## frame 60
 # bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0

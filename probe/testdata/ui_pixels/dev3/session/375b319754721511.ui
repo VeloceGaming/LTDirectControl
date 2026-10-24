@@ -1,0 +1,14 @@
+lt_session_controls:empty { width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62px; z: 1100; ignore_event: true;
+#lane0:empty { x: 0px; y: 4px; width: 72px; height: 72px; z: 1102; ignore_event: true; #portrait:image { x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; } }
+#lane1:empty { x: 80px; y: 4px; width: 72px; height: 72px; z: 1102; ignore_event: true; #portrait:image { x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; } }
+#lane2:empty { x: 160px; y: 4px; width: 72px; height: 72px; z: 1102; ignore_event: true; #portrait:image { x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; } }
+#lane3:empty { x: 240px; y: 4px; width: 72px; height: 72px; z: 1102; ignore_event: true; #portrait:image { x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; } }
+#lane4:empty { x: 320px; y: 4px; width: 72px; height: 72px; z: 1102; ignore_event: true; #portrait:image { x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; } }
+#vision_own:empty { x: 0px; y: 0px; width: 48px; height: 44px; z: 1102; visible: false; ignore_event: true; #glyph:image { x: 11px; y: 9px; width: 26px; height: 26px; z: 1105; source: "asset/lt_direct_control/ui/ef_eye"; color: #eeececff; ignore_event: true; }
+}
+#vision_other:empty { x: 0px; y: 0px; width: 48px; height: 44px; z: 1102; visible: false; ignore_event: true; #glyph:image { x: 11px; y: 9px; width: 26px; height: 26px; z: 1105; source: "asset/lt_direct_control/ui/ef_eye"; color: #eeececff; ignore_event: true; }
+}
+#vision_all:empty { x: 0px; y: 0px; width: 48px; height: 44px; z: 1102; visible: false; ignore_event: true; #glyph:image { x: 11px; y: 9px; width: 26px; height: 26px; z: 1105; source: "asset/lt_direct_control/ui/ef_eye"; color: #eeececff; ignore_event: true; }
+}
+#tooltip:color { x: 0px; y: -68px; width: 310px; height: 56px; z: 1200; color: #1e1e1dd9; ignore_event: true; visible: false; rounding: Uniform { rounding: 3; } #text:label { font: "asset/lt_direct_control/font/medium"; x: 12px; y: 8px; width: 286px; height: 40px; size: 20; color: #ffffffff; ignore_event: true; z: 1201; } }
+    }

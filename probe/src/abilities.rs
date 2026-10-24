@@ -1179,33 +1179,37 @@ impl Abilities {
             && (approaching.is_some()
                 || ((busy || (native.is_some() && !request.waiting))
                     && request_has_target(request, desc.unwrap(), actor, units)));
+        // The banner's text for this outcome. A refusal with no reason the
+        // player can act on has none since 1.6.0-dev5 (it was a debugging
+        // aid); its log lines, sound and red flash stay.
         let message = if result.is_some() {
-            format!("{} cast sent", NAMES[request.slot])
+            Some(format!("{} cast sent", NAMES[request.slot]))
         } else if level.is_some_and(|l| l < [1, 3, 5][request.slot]) {
-            crate::lang::trf(
+            Some(crate::lang::trf(
                 "{key}: Lv {level}",
                 &[
                     ("key", &NAMES[request.slot]),
                     ("level", &[1, 3, 5][request.slot]),
                 ],
-            )
+            ))
         } else if cooldown > 0 {
-            format!("{}: {:.1}s", NAMES[request.slot], cooldown as f32 / 60.)
+            Some(format!(
+                "{}: {:.1}s",
+                NAMES[request.slot],
+                cooldown as f32 / 60.
+            ))
         } else if desc.is_none() {
-            crate::lang::trf(
+            Some(crate::lang::trf(
                 "{key} unavailable: current ability data not ready",
                 &[("key", &NAMES[request.slot])],
-            )
+            ))
         } else if desc.is_some_and(|d| d.casting == 0 && d.target == 2) {
-            crate::lang::trf(
+            Some(crate::lang::trf(
                 "{key} needs an ally under crowd control",
                 &[("key", &NAMES[request.slot])],
-            )
+            ))
         } else {
-            crate::lang::trf(
-                "{key} not cast: invalid aim/target or native cast unavailable",
-                &[("key", &NAMES[request.slot])],
-            )
+            None
         };
         if let Ok(mut s) = self.0.lock() {
             // A newer command can arrive while native validation is running.
@@ -1233,7 +1237,8 @@ impl Abilities {
             }
             if !retain {
                 s.wait_state = None;
-                s.message = Some((message, Instant::now()));
+                // No text clears the last one, as a new text replaced it.
+                s.message = message.map(|m| (m, Instant::now()));
                 if result.is_none() {
                     s.denied_at[request.slot] = Some(Instant::now());
                     log.write(&cast_timing(&request, "denied", reason));
@@ -1321,10 +1326,9 @@ impl Abilities {
         } else {
             crate::ui_sound::cast_denied();
             s.denied_at[slot] = Some(Instant::now());
-            s.message = Some((
-                crate::lang::trf("{key} could not start", &[("key", &NAMES[slot])]),
-                Instant::now(),
-            ));
+            // No banner text since 1.6.0-dev5 (a debugging aid); clear the
+            // last one, as the refusal's text replaced it before.
+            s.message = None;
             log.write(&cast_timing(
                 &request,
                 "refused",

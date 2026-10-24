@@ -383,7 +383,10 @@ pub fn anchored(
 /// or not) and one more if they come to differ by more than half a pixel.
 /// The drawn windows assume the anchoring in [`anchored`]; the tests share
 /// that assumption, so only the game can confirm it. `state`: 0 not yet
-/// compared, 1 logged agreeing, 2 logged differing.
+/// compared, 1 logged agreeing, 2 logged differing. A root the game has not
+/// laid out yet (0 x 0 at (0, 0) on the frame it was spawned, seen in the
+/// author's dev3 log as one DIFFERENT line per window) is not compared;
+/// the next frame's is (1.6.0-dev4).
 pub fn check_origin(
     window: &str,
     drawn: (f32, f32),
@@ -391,7 +394,7 @@ pub fn check_origin(
     state: &mut u8,
     log: &crate::Logger,
 ) {
-    let Some((x, y, w, h)) = root else {
+    let Some((x, y, w, h)) = root.filter(|r| r.2 > 0. && r.3 > 0.) else {
         return;
     };
     let apart = (drawn.0 - x).abs().max((drawn.1 - y).abs()) > 0.5;
@@ -459,6 +462,41 @@ mod tests {
             );
         }
         assert_eq!(list.cmds.capacity(), capacity);
+    }
+    #[test]
+    fn a_root_not_laid_out_yet_is_compared_on_the_next_frame() {
+        let log = crate::test_support::logger("draw-origin");
+        let mut state = 0;
+        let drawn = (0., 934.);
+        // The frame the root was spawned: 0 x 0 at (0, 0). Nothing logged.
+        check_origin("hud strip", drawn, Some((0., 0., 0., 0.)), &mut state, &log);
+        check_origin(
+            "hud strip",
+            drawn,
+            Some((0., 0., 1920., 0.)),
+            &mut state,
+            &log,
+        );
+        check_origin("hud strip", drawn, None, &mut state, &log);
+        assert_eq!(state, 0);
+        // Laid out: compared once, agreeing.
+        check_origin(
+            "hud strip",
+            drawn,
+            Some((0., 934., 1920., 146.)),
+            &mut state,
+            &log,
+        );
+        assert_eq!(state, 1);
+        // A real difference later is still logged.
+        check_origin(
+            "hud strip",
+            drawn,
+            Some((0., 930., 1920., 146.)),
+            &mut state,
+            &log,
+        );
+        assert_eq!(state, 2);
     }
     #[test]
     fn roots_are_anchored_as_the_tree_anchors_them() {

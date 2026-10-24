@@ -84,7 +84,7 @@ pub const GAME_CLOSE: [&str; 17] = [
 /// The game text whose wording identifies the language.
 pub const PROBE_TEXT: &str = "#asset/base/text/ui?common.close";
 
-const FILES: [&str; 17] = [
+pub(crate) const FILES: [&str; 17] = [
     "{}",
     include_str!("../lang/ko.json"),
     include_str!("../lang/ja.json"),

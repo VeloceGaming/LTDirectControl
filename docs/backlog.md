@@ -308,32 +308,9 @@ addition (not to be copied).
     happen. Wanted: a more graceful answer that keeps the look-ahead where
     it does not hurt control (details in
     [migration-0.6.5.md](migration-0.6.5.md)).
-19. **Performance, Stage 2: a HUD drawn directly** (2026-10-24, after
-    1.6.0-perf-dev1). Stage 1 (1.6.0-perf-dev1) left what the player sees
-    untouched and cut only the mod's own work. Whether the HUD strip and
-    panels should be drawn with the SDK's draw calls instead of the game's
-    UI tree is decided by an A/B: the same match with and without the
-    hidden switch `perf_hide_mod_ui` (controls.json, 1 = on), read in Frame
-    Lab and the PERF lines. The difference is what the game spends on the
-    mod's UI nodes; only a large difference justifies the rewrite. The
-    probe build 1.6.0-perf-dev2 adds the hidden switch `perf_draw_probe`
-    (controls.json, 1 = on): direct draws that step through a load and
-    test layering, SVG loading and drawn text (`draw_probe.rs`; how to
-    read it in `CHANGELOG.md`). The probe was played on 2026-10-24
-    (results in [investigation-direct-draw-hud.md](investigation-direct-draw-hud.md),
-    section 7): draws sort by z with the tree, cost about 2.2 µs each.
-    **Build 2b, 1.6.0-perf-dev3** (2026-10-24, not yet seen in game): the
-    HUD strip, state plate, session strip, stats panels and screen effect
-    are drawn (`draw_list.rs` and one `*_draw.rs` per window); the tree
-    keeps the sprite-sheet images, portraits, tooltips and the four
-    tint-animated glyphs. Two tests guard it (golden draw lists, an
-    offline pixel comparison with dev2). Open: play it (look, clicks on
-    the session strip, hover sounds, the A/B with `perf_hide_mod_ui` and
-    Frame Lab to measure the gain), and the cases listed under "Not seen
-    in game" in its CHANGELOG entry. Tab stays a tree window; it can move
-    later if the gain is confirmed.
-
 ## Done
+
+- Performance overhaul (1.6.0, 2026-10-25; seen in game by the author on 0.6.4, 0.6.5 and 0.7.0 Beta 2): typed UI writes, then the HUD strip, state plate, session strip, stats panels and screen effect drawn directly; about 96 fps against 82 on 1.5.3 on the same match, the mod's own work per frame halved. The former item 19 (the A/B with `perf_hide_mod_ui`, the probe `perf_draw_probe`) is recorded in [investigation-direct-draw-hud.md](investigation-direct-draw-hud.md); both switches ship, default off. Accepted as is: the match-start hitch.
 
 - Game speed buttons in AI control (1.5.1, 2026-10-22): after F12 the game's speed buttons work (seen in game by the author on 0.6.5 and 0.7.0 Beta 2); its pause works and F11 takes control back at 1x (seen in game on 0.6.5, with 1.5.1-dev1); control always runs at 1x. The highlight button stays without effect (the author's decision). Supersedes the 0.78.2 line below: a speed change no longer hands the match to the game. Design note: `design/pacing/spectator-speed-2026-10-22.md` (the author's local design folder, not in git).
 

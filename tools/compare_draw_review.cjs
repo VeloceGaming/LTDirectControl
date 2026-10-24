@@ -4,20 +4,26 @@
 // is that the draw lists put the same boxes, texts and glyphs in the same
 // places, colours, sizes and z order as the dev2 nodes did.
 //
-//   node tools/compare_draw_review.cjs [--keep]
+//   node tools/compare_draw_review.cjs [--keep] [--base=dev3] [window ...]
 //
 // Inputs (made by `cargo test` in probe/ with LT_UI_EXPORT_DIR, see
 // probe/src/ui_identity.rs):
 //   probe/testdata/ui_pixels/dev2/<window>/  record.txt + <fnv>.ui (dev2,
 //     the fixture: exported before any template changed)
 //   research/ui-pixels/dev3/<window>/  record.txt + <fnv>.ui + draw_*.txt
+//   --base=<set> compares against probe/testdata/ui_pixels/<set>/ instead of
+//     dev2 (1.6.0-dev4): the dev3 set is the drawn HUD as 1.6.0-perf-dev3
+//     exported it, draw lists included, so later builds compare against
+//     what dev3 drew. A window the base set lacks is skipped (dev2 has no
+//     Tab panel).
 // For each review state (a window and a frame of its scripted test) both
 // sides replay the write record up to that frame onto a model of the tree
 // (templates, property writes, texts, visibility; node layout as in
 // probe/src/fake_layout.rs), dev3 adds the frame's draw commands, and each
 // is rendered flat on a 1920 x 1080 canvas sorted by (z, order). Prints the
 // differing pixel count and the largest differing region per state.
-// --keep writes the PNGs and a diff image to research/ui-pixels/out/.
+// --keep writes the PNGs (<window>-<frame>-<base>.png, -now.png) and a diff
+// image to research/ui-pixels/out/.
 const fs=require('fs'),path=require('path');
 // The author's Node modules and browser, as the other review tools use them;
 // override with LT_NODE_MODULES (a folder ending in /) and LT_EDGE.
@@ -28,7 +34,8 @@ const sharp=require(MODULES+'sharp');
 const pixelmatchModule=require(MODULES+'pixelmatch');
 const pixelmatch=pixelmatchModule.default||pixelmatchModule;
 const root=path.resolve(__dirname,'..');
-const DEV2=path.join(root,'probe/testdata/ui_pixels/dev2');
+const BASE_SET=(process.argv.find(a=>a.startsWith('--base='))||'--base=dev2').slice(7);
+const DEV2=path.join(root,'probe/testdata/ui_pixels',BASE_SET);
 const DEV3=path.join(root,'research/ui-pixels/dev3');
 const OUT=path.join(root,'research/ui-pixels/out');
 const keep=process.argv.includes('--keep');
@@ -69,6 +76,9 @@ const STATES=[
  ['stats',70,'own panel only (target cleared)'],
  ['effect',58,'low-health tint'],
  ['effect',80,'death veil'],
+ // The Tab panel is a tree window (no draw list); only --base=dev3 has it.
+ ['team',20,'Tab held open'],
+ ['team',65,'Tab open again, values changed'],
 ];
 
 // ---- Templates and records ------------------------------------------------
@@ -148,6 +158,8 @@ function drawPrims(dir,frame,prims){
 function dataUrl(file,type){return 'data:'+type+';base64,'+fs.readFileSync(file).toString('base64');}
 
 // ---- The page: one canvas, the same code for both sides --------------------
+// Labels draw the game's rich text colour runs (<#rrggbbaa>, <> resets;
+// 1.6.0-dev4, for the Tab panel's K/D/A); other tags are left out.
 const PAGE=`<!doctype html><meta charset="utf-8"><style>
 @font-face{font-family:numeric;src:url(${dataUrl(path.join(root,'probe/font/manrope_numeric.ttf'),'font/ttf')})}
 @font-face{font-family:medium;src:url(${dataUrl(path.join(root,'probe/font/manrope_medium.ttf'),'font/ttf')})}
@@ -162,7 +174,7 @@ async function renderInPage(prims,images){
  ctx.fillStyle='#3c4a3a';ctx.fillRect(0,0,1920,1080);for(let i=0;i<1920;i+=40){ctx.fillStyle=i%80?'#46553f':'#33402f';ctx.fillRect(i,0,20,1080);}
  const box=(x,y,w,h,r)=>{ctx.beginPath();if(r>0&&ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);};
  const hash=s=>{let h=2166136261;for(const ch of s)h=Math.imul(h^ch.charCodeAt(0),16777619);return h>>>0;};
- const text=(p,dx,dy,c)=>{ctx.font=p.size+'px '+p.font;ctx.fillStyle=rgba(c);ctx.textAlign={L:'left',C:'center',R:'right'}[p.ax];ctx.textBaseline={T:'top',C:'middle',B:'bottom'}[p.ay];const x=p.ax==='L'?p.x:p.ax==='C'?p.x+p.w/2:p.x+p.w;const lines=p.text.split('\n');const lh=p.size*1.2;let y=p.ay==='T'?p.y:p.ay==='C'?p.y+p.h/2-(lines.length-1)*lh/2:p.y+p.h-(lines.length-1)*lh;for(const l of lines){ctx.fillText(l,x+dx,y+dy);y+=lh;}};
+ const text=(p,dx,dy,c)=>{ctx.font=p.size+'px '+p.font;ctx.fillStyle=rgba(c);ctx.textAlign={L:'left',C:'center',R:'right'}[p.ax];ctx.textBaseline={T:'top',C:'middle',B:'bottom'}[p.ay];const x=p.ax==='L'?p.x:p.ax==='C'?p.x+p.w/2:p.x+p.w;const lines=p.text.split('\n');const lh=p.size*1.2;let y=p.ay==='T'?p.y:p.ay==='C'?p.y+p.h/2-(lines.length-1)*lh/2:p.y+p.h-(lines.length-1)*lh;for(const l of lines){if(!l.includes('<'))ctx.fillText(l,x+dx,y+dy);else{const runs=[];let col=c;for(const part of l.split(/(<[^>]*>)/)){const m=/^<#([0-9a-fA-F]{8})>$/.exec(part);if(m)col=m[1].toLowerCase();else if(part==='<>')col=c;else if(part&&!(part.startsWith('<')&&part.endsWith('>')))runs.push([part,col]);}const total=runs.reduce((w,r)=>w+ctx.measureText(r[0]).width,0);let rx=(p.ax==='L'?x:p.ax==='C'?x-total/2:x-total)+dx;ctx.textAlign='left';for(const [t,rc] of runs){ctx.fillStyle=rgba(rc);ctx.fillText(t,rx,y+dy);rx+=ctx.measureText(t).width;}ctx.textAlign={L:'left',C:'center',R:'right'}[p.ax];ctx.fillStyle=rgba(c);}y+=lh;}};
  const tinted=(img,w,h,tint,smooth)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));const g=c.getContext('2d');g.imageSmoothingEnabled=smooth;g.drawImage(img,0,0,c.width,c.height);const d=g.getImageData(0,0,c.width,c.height);const t=[0,2,4,6].map(i=>parseInt(tint.slice(i,i+2),16)/255);for(let i=0;i<d.data.length;i+=4)for(let k=0;k<4;k++)d.data[i+k]=Math.round(d.data[i+k]*t[k]);g.putImageData(d,0,0);return c;};
  prims.sort((a,b)=>a.z-b.z||a.order-b.order);
  for(const p of prims){
@@ -192,8 +204,9 @@ function largest(mask,w,h){const seen=new Uint8Array(w*h);let best=[0,0,0,0,0];c
   const page=await browser.newPage({viewport:{width:1920,height:1080}});
   await page.setContent(PAGE);await page.addScriptTag({content:renderInPage.toString()});
   for(const [win,frame,label] of STATES.filter(s=>!only.length||only.includes(s[0]))){
+   if(!fs.existsSync(path.join(DEV2,win))){rows.push(`${win.padEnd(7)} ${String(frame).padStart(3)}  ${label.padEnd(48)} skipped: no ${win} in the ${BASE_SET} set`);continue;}
    const t2=replay(path.join(DEV2,win),frame),t3=replay(path.join(DEV3,win),frame);
-   const a=[];treePrims(t2,a);
+   const a=[];treePrims(t2,a);drawPrims(path.join(DEV2,win),frame,a);
    const b=[];treePrims(t3,b);
    const nodeCount=t=>[t.nodes.size,[...t.nodes.keys()].filter(k=>t.visible(k)).length];
    const [n2,v2]=nodeCount(t2),[n3,v3]=nodeCount(t3);const tree3=b.length;drawPrims(path.join(DEV3,win),frame,b);
@@ -205,10 +218,10 @@ function largest(mask,w,h){const seen=new Uint8Array(w*h);let best=[0,0,0,0,0];c
    const [n,x,y,w,h]=largest(mask,1920,1080);
    worst=Math.max(worst,w,h);
    rows.push(`${win.padEnd(7)} ${String(frame).padStart(3)}  ${label.padEnd(48)} nodes ${String(n2).padStart(3)} (${String(v2).padStart(3)} shown) -> ${String(n3).padStart(3)} (${String(v3).padStart(3)} shown), ${String(b.length-tree3).padStart(3)} drawn  differing px ${String(count).padStart(5)}  largest region ${n} px ${w}x${h} at (${x},${y})`);
-   if(keep){const name=`${win}-${frame}`;fs.writeFileSync(path.join(OUT,name+'-dev2.png'),pa);fs.writeFileSync(path.join(OUT,name+'-dev3.png'),pb);await sharp(diff,{raw:{width:1920,height:1080,channels:4}}).png().toFile(path.join(OUT,name+'-diff.png'));}
+   if(keep){const name=`${win}-${frame}`;fs.writeFileSync(path.join(OUT,name+'-'+BASE_SET+'.png'),pa);fs.writeFileSync(path.join(OUT,name+'-now.png'),pb);await sharp(diff,{raw:{width:1920,height:1080,channels:4}}).png().toFile(path.join(OUT,name+'-diff.png'));}
   }
  }finally{await browser.close();}
- console.log('window frame state                                           tree nodes dev2 -> dev3, draw commands      pixel comparison');
+ console.log(`window frame state                                           tree nodes ${BASE_SET} -> now, draw commands      pixel comparison`);
  for(const r of rows)console.log(r);
  console.log(`Largest differing region over all states: ${worst} px across.`);
 })().catch(e=>{console.error(e);process.exitCode=1;});

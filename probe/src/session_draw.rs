@@ -12,6 +12,7 @@
 //! ([`SessionView::button_at`]).
 use crate::draw_list::{anchored, at, Align, DrawList, Rect, TextStyle};
 use crate::drawn_glyphs::asset;
+use crate::key_cap::KeyText;
 
 /// The root in the pre-match chooser and on the strip.
 pub const CHOOSER: (f32, f32) = (512., 80.);
@@ -72,7 +73,71 @@ pub struct SessionView {
     pub indicator: (bool, f32),
     /// B8: the sweep's width and colour, when shown.
     pub sweep: Option<(f32, u32)>,
+    /// The bindings the strip names (1.6.0-dev4).
+    pub keys: SessionKeys,
 }
+/// The keys the strip's cap, label and tooltips name, as bound now.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SessionKeys {
+    pub start: KeyText,
+    pub release: KeyText,
+    pub tab: KeyText,
+    /// The camera tooltip's two keys (1.6.0-dev5).
+    pub camera: KeyText,
+    pub follow: KeyText,
+    /// "Take control · " and the start key (English, as the template's
+    /// label was; never translated).
+    pub take: String,
+}
+impl Default for SessionKeys {
+    fn default() -> Self {
+        let mut keys = Self {
+            start: KeyText::new("start"),
+            release: KeyText::new("release"),
+            tab: KeyText::new("tab"),
+            camera: KeyText::new("camera_toggle"),
+            follow: KeyText::new("follow"),
+            take: String::new(),
+        };
+        keys.take_label();
+        keys
+    }
+}
+impl SessionKeys {
+    /// Follow the bindings in `values` (every frame; text rebuilt on a change).
+    pub fn follow(&mut self, values: &crate::settings::Values) {
+        let start = self.start.chord();
+        self.start.follow(values, "start");
+        self.release.follow(values, "release");
+        self.tab.follow(values, "tab");
+        self.camera.follow(values, "camera_toggle");
+        self.follow.follow(values, "follow");
+        if self.start.chord() != start {
+            self.take_label();
+        }
+    }
+    fn take_label(&mut self) {
+        self.take.clear();
+        self.take.push_str("Take control");
+        if !self.start.text().is_empty() {
+            self.take.push_str(" · ");
+            self.take.push_str(self.start.text());
+        }
+    }
+    /// The Tab cap's width (30 px at "Tab", wider for a wider key).
+    pub fn tab_cap(&self) -> f32 {
+        crate::key_cap::width(self.tab.text(), TAB_CAP.0, TAB_CAP.1, "Tab")
+    }
+    /// The "Take control" label's box: 204 px, or as wide as its text.
+    pub fn take_box(&self) -> f32 {
+        TAKE_BOX.max(crate::hud_style::width(&self.take, 18.).ceil())
+    }
+}
+/// The Tab cap's width and text size at its default key.
+pub const TAB_CAP: (f32, f32) = (30., 13.);
+/// The "Take control" label's box width in the AI-phase primary button,
+/// which is 52 px wider (the glyph left of it, 4 px right of it).
+pub const TAKE_BOX: f32 = 204.;
 impl Default for SessionView {
     fn default() -> Self {
         let bg = crate::ui_theme::rgba(0xff);
@@ -107,6 +172,7 @@ impl Default for SessionView {
             rules: true,
             indicator: (true, 202.),
             sweep: None,
+            keys: SessionKeys::default(),
         }
     }
 }
@@ -242,19 +308,24 @@ pub fn build(v: &SessionView, ingame: Option<Rect>, list: &mut DrawList) {
         list.rect(at(o, (0., -10., width, 2.)), 1106, 0., color);
     }
     if v.take_label {
+        // The primary button is the label's box plus 56 px (it grows with
+        // a label wider than 204 px).
         list.text(
-            "Take control · F11",
-            at(o, (52., 6., 204., 44.)),
+            &v.keys.take,
+            at(o, (52., 6., v.buttons[0].rect.2 - 56., 44.)),
             1106,
             TextStyle::numeric(18., Align::Start),
             0xeeececff,
         );
     }
-    if v.tab_key {
-        let cap = at(o, (592., 17., 30., 22.));
+    if v.tab_key && !v.keys.tab.text().is_empty() {
+        // 6 px inside the Tab button's left edge; a wider cap grows left
+        // with the button, its right edge 2 px before the glyph.
+        let b = v.buttons[5].rect;
+        let cap = at(o, (b.0 + 6., 17., b.2 - 38., 22.));
         list.rect(cap, 1104, 2., 0xeeececff);
         list.text(
-            "Tab",
+            v.keys.tab.text(),
             cap,
             1105,
             TextStyle::numeric(13., Align::Center),
@@ -288,5 +359,84 @@ fn vision(list: &mut DrawList, o: (f32, f32), v: &SessionView) {
         if let Some(mark) = [Some(0x53b8e4ff), Some(0xff642eff), None][i] {
             list.rect(at(b, (6., 13., 3., 18.)), 1104, 0., mark);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::draw_list::Cmd;
+    use crate::settings::Chord;
+    fn texts(v: &SessionView) -> Vec<(String, Rect)> {
+        let mut list = DrawList::default();
+        build(v, None, &mut list);
+        list.commands()
+            .iter()
+            .filter_map(|c| match *c {
+                Cmd::Text { rect, text, .. } => Some((list.text_of(text).to_owned(), rect)),
+                _ => None,
+            })
+            .collect()
+    }
+    /// The strip in a match with the Tab button where `session_ui` puts it.
+    fn strip(keys: SessionKeys, ai: bool) -> SessionView {
+        let mut v = SessionView {
+            shown: true,
+            preparing: false,
+            loading: false,
+            take_label: ai,
+            ..Default::default()
+        };
+        let grow = keys.tab_cap() - TAB_CAP.0;
+        v.buttons[5].rect = (586. - grow, 6., 68. + grow, 44.);
+        v.buttons[0].rect = (0., 6., keys.take_box() + 56., 44.);
+        v.keys = keys;
+        v
+    }
+    #[test]
+    fn the_tab_cap_grows_left_and_the_take_control_label_names_the_start_key() {
+        let o = (8., 1080. - 56.);
+        let mut keys = SessionKeys::default();
+        assert_eq!(keys.take, "Take control · F11");
+        assert_eq!(keys.take_box(), TAKE_BOX);
+        let v = strip(keys.clone(), true);
+        assert!(texts(&v).contains(&("Tab".into(), at(o, (592., 17., 30., 22.)))));
+        assert!(texts(&v).contains(&("Take control · F11".into(), at(o, (52., 6., 204., 44.)))));
+        // Ctrl + Shift + Tab: the cap and its button grow left, the cap's
+        // right edge stays 2 px before the glyph.
+        let mut values = crate::settings::Values::default();
+        values.bind("tab", 0, chord(9, 3));
+        values.bind("start", 0, chord(0x7b, 7));
+        keys.follow(&values);
+        let grow = keys.tab_cap() - TAB_CAP.0;
+        assert!(grow > 0.);
+        let v = strip(keys.clone(), true);
+        let cap = at(o, (592. - grow, 17., 30. + grow, 22.));
+        assert!(texts(&v).contains(&("C+S+Tab".into(), cap)));
+        assert_eq!(cap.0 + cap.2, o.0 + 622.);
+        assert_eq!(keys.take, "Take control · C+S+A+F12");
+        // Start unbound: the label loses its key; Tab unbound: no cap.
+        values.bind("start", 0, None);
+        values.bind("tab", 0, None);
+        keys.follow(&values);
+        assert_eq!(keys.take, "Take control");
+        let v = strip(keys, true);
+        assert!(!texts(&v).iter().any(|(t, _)| t.contains("Tab")));
+        assert!(texts(&v).iter().any(|(t, _)| t == "Take control"));
+    }
+    #[test]
+    fn a_label_wider_than_its_box_widens_the_primary_button() {
+        let keys = SessionKeys {
+            take: "Take control · C+S+A+Bksp and some more room".into(),
+            ..Default::default()
+        };
+        assert!(keys.take_box() > TAKE_BOX);
+        assert_eq!(
+            keys.take_box(),
+            crate::hud_style::width(&keys.take, 18.).ceil()
+        );
+    }
+    fn chord(code: u8, mods: u8) -> Option<Chord> {
+        Some(Chord { code, mods })
     }
 }

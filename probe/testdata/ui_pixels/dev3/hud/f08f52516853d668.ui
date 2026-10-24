@@ -1,0 +1,27 @@
+lt_player_hud:empty { width: 1920px; height: 146px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true;
+#skill0:empty { x: 832px; y: 4px; width: 80px; height: 80px; z: 1001; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #png:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#skill1:empty { x: 920px; y: 4px; width: 80px; height: 80px; z: 1001; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #png:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#skill2:empty { x: 1008px; y: 4px; width: 80px; height: 80px; z: 1001; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #png:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#item0:empty { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#item1:empty { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#item2:empty { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#item3:empty { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#item4:empty { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#item5:empty { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#next:empty { x: 1390px; y: 100px; width: 36px; height: 36px; z: 1001; ignore_event: true; #icon:image { x: 3px; y: 3px; width: 30px; height: 30px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }
+#purchase_coin:image { x: 1430px; y: 121px; width: 17px; height: 17px; z: 1003; source: "asset/lt_direct_control/ui/ef_coin"; color: #eeececff; ignore_event: true; }
+#purchase_check:image { x: 1430px; y: 121px; width: 17px; height: 17px; z: 1003; source: "asset/lt_direct_control/ui/ef_check"; color: #eeececff; ignore_event: true; }
+#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #171b25d9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
+        #art:color { x: 16px; y: 24px; width: 48px; height: 48px; z: 1111; color: #00000000; ignore_event: true; #icon:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } #png:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } }
+        #title:label { font: "asset/lt_direct_control/font/medium"; x: 76px; y: 23px; width: 419px; height: 32px; z: 1112; size: 27; line_height: 32; align_y: Top; color: #ffffffff; ignore_event: true; }
+        #meta:label { font: "asset/lt_direct_control/font/medium"; x: 100px; y: 61px; width: 150px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
+        #range:label { font: "asset/lt_direct_control/font/medium"; x: 208px; y: 61px; width: 100px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
+        #key:label { font: "asset/lt_direct_control/font/medium"; x: 487px; y: 8px; width: 26px; height: 26px; z: 1112; size: 21; color: #d6d6d66b; ignore_event: true; }
+        #meta_clock:image { x: 76px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d675; z: 1112; ignore_event: true; }
+        #meta_range:image { x: 180px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/ef_range"; color: #d6d6d675; z: 1112; ignore_event: true; }
+        #status:image { x: 16px; y: 16px; width: 24px; height: 24px; source: "asset/lt_direct_control/ui/ef_unavailable"; z: 1112; visible: false; ignore_event: true; }
+        #rule:color { x: 16px; y: 98px; width: 501px; height: 1px; z: 1111; color: #ffffff3b; ignore_event: true; }
+        #text:label { font: "asset/lt_direct_control/font/medium"; x: 16px; y: 106px; width: 501px; height: 100px; z: 1111; size: 20; line_height: 28; align_y: Top; color: #d6d6d6ff; ignore_event: true; }
+        #scroll_track:color { width: 3px; z: 1112; color: #ffffff30; visible: false; ignore_event: true; }
+        #scroll_thumb:color { width: 3px; z: 1113; color: #d6d6d6aa; visible: false; ignore_event: true; }
+    } }

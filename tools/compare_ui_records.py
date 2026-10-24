@@ -64,6 +64,11 @@ EXPECTED = [
     ('container node: same place and visibility, no colour or button style',
      re.compile(r'^P \S+\.(skill\d|item\d+|next|lane\d|vision_(own|other|all)|lt_state_plate) \| ')),
     ('frame notes (bounds, sounds) — checked separately', re.compile(r'^# ')),
+    ('1.6.0-dev5: the camera tooltip names its keys by their short names '
+     '(Hold Space -> Hold Spc), so its text and its box are narrower',
+     re.compile(r'^T ingame\.lt_session_controls\.tooltip\.text = Lock camera \S Y\nHold Spc to follow$'
+                r'|^P ingame\.lt_session_controls\.tooltip \| visible: true; x: -8\.00px; y: -74\.00px; width: 342\.10px; '
+                r'|^P ingame\.lt_session_controls\.tooltip\.text \| width: 318\.1px; ')),
 ]
 # Lines that may leave a kept node's record, by design.
 EXPECTED_DROPPED = [

@@ -594,6 +594,12 @@ impl SessionUi {
         });
         self.view.preparing = preparing;
         self.view.loading = phase == Phase::Loading;
+        // The keys the strip names, as bound now (a rebind shows at once).
+        self.view.keys.follow(&crate::settings::current_shared());
+        // A wider Tab key grows its cap and button to the left; a wider
+        // "Take control" label grows the AI-phase primary button right.
+        let tab_grow = self.view.keys.tab_cap() - crate::session_draw::TAB_CAP.0;
+        let take_width = self.view.keys.take_box() + 56.;
         for lane in 0..5 {
             if let Some(p) = players.iter().find(|p| p.lane == lane) {
                 self.portrait(ctx, n, lane, &p.champion, 56.);
@@ -706,7 +712,7 @@ impl SessionUi {
                 if preparing {
                     48.
                 } else if ai {
-                    260.
+                    take_width
                 } else {
                     44.
                 },
@@ -730,7 +736,17 @@ impl SessionUi {
             ("release", 48., 6., 44., 44., strip, false, 3, 26.),
             ("camera", 96., 6., 44., 44., strip, camera.locked(), 4, 26.),
             ("settings", 144., 6., 44., 44., strip, false, 5, 26.),
-            ("tab", TAB_X, 6., 68., 44., strip, false, 6, 26.),
+            (
+                "tab",
+                TAB_X - tab_grow,
+                6.,
+                68. + tab_grow,
+                44.,
+                strip,
+                false,
+                6,
+                26.,
+            ),
             (
                 "swap", 0., SWAP_Y, SWAP_TILE, SWAP_TILE, in_match, open, 7, 32.,
             ),
@@ -761,7 +777,7 @@ impl SessionUi {
         } else {
             0xcbc9c7ff
         };
-        (glyphs[5].at, glyphs[5].size) = ((38., 9.), 26.);
+        (glyphs[5].at, glyphs[5].size) = ((38. + tab_grow, 9.), 26.);
         for lane in 0..5 {
             let p = players.iter().find(|p| p.lane == lane);
             let b = &n.buttons[7 + lane];
@@ -796,35 +812,47 @@ impl SessionUi {
         let mut tip = None;
         if let Some(cursor) = cursor {
             for node in TIPS {
-                let text = match node {
-                    "primary" => {
-                        if preparing {
-                            crate::lang::tr("Start · F11")
-                        } else if ai {
-                            crate::lang::tr("Take control · F11")
-                        } else if phase == Phase::Paused {
-                            crate::lang::tr("Resume · F11")
-                        } else {
-                            crate::lang::tr("Pause · F11")
-                        }
-                    }
-                    "camera" => crate::lang::tr("Lock camera · Y\nHold Space to follow"),
-                    "watch" => crate::lang::tr("Watch this match"),
-                    "tab" => crate::lang::tr("Team details · Tab"),
-                    "release" => crate::lang::tr("Return control to AI · F12"),
-                    "settings" => crate::lang::tr("Settings"),
-                    "vision_own" => crate::lang::tr("Own-team vision"),
-                    "vision_other" => crate::lang::tr("Opposing-team vision"),
-                    _ => crate::lang::tr("All-team vision"),
-                };
-                if let Some(rect) = self
+                let Some(rect) = self
                     .view
                     .control_rect(node, root)
                     .filter(|&(x, y, w, h)| Rect { x, y, w, h }.contains(cursor))
-                {
-                    tip = Some((text.to_owned(), rect));
-                    break;
-                }
+                else {
+                    continue;
+                };
+                // Built for the hovered control only (no text per frame).
+                let keys = &self.view.keys;
+                let text = match node {
+                    "primary" => crate::key_cap::tip(
+                        if preparing {
+                            crate::lang::tr("Start · {key}")
+                        } else if ai {
+                            crate::lang::tr("Take control · {key}")
+                        } else if phase == Phase::Paused {
+                            crate::lang::tr("Resume · {key}")
+                        } else {
+                            crate::lang::tr("Pause · {key}")
+                        },
+                        &keys.start,
+                    ),
+                    "camera" => crate::key_cap::tip_lines(
+                        crate::lang::tr("Lock camera · {key}\nHold {follow} to follow"),
+                        &[("key", &keys.camera), ("follow", &keys.follow)],
+                    ),
+                    "watch" => crate::lang::tr("Watch this match").to_owned(),
+                    "tab" => {
+                        crate::key_cap::tip(crate::lang::tr("Team details · {key}"), &keys.tab)
+                    }
+                    "release" => crate::key_cap::tip(
+                        crate::lang::tr("Return control to AI · {key}"),
+                        &keys.release,
+                    ),
+                    "settings" => crate::lang::tr("Settings").to_owned(),
+                    "vision_own" => crate::lang::tr("Own-team vision").to_owned(),
+                    "vision_other" => crate::lang::tr("Opposing-team vision").to_owned(),
+                    _ => crate::lang::tr("All-team vision").to_owned(),
+                };
+                tip = Some((text, rect));
+                break;
             }
             if preparing && tip.is_none() {
                 for p in players {

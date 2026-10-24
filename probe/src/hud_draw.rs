@@ -14,6 +14,7 @@
 //! breathes, A1) and the tooltip (wrapped, scrolled, rich text).
 use crate::draw_list::{anchored, at, Align, DrawList, Rect, TextStyle};
 use crate::drawn_glyphs::asset;
+use crate::key_cap::KeyText;
 
 /// The strip's root: 1920 x 146, bottom-centred in `ingame`.
 pub const ROOT: (f32, f32) = (1920., 146.);
@@ -201,6 +202,75 @@ pub struct HudView {
     /// D1: the stats hairline's width, when shown.
     pub hairline: Option<f32>,
     pub feedback: Label,
+    /// The keys the caps name, as bound now (1.6.0-dev4).
+    pub keys: HudKeys,
+}
+/// The strip's key caps: shop, recall and the three skills.
+#[derive(Clone, Debug, PartialEq)]
+pub struct HudKeys {
+    pub shop: KeyText,
+    pub recall: KeyText,
+    pub skills: [KeyText; 3],
+}
+impl Default for HudKeys {
+    fn default() -> Self {
+        Self {
+            shop: KeyText::new("shop"),
+            recall: KeyText::new("recall"),
+            skills: ["q", "w", "r"].map(KeyText::new),
+        }
+    }
+}
+impl HudKeys {
+    /// Follow the bindings in `values` (every frame; text rebuilt on a change).
+    pub fn follow(&mut self, values: &crate::settings::Values) {
+        self.shop.follow(values, "shop");
+        self.recall.follow(values, "recall");
+        for (k, key) in self.skills.iter_mut().zip(["q", "w", "r"]) {
+            k.follow(values, key);
+        }
+    }
+}
+/// The shop and recall caps: 18 x 20 at P and B, 12 px text.
+pub const SMALL_CAP: (f32, f32) = (18., 12.);
+/// The skill caps: 22 x 22 at Q, W and R, 14 px text.
+pub const SKILL_CAP: (f32, f32) = (22., 14.);
+/// A shop or recall cap's width for its key (wider keys grow it).
+pub fn small_cap(key: &KeyText) -> f32 {
+    crate::key_cap::width(key.text(), SMALL_CAP.0, SMALL_CAP.1, "B")
+}
+/// The recall cap's x at its default key; its right edge (700 px) stays
+/// 2 px before the recall icon (702 px), which never moves.
+const RECALL_CAP_X: f32 = 682.;
+/// Where the CS number's box ends: a recall cap grows left up to it.
+const CS_END: f32 = 588.;
+/// The shop cap's x at its default key.
+const SHOP_CAP_X: f32 = 1512.;
+/// Where the gold number's box ends: the shop cap never starts before it.
+const GOLD_END: f32 = 1508.;
+/// The recall cap's x and width (1.6.0-dev5): a wider key grows it left,
+/// so the icon stays uncovered; past the CS number (94 px of growth) it
+/// stops growing and the text may overflow it.
+pub fn recall_cap(key: &KeyText) -> (f32, f32) {
+    let right = RECALL_CAP_X + SMALL_CAP.0;
+    let w = small_cap(key).min(right - CS_END);
+    (right - w, w)
+}
+/// The shop cap's x and width (1.6.0-dev5): a wider key grows it left
+/// while the gold number stays uncovered (4 px), the rest to the right,
+/// past the shop button's frame as in dev4.
+pub fn shop_cap(key: &KeyText) -> (f32, f32) {
+    let w = small_cap(key);
+    let x = (SHOP_CAP_X - (w - SMALL_CAP.0)).max(GOLD_END);
+    (x, w)
+}
+/// The widest a skill cap gets: its 80 px slot less the cap's 3 px inset
+/// on both sides (1.6.0-dev5); a wider text overflows the cap.
+const SKILL_CAP_MAX: f32 = 80. - 2. * 3.;
+/// A skill cap's width for its key (W is the widest default letter); it
+/// grows right inside its slot.
+pub fn skill_cap(key: &KeyText) -> f32 {
+    crate::key_cap::width(key.text(), SKILL_CAP.0, SKILL_CAP.1, "W").min(SKILL_CAP_MAX)
 }
 impl Default for HudView {
     fn default() -> Self {
@@ -247,6 +317,7 @@ impl Default for HudView {
                 shown: false,
                 ..Label::new(0xcbc9c7ff)
             },
+            keys: HudKeys::default(),
         }
     }
 }
@@ -344,18 +415,27 @@ fn glyph(
         None => debug_assert!(false, "no baked glyph {name} {size} {tint:08x}"),
     }
 }
-/// A key cap with its letter (shop P, recall B).
-fn key_cap(list: &mut DrawList, o: (f32, f32), (x, y): (f32, f32), key: &str) {
-    let rect = at(o, (x, y, 18., 20.));
+/// A key cap with its key (shop, recall) at `x` and width `w` (from
+/// `shop_cap` or `recall_cap`); none while the action is unbound.
+fn key_cap(list: &mut DrawList, o: (f32, f32), (x, w, y): (f32, f32, f32), key: &KeyText) {
+    if key.text().is_empty() {
+        return;
+    }
+    let rect = at(o, (x, y, w, 20.));
     list.rect(rect, 1002, 2., 0xeeececff);
-    list.text(key, rect, 1003, numeric(12., Align::Center), 0x393939ff);
+    list.text(
+        key.text(),
+        rect,
+        1003,
+        numeric(SMALL_CAP.1, Align::Center),
+        0x393939ff,
+    );
 }
 /// One skill slot (its icons are tree nodes at z 1003).
-fn skill(list: &mut DrawList, o: (f32, f32), i: usize, s: &SkillView) {
+fn skill(list: &mut DrawList, o: (f32, f32), key: &KeyText, s: &SkillView) {
     if !s.shown {
         return;
     }
-    let o = (o.0 + SKILL_X + SKILL_STEP * i as f32, o.1 + SKILL_Y);
     let bg = crate::ui_theme::shade_rgba(5, 0xff);
     list.rect(at(o, (0., 0., 80., 80.)), 1001, 2., s.border);
     list.rect(at(o, (0., 3., 80., 80.)), 1000, 0., 0x00000066);
@@ -378,7 +458,12 @@ fn skill(list: &mut DrawList, o: (f32, f32), i: usize, s: &SkillView) {
             s.drain_edge.color,
         );
     }
-    list.rect(at(o, (3., 3., 22., 22.)), 1005, 2., s.keycap);
+    // The cap grows right for a key wider than its default letter, up to
+    // its slot's inset (`skill_cap`).
+    let cap = at(o, (3., 3., skill_cap(key), 22.));
+    if !key.text().is_empty() {
+        list.rect(cap, 1005, 2., s.keycap);
+    }
     label(
         list,
         &s.cooldown,
@@ -426,10 +511,10 @@ fn skill(list: &mut DrawList, o: (f32, f32), i: usize, s: &SkillView) {
         glyph(list, o, "lock", (28., 28., 24), 1005, 0xffffffff);
     }
     list.text(
-        ["Q", "W", "R"][i],
-        at(o, (3., 3., 22., 22.)),
+        key.text(),
+        cap,
         1006,
-        numeric(14., Align::Center),
+        numeric(SKILL_CAP.1, Align::Center),
         0x393939ff,
     );
 }
@@ -599,8 +684,9 @@ pub fn build(v: &HudView, ingame: Option<Rect>, list: &mut DrawList) {
         1005,
         numeric(22., Align::Center),
     );
-    for (i, s) in v.skills.iter().enumerate() {
-        skill(list, o, i, s);
+    for (i, (s, key)) in v.skills.iter().zip(&v.keys.skills).enumerate() {
+        let slot = (o.0 + SKILL_X + SKILL_STEP * i as f32, o.1 + SKILL_Y);
+        skill(list, slot, key, s);
     }
     for t in v.items.iter().take(6) {
         item(list, o, t);
@@ -630,7 +716,8 @@ pub fn build(v: &HudView, ingame: Option<Rect>, list: &mut DrawList) {
         list.rect(at(o, SHOP_HIT), 1001, 2., v.shop_hit.1);
     }
     if v.shop_key {
-        key_cap(list, o, (1512., 97.), "P");
+        let (x, w) = shop_cap(&v.keys.shop);
+        key_cap(list, o, (x, w, 97.), &v.keys.shop);
     }
     label(
         list,
@@ -640,7 +727,8 @@ pub fn build(v: &HudView, ingame: Option<Rect>, list: &mut DrawList) {
         numeric(16., Align::Start),
     );
     if v.recall_key {
-        key_cap(list, o, (682., 108.), "B");
+        let (x, w) = recall_cap(&v.keys.recall);
+        key_cap(list, o, (x, w, 108.), &v.keys.recall);
     }
     if v.recall_icon {
         glyph(list, o, "ef_recall", (702., 109., 20), 1003, 0xeeececff);
@@ -728,5 +816,100 @@ mod tests {
         // Hidden while Manual shopping has nothing queued.
         v.next.shown = false;
         assert!(!rects(&v, 1001).iter().any(|(r, _)| r.0 == 1390.));
+    }
+    /// The texts drawn at z `z`, with their boxes.
+    fn texts(v: &HudView, z: i32) -> Vec<(String, Rect)> {
+        let mut list = DrawList::default();
+        build(v, None, &mut list);
+        list.commands()
+            .iter()
+            .filter_map(|c| match *c {
+                Cmd::Text {
+                    rect, z: cz, text, ..
+                } if cz == z => Some((list.text_of(text).to_owned(), rect)),
+                _ => None,
+            })
+            .collect()
+    }
+    #[test]
+    fn caps_name_the_bound_keys_grow_clear_of_their_neighbours_and_hide_when_unbound() {
+        use crate::settings::Chord;
+        let top = 934.;
+        let mut v = HudView {
+            shown: true,
+            ..Default::default()
+        };
+        // Defaults: today's caps.
+        assert!(rects(&v, 1002).contains(&((1512., top + 97., 18., 20.), 0xeeececff)));
+        assert!(rects(&v, 1002).contains(&((682., top + 108., 18., 20.), 0xeeececff)));
+        assert!(texts(&v, 1006)
+            .iter()
+            .any(|(t, r)| t == "Q" && *r == (835., top + 7., 22., 22.)));
+        assert_eq!(shop_cap(&v.keys.shop), (1512., 18.));
+        assert_eq!(recall_cap(&v.keys.recall), (682., 18.));
+        // Shift + B for the shop: S+B, 4 px to the left (up to the gold
+        // number's end at 1508 px), the rest to the right.
+        v.keys.shop.set(Some(Chord {
+            code: 0x42,
+            mods: 1,
+        }));
+        let wide = small_cap(&v.keys.shop);
+        assert!(wide > 22.);
+        assert!(rects(&v, 1002).contains(&((1508., top + 97., wide, 20.), 0xeeececff)));
+        assert!(texts(&v, 1003)
+            .iter()
+            .any(|(t, r)| t == "S+B" && *r == (1508., top + 97., wide, 20.)));
+        // A key up to 4 px wider (W) grows left only.
+        let mut narrow = KeyText::new("shop");
+        narrow.set(Some(Chord {
+            code: 0x57,
+            mods: 0,
+        }));
+        let w = small_cap(&narrow);
+        assert!(w > 18. && w <= 22.);
+        assert_eq!(shop_cap(&narrow), (1512. - (w - 18.), w));
+        // Shift + B for recall: the cap grows left, its right edge stays
+        // at 700 px, before the icon at 702 px.
+        v.keys.recall.set(Some(Chord {
+            code: 0x42,
+            mods: 1,
+        }));
+        let (x, w) = recall_cap(&v.keys.recall);
+        assert_eq!((x + w, w), (700., wide));
+        assert!(rects(&v, 1002).contains(&((x, top + 108., w, 20.), 0xeeececff)));
+        // The widest chord stops at the CS number's end (588 px).
+        v.keys.recall.set(Some(Chord {
+            code: 0x7b,
+            mods: 7,
+        }));
+        let (x, w) = recall_cap(&v.keys.recall);
+        assert!(x >= 588. && x + w == 700.);
+        // Recall unbound: no cap, no letter.
+        v.keys.recall.set(None);
+        assert!(!rects(&v, 1002)
+            .iter()
+            .any(|(r, _)| r.1 == top + 108. && r.3 == 20.));
+        assert!(!texts(&v, 1003).iter().any(|(_, r)| r.1 == top + 108.));
+        // Q on Mouse4: M4, the cap wider to the right; R unbound: no cap.
+        v.keys.skills[0].set(Some(Chord { code: 5, mods: 0 }));
+        v.keys.skills[2].set(None);
+        let m4 = skill_cap(&v.keys.skills[0]);
+        assert!(m4 > 22.);
+        assert!(rects(&v, 1005).contains(&((835., top + 7., m4, 22.), 0xeeececff)));
+        let letters = texts(&v, 1006);
+        assert!(letters.iter().any(|(t, _)| t == "M4"));
+        assert!(letters.iter().any(|(t, _)| t == "W"));
+        assert_eq!(letters.len(), 2);
+        let r_slot = 832. + 2. * 88. + 3.;
+        assert!(!rects(&v, 1005)
+            .iter()
+            .any(|(r, _)| r.0 == r_slot && r.3 == 22.));
+        // The widest chord is clamped to its slot: 3 px inset each side.
+        v.keys.skills[1].set(Some(Chord {
+            code: 0x7b,
+            mods: 7,
+        }));
+        assert_eq!(skill_cap(&v.keys.skills[1]), 74.);
+        assert!(crate::key_cap::width("C+S+A+F12", 22., 14., "W") > 74.);
     }
 }

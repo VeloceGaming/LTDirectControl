@@ -127,6 +127,7 @@ mod tests {
             price,
             next: next.to_vec(),
             category: String::new(),
+            icon: String::new(),
             stats: Vec::new(),
             enabled: true,
         }

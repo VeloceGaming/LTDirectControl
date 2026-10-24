@@ -274,7 +274,7 @@ HUD element to understand offsets, native allocation or thread ownership.
 | `tools/inspect_rlib.py`, `tools/read_sdk_debug.py` | SDK symbols, archive members and debug layouts |
 | `tools/read_ability_native.py`, `tools/read_recall_native.py` | Version-specific consumer investigations |
 | `tools/read_hud_assets.py`, `tools/read_picking_assets.py` | Targeted asset metadata extraction |
-| `tools/verify_ability_build.py`, `tools/verify_ui_graphics.py` | Selected native anchors and asset checks |
+| `tools/verify_ability_build.py` | Selected native anchors (packaged assets: `tools/verify_build.py`) |
 
 From the repository root, with a Python interpreter that has `pefile` and
 Capstone available (this project also looks in `.tools/python`):

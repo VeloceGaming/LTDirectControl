@@ -4,7 +4,7 @@
 ## frame 3
 ## frame 4
 ## frame 5
-S ingame.lt_team_status len=54458 fnv=4ee6fd80cab234e2
+S ingame.lt_team_status len=54530 fnv=73555dbd9f21ce2e
 P ingame.lt_team_status | visible: true; width: 1232px; height: 406px;
 P ingame.lt_team_status.side0 | x: 20px; width: 583px; height: 374px;
 T ingame.lt_team_status.side0.headers.level = LV
@@ -12,7 +12,7 @@ T ingame.lt_team_status.side0.headers.kda = K / D / A
 T ingame.lt_team_status.side0.headers.cs = CS
 T ingame.lt_team_status.side0.headers.items = ITEMS
 T ingame.lt_team_status.side0.headers.gold = GOLD
-P ingame.lt_team_status.side0.headers.gold | x: 483px;
+P ingame.lt_team_status.side0.headers.gold | x: 478px;
 P ingame.lt_team_status.side0.headers.items | visible: true;
 P ingame.lt_team_status.side0.lane0 | visible: true; y: 34px; width: 583px; height: 68px;
 P ingame.lt_team_status.side0.lane0.selected | visible: false;
@@ -25,21 +25,21 @@ T ingame.lt_team_status.side0.lane0.level = 1
 T ingame.lt_team_status.side0.lane0.cs = 5
 T ingame.lt_team_status.side0.lane0.gold = 535
 T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane0.gold | x: 483px;
-P ingame.lt_team_status.side0.lane0.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side0.lane0.gold | x: 478px;
+P ingame.lt_team_status.side0.lane0.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side0.lane0.item0.unknown | visible: false;
-P ingame.lt_team_status.side0.lane0.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side0.lane0.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item1.icon | visible: false;
 P ingame.lt_team_status.side0.lane0.item1.unknown | visible: false;
-P ingame.lt_team_status.side0.lane0.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side0.lane0.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item2.icon | visible: false;
 P ingame.lt_team_status.side0.lane0.item2.unknown | visible: false;
-P ingame.lt_team_status.side0.lane0.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side0.lane0.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item3.icon | visible: false;
 P ingame.lt_team_status.side0.lane0.item3.unknown | visible: false;
-P ingame.lt_team_status.side0.lane0.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side0.lane0.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side0.lane0.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side0.lane0.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane1 | visible: true; y: 102px; width: 583px; height: 68px;
 P ingame.lt_team_status.side0.lane1.selected | visible: true;
 P ingame.lt_team_status.side0.lane1 | color: #fdee0009;
@@ -51,21 +51,21 @@ T ingame.lt_team_status.side0.lane1.level = 1
 T ingame.lt_team_status.side0.lane1.cs = 5
 T ingame.lt_team_status.side0.lane1.gold = 535
 T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane1.gold | x: 483px;
-P ingame.lt_team_status.side0.lane1.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side0.lane1.gold | x: 478px;
+P ingame.lt_team_status.side0.lane1.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side0.lane1.item0.unknown | visible: false;
-P ingame.lt_team_status.side0.lane1.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side0.lane1.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item1.icon | visible: false;
 P ingame.lt_team_status.side0.lane1.item1.unknown | visible: false;
-P ingame.lt_team_status.side0.lane1.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side0.lane1.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item2.icon | visible: false;
 P ingame.lt_team_status.side0.lane1.item2.unknown | visible: false;
-P ingame.lt_team_status.side0.lane1.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side0.lane1.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item3.icon | visible: false;
 P ingame.lt_team_status.side0.lane1.item3.unknown | visible: false;
-P ingame.lt_team_status.side0.lane1.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side0.lane1.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side0.lane1.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side0.lane1.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane2 | visible: true; y: 170px; width: 583px; height: 68px;
 P ingame.lt_team_status.side0.lane2.selected | visible: false;
 P ingame.lt_team_status.side0.lane2 | color: #00000000;
@@ -77,21 +77,21 @@ T ingame.lt_team_status.side0.lane2.level = 1
 T ingame.lt_team_status.side0.lane2.cs = 5
 T ingame.lt_team_status.side0.lane2.gold = 535
 T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane2.gold | x: 483px;
-P ingame.lt_team_status.side0.lane2.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side0.lane2.gold | x: 478px;
+P ingame.lt_team_status.side0.lane2.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side0.lane2.item0.unknown | visible: false;
-P ingame.lt_team_status.side0.lane2.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side0.lane2.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item1.icon | visible: false;
 P ingame.lt_team_status.side0.lane2.item1.unknown | visible: false;
-P ingame.lt_team_status.side0.lane2.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side0.lane2.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item2.icon | visible: false;
 P ingame.lt_team_status.side0.lane2.item2.unknown | visible: false;
-P ingame.lt_team_status.side0.lane2.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side0.lane2.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item3.icon | visible: false;
 P ingame.lt_team_status.side0.lane2.item3.unknown | visible: false;
-P ingame.lt_team_status.side0.lane2.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side0.lane2.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side0.lane2.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side0.lane2.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane3 | visible: true; y: 238px; width: 583px; height: 68px;
 P ingame.lt_team_status.side0.lane3.selected | visible: false;
 P ingame.lt_team_status.side0.lane3 | color: #00000000;
@@ -103,21 +103,21 @@ T ingame.lt_team_status.side0.lane3.level = 1
 T ingame.lt_team_status.side0.lane3.cs = 5
 T ingame.lt_team_status.side0.lane3.gold = 535
 T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane3.gold | x: 483px;
-P ingame.lt_team_status.side0.lane3.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side0.lane3.gold | x: 478px;
+P ingame.lt_team_status.side0.lane3.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side0.lane3.item0.unknown | visible: false;
-P ingame.lt_team_status.side0.lane3.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side0.lane3.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item1.icon | visible: false;
 P ingame.lt_team_status.side0.lane3.item1.unknown | visible: false;
-P ingame.lt_team_status.side0.lane3.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side0.lane3.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item2.icon | visible: false;
 P ingame.lt_team_status.side0.lane3.item2.unknown | visible: false;
-P ingame.lt_team_status.side0.lane3.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side0.lane3.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item3.icon | visible: false;
 P ingame.lt_team_status.side0.lane3.item3.unknown | visible: false;
-P ingame.lt_team_status.side0.lane3.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side0.lane3.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side0.lane3.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side0.lane3.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane4 | visible: true; y: 306px; width: 583px; height: 68px;
 P ingame.lt_team_status.side0.lane4.selected | visible: false;
 P ingame.lt_team_status.side0.lane4 | color: #00000000;
@@ -129,28 +129,28 @@ T ingame.lt_team_status.side0.lane4.level = 1
 T ingame.lt_team_status.side0.lane4.cs = 5
 T ingame.lt_team_status.side0.lane4.gold = 535
 T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane4.gold | x: 483px;
-P ingame.lt_team_status.side0.lane4.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side0.lane4.gold | x: 478px;
+P ingame.lt_team_status.side0.lane4.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side0.lane4.item0.unknown | visible: false;
-P ingame.lt_team_status.side0.lane4.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side0.lane4.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item1.icon | visible: false;
 P ingame.lt_team_status.side0.lane4.item1.unknown | visible: false;
-P ingame.lt_team_status.side0.lane4.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side0.lane4.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item2.icon | visible: false;
 P ingame.lt_team_status.side0.lane4.item2.unknown | visible: false;
-P ingame.lt_team_status.side0.lane4.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side0.lane4.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item3.icon | visible: false;
 P ingame.lt_team_status.side0.lane4.item3.unknown | visible: false;
-P ingame.lt_team_status.side0.lane4.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side0.lane4.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side0.lane4.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side0.lane4.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1 | x: 629px; width: 583px; height: 374px;
 T ingame.lt_team_status.side1.headers.level = LV
 T ingame.lt_team_status.side1.headers.kda = K / D / A
 T ingame.lt_team_status.side1.headers.cs = CS
 T ingame.lt_team_status.side1.headers.items = ITEMS
 T ingame.lt_team_status.side1.headers.gold = GOLD
-P ingame.lt_team_status.side1.headers.gold | x: 483px;
+P ingame.lt_team_status.side1.headers.gold | x: 478px;
 P ingame.lt_team_status.side1.headers.items | visible: true;
 P ingame.lt_team_status.side1.lane0 | visible: true; y: 34px; width: 583px; height: 68px;
 P ingame.lt_team_status.side1.lane0.selected | visible: false;
@@ -163,21 +163,21 @@ T ingame.lt_team_status.side1.lane0.level = 1
 T ingame.lt_team_status.side1.lane0.cs = 5
 T ingame.lt_team_status.side1.lane0.gold = 535
 T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane0.gold | x: 483px;
-P ingame.lt_team_status.side1.lane0.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side1.lane0.gold | x: 478px;
+P ingame.lt_team_status.side1.lane0.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side1.lane0.item0.unknown | visible: false;
-P ingame.lt_team_status.side1.lane0.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side1.lane0.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item1.icon | visible: false;
 P ingame.lt_team_status.side1.lane0.item1.unknown | visible: false;
-P ingame.lt_team_status.side1.lane0.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side1.lane0.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item2.icon | visible: false;
 P ingame.lt_team_status.side1.lane0.item2.unknown | visible: false;
-P ingame.lt_team_status.side1.lane0.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side1.lane0.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item3.icon | visible: false;
 P ingame.lt_team_status.side1.lane0.item3.unknown | visible: false;
-P ingame.lt_team_status.side1.lane0.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side1.lane0.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side1.lane0.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side1.lane0.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane1 | visible: true; y: 102px; width: 583px; height: 68px;
 P ingame.lt_team_status.side1.lane1.selected | visible: false;
 P ingame.lt_team_status.side1.lane1 | color: #00000000;
@@ -189,21 +189,21 @@ T ingame.lt_team_status.side1.lane1.level = 1
 T ingame.lt_team_status.side1.lane1.cs = 5
 T ingame.lt_team_status.side1.lane1.gold = 535
 T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane1.gold | x: 483px;
-P ingame.lt_team_status.side1.lane1.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side1.lane1.gold | x: 478px;
+P ingame.lt_team_status.side1.lane1.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side1.lane1.item0.unknown | visible: false;
-P ingame.lt_team_status.side1.lane1.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side1.lane1.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item1.icon | visible: false;
 P ingame.lt_team_status.side1.lane1.item1.unknown | visible: false;
-P ingame.lt_team_status.side1.lane1.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side1.lane1.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item2.icon | visible: false;
 P ingame.lt_team_status.side1.lane1.item2.unknown | visible: false;
-P ingame.lt_team_status.side1.lane1.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side1.lane1.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item3.icon | visible: false;
 P ingame.lt_team_status.side1.lane1.item3.unknown | visible: false;
-P ingame.lt_team_status.side1.lane1.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side1.lane1.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side1.lane1.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side1.lane1.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane2 | visible: true; y: 170px; width: 583px; height: 68px;
 P ingame.lt_team_status.side1.lane2.selected | visible: false;
 P ingame.lt_team_status.side1.lane2 | color: #00000000;
@@ -215,21 +215,21 @@ T ingame.lt_team_status.side1.lane2.level = 1
 T ingame.lt_team_status.side1.lane2.cs = 5
 T ingame.lt_team_status.side1.lane2.gold = 535
 T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane2.gold | x: 483px;
-P ingame.lt_team_status.side1.lane2.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side1.lane2.gold | x: 478px;
+P ingame.lt_team_status.side1.lane2.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side1.lane2.item0.unknown | visible: false;
-P ingame.lt_team_status.side1.lane2.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side1.lane2.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item1.icon | visible: false;
 P ingame.lt_team_status.side1.lane2.item1.unknown | visible: false;
-P ingame.lt_team_status.side1.lane2.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side1.lane2.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item2.icon | visible: false;
 P ingame.lt_team_status.side1.lane2.item2.unknown | visible: false;
-P ingame.lt_team_status.side1.lane2.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side1.lane2.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item3.icon | visible: false;
 P ingame.lt_team_status.side1.lane2.item3.unknown | visible: false;
-P ingame.lt_team_status.side1.lane2.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side1.lane2.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side1.lane2.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side1.lane2.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane3 | visible: true; y: 238px; width: 583px; height: 68px;
 P ingame.lt_team_status.side1.lane3.selected | visible: false;
 P ingame.lt_team_status.side1.lane3 | color: #00000000;
@@ -241,21 +241,21 @@ T ingame.lt_team_status.side1.lane3.level = 1
 T ingame.lt_team_status.side1.lane3.cs = 5
 T ingame.lt_team_status.side1.lane3.gold = 535
 T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane3.gold | x: 483px;
-P ingame.lt_team_status.side1.lane3.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side1.lane3.gold | x: 478px;
+P ingame.lt_team_status.side1.lane3.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side1.lane3.item0.unknown | visible: false;
-P ingame.lt_team_status.side1.lane3.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side1.lane3.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item1.icon | visible: false;
 P ingame.lt_team_status.side1.lane3.item1.unknown | visible: false;
-P ingame.lt_team_status.side1.lane3.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side1.lane3.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item2.icon | visible: false;
 P ingame.lt_team_status.side1.lane3.item2.unknown | visible: false;
-P ingame.lt_team_status.side1.lane3.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side1.lane3.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item3.icon | visible: false;
 P ingame.lt_team_status.side1.lane3.item3.unknown | visible: false;
-P ingame.lt_team_status.side1.lane3.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side1.lane3.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side1.lane3.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side1.lane3.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane4 | visible: true; y: 306px; width: 583px; height: 68px;
 P ingame.lt_team_status.side1.lane4.selected | visible: false;
 P ingame.lt_team_status.side1.lane4 | color: #00000000;
@@ -267,21 +267,21 @@ T ingame.lt_team_status.side1.lane4.level = 1
 T ingame.lt_team_status.side1.lane4.cs = 5
 T ingame.lt_team_status.side1.lane4.gold = 535
 T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane4.gold | x: 483px;
-P ingame.lt_team_status.side1.lane4.item0 | visible: true; x: 294px; y: 18px;
+P ingame.lt_team_status.side1.lane4.gold | x: 478px;
+P ingame.lt_team_status.side1.lane4.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
 P ingame.lt_team_status.side1.lane4.item0.unknown | visible: false;
-P ingame.lt_team_status.side1.lane4.item1 | visible: true; x: 330px; y: 18px;
+P ingame.lt_team_status.side1.lane4.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item1.icon | visible: false;
 P ingame.lt_team_status.side1.lane4.item1.unknown | visible: false;
-P ingame.lt_team_status.side1.lane4.item2 | visible: true; x: 366px; y: 18px;
+P ingame.lt_team_status.side1.lane4.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item2.icon | visible: false;
 P ingame.lt_team_status.side1.lane4.item2.unknown | visible: false;
-P ingame.lt_team_status.side1.lane4.item3 | visible: true; x: 402px; y: 18px;
+P ingame.lt_team_status.side1.lane4.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item3.icon | visible: false;
 P ingame.lt_team_status.side1.lane4.item3.unknown | visible: false;
-P ingame.lt_team_status.side1.lane4.item4 | visible: false; x: 438px; y: 18px;
-P ingame.lt_team_status.side1.lane4.item5 | visible: false; x: 474px; y: 18px;
+P ingame.lt_team_status.side1.lane4.item4 | visible: false; x: 466px; y: 18px;
+P ingame.lt_team_status.side1.lane4.item5 | visible: false; x: 502px; y: 18px;
 ## frame 6
 T ingame.lt_team_status.side0.lane0.cs = 6
 T ingame.lt_team_status.side0.lane0.gold = 542

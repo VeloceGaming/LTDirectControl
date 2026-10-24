@@ -737,36 +737,34 @@ pub fn modifiers(raw: &[bool; 256]) -> u8 {
     u8::from(raw[0x10]) | (u8::from(raw[0x11]) * 2) | (u8::from(raw[0x12]) * 4)
 }
 impl Chord {
+    /// The full name the Settings window shows: `Shift + B`, `Mouse4`,
+    /// `Page Up`; punctuation by the keyboard layout (`key_names`).
     pub fn label(self) -> String {
-        let key = match self.code {
-            1 => "Mouse1".into(),
-            2 => "Mouse2".into(),
-            4 => "Mouse3".into(),
-            5 => "Mouse4".into(),
-            6 => "Mouse5".into(),
-            8 => "Backspace".into(),
-            9 => "Tab".into(),
-            0x10 => "Shift".into(),
-            0x11 => "Ctrl".into(),
-            0x12 => "Alt".into(),
-            0x20 => "Space".into(),
-            0x24 => "Home".into(),
-            0x23 => "End".into(),
-            0x25 => "Left".into(),
-            0x26 => "Up".into(),
-            0x27 => "Right".into(),
-            0x28 => "Down".into(),
-            0xc0 => "`".into(),
-            0x70..=0x87 => format!("F{}", self.code - 0x6f),
-            0x30..=0x39 | 0x41..=0x5a => (self.code as char).to_string(),
-            _ => format!("Key {}", self.code),
-        };
-        format!(
-            "{}{}{}{key}",
-            if self.mods & 2 != 0 { "Ctrl + " } else { "" },
-            if self.mods & 1 != 0 { "Shift + " } else { "" },
-            if self.mods & 4 != 0 { "Alt + " } else { "" }
-        )
+        let mut out = String::new();
+        for (bit, prefix) in [(2, "Ctrl + "), (1, "Shift + "), (4, "Alt + ")] {
+            if self.mods & bit != 0 {
+                out.push_str(prefix);
+            }
+        }
+        crate::key_names::write(self.code, false, &mut out);
+        out
+    }
+    /// The short name a key cap or tooltip shows (1.6.0-dev4): `S+B`,
+    /// `F11`, `M4`, `Tab`. Written into `out` so a caller can keep its
+    /// buffer; `label` stays the Settings window's full name.
+    pub fn short(self, out: &mut String) {
+        for (bit, prefix) in [(2, "C+"), (1, "S+"), (4, "A+")] {
+            if self.mods & bit != 0 {
+                out.push_str(prefix);
+            }
+        }
+        crate::key_names::write(self.code, true, out);
+    }
+}
+impl Values {
+    /// The chord a key cap shows: the first one bound to `key`, if any.
+    pub fn shown_chord(&self, key: &str) -> Option<Chord> {
+        self.binding(key).into_iter().flatten().next()
     }
 }
 pub struct Settings {
@@ -1153,5 +1151,97 @@ mod tests {
         assert!(v.essential());
         v.set("pan_speed", 99.);
         assert_eq!(v.number("pan_speed"), 3.);
+    }
+    #[test]
+    fn key_caps_show_short_key_names_with_modifier_prefixes() {
+        let short = |code, mods| {
+            let mut s = String::new();
+            Chord { code, mods }.short(&mut s);
+            s
+        };
+        for (code, mods, name) in [
+            (0x51, 0, "Q"),
+            (0x37, 0, "7"),
+            (0x7a, 0, "F11"),
+            (0x87, 0, "F24"),
+            (1, 0, "M1"),
+            (2, 0, "M2"),
+            (4, 0, "M3"),
+            (5, 0, "M4"),
+            (6, 0, "M5"),
+            (9, 0, "Tab"),
+            (0x20, 0, "Spc"),
+            (0x24, 0, "Home"),
+            (0x23, 0, "End"),
+            (8, 0, "Bksp"),
+            (0x26, 0, "Up"),
+            (0x28, 0, "Dn"),
+            (0x25, 0, "Lft"),
+            (0x27, 0, "Rgt"),
+            (0x12, 0, "Alt"),
+            (0xc0, 0, "`"),
+            (0xba, 0, ";"),
+            (0xdf, 0, "K223"),
+            (0x0d, 0, "Ent"),
+            (0x2e, 2, "C+Del"),
+            (0x61, 0, "N1"),
+            (0x42, 1, "S+B"),
+            (0x42, 2, "C+B"),
+            (0x42, 4, "A+B"),
+            (0x7b, 7, "C+S+A+F12"),
+        ] {
+            assert_eq!(short(code, mods), name, "{code:#x} {mods}");
+        }
+        // The full names stay for the Settings window.
+        assert_eq!(
+            Chord {
+                code: 0x42,
+                mods: 1
+            }
+            .label(),
+            "Shift + B"
+        );
+        assert_eq!(
+            Chord {
+                code: 0xba,
+                mods: 6
+            }
+            .label(),
+            "Ctrl + Alt + ;"
+        );
+        assert_eq!(
+            Chord {
+                code: 0x22,
+                mods: 0
+            }
+            .label(),
+            "Page Down"
+        );
+        // A cap shows the first bound chord; none when both are cleared.
+        let mut v = Values::default();
+        assert_eq!(
+            v.shown_chord("shop"),
+            Some(Chord {
+                code: 0x50,
+                mods: 0
+            })
+        );
+        v.bind("shop", 0, None);
+        assert_eq!(v.shown_chord("shop"), None);
+        v.bind(
+            "shop",
+            1,
+            Some(Chord {
+                code: 0x42,
+                mods: 1,
+            }),
+        );
+        assert_eq!(
+            v.shown_chord("shop"),
+            Some(Chord {
+                code: 0x42,
+                mods: 1
+            })
+        );
     }
 }

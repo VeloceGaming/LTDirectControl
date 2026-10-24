@@ -118,6 +118,26 @@ pub fn thread_id() -> u64 {
     hash.finish()
 }
 
+/// The character key `code` types on the current keyboard layout, as
+/// Windows answers it (`MapVirtualKeyW` with `MAPVK_VK_TO_CHAR`): 0 when
+/// there is none, the top bit set for a dead key. Read by
+/// `key_names::punctuation` when a key's name is made (a cap rebuilds it
+/// only when its chord changes), never per frame. Always 0 in tests, so
+/// they do not depend on this machine's layout.
+#[cfg(all(windows, not(test)))]
+pub fn layout_char(code: u8) -> u32 {
+    #[link(name = "user32")]
+    extern "system" {
+        fn MapVirtualKeyW(code: u32, map_type: u32) -> u32;
+    }
+    const MAPVK_VK_TO_CHAR: u32 = 2;
+    unsafe { MapVirtualKeyW(u32::from(code), MAPVK_VK_TO_CHAR) }
+}
+#[cfg(any(not(windows), test))]
+pub fn layout_char(_code: u8) -> u32 {
+    0
+}
+
 #[cfg(windows)]
 pub fn poll() -> Keys {
     use std::ffi::c_void;

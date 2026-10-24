@@ -1,0 +1,1645 @@
+## frame 0
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 1
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 2
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 3
+S ingame.lt_player_hud len=5386 fnv=68a27a60c2505353
+P ingame.lt_player_hud.next | visible: false;
+P ingame.lt_player_hud.skill0 | visible: false;
+P ingame.lt_player_hud.skill1 | visible: false;
+P ingame.lt_player_hud.skill2 | visible: false;
+P ingame.lt_player_hud.item0 | visible: false;
+P ingame.lt_player_hud.item1 | visible: false;
+P ingame.lt_player_hud.item2 | visible: false;
+P ingame.lt_player_hud.item3 | visible: false;
+P ingame.lt_player_hud.item4 | visible: false;
+P ingame.lt_player_hud.item5 | visible: false;
+P ingame.lt_player_hud.tooltip | visible: false;
+P ingame.lt_player_hud.purchase_coin | visible: false;
+P ingame.lt_player_hud.purchase_check | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 4
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 5
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 6
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 7
+P ingame.lt_player_hud.next | visible: true;
+P ingame.lt_player_hud.skill0 | visible: true;
+P ingame.lt_player_hud.skill1 | visible: true;
+P ingame.lt_player_hud.skill2 | visible: true;
+P ingame.lt_player_hud.next.icon | visible: false;
+P ingame.lt_player_hud.purchase_coin | visible: true;
+P ingame.lt_player_hud.skill0.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_0";
+P ingame.lt_player_hud.skill0.png | visible: false;
+P ingame.lt_player_hud.skill1.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_1";
+P ingame.lt_player_hud.skill1.png | visible: false;
+P ingame.lt_player_hud.skill2.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_2";
+P ingame.lt_player_hud.skill2.png | visible: false;
+P ingame.lt_player_hud.item0 | visible: true; x: 1350px; y: 100px;
+P ingame.lt_player_hud.item0.icon | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 8
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 9
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 10
+P ingame.lt_player_hud.item0 | visible: true; x: 1230px; y: 100px;
+P ingame.lt_player_hud.item1 | visible: true; x: 1270px; y: 100px;
+P ingame.lt_player_hud.item2 | visible: true; x: 1310px; y: 100px;
+P ingame.lt_player_hud.item3 | visible: true; x: 1350px; y: 100px;
+P ingame.lt_player_hud.purchase_coin | color: #fdee00ff;
+P ingame.lt_player_hud.purchase_check | color: #fdee00ff;
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
+P ingame.lt_player_hud.item1.icon | visible: false;
+P ingame.lt_player_hud.item2.icon | visible: false;
+P ingame.lt_player_hud.item3.icon | visible: false;
+P ingame.lt_player_hud.item0.icon | color: #ffffffff;
+P ingame.lt_player_hud.item1.icon | color: #ffffffff;
+P ingame.lt_player_hud.item2.icon | color: #ffffffff;
+P ingame.lt_player_hud.item3.icon | color: #ffffffff;
+P ingame.lt_player_hud.next.icon | color: #ffffff8c;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 11
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 12
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 13
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 14
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 15
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #bfbfbfff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #bfbfbfff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 16
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 17
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 18
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 19
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 20
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 21
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 22
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 23
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 24
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 25
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 26
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 27
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 28
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 29
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 30
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 31
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 32
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 33
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 34
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 35
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 36
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 37
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 38
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 39
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 40
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 41
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 42
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 43
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 44
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 45
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 46
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 47
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 48
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 49
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 50
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 51
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 52
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 53
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 54
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 55
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 56
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 57
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 58
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 59
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 60
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 61
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 62
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 63
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 64
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 65
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 66
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 67
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 68
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 69
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 70
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 71
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 72
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 73
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 74
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 75
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 76
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 77
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 78
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 79
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 80
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 81
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 82
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 83
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 84
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 85
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 86
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 87
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 88
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 89
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 90
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 91
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 92
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 93
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 94
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 95
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 96
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 97
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 98
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 99
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 100
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 101
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 102
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 103
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 104
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 105
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 106
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 107
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 108
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 109
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 110
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 111
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 112
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 113
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 114
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 115
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 116
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 117
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 118
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 119
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 120
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 121
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 122
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 123
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 124
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 125
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 126
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 127
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 128
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 129
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 130
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 131
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 132
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 133
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 134
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 135
+# hovered=None chimes=1 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 136
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 137
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 138
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 139
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 140
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #c0c0c0ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #c0c0c0ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 141
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #c7c7c7ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #c7c7c7ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 142
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #d6d6d6ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #d6d6d6ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 143
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #e9e9e9ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #e9e9e9ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 144
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #f7f7f7ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #f7f7f7ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 145
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #fefefeff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #fefefeff;
+P ingame.lt_player_hud.tooltip.art.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_0";
+P ingame.lt_player_hud.tooltip.art.png | visible: false;
+P ingame.lt_player_hud.tooltip.art | visible: true; color: #00000000;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff00;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff00;
+P ingame.lt_player_hud.tooltip.rule | visible: true;
+P ingame.lt_player_hud.tooltip.meta | visible: true;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true;
+P ingame.lt_player_hud.tooltip.range | visible: true;
+P ingame.lt_player_hud.tooltip.text | visible: true;
+P ingame.lt_player_hud.tooltip.key | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff00;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1d00;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffff00;
+T ingame.lt_player_hud.tooltip.title = Q
+P ingame.lt_player_hud.tooltip.rule | width: 497px;
+P ingame.lt_player_hud.tooltip.key | x: 487px;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff00;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d600;
+T ingame.lt_player_hud.tooltip.text = —
+T ingame.lt_player_hud.tooltip.key = Q
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d600;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d600;
+T ingame.lt_player_hud.tooltip.meta = 4.0s
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d600;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d600;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d600;
+T ingame.lt_player_hud.tooltip.range = 30
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 146
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff14;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff14;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff14;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1d11;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffff14;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff04;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d614;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d608;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d609;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d609;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d609;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d609;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 147
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff40;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff40;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff40;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1d36;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffff40;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff0e;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d640;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d61a;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d61d;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d61d;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d61d;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d61d;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 148
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff7d;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1d6b;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff1c;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d67d;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d634;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d639;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d639;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d639;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d639;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 149
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffb9;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1d9e;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff2a;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d6b9;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d64d;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d655;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d655;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d655;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d655;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 150
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffe4;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1dc2;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff34;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d6e4;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d65f;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d668;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d668;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d668;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d668;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 151
+P ingame.lt_player_hud.tooltip.art.icon | color: #fffffffa;
+P ingame.lt_player_hud.tooltip.art.png | color: #fffffffa;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #fffffffa;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1dd4;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #fffffffa;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff39;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d6fa;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d668;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d672;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d672;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d672;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d672;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 152
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.status | visible: false; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffff;
+P ingame.lt_player_hud.tooltip | visible: true; x: 730px; y: -175px; width: 529px; height: 167px; color: #1e1e1dd9;
+P ingame.lt_player_hud.tooltip.title | x: 76px; y: 23px; width: 419px; height: 32px; size: 27; line_height: 32; color: #ffffffff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.rule | y: 98px; color: #ffffff3b;
+P ingame.lt_player_hud.tooltip.text | y: 106px; width: 493px; height: 45px; color: #d6d6d6ff;
+P ingame.lt_player_hud.tooltip.key | color: #d6d6d66b;
+P ingame.lt_player_hud.tooltip.meta | visible: true; x: 100px; y: 61px; color: #d6d6d675;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: true; x: 76px; y: 61px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d675;
+P ingame.lt_player_hud.tooltip.meta_range | visible: true; x: 160.44px; y: 61px; color: #d6d6d675;
+P ingame.lt_player_hud.tooltip.range | visible: true; x: 184.44px; y: 61px; color: #d6d6d675;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 153
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 154
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 155
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 156
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #fafafaff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #fafafaff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 157
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #eeeeeeff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #eeeeeeff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 158
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #e1e1e1ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #e1e1e1ff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 159
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #dadadaff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #dadadaff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 160
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #dfdfdfff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #dfdfdfff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 161
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #ebebebff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #ebebebff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 162
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #f7f7f7ff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #f7f7f7ff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 163
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #fdfdfdff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #fdfdfdff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 164
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 165
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 166
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 167
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 168
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 169
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 170
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 171
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 172
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 173
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 174
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 175
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 176
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 177
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 178
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 179
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 180
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 181
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 182
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 183
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 184
+P ingame.lt_player_hud.tooltip.scroll_track | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: true;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+# hovered=Some(0) chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 730.0,759.0,529.0,167.0]
+## frame 185
+P ingame.lt_player_hud.tooltip.art.icon | visible: false;
+P ingame.lt_player_hud.tooltip.art | visible: false; color: #00000000;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff00;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff00;
+P ingame.lt_player_hud.tooltip.rule | visible: false;
+P ingame.lt_player_hud.tooltip.meta | visible: false;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: false;
+P ingame.lt_player_hud.tooltip.meta_range | visible: false;
+P ingame.lt_player_hud.tooltip.range | visible: false;
+P ingame.lt_player_hud.tooltip.text | visible: false;
+P ingame.lt_player_hud.tooltip.key | visible: false;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff00;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d00;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff00;
+T ingame.lt_player_hud.tooltip.title = Purchase information 
+unavailable
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 186
+P ingame.lt_player_hud.next.icon | color: #ffffff98;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff14;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff14;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff14;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d11;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff14;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 187
+P ingame.lt_player_hud.next.icon | color: #ffffffb2;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff40;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff40;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff40;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d36;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff40;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 188
+P ingame.lt_player_hud.next.icon | color: #ffffffd3;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff7d;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d6b;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff7d;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 189
+P ingame.lt_player_hud.next.icon | color: #ffffffee;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffb9;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d9e;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffb9;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 190
+P ingame.lt_player_hud.next.icon | color: #fffffffc;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffe4;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dc2;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffe4;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 191
+P ingame.lt_player_hud.next.icon | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.art.icon | color: #fffffffa;
+P ingame.lt_player_hud.tooltip.art.png | color: #fffffffa;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #fffffffa;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dd4;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #fffffffa;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 192
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffff;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dd9;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 193
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 194
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 195
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 196
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 197
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 198
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 199
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 200
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 201
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 202
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 203
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 204
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 205
+P ingame.lt_player_hud.tooltip | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 206
+P ingame.lt_player_hud.next.icon | color: #fffffff3;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 207
+P ingame.lt_player_hud.next.icon | color: #ffffffd9;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 208
+P ingame.lt_player_hud.next.icon | color: #ffffffb8;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 209
+P ingame.lt_player_hud.next.icon | color: #ffffff9d;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 210
+P ingame.lt_player_hud.next.icon | color: #ffffff8f;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 211
+P ingame.lt_player_hud.next.icon | color: #ffffff8c;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 212
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 213
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 214
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 215
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff00;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff00;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff00;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d00;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff00;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 216
+P ingame.lt_player_hud.next.icon | color: #ffffff98;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff14;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff14;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff14;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d11;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff14;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 217
+P ingame.lt_player_hud.next.icon | color: #ffffffb2;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff40;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff40;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff40;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d36;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff40;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 218
+P ingame.lt_player_hud.next.icon | color: #ffffffd3;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff7d;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff7d;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d6b;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff7d;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 219
+P ingame.lt_player_hud.next.icon | color: #ffffffee;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffb9;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffb9;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d9e;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffb9;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 220
+P ingame.lt_player_hud.next.icon | color: #fffffffc;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffe4;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffe4;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dc2;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffe4;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 221
+P ingame.lt_player_hud.next.icon | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.art.icon | color: #fffffffa;
+P ingame.lt_player_hud.tooltip.art.png | color: #fffffffa;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #fffffffa;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dd4;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #fffffffa;
+# hovered=None chimes=0 shop_click=true bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 222
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffff;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffff;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dd9;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 223
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 224
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 225
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 226
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## frame 227
+P ingame.lt_player_hud.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
+P ingame.lt_player_hud.item1.icon | color: #ffffff00;
+P ingame.lt_player_hud.tooltip | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 228
+P ingame.lt_player_hud.item1.icon | color: #ffffff0e;
+P ingame.lt_player_hud.next.icon | color: #fffffff3;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 229
+P ingame.lt_player_hud.item1.icon | color: #ffffff29;
+P ingame.lt_player_hud.next.icon | color: #ffffffd9;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 230
+P ingame.lt_player_hud.item1.icon | color: #ffffff53;
+P ingame.lt_player_hud.next.icon | color: #ffffffb8;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 231
+P ingame.lt_player_hud.item1.icon | color: #ffffff85;
+P ingame.lt_player_hud.next.icon | color: #ffffff9d;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 232
+P ingame.lt_player_hud.item1.icon | color: #ffffffb4;
+P ingame.lt_player_hud.next.icon | color: #ffffff8f;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 233
+P ingame.lt_player_hud.item1.icon | color: #ffffffd8;
+P ingame.lt_player_hud.next.icon | color: #ffffff8c;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 234
+P ingame.lt_player_hud.item1.icon | color: #fffffff0;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 700.0,892.0,520.0,30.0]
+## frame 235
+P ingame.lt_player_hud.item1.icon | color: #fffffffc;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 236
+P ingame.lt_player_hud.item1.icon | color: #ffffffff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 237
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 238
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #bfbfbfff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #bfbfbfff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 239
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 240
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 241
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 242
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 243
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 244
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 245
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 246
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 247
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 248
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 249
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 250
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 251
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 252
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 253
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 254
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 255
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 256
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 257
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #bfbfbfff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #bfbfbfff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 258
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 259
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 260
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 261
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #c0c0c0ff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #c0c0c0ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 262
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #c7c7c7ff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #c7c7c7ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 263
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #d6d6d6ff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #d6d6d6ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 264
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #e9e9e9ff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #e9e9e9ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 265
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #f7f7f7ff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #f7f7f7ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 266
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #fefefeff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #fefefeff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 267
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #ffffffff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 268
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 269
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 270
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 271
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 272
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 273
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 274
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 275
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 276
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 277
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 278
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 279
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 280
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #c0c0c0ff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #c0c0c0ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 281
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #c7c7c7ff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #c7c7c7ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 282
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #d6d6d6ff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #d6d6d6ff;
+# hovered=None chimes=1 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 283
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #e9e9e9ff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #e9e9e9ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 284
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #f7f7f7ff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #f7f7f7ff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 285
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #fefefeff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #fefefeff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 286
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #ffffffff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 287
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 288
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 289
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 290
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 291
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 292
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 293
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 294
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 295
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 296
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 297
+P ingame.lt_player_hud.item1.icon | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 298
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 299
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 300
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 301
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 302
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 303
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 304
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 305
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 306
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 307
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 308
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 309
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 310
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 311
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 312
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 313
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 314
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 315
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 316
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 317
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 318
+S ingame.lt_state_plate len=273 fnv=f2745477a9cf9d9a
+V ingame.lt_state_plate true
+P ingame.lt_state_plate | x: 902px; width: 116px;
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec0e;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 319
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec29;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 320
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec53;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 321
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec85;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 322
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececb4;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 323
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececd8;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 324
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececf0;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 325
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececfc;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 326
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececff;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 327
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 328
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 329
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 330
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 331
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 332
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 333
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 334
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 335
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 336
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 337
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 338
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 339
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 340
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 341
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 342
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 343
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 344
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 345
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 346
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 347
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 348
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 349
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 350
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 351
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 352
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 353
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 354
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 355
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 356
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 357
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 358
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 359
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 360
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 361
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 362
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 363
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 364
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 365
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 366
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 367
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 368
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececf1;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 369
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececd6;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 370
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececac;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 371
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec7a;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 372
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec4b;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 373
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec27;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 374
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec0f;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 375
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeecec03;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 376
+V ingame.lt_state_plate false
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 377
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 378
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 379
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 380
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 381
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 382
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 383
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 384
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 385
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 386
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 387
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 388
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 389
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 390
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 391
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 392
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 393
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 394
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 395
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 396
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 397
+X ingame.lt_player_hud
+S ingame.lt_player_hud len=5386 fnv=f08f52516853d668
+P ingame.lt_player_hud.next | visible: true;
+P ingame.lt_player_hud.skill0 | visible: true;
+P ingame.lt_player_hud.skill1 | visible: true;
+P ingame.lt_player_hud.skill2 | visible: true;
+P ingame.lt_player_hud.item0 | visible: true; x: 1230px; y: 100px;
+P ingame.lt_player_hud.item1 | visible: true; x: 1270px; y: 100px;
+P ingame.lt_player_hud.item2 | visible: true; x: 1310px; y: 100px;
+P ingame.lt_player_hud.item3 | visible: true; x: 1350px; y: 100px;
+P ingame.lt_player_hud.item4 | visible: false;
+P ingame.lt_player_hud.item5 | visible: false;
+P ingame.lt_player_hud.next.icon | visible: false;
+P ingame.lt_player_hud.purchase_coin | visible: true;
+P ingame.lt_player_hud.purchase_check | visible: false;
+P ingame.lt_player_hud.purchase_coin | color: #fdee00ff;
+P ingame.lt_player_hud.purchase_check | color: #fdee00ff;
+P ingame.lt_player_hud.skill0.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_0";
+P ingame.lt_player_hud.skill0.png | visible: false;
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_1";
+P ingame.lt_player_hud.skill1.png | visible: false;
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_2";
+P ingame.lt_player_hud.skill2.png | visible: false;
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
+P ingame.lt_player_hud.item1.icon | visible: false;
+P ingame.lt_player_hud.item2.icon | visible: false;
+P ingame.lt_player_hud.item3.icon | visible: false;
+P ingame.lt_player_hud.item0.icon | color: #ffffffff;
+P ingame.lt_player_hud.item1.icon | color: #ffffffff;
+P ingame.lt_player_hud.item2.icon | color: #ffffffff;
+P ingame.lt_player_hud.item3.icon | color: #ffffffff;
+P ingame.lt_player_hud.next.icon | color: #ffffff8c;
+P ingame.lt_player_hud.tooltip | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 398
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 399
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 400
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 401
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 402
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 403
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 404
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 405
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 406
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 407
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 408
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 409
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 410
+X ingame.lt_player_hud
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 411
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 412
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 413
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 414
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 415
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 416
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 417
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 418
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 419
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 420
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 421
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 422
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 423
+V ingame.lt_state_plate true
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee000e;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 424
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee0029;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 425
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee0053;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 426
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee0085;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 427
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee00b4;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 428
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee00d8;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 429
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee00f0;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 430
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee00fc;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 431
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_pause"; color: #fdee00ff;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 432
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 433
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 434
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 435
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 436
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 437
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 438
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 439
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 440
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 441
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 442
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeececff;
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 443
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 444
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 445
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 446
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 447
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 448
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 449
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 450
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 451
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 452
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 453
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 454
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 455
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 456
+S ingame.lt_player_hud len=5386 fnv=68a27a60c2505353
+P ingame.lt_player_hud.next | visible: false;
+P ingame.lt_player_hud.skill0 | visible: false;
+P ingame.lt_player_hud.skill1 | visible: false;
+P ingame.lt_player_hud.skill2 | visible: false;
+P ingame.lt_player_hud.item0 | visible: false;
+P ingame.lt_player_hud.item1 | visible: false;
+P ingame.lt_player_hud.item2 | visible: false;
+P ingame.lt_player_hud.item3 | visible: false;
+P ingame.lt_player_hud.item4 | visible: false;
+P ingame.lt_player_hud.item5 | visible: false;
+P ingame.lt_player_hud.tooltip | visible: false;
+P ingame.lt_player_hud.purchase_coin | visible: false;
+P ingame.lt_player_hud.purchase_check | visible: false;
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 457
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 458
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 459
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 460
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 461
+# hovered=None chimes=0 shop_click=false bounds=[0.0,1024.0,1560.0,56.0]
+## frame 462
+P ingame.lt_player_hud.next | visible: true;
+P ingame.lt_player_hud.skill0 | visible: true;
+P ingame.lt_player_hud.skill1 | visible: true;
+P ingame.lt_player_hud.skill2 | visible: true;
+P ingame.lt_player_hud.item0 | visible: true; x: 1230px; y: 100px;
+P ingame.lt_player_hud.item1 | visible: true; x: 1270px; y: 100px;
+P ingame.lt_player_hud.item2 | visible: true; x: 1310px; y: 100px;
+P ingame.lt_player_hud.item3 | visible: true; x: 1350px; y: 100px;
+P ingame.lt_player_hud.next.icon | visible: false;
+P ingame.lt_player_hud.purchase_coin | visible: true;
+P ingame.lt_player_hud.purchase_coin | color: #fdee00ff;
+P ingame.lt_player_hud.purchase_check | color: #fdee00ff;
+P ingame.lt_player_hud.skill0.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_0";
+P ingame.lt_player_hud.skill0.png | visible: false;
+P ingame.lt_player_hud.skill0.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill0.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_1";
+P ingame.lt_player_hud.skill1.png | visible: false;
+P ingame.lt_player_hud.skill1.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill1.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.icon | visible: true; source: "asset/base/aseprite_resources/UI_aseprite/skill_icon"; rect_tag: "hammerer_2";
+P ingame.lt_player_hud.skill2.png | visible: false;
+P ingame.lt_player_hud.skill2.icon | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.skill2.png | width: 74px; height: 74px; color: #ffffffff;
+P ingame.lt_player_hud.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
+P ingame.lt_player_hud.item1.icon | visible: false;
+P ingame.lt_player_hud.item2.icon | visible: false;
+P ingame.lt_player_hud.item3.icon | visible: false;
+P ingame.lt_player_hud.item0.icon | color: #ffffffff;
+P ingame.lt_player_hud.item1.icon | color: #ffffffff;
+P ingame.lt_player_hud.item2.icon | color: #ffffffff;
+P ingame.lt_player_hud.item3.icon | color: #ffffffff;
+P ingame.lt_player_hud.next.icon | color: #ffffff8c;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 463
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeececf1;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 464
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeececd6;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 465
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeececac;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 466
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeecec7a;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 467
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeecec4b;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 468
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeecec27;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 469
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeecec0f;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 470
+P ingame.lt_state_plate.glyph | x: 20px; source: "asset/lt_direct_control/ui/ef_cpu"; color: #eeecec03;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 471
+V ingame.lt_state_plate false
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## frame 472
+V ingame.lt_player_hud false
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 473
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 474
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 475
+# hovered=None chimes=0 shop_click=false bounds=[]
+## frame 476
+# hovered=None chimes=0 shop_click=false bounds=[]
+## refused 0
+V ingame.lt_player_hud true
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## refused 1
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## refused 2
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0]
+## accepted 0
+P ingame.lt_player_hud.next.icon | color: #ffffffd1;
+P ingame.lt_player_hud.tooltip.art.icon | visible: false;
+P ingame.lt_player_hud.tooltip.art.png | visible: false;
+P ingame.lt_player_hud.tooltip.art | visible: false; color: #00000000;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffff79;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffff79;
+P ingame.lt_player_hud.tooltip.rule | visible: false;
+P ingame.lt_player_hud.tooltip.meta | visible: false;
+P ingame.lt_player_hud.tooltip.meta_clock | visible: false;
+P ingame.lt_player_hud.tooltip.meta_range | visible: false;
+P ingame.lt_player_hud.tooltip.range | visible: false;
+P ingame.lt_player_hud.tooltip.text | visible: false;
+P ingame.lt_player_hud.tooltip.key | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_track | visible: false;
+P ingame.lt_player_hud.tooltip.scroll_thumb | visible: false;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffff79;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d67;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffff79;
+T ingame.lt_player_hud.tooltip.title = Purchase information 
+unavailable
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## accepted 1
+P ingame.lt_player_hud.next.icon | color: #ffffffec;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffb5;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffb5;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffb5;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1d9a;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffb5;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]
+## accepted 2
+P ingame.lt_player_hud.next.icon | color: #fffffffb;
+P ingame.lt_player_hud.tooltip.art.icon | color: #ffffffe0;
+P ingame.lt_player_hud.tooltip.art.png | color: #ffffffe0;
+P ingame.lt_player_hud.tooltip.status | visible: true; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #ffffffe0;
+P ingame.lt_player_hud.tooltip | visible: true; x: 1178.48px; y: -6px; width: 377.52px; height: 84px; color: #1e1e1dbf;
+P ingame.lt_player_hud.tooltip.title | x: 52px; y: 16px; width: 313.52002px; height: 52px; size: 20; line_height: 26; color: #ffffffe0;
+# hovered=None chimes=0 shop_click=false bounds=[832.0,936.0,256.0,84.0 0.0,1024.0,1560.0,56.0 1178.5,928.0,377.5,84.0]

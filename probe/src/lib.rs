@@ -52,6 +52,8 @@ mod hud_style;
 mod input_delay;
 mod input_trace;
 mod inventory;
+mod key_cap;
+mod key_names;
 mod lang;
 mod logging;
 mod map_path;

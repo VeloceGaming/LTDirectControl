@@ -123,6 +123,49 @@ The Settings window lists new bindings automatically and saves them in
 `controls.json`. Its layout tests in `settings_ui.rs` count rows, so they
 may need a new number.
 
+Key caps and tooltips that name a key show the binding as it is now
+(1.6.0-dev4), never a typed-in letter, so a rebind shows at once:
+
+- `Chord::short` (`settings.rs`) is the short name a cap shows (`S+B`,
+  `F11`, `M4`, `Spc`, `PgUp`, `N5`); `Chord::label` stays the Settings
+  window's full name (`Shift + B`, `Page Up`, `Num 5`). Both read one
+  table, `key_names.rs`, with its tests; a key with no name there is
+  `K<code>` / `Key <code>`. `Values::shown_chord` is the first chord bound
+  to an action.
+- The punctuation keys (codes 0xBA-0xC0, 0xDB-0xDF, 0xE2) are named by
+  the character they type on the player's keyboard layout (1.6.0-dev5):
+  `platform_input::layout_char` asks Windows (`MapVirtualKeyW`), and
+  `key_names::punctuation` turns its answer into the name, with a US
+  table as the fallback (`;` `=` `,` `-` `.` `/` `` ` `` `[` `\` `]`
+  `'`). The call runs only where a name is made: a cap rebuilds its text
+  only when its chord changes (the Settings window names its visible
+  rows every frame while it is open). It answers 0 in tests,
+  so the tests do not depend on the machine's layout: test
+  `punctuation` with the answer you want instead. A layout switched while
+  the game runs shows on a cap at its next rebind.
+- A window keeps a `key_cap::KeyText` per cap in its view and calls
+  `follow(&settings::current_shared(), "your_key")` every frame; the text
+  is rebuilt only when the chord changes. `key_cap::width` gives the cap's
+  width: today's width at the default key, wider by the text's extra
+  width for a wider key. An unbound action has an empty text: draw no
+  cap.
+- A tooltip that names a key is a translation text ending in
+  `" · {key}"` (`"Start · {key}"`), looked up with `lang::tr` at the call
+  and passed to `key_cap::tip`, which fills in the short name or drops the
+  " · {key}" part when the action is unbound. Every `probe/lang/*.json`
+  needs the same text; `key_cap`'s tests check the six that exist. A
+  text naming several keys, one per line, goes through
+  `key_cap::tip_lines` with a name per key (the camera tooltip,
+  `"Lock camera · {key}\nHold {follow} to follow"`): an unbound key's
+  " · {name}" part goes at a line's end, and a line naming it elsewhere
+  goes altogether.
+- Caps today: the HUD's shop, recall and skill caps (`hud_draw::HudKeys`;
+  since 1.6.0-dev5 the recall cap grows left so the recall icon stays
+  clear, the shop cap grows left until the gold number's end and then
+  right, a skill cap grows right up to its slot's 3 px inset), the
+  session strip's Tab cap (growing left with its button) and "Take control" label (`session_draw::SessionKeys`), the
+  state plate's start cap (the plate widens and stays centred).
+
 ### Add a setting
 
 Add an `OptionDef` to `OPTIONS` in `settings.rs`:

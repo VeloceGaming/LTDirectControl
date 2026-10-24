@@ -130,8 +130,34 @@ fn geometry(count: usize) -> Geometry {
         height: 32 + 34 + row_height * 5,
     }
 }
-fn label(s: &mut String, id: &str, x: usize, w: usize, size: usize, color: &str, right: bool) {
-    s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1604; font: \"asset/lt_direct_control/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {}; ignore_event: true; }}\n", if right { "Right" } else { "Left" }));
+/// The columns of one side (1.6.0-dev4), as the game's own scoreboard
+/// lays them out: the portrait at 6-54, then LV, K/D/A and CS centred in
+/// their boxes with their headers centred over them, the items from their
+/// header's left edge, gold right-aligned with its header 12 px inside the
+/// side's edge; 16 px between neighbouring boxes. (x, width) in the side.
+const GAP: usize = 16;
+const PORTRAIT_END: usize = 54;
+const LEVEL: (usize, usize) = (PORTRAIT_END + GAP, 40);
+const KDA: (usize, usize) = (LEVEL.0 + LEVEL.1 + GAP, 110);
+const CS: (usize, usize) = (KDA.0 + KDA.1 + GAP, 54);
+const ITEMS_X: usize = CS.0 + CS.1 + GAP;
+/// The items header's box: four tiles (the vanilla slot count).
+const ITEMS_HEADER_W: usize = 4 * 36 - 4;
+const GOLD_W: usize = 93;
+const GOLD_RIGHT: usize = 12;
+/// The gold column's left edge in a side `side_width` wide.
+fn gold_x(side_width: usize) -> usize {
+    side_width - GOLD_RIGHT - GOLD_W
+}
+/// Item tile `i`'s place in a row.
+fn tile_at(i: usize) -> (usize, usize) {
+    (
+        ITEMS_X + i % crate::inventory::TAB_COLUMNS * 36,
+        18 + i / crate::inventory::TAB_COLUMNS * 36,
+    )
+}
+fn label(s: &mut String, id: &str, x: usize, w: usize, size: usize, color: &str, align: &str) {
+    s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1604; font: \"asset/lt_direct_control/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {align}; ignore_event: true; }}\n"));
 }
 #[cfg(test)]
 pub(crate) fn tile_for_test() -> String {
@@ -152,26 +178,27 @@ fn template() -> String {
     s.push_str("#left:color { width: 1px; height: 100%; z: 1601; color: #~4b4a49ff; ignore_event: true; }\n#right:color { anchor_x: 1; pivot_x: 1; width: 1px; height: 100%; z: 1601; color: #~4b4a49ff; ignore_event: true; }\n");
     for side in 0..2 {
         s.push_str(&format!("#side{side}:empty {{ y: 16px; ignore_event: true;\n#headers:empty {{ width: 100%; height: 34px; ignore_event: true;\n"));
-        for (id, x, w) in [
-            ("level", 64, 34),
-            ("kda", 104, 122),
-            ("cs", 234, 54),
-            ("items", 294, 220),
-            ("gold", 555, 88),
+        // Gold's x follows the item columns (written each frame).
+        for (id, (x, w), align) in [
+            ("level", LEVEL, "Center"),
+            ("kda", KDA, "Center"),
+            ("cs", CS, "Center"),
+            ("items", (ITEMS_X, ITEMS_HEADER_W), "Left"),
+            ("gold", (555, GOLD_W), "Right"),
         ] {
-            label(&mut s, id, x, w, 13, "989694ff", id == "gold");
+            label(&mut s, id, x, w, 13, "989694ff", align);
             // Header text is set once after spawning, using the host text API.
         }
         s.push_str("}\n");
         for lane in 0..5 {
             s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1601;\n#selected:color {{ width: 2px; height: 100%; z: 1602; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1602; color: #~4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1603; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1604; color: #{inset}; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1605; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1606; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control/font/numeric\"; width: 100%; height: 100%; z: 1607; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
-            for (id, x, w, size, color) in [
-                ("level", 64, 34, 17, "cbc9c7ff"),
-                ("kda", 104, 122, 22, "eeececff"),
-                ("cs", 234, 54, 21, "eeececff"),
-                ("gold", 555, 88, 21, "fdee00ff"),
+            for (id, (x, w), size, color, align) in [
+                ("level", LEVEL, 17, "cbc9c7ff", "Center"),
+                ("kda", KDA, 22, "eeececff", "Center"),
+                ("cs", CS, 21, "eeececff", "Center"),
+                ("gold", (555, GOLD_W), 21, "fdee00ff", "Right"),
             ] {
-                label(&mut s, id, x, w, size, color, id == "gold");
+                label(&mut s, id, x, w, size, color, align);
             }
             for i in 0..6 {
                 s.push('#');
@@ -375,7 +402,7 @@ impl TeamUi {
                 },
             );
             self.refused(ok, PATH, log);
-            let gold_x = g.side_width - 100;
+            let gold_x = gold_x(g.side_width);
             for (k, text) in [
                 "LV",
                 "K / D / A",
@@ -471,11 +498,8 @@ impl TeamUi {
                     let visible = i < capacity;
                     self.cache
                         .props_keyed(ctx, tile, 1, (visible, i), |(visible, i)| {
-                            format!(
-                                "visible: {visible}; x: {}px; y: {}px;",
-                                294 + i % crate::inventory::TAB_COLUMNS * 36,
-                                18 + i / crate::inventory::TAB_COLUMNS * 36
-                            )
+                            let (x, y) = tile_at(i);
+                            format!("visible: {visible}; x: {x}px; y: {y}px;")
                         });
                     if !visible {
                         continue;
@@ -580,7 +604,7 @@ mod tests {
             assert_eq!(g.width, width);
             assert_eq!(g.height, 406);
             assert_eq!(g.row_height, 68);
-            assert!(294 + (count - 1) * 36 + 32 <= g.side_width - 100);
+            assert!(tile_at(count - 1).0 + 32 + GAP <= gold_x(g.side_width));
         }
         let g = geometry(12);
         assert_eq!(g.columns, 10);
@@ -590,6 +614,47 @@ mod tests {
         assert!(!source.contains("Your team"));
         assert!(!source.contains("Opposing team"));
         assert!(source.contains("size: 22"));
+    }
+    #[test]
+    fn columns_sit_16_px_apart_centred_or_aligned_as_the_games_scoreboard() {
+        // Box edge to box edge, the portrait included.
+        assert_eq!(LEVEL.0, PORTRAIT_END + GAP);
+        assert_eq!(KDA.0, LEVEL.0 + LEVEL.1 + GAP);
+        assert_eq!(CS.0, KDA.0 + KDA.1 + GAP);
+        assert_eq!(ITEMS_X, CS.0 + CS.1 + GAP);
+        for count in [4, 5, 6, 10] {
+            let g = geometry(count);
+            let items_end = tile_at(g.columns - 1).0 + 32;
+            assert_eq!(items_end + GAP, gold_x(g.side_width), "{count}");
+            assert_eq!(gold_x(g.side_width) + GOLD_W + GOLD_RIGHT, g.side_width);
+        }
+        // The widest values fit their boxes (packaged advances; the numeric
+        // weight is about 2 % wider): level 30, K/D/A 99/99/99, CS 999,
+        // 99999 gold, and every language's GOLD header.
+        let fits =
+            |text: &str, size: f32, w: usize| crate::hud_style::width(text, size) * 1.03 < w as f32;
+        assert!(fits("30", 17., LEVEL.1) && fits("LV", 13., LEVEL.1));
+        assert!(fits("99/99/99", 22., KDA.1) && fits("K / D / A", 13., KDA.1));
+        assert!(fits("999", 21., CS.1) && fits("CS", 13., CS.1));
+        assert!(fits("99999", 21., GOLD_W) && fits("ЗОЛОТО", 13., GOLD_W));
+        // Headers and values share each column's box and alignment.
+        let t = template();
+        let numeric = "height: 100%; z: 1604; font: \"asset/lt_direct_control/font/numeric\";";
+        for (x, w) in [LEVEL, KDA, CS] {
+            let header = format!(
+                "x: {x}px; width: {w}px; {numeric} size: 13; color: #989694ff; align_y: Center; align_x: Center;"
+            );
+            assert_eq!(t.matches(&header).count(), 2, "{x}");
+            let value = format!("x: {x}px; width: {w}px; {numeric}");
+            assert_eq!(t.matches(&value).count(), 12, "{x}");
+        }
+        assert!(t.contains(&format!(
+            "#items:label {{ x: {ITEMS_X}px; width: {ITEMS_HEADER_W}px;"
+        )));
+        assert_eq!(t.matches("align_x: Left;").count(), 2);
+        assert_eq!(t.matches("align_x: Right;").count(), 12);
+        // The panel keeps its width.
+        assert_eq!(geometry(4).width, 1232);
     }
     #[test]
     fn missing_build_read_retains_only_same_match_capacity() {

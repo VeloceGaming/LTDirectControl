@@ -53,6 +53,19 @@ const PLATE_NARROW: usize = 48;
 const PLATE_GLYPH: usize = 30;
 const PLATE_PAD_WIDE: usize = 20;
 const PLATE_PAD_NARROW: usize = 9;
+/// The wide plate's width and its cap's width for key `text` (shown when
+/// `key`): 116 and 36 at F11; a wider key widens both by the same whole
+/// pixels, so the plate stays centred under the clock and the cap keeps
+/// its padding.
+fn wide_plate(text: &str, key: bool) -> (usize, f32) {
+    let (_, _, base, _) = crate::plate_draw::KEY;
+    let cap = if key {
+        crate::key_cap::width(text, base, crate::plate_draw::KEY_SIZE, "F11")
+    } else {
+        base
+    };
+    (PLATE_WIDE + (cap - base) as usize, cap)
+}
 fn plate_template() -> String {
     // The plate, key cap and count are drawn (`plate_draw.rs`); the root
     // keeps the plate's place and visibility for the glyph, whose tint fades.
@@ -93,6 +106,8 @@ pub struct StatePlate {
     pub(crate) list: crate::draw_list::DrawList,
     /// `draw_list::check_origin`'s state.
     origin_checked: u8,
+    /// The key the cap names: the start binding as bound now (1.6.0-dev4).
+    key: Option<crate::key_cap::KeyText>,
 }
 impl StatePlate {
     fn nodes(&mut self) -> &Nodes {
@@ -162,13 +177,20 @@ impl StatePlate {
             return;
         }
         crate::ui_root::show(ctx, PLATE_PATH);
+        // The cap names the start key as bound now; none while unbound.
+        let key_text = self
+            .key
+            .get_or_insert_with(|| crate::key_cap::KeyText::new("start"));
+        key_text.follow(&crate::settings::current_shared(), "start");
+        let bound = !key_text.text().is_empty();
         let (glyph, ink, key, count) = match plate {
-            Plate::Paused => (0u8, 0xfdee00ff, true, None),
-            Plate::Ai => (1, 0xeeececff, true, None),
+            Plate::Paused => (0u8, 0xfdee00ff, bound, None),
+            Plate::Ai => (1, 0xeeececff, bound, None),
             Plate::Dead(seconds) => (2, 0xeeececff, false, seconds),
         };
+        let (wide, cap) = wide_plate(key_text.text(), key);
         let width = if key || count.is_some() {
-            PLATE_WIDE
+            wide
         } else {
             PLATE_NARROW
         };
@@ -189,7 +211,7 @@ impl StatePlate {
             |(width, glyph, ink)| {
                 format!(
                     "x: {}px; source: \"asset/lt_direct_control/ui/{}\"; color: #{ink:08x};",
-                    if width == PLATE_WIDE {
+                    if width != PLATE_NARROW {
                         PLATE_PAD_WIDE
                     } else {
                         PLATE_PAD_NARROW
@@ -203,10 +225,12 @@ impl StatePlate {
             width: width as f32,
             back: crate::ui_theme::tone(0x1e1e_1d00 | u32::from(back)),
             key: key.then(|| (a(0xeeececff), a(0x393939ff))),
+            cap,
             count: count.map(|n| (n, a(0xffffffff))),
         };
         let origin = ctx.ui_node_rect("ingame").map_or((0., 0.), |r| (r.0, r.1));
-        crate::plate_draw::build(&view, origin, &mut self.list);
+        let key_text = self.key.as_ref().map_or("", |k| k.text());
+        crate::plate_draw::build(&view, key_text, origin, &mut self.list);
         let drawn = (origin.0 + view.x, origin.1 + crate::plate_draw::PLATE_Y);
         let root = ctx.ui_node_rect(PLATE_PATH);
         crate::draw_list::check_origin("state plate", drawn, root, &mut self.origin_checked, log);
@@ -235,5 +259,34 @@ mod tests {
         assert_eq!(PLATE_H as f32, crate::plate_draw::PLATE_H);
         const { assert!(PLATE_Y + PLATE_H < 150) };
         const { assert!(PLATE_PAD_WIDE * 2 + PLATE_GLYPH + 10 + 36 == PLATE_WIDE) };
+    }
+    #[test]
+    fn the_plate_widens_with_a_wider_start_key_and_stays_centred() {
+        assert_eq!(wide_plate("F11", true), (PLATE_WIDE, 36.));
+        assert_eq!(wide_plate("F9", true), (PLATE_WIDE, 36.));
+        let (width, cap) = wide_plate("C+S+F11", true);
+        assert!(cap > 36. && cap.fract() == 0.);
+        assert_eq!(width, PLATE_WIDE + (cap - 36.) as usize);
+        let plate = crate::plate_draw::PlateView {
+            x: (WIDTH / 2 - width / 2) as f32,
+            width: width as f32,
+            back: 0x1e1e1dff,
+            key: Some((0xeeececff, 0x393939ff)),
+            cap,
+            count: None,
+        };
+        let mut list = crate::draw_list::DrawList::default();
+        crate::plate_draw::build(&plate, "C+S+F11", (0., 0.), &mut list);
+        let rects: Vec<_> = list
+            .commands()
+            .iter()
+            .filter_map(|c| match *c {
+                crate::draw_list::Cmd::Rect { rect, .. } => Some(rect),
+                _ => None,
+            })
+            .collect();
+        // Centred plate; the cap 60 px in, 20 px clear of the right edge.
+        assert!((rects[0].0 + rects[0].2 / 2. - 960.).abs() <= 0.5);
+        assert_eq!(rects[1].0 + rects[1].2 + 20., rects[0].0 + rects[0].2);
     }
 }

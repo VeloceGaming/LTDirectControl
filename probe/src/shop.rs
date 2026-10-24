@@ -58,6 +58,10 @@ pub struct Item {
     pub tier: usize,
     pub price: usize,
     pub category: String,
+    /// The item's sprite tag in the game's item sheet, from the live item
+    /// data (`native_items.rs` reads it at getter 0x60; `hud_icons::item_icon`
+    /// draws it): `t1_0`..`t5_5` for the base items.
+    pub icon: String,
     /// Stat keys with a non-zero value in the live item data (shop filters).
     pub stats: Vec<String>,
     /// Catalogue indices this item can upgrade into.
@@ -69,6 +73,25 @@ pub struct Item {
     pub enabled: bool,
 }
 
+/// The number in a base item's sprite tag `t<tier+1>_<n>`: the game's own
+/// order within a tier (0 sword, 1 dagger, 2 armour, 3 cloak, 4 crystal,
+/// 5 orb: attack damage, attack speed, armour, magic resistance, ability
+/// power, health). None for any other tag.
+fn icon_number(tag: &str) -> Option<usize> {
+    let (tier, n) = tag.strip_prefix('t')?.split_once('_')?;
+    let digits = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit());
+    (digits(tier) && digits(n)).then(|| n.parse().ok())?
+}
+/// Sort one tier's catalogue indices into the game's shop order
+/// (1.6.0-dev4): items tagged `t<digits>_<digits>` by that number, then
+/// every other item (another mod's, such as the Riot pack) in registry
+/// order, which is also the order of equal numbers.
+pub fn sort_tier(cat: &[Item], items: &mut [usize]) {
+    items.sort_by_key(|i| match icon_number(&cat[*i].icon) {
+        Some(n) => (false, n, *i),
+        None => (true, 0, *i),
+    });
+}
 /// Engine-ordered catalogue built from the registered item metadata.
 pub fn catalogue(keys: &[String], meta: &crate::native_items::Catalogue) -> Option<Vec<Item>> {
     let enabled = |k: &str| {
@@ -88,6 +111,11 @@ pub fn catalogue(keys: &[String], meta: &crate::native_items::Catalogue) -> Opti
                 price: usize::try_from(spec.get("price")?.as_u64()?).ok()?,
                 category: spec
                     .get("category")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_owned(),
+                icon: spec
+                    .get("icon")
                     .and_then(|v| v.as_str())
                     .unwrap_or("")
                     .to_owned(),
@@ -989,10 +1017,79 @@ mod tests {
             tier,
             price,
             category: String::new(),
+            icon: String::new(),
             stats: Vec::new(),
             next: next.to_vec(),
             enabled: true,
         }
+    }
+    fn tagged(key: &str, icon: &str, price: usize) -> Item {
+        Item {
+            icon: icon.into(),
+            ..item(key, 0, price, &[])
+        }
+    }
+    fn sorted(cat: &[Item]) -> Vec<&str> {
+        let mut items: Vec<usize> = (0..cat.len()).collect();
+        sort_tier(cat, &mut items);
+        items.iter().map(|i| cat[*i].key.as_str()).collect()
+    }
+    #[test]
+    fn a_tier_follows_the_games_order_by_icon_tag_then_registry_order() {
+        // Base items registered out of order, at equal prices.
+        let base = [
+            tagged("vital_orb", "t1_5", 500),
+            tagged("dagger", "t1_1", 500),
+            tagged("arcane_crystal", "t1_4", 500),
+            tagged("ironsword", "t1_0", 500),
+            tagged("mystic_cloak", "t1_3", 500),
+            tagged("steel_armor", "t1_2", 500),
+        ];
+        let order = [
+            "ironsword",
+            "dagger",
+            "steel_armor",
+            "mystic_cloak",
+            "arcane_crystal",
+            "vital_orb",
+        ];
+        assert_eq!(sorted(&base), order);
+        // Another mod's items (own tags, none, or a lookalike) come after
+        // the base items in registry order, whatever their price.
+        let mut mixed = vec![
+            tagged("riot_boots", "boots_of_speed", 300),
+            tagged("riot_dirk", "", 1100),
+        ];
+        mixed.extend(base.iter().cloned());
+        mixed.extend([
+            tagged("riot_blade", "t1_x", 250),
+            tagged("riot_amp", "riot_t1_2", 400),
+            tagged("riot_tome", "t_3", 435),
+        ]);
+        let mut expected = order.to_vec();
+        expected.extend([
+            "riot_boots",
+            "riot_dirk",
+            "riot_blade",
+            "riot_amp",
+            "riot_tome",
+        ]);
+        assert_eq!(sorted(&mixed), expected);
+        // No tagged item: registry order.
+        let untagged = [
+            tagged("b", "", 900),
+            tagged("a", "x", 100),
+            tagged("c", "", 500),
+        ];
+        assert_eq!(sorted(&untagged), ["b", "a", "c"]);
+        // Higher tiers carry their own number in front: t2_0 .. t5_5.
+        let tier2 = [
+            tagged("hardened_heart", "t2_5", 500),
+            tagged("wind_dagger", "t2_1", 500),
+        ];
+        assert_eq!(sorted(&tier2), ["wind_dagger", "hardened_heart"]);
+        assert_eq!(icon_number("t12_34"), Some(34));
+        assert_eq!(icon_number("t1_"), None);
     }
     // 0 sword -> 1 longsword -> {2 dirk, 3 axe}; 4 dagger -> 5 wind -> 3 axe;
     // 3 axe -> 6 flare; 7 boots (tier 0, no upgrades)

@@ -20,7 +20,6 @@ use std::{
 };
 
 pub const PATH: &str = "ingame.lt_player_hud";
-const KEYS: [&str; 3] = ["Q", "W", "R"];
 const UNLOCK_LEVELS: [usize; 3] = [1, 3, 5];
 // Native UI coordinates are 1920 x 1080, independent of window scaling.
 const WIDTH: usize = 1920;
@@ -703,6 +702,8 @@ impl HudUi {
     /// draw list for the frame.
     pub(crate) fn write_recall(&mut self, ctx: &mut StableClient<'_>, a2: pass::A2) {
         self.view.recall = a2.view();
+        // The caps name the keys bound now (a rebind shows at once).
+        self.view.keys.follow(&crate::settings::current_shared());
         crate::hud_draw::build(&self.view, ctx.ui_node_rect("ingame"), &mut self.list);
     }
     /// A completed click on the strip's shop button since the last call.
@@ -1359,9 +1360,10 @@ impl HudUi {
         }
         let (raw_title, body) = full.split_once('\n').unwrap_or((&full, ""));
         let body = body.trim();
+        // The title's slot letter goes: the key corner names the binding.
         let title = if skill {
             raw_title
-                .strip_prefix(&format!("{}   ", KEYS[i]))
+                .strip_prefix(&format!("{}   ", crate::tooltips::SKILL_LETTERS[i]))
                 .unwrap_or(raw_title)
         } else {
             raw_title
@@ -1550,7 +1552,12 @@ impl HudUi {
         self.text(
             ctx,
             "tooltip.key",
-            if skill { KEYS[i].into() } else { String::new() },
+            // The skill's binding, short (`key_cap`); empty while unbound.
+            if skill {
+                self.view.keys.skills[i].text().into()
+            } else {
+                String::new()
+            },
             log,
         );
         self.props(

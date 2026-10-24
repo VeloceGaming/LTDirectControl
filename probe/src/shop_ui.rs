@@ -208,7 +208,7 @@ fn layout(cat: &[shop::Item], active: &[usize]) -> (Vec<(Entry, i32, f32)>, f32)
         if items.is_empty() {
             continue;
         }
-        items.sort_by(|a, b| (cat[*a].price, &cat[*a].key).cmp(&(cat[*b].price, &cat[*b].key)));
+        shop::sort_tier(cat, &mut items);
         if !out.is_empty() {
             y += 6.;
         }
@@ -3134,6 +3134,7 @@ mod tests {
             tier,
             price,
             category: String::new(),
+            icon: String::new(),
             stats: stats.iter().map(|s| s.to_string()).collect(),
             next: Vec::new(),
             enabled: true,
@@ -3224,6 +3225,7 @@ mod tests {
                 tier,
                 price: *p,
                 category: String::new(),
+                icon: String::new(),
                 stats: Vec::new(),
                 next: if tier < 4 { vec![tier + 1] } else { Vec::new() },
                 enabled: true,
