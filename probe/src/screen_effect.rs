@@ -1,24 +1,13 @@
 //! A bounded, static edge tint, drawn below HUD and excluded from the minimap.
+//! Drawn with direct draw calls since 1.6.0-perf-dev3 (`effect_draw.rs`);
+//! before, 196 band nodes under its own root in the UI tree.
 use crate::{
     camera::{CameraControl, Rect},
     player_hud::Snapshot,
     Logger,
 };
-use mod_api_stable::StableClient;
-use std::time::{Duration, Instant};
-const PATH: &str = "ingame.lt_screen_effect";
-pub(crate) fn template() -> String {
-    let mut source = String::from(
-        "lt_screen_effect:empty { width: 100%; height: 100%; anchor_x: 0; anchor_y: 0; pivot_x: 0; pivot_y: 0; z: 990; ignore_event: true;\n",
-    );
-    for i in 0..BANDS {
-        source.push_str(&format!(
-            "#band{i}:color {{ z: 990; visible: false; ignore_event: true; }}\n"
-        ));
-    }
-    source.push('}');
-    source
-}
+use std::time::Duration;
+/// At most this many bands (the old root's band nodes).
 const BANDS: usize = 196;
 /// The battlefield veil while your athlete is dead, League-like without a
 /// greyscale filter (the author, 2026-10-18; the greyscale composite hook
@@ -38,15 +27,12 @@ pub struct Effect {
     dead: bool,
     /// 0 to 1 while dead, over `DEATH_FADE`.
     death: f32,
-    cache: crate::ui_writes::PropCache,
-    /// Each band's node in `cache` (1.6.0).
-    bands: Vec<crate::ui_writes::NodeId>,
-    attempted: Option<Instant>,
     reported: Option<u8>,
-    failed: bool,
     // motion: pass
     /// The HUD motion pass (hud_motion_pass.rs).
     pass: crate::hud_motion_pass::Pass,
+    /// This frame's bands (`effect_draw.rs`), sent in `post_render`.
+    pub(crate) list: crate::draw_list::DrawList,
 }
 impl Effect {
     pub fn update(&mut self, enabled: bool, active: bool, snapshot: Option<&Snapshot>, dt: u64) {
@@ -70,7 +56,8 @@ impl Effect {
             self.strength = 0.;
         }
     }
-    pub fn apply(&mut self, ctx: &mut StableClient<'_>, camera: &CameraControl, log: &Logger) {
+    pub fn apply(&mut self, camera: &CameraControl, log: &Logger) {
+        self.list.clear();
         // motion: pass
         self.pass.frame();
         // motion: S5 (restore `self.strength` in the bands below)
@@ -84,39 +71,18 @@ impl Effect {
             0
         };
         let frame = camera.frame();
-        if mode != 0 && frame.is_some() && crate::ui_root::hidden() {
-            crate::ui_root::hide(ctx, PATH);
-            return;
-        }
-        if mode == 0 || frame.is_none() {
-            // Write only on a change (this runs every frame).
-            crate::ui_root::hide(ctx, PATH);
+        let Some(frame) = frame.filter(|_| mode != 0) else {
             if self.reported != Some(0) {
                 log.write("SCREEN EFFECT inactive");
                 self.reported = Some(0);
             }
             return;
+        };
+        // perf_hide_mod_ui: nothing shows (and `draw_list::submit` sends
+        // nothing either).
+        if crate::ui_root::hidden() {
+            return;
         }
-        if !ctx.ui_exists(PATH) {
-            if self
-                .attempted
-                .is_some_and(|at| crate::clock::since(at) < Duration::from_secs(2))
-            {
-                return;
-            }
-            self.attempted = Some(crate::clock::now());
-            if !self.spawn(ctx, log) {
-                return;
-            }
-        }
-        crate::ui_root::show(ctx, PATH);
-        if self.bands.is_empty() {
-            let cache = &mut self.cache;
-            self.bands = (0..BANDS)
-                .map(|i| cache.node(&format!("{PATH}.band{i}")))
-                .collect();
-        }
-        let frame = frame.unwrap();
         let v = frame.viewport;
         let m = frame.minimap;
         let excluded = Rect {
@@ -133,28 +99,10 @@ impl Effect {
                 (alpha > 0).then_some(0x9e253600 | alpha)
             })
         };
-        let (ox, oy, _, _) = ctx.ui_node_rect("ingame").unwrap_or((0., 0., 1920., 1080.));
-        let pair = |a: f32, b: f32| u64::from(a.to_bits()) << 32 | u64::from(b.to_bits());
-        let unpair = |v: u64| (f32::from_bits((v >> 32) as u32), f32::from_bits(v as u32));
-        for i in 0..BANDS {
-            let key = pieces.get(i).map_or((false, 0, 0, 0), |(r, color)| {
-                (true, pair(r.x - ox, r.y - oy), pair(r.w, r.h), *color)
-            });
-            let written = self.cache.props_keyed(ctx, self.bands[i], 0, key, |(shown, xy, wh, color)| {
-                if !shown {
-                    return "visible: false;".into();
-                }
-                let ((x, y), (w, h)) = (unpair(xy), unpair(wh));
-                format!("visible: true; x: {x:.2}px; y: {y:.2}px; width: {w:.2}px; height: {h:.2}px; color: #{color:08x};")
-            });
-            if !written && !self.failed {
-                log.write(&format!("SCREEN EFFECT property failed band={i}"));
-                self.failed = true;
-            }
-        }
+        crate::effect_draw::build(&pieces[..pieces.len().min(BANDS)], &mut self.list);
         if self.reported != Some(mode) {
             log.write(&format!(
-                "SCREEN EFFECT native UI mode={mode} pieces={} strength={:.3} viewport={v:?}",
+                "SCREEN EFFECT drawn mode={mode} pieces={} strength={:.3} viewport={v:?}",
                 pieces.len(),
                 self.strength
             ));
@@ -280,34 +228,6 @@ fn subtract(r: Rect, cut: Rect) -> Vec<Rect> {
     .filter(|r| r.w > 0. && r.h > 0.)
     .collect()
 }
-impl Effect {
-    fn spawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
-        let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
-        log.write(&format!(
-            "SCREEN EFFECT native UI spawn={ok} exists={}",
-            ctx.ui_exists(PATH)
-        ));
-        if !ok || !ctx.ui_exists(PATH) {
-            return false;
-        }
-        self.cache.clear();
-        true
-    }
-}
-impl crate::prewarm::Prespawn for Effect {
-    fn built(&self, ctx: &StableClient<'_>) -> bool {
-        ctx.ui_exists(PATH)
-    }
-    /// Its bands are hidden; the root is hidden too, as when inactive.
-    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
-        let ok = self.spawn(ctx, log);
-        if ok {
-            ctx.ui_set_visible(PATH, false);
-        }
-        ok
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

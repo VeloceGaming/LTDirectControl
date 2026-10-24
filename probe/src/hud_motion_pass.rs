@@ -7,20 +7,20 @@
 //! `motion: <item>` (search for "motion: B5", for example); where an item
 //! changed an existing expression, the comment says what to restore. To
 //! prune an item, delete its functions here (and its `*_nodes` template
-//! function) and every place its tag marks. Sites shared by two items name
+//! function or its part of a draw list) and every place its tag marks. Sites shared by two items name
 //! both; keep the other item's part.
 //!
 //! | Item | Sites outside this module |
 //! | --- | --- |
 //! | A1 | purchase coin colours (player_hud) |
-//! | A2 | template line, `Movement::recalling`, one call in client.rs (which needs `HudUi::cache` and `pass` crate-visible) |
-//! | A3 | template line in the skill slot, one call in the skill loop |
+//! | A2 | `Movement::recalling`, one call in client.rs (which needs `HudUi::pass` crate-visible); drawn in hud_draw.rs |
+//! | A3 | one call in the skill loop; drawn in hud_draw.rs |
 //! | B1 | health trail write |
 //! | B2 | gold text value |
 //! | B4 | level colour, learned drain, shade write, icon brightness |
 //! | B5 | item border, item icon tint, next-item opacity |
-//! | B6, D1 | template lines, one call each near the top of `HudUi::apply`; D1 now plays on kills only |
-//! | B8 | session strip: template line, sweep, portrait opacity; client.rs: swap landing |
+//! | B6, D1 | one call each near the top of `HudUi::apply`, drawn in hud_draw.rs; D1 now plays on kills only |
+//! | B8 | session strip: sweep (drawn in session_draw.rs), portrait opacity; client.rs: swap landing |
 //! | C1 | key cap colour, shade write (hover computed earlier in the skill loop) |
 //! | C2 | item icon tint |
 //! | D2 | minimap.rs corner points |
@@ -72,11 +72,6 @@ const DRAW_Z: i32 = 1130;
 
 /// Property writes for nodes under one root: (node, source).
 pub type Writes = Vec<(String, String)>;
-/// The write site the typed items use in a window's cache (`ui_writes.rs`):
-/// their nodes are written by nothing else.
-const SITE: u8 = 9;
-use crate::ui_writes::{NodeId, PropCache};
-use mod_api_stable::StableClient;
 
 /// Writes through the host's property cache: unchanged fields cost nothing.
 pub fn write(
@@ -214,6 +209,10 @@ pub fn fade(color: u32, a: f32) -> u32 {
 fn mix(from: u32, to: u32, t: f32) -> u32 {
     u32::from_str_radix(&crate::hud_motion::color(from, to, t), 16).unwrap_or(from)
 }
+/// `v` to 0.01, as a node received it (`{v:.2}px`).
+pub fn hundredths(v: f32) -> f32 {
+    (v * 100.).round() / 100.
+}
 /// Image tint for an icon: brightness and opacity (1, 1 is untouched).
 pub fn icon_tint(brightness: f32, alpha: f32) -> String {
     format!(
@@ -280,21 +279,6 @@ pub fn a1_purchase_breathe(p: &mut Pass, ready: bool, color: u32) -> u32 {
     scale(color, 1. - 0.3 * breathe(p.since("a1"), 2.4))
 }
 
-/// A2 Recall progress, template nodes: a 3 px line under the recall icon
-/// and two notches that march along it.
-pub fn a2_nodes() -> String {
-    let bg = crate::ui_theme::hex(0xff);
-    let mut s = node("a2_recall_line", (702, 131, 20, 3), "fdee00ff", 1004);
-    for k in 0..2 {
-        s.push_str(&node(
-            &format!("a2_recall_notch{k}"),
-            (702, 131, 3, 3),
-            &bg,
-            1005,
-        ));
-    }
-    s
-}
 /// A2 Recall progress: while the game reports your athlete recalling
 /// (its action number 1, read from the code), the line shows and notches
 /// march along it left to right, 0.3 s per pass. The client does not read
@@ -312,26 +296,29 @@ pub fn a2_recall_progress(p: &mut Pass, recalling: bool, playing: bool) -> A2 {
         x: std::array::from_fn(|k| 702. + 17. * ((t / 0.3 + k as f32 * 0.5).rem_euclid(1.))),
     }
 }
-/// A2's nodes under the HUD root, in write order.
+/// A2's nodes under the HUD root before 1.6.0-perf-dev3 (now drawn: a
+/// 3 px line under the recall icon and two notches marching along it).
+#[cfg(test)]
 pub const A2_NODES: [&str; 3] = ["a2_recall_line", "a2_recall_notch0", "a2_recall_notch1"];
-/// What A2's nodes show this frame.
+/// What A2 shows this frame.
 #[derive(Clone, Copy)]
 pub struct A2 {
     shown: bool,
     x: [f32; 2],
 }
 impl A2 {
+    #[cfg(test)]
     fn line((shown,): (bool,)) -> String {
         format!("visible: {shown};")
     }
+    #[cfg(test)]
     fn notch((shown, x): (bool, f32)) -> String {
         format!("visible: {shown}; x: {x:.2}px;")
     }
-    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, ids: &[NodeId; 3]) {
-        c.props_keyed(ctx, ids[0], SITE, (self.shown,), Self::line);
-        for k in 0..2 {
-            c.props_keyed(ctx, ids[k + 1], SITE, (self.shown, self.x[k]), Self::notch);
-        }
+    /// For the draw list: the line shown, the notches' x (to 0.01 px, as
+    /// the nodes received them).
+    pub fn view(self) -> (bool, [f32; 2]) {
+        (self.shown, self.x.map(hundredths))
     }
     #[cfg(test)]
     fn sources(self) -> Writes {
@@ -343,10 +330,6 @@ impl A2 {
     }
 }
 
-/// A3 Drain-edge comet, template node inside each skill slot.
-pub fn a3_nodes() -> String {
-    node("a3_comet", (1, 1, 78, 2), "ffffff99", 1005)
-}
 /// A3 Drain-edge comet: a second edge line at 60 % alpha follows the drain
 /// edge on the ease curve over 150 ms (an eased follow, not an exact delay),
 /// in the edge's warming colour. Hidden with the edge and during the ready
@@ -360,12 +343,14 @@ pub fn a3_drain_comet(p: &mut Pass, slot: usize, shown: bool, y: f32, color: u32
     A3(Some((p.follow(key, y, 0.15), color)))
 }
 const A3_KEYS: [&str; 3] = ["a3_0", "a3_1", "a3_2"];
-/// A3's node in each skill slot, under the HUD root.
+/// A3's node in each skill slot before 1.6.0-perf-dev3 (now drawn).
+#[cfg(test)]
 pub const A3_NODES: [&str; 3] = ["skill0.a3_comet", "skill1.a3_comet", "skill2.a3_comet"];
 /// What one slot's A3 comet shows: its y and the edge colour, or hidden.
 #[derive(Clone, Copy)]
 pub struct A3(Option<(f32, u32)>);
 impl A3 {
+    #[cfg(test)]
     fn source((shown, y, color): (bool, f32, u32)) -> String {
         if !shown {
             return "visible: false;".into();
@@ -375,11 +360,13 @@ impl A3 {
             fade(color, 0.6)
         )
     }
+    #[cfg(test)]
     fn key(self) -> (bool, f32, u32) {
         self.0.map_or((false, 0., 0), |(y, c)| (true, y, c))
     }
-    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, id: NodeId) {
-        c.props_keyed(ctx, id, SITE, self.key(), Self::source);
+    /// For the draw list: the comet's y and colour (at 60 %), or hidden.
+    pub fn view(self) -> Option<(f32, u32)> {
+        self.0.map(|(y, color)| (hundredths(y), fade(color, 0.6)))
     }
     #[cfg(test)]
     fn sources(self) -> Writes {
@@ -491,23 +478,12 @@ pub fn b5_next_item(p: &mut Pass, source: Option<&str>) -> f32 {
     }
 }
 
-/// B6 Death and respawn, template nodes: a dark veil over each skill slot,
-/// over its icon but under its cooldown number, key and lock (z 1004, the
-/// slot's shade). Like League, death darkens only the skills, not the
-/// strip, items or panels (the author, 2026-10-20, with League screenshots;
-/// a whole-strip veil before 1.4.9).
-pub fn b6_nodes(skill_x: usize, step: usize, skill_y: usize) -> String {
-    (0..3)
-        .map(|i| {
-            node(
-                &format!("b6_veil_skill{i}"),
-                (skill_x + i * step, skill_y as isize, 80, 80),
-                "00000000",
-                1004,
-            )
-        })
-        .collect()
-}
+/// B6 Death and respawn: a dark veil over each skill slot, over its icon
+/// but under its cooldown number, key and lock (z 1004, the slot's shade;
+/// drawn in hud_draw.rs). Like League, death darkens only the skills, not
+/// the strip, items or panels (the author, 2026-10-20, with League
+/// screenshots; a whole-strip veil before 1.4.9).
+pub const B6_Z: i32 = 1004;
 /// B6's veils darken and lift over this long; the skill slots lift this far apart.
 const B6_DIM: f32 = 0.4;
 const B6_STEP: f32 = 0.06;
@@ -547,12 +523,14 @@ pub fn b6_death_dim(p: &mut Pass, alive: Option<bool>, playing: bool) -> B6 {
         }
     }))
 }
-/// B6's veil over each skill slot, under the HUD root.
+/// B6's veil over each skill slot before 1.6.0-perf-dev3 (now drawn).
+#[cfg(test)]
 pub const B6_NODES: [&str; 3] = ["b6_veil_skill0", "b6_veil_skill1", "b6_veil_skill2"];
 /// Each skill slot's veil strength this frame (0 to 1).
 #[derive(Clone, Copy)]
 pub struct B6([f32; 3]);
 impl B6 {
+    #[cfg(test)]
     fn veil((a,): (f32,)) -> String {
         format!(
             "visible: {}; color: #000000{:02x};",
@@ -560,10 +538,11 @@ impl B6 {
             (128. * a).round() as u8
         )
     }
-    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, ids: &[NodeId; 3]) {
-        for (i, id) in ids.iter().enumerate() {
-            c.props_keyed(ctx, *id, SITE, (self.0[i],), Self::veil);
-        }
+    /// For the draw list: each veil shown, and its colour (black at up to
+    /// 50 %).
+    pub fn view(self) -> [(bool, u32); 3] {
+        self.0
+            .map(|a| (a > 0., u32::from((128. * a).round() as u8)))
     }
     #[cfg(test)]
     fn sources(self) -> Writes {
@@ -573,11 +552,6 @@ impl B6 {
     }
 }
 
-/// B8 Swap stagger, template node: a hairline on the swap button's
-/// bottom edge, in the session strip's units.
-pub fn b8_nodes(y: f32, width: f32) -> String {
-    format!("#b8_sweep:color {{ x: 0px; y: {:.0}px; width: {width:.0}px; height: 2px; z: 1106; color: #fdee00ff; visible: false; ignore_event: true; }}\n", y - 2.)
-}
 static B8_LANDED: Mutex<Option<Instant>> = Mutex::new(None);
 /// B8, the swap landing: called where a champion swap succeeds.
 pub fn b8_swap_landed() {
@@ -617,23 +591,28 @@ pub fn b8_swap_sweep(p: &Pass, in_match: bool, width: f32) -> B8 {
         )
     }))
 }
-/// B8's sweep line under the session strip's root.
+/// B8's sweep line under the session strip's root before 1.6.0-perf-dev3
+/// (now drawn: a 2 px hairline on the swap button's bottom edge).
+#[cfg(test)]
 pub const B8_NODE: &str = "b8_sweep";
 /// The sweep line's width and colour this frame, or hidden.
 #[derive(Clone, Copy)]
 pub struct B8(Option<(f32, u32)>);
 impl B8 {
+    #[cfg(test)]
     fn source((shown, width, color): (bool, f32, u32)) -> String {
         if !shown {
             return "visible: false;".into();
         }
         format!("visible: true; width: {width:.2}px; color: #{color:08x};")
     }
+    #[cfg(test)]
     fn key(self) -> (bool, f32, u32) {
         self.0.map_or((false, 0., 0), |(w, c)| (true, w, c))
     }
-    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, id: NodeId) {
-        c.props_keyed(ctx, id, SITE, self.key(), Self::source);
+    /// For the draw list: the sweep's width and colour, when shown.
+    pub fn view(self) -> Option<(f32, u32)> {
+        self.0.map(|(width, color)| (hundredths(width), color))
     }
     #[cfg(test)]
     fn sources(self) -> Writes {
@@ -668,10 +647,6 @@ pub fn c2_item_press(p: &Pass, press: f32) -> f32 {
 /// D1's line runs the strip's full width.
 const D1_WIDTH: f32 = 1560.;
 const D1_SWEEP: f32 = 0.5;
-/// D1 Stats hairline, template node: 2 px, just under the K/D/A and CS row.
-pub fn d1_nodes() -> String {
-    node("d1_line", (0, 138, 0, 2), "fdee00ff", 1004)
-}
 /// D1 Stats hairline: a 2 px yellow line sweeps left to right across the
 /// whole strip (1560 px) once per kill of your athlete, 500 ms ease,
 /// then is gone. No match-start trigger.
@@ -689,23 +664,28 @@ pub fn d1_stats_hairline(p: &mut Pass, kills: Option<usize>, playing: bool) -> D
     }
     D1(age.map(|age| D1_WIDTH * ease(age / D1_SWEEP)))
 }
-/// D1's line under the HUD root.
+/// D1's line under the HUD root before 1.6.0-perf-dev3 (now drawn: 2 px,
+/// just under the K/D/A and CS row).
+#[cfg(test)]
 pub const D1_NODE: &str = "d1_line";
 /// The hairline's width this frame, or hidden.
 #[derive(Clone, Copy)]
 pub struct D1(Option<f32>);
 impl D1 {
+    #[cfg(test)]
     fn source((shown, width): (bool, f32)) -> String {
         if !shown {
             return "visible: false;".into();
         }
         format!("visible: true; width: {width:.2}px;")
     }
+    #[cfg(test)]
     fn key(self) -> (bool, f32) {
         self.0.map_or((false, 0.), |w| (true, w))
     }
-    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, id: NodeId) {
-        c.props_keyed(ctx, id, SITE, self.key(), Self::source);
+    /// For the draw list: the hairline's width, when shown.
+    pub fn view(self) -> Option<f32> {
+        self.0.map(hundredths)
     }
     #[cfg(test)]
     fn sources(self) -> Writes {
@@ -1060,17 +1040,19 @@ mod tests {
     }
     #[test]
     fn death_darkens_only_the_skill_slots_under_their_cooldown_numbers() {
-        let nodes = b6_nodes(10, 90, 5);
-        assert_eq!(nodes.matches("b6_veil_skill").count(), 3);
-        assert!(!nodes.contains("strip"));
         // Under the slot's cooldown number, key and lock (z 1005 and up).
-        assert_eq!(nodes.matches("z: 1004;").count(), 3, "{nodes}");
+        assert_eq!(B6_Z, 1004);
         let mut p = Pass::default();
         p.set_on(true);
         b6_death_dim(&mut p, Some(true), true);
-        let writes = b6_death_dim(&mut p, Some(false), true).sources();
+        let b6 = b6_death_dim(&mut p, Some(false), true);
+        let writes = b6.sources();
         assert_eq!(writes.len(), 3);
         assert!(writes.iter().all(|(id, _)| id.starts_with("b6_veil_skill")));
+        // The drawn veils carry what the nodes received.
+        for ((_, source), (shown, color)) in writes.iter().zip(b6.view()) {
+            assert_eq!(source, &format!("visible: {shown}; color: #{color:08x};"));
+        }
     }
     #[test]
     fn turning_on_late_replays_nothing() {

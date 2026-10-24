@@ -1,0 +1,985 @@
+## 0
+## 1
+## 2
+## 3
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "0"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "10"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "20.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "30"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "40"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "50"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "60%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "70"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "80"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "90%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "100%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "110%"
+## 4
+= as before
+## 5
+= as before
+## 6
+= as before
+## 7
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "20.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+## 8
+= as before
+## 9
+= as before
+## 10
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "20.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,235,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "870 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "870 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "870 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "870 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "870 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "20.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 11
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "20.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,234,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "867 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "867 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "867 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "867 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "867 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "20.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 12
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "20.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,233,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "864 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "864 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "864 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "864 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "864 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "20.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 13
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "20.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,232,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "861 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "861 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "861 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "861 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "861 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "20.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 14
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,232,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "858 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "858 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "858 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "858 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "858 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 15
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,231,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "855 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "855 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "855 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "855 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "855 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 16
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,230,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "852 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "852 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "852 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "852 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "852 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 17
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,229,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "849 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "849 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "849 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "849 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "849 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 18
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,228,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "846 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "846 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "846 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "846 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "846 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 19
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "1"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,228,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "843 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "843 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "843 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "843 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "843 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 20
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "1"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "11"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "31"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "41"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "51"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "61%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "71"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "81"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "91%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "101%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "111%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,227,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "840 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "840 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "840 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "840 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "840 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "1"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "11"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "31"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "41"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "51"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "61%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "71"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "81"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "91%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "101%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "111%"
+## 21
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,226,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "837 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "837 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "837 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "837 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "837 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 22
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,225,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "834 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "834 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "834 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "834 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "834 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 23
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,224,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "831 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "831 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "831 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "831 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "831 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 24
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,224,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "828 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "828 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "828 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "828 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "828 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 25
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,223,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "825 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "825 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "825 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "825 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "825 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 26
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,222,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "822 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "822 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "822 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "822 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "822 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 27
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "21.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,221,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "819 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "819 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "819 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "819 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "819 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "21.50"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 28
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "22.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,220,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "816 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "816 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "816 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "816 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "816 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "22.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 29
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "2"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "12"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "22.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "32"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "42"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "52"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "62%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "72"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "82"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "92%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "102%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "112%"
+R 8,56,292,129 1001 r=2 #4b4a49ff
+R 8,59,292,129 1000 r=0 #00000066
+R 9,57,290,127 1002 r=0 #211f1dff
+R 18,102,64,64 1003 r=2 #4b4a49ff
+R 19,103,62,62 1004 r=0 #0e0d0cff
+R 18,148,26,18 1006 r=0 #1c1a18ee
+T 18,148,26,18 1007 numeric 14 #eeececff CC "2"
+R 18,66,272,20 1003 r=0 #0e0d0cff
+R 19,67,220,18 1004 r=0 #ff5c6cff
+T 17,66,272,20 1005 numeric 13 #000000ff CC "813 / 1000"
+T 19,66,272,20 1005 numeric 13 #000000ff CC "813 / 1000"
+T 18,65,272,20 1005 numeric 13 #000000ff CC "813 / 1000"
+T 18,67,272,20 1005 numeric 13 #000000ff CC "813 / 1000"
+T 18,66,272,20 1005 numeric 13 #ffffffff CC "813 / 1000"
+T 115,94,43,18 1004 numeric 15 #eeececff LC "2"
+T 183,94,43,18 1004 numeric 15 #eeececff LC "12"
+T 251,94,43,18 1004 numeric 15 #eeececff LC "22.00"
+T 115,115,43,18 1004 numeric 15 #eeececff LC "32"
+T 183,115,43,18 1004 numeric 15 #eeececff LC "42"
+T 251,115,43,18 1004 numeric 15 #eeececff LC "52"
+T 115,136,43,18 1004 numeric 15 #eeececff LC "62%"
+T 183,136,43,18 1004 numeric 15 #eeececff LC "72"
+T 251,136,43,18 1004 numeric 15 #eeececff LC "82"
+T 115,157,43,18 1004 numeric 15 #eeececff LC "92%"
+T 183,157,43,18 1004 numeric 15 #eeececff LC "102%"
+T 251,157,43,18 1004 numeric 15 #eeececff LC "112%"
+## 30
+## 31
+## 32
+## 33
+## 34
+## 35
+## 36
+## 37
+## 38
+## 39
+## 40
+## 41
+## 42
+## 43
+## 44
+## 45
+## 46
+## 47
+## 48
+## 49
+## 50
+## 51
+## 52
+## 53
+## 54
+## 55
+## 56
+## 57
+## 58
+## 59
+## 60
+## 61
+## 62
+## 63
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "5"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "15"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "24.50"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "35"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "45"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "55"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "65%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "75"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "85"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "95%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "105%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "115%"
+## 64
+= as before
+## 65
+= as before
+## 66
+= as before
+## 67
+= as before
+## 68
+= as before
+## 69
+= as before
+## 70
+R 612,932,208,92 1001 r=2 #4b4a49ff
+R 612,935,208,92 1000 r=0 #00000066
+R 613,933,206,90 1002 r=0 #211f1dff
+T 642,937,42,18 1004 numeric 15 #eeececff LC "5"
+T 709,937,42,18 1004 numeric 15 #eeececff LC "15"
+T 776,937,42,18 1004 numeric 15 #eeececff LC "25.00"
+T 642,958,42,18 1004 numeric 15 #eeececff LC "35"
+T 709,958,42,18 1004 numeric 15 #eeececff LC "45"
+T 776,958,42,18 1004 numeric 15 #eeececff LC "55"
+T 642,979,42,18 1004 numeric 15 #eeececff LC "65%"
+T 709,979,42,18 1004 numeric 15 #eeececff LC "75"
+T 776,979,42,18 1004 numeric 15 #eeececff LC "85"
+T 642,1000,42,18 1004 numeric 15 #eeececff LC "95%"
+T 709,1000,42,18 1004 numeric 15 #eeececff LC "105%"
+T 776,1000,42,18 1004 numeric 15 #eeececff LC "115%"
+## 71
+= as before
+## 72
+= as before
+## 73
+= as before
+## 74
+= as before
+## 75
+## 76
+## 77
+## 78
+## 79
+## 80
+## 81
+## 82
+## 83
+## 84
+## 85
+## 86
+## 87
+## 88
+## 89

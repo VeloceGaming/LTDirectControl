@@ -315,7 +315,23 @@ addition (not to be copied).
     UI tree is decided by an A/B: the same match with and without the
     hidden switch `perf_hide_mod_ui` (controls.json, 1 = on), read in Frame
     Lab and the PERF lines. The difference is what the game spends on the
-    mod's UI nodes; only a large difference justifies the rewrite.
+    mod's UI nodes; only a large difference justifies the rewrite. The
+    probe build 1.6.0-perf-dev2 adds the hidden switch `perf_draw_probe`
+    (controls.json, 1 = on): direct draws that step through a load and
+    test layering, SVG loading and drawn text (`draw_probe.rs`; how to
+    read it in `CHANGELOG.md`). The probe was played on 2026-10-24
+    (results in [investigation-direct-draw-hud.md](investigation-direct-draw-hud.md),
+    section 7): draws sort by z with the tree, cost about 2.2 µs each.
+    **Build 2b, 1.6.0-perf-dev3** (2026-10-24, not yet seen in game): the
+    HUD strip, state plate, session strip, stats panels and screen effect
+    are drawn (`draw_list.rs` and one `*_draw.rs` per window); the tree
+    keeps the sprite-sheet images, portraits, tooltips and the four
+    tint-animated glyphs. Two tests guard it (golden draw lists, an
+    offline pixel comparison with dev2). Open: play it (look, clicks on
+    the session strip, hover sounds, the A/B with `perf_hide_mod_ui` and
+    Frame Lab to measure the gain), and the cases listed under "Not seen
+    in game" in its CHANGELOG entry. Tab stays a tree window; it can move
+    later if the gain is confirmed.
 
 ## Done
 

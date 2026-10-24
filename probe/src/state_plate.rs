@@ -54,8 +54,10 @@ const PLATE_GLYPH: usize = 30;
 const PLATE_PAD_WIDE: usize = 20;
 const PLATE_PAD_NARROW: usize = 9;
 fn plate_template() -> String {
+    // The plate, key cap and count are drawn (`plate_draw.rs`); the root
+    // keeps the plate's place and visibility for the glyph, whose tint fades.
     let x = WIDTH / 2 - PLATE_WIDE / 2;
-    let mut s = format!("lt_state_plate:color {{ x: {x}px; y: {PLATE_Y}px; width: {PLATE_WIDE}px; height: {PLATE_H}px; z: 1120; color: #~1e1e1df0; visible: false; ignore_event: true; rounding: Uniform {{ rounding: 2; }}\n");
+    let mut s = format!("lt_state_plate:empty {{ x: {x}px; y: {PLATE_Y}px; width: {PLATE_WIDE}px; height: {PLATE_H}px; z: 1120; visible: false; ignore_event: true;\n");
     s.push_str(&crate::ui_graphics::image(
         "glyph",
         "ef_skull",
@@ -64,10 +66,8 @@ fn plate_template() -> String {
         PLATE_GLYPH,
         1121,
     ));
-    // The key cap is drawn like the strip's Tab cap; key names are not translated.
-    s.push_str("#key:color { x: 60px; y: 11px; width: 36px; height: 26px; z: 1121; color: #eeececff; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; size: 14; align_x: Center; align_y: Center; color: #393939ff; text: \"F11\"; ignore_event: true; z: 1122; } }\n");
-    s.push_str("#count:label { @\"asset/base/style/main#bold_label\"; x: 56px; y: 8px; width: 44px; height: 32px; size: 23; align_x: Center; align_y: Center; color: #ffffffff; text: \"\"; visible: false; ignore_event: true; z: 1122; }\n}\n");
-    crate::hud_style::fonts(s)
+    s.push_str("}\n");
+    s
 }
 #[cfg(test)]
 pub(crate) fn plate_template_for_test() -> String {
@@ -77,9 +77,6 @@ pub(crate) fn plate_template_for_test() -> String {
 struct Nodes {
     root: NodeId,
     glyph: NodeId,
-    key: NodeId,
-    key_text: NodeId,
-    count: NodeId,
 }
 const GLYPHS: [&str; 3] = ["ef_pause", "ef_cpu", "ef_skull"];
 #[derive(Default)]
@@ -92,6 +89,10 @@ pub struct StatePlate {
     // motion: pass
     /// The HUD motion pass (hud_motion_pass.rs).
     pass: pass::Pass,
+    /// This frame's commands (`plate_draw.rs`), sent in `post_render`.
+    pub(crate) list: crate::draw_list::DrawList,
+    /// `draw_list::check_origin`'s state.
+    origin_checked: u8,
 }
 impl StatePlate {
     fn nodes(&mut self) -> &Nodes {
@@ -99,9 +100,6 @@ impl StatePlate {
         self.nodes.get_or_insert_with(|| Nodes {
             root: cache.node(PLATE_PATH),
             glyph: cache.node(&format!("{PLATE_PATH}.glyph")),
-            key: cache.node(&format!("{PLATE_PATH}.key")),
-            key_text: cache.node(&format!("{PLATE_PATH}.key.text")),
-            count: cache.node(&format!("{PLATE_PATH}.count")),
         })
     }
     /// Spawn the plate (hidden, as its template is) if it is missing; false
@@ -137,6 +135,7 @@ impl StatePlate {
         snapshot: Option<&Snapshot>,
         log: &Logger,
     ) {
+        self.list.clear();
         let state = plate_state(
             phase,
             snapshot.map(|s| s.alive),
@@ -177,14 +176,10 @@ impl StatePlate {
         let a = |color: u32| (color & !255) | ((color & 255) as f32 * alpha).round() as u32;
         let back = (240. * alpha).round() as u8;
         let n = self.nodes();
-        let (root, glyph_node, key_node, key_text, count_node) =
-            (n.root, n.glyph, n.key, n.key_text, n.count);
+        let (root, glyph_node) = (n.root, n.glyph);
         let c = &mut self.cache;
-        c.props_keyed(ctx, root, 0, (width, back), |(width, back)| {
-            format!(
-                "x: {}px; width: {width}px; color: #~1e1e1d{back:02x};",
-                WIDTH / 2 - width / 2,
-            )
+        c.props_keyed(ctx, root, 0, (width,), |(width,)| {
+            format!("x: {}px; width: {width}px;", WIDTH / 2 - width / 2)
         });
         c.props_keyed(
             ctx,
@@ -203,22 +198,18 @@ impl StatePlate {
                 )
             },
         );
-        c.props_keyed(ctx, key_node, 0, (key, a(0xeeececff)), |(key, ink)| {
-            format!("visible: {key}; color: #{ink:08x};")
-        });
-        c.props_keyed(ctx, key_text, 0, (a(0x393939ff),), |(ink,)| {
-            format!("color: #{ink:08x};")
-        });
-        c.props_keyed(
-            ctx,
-            count_node,
-            0,
-            (count.is_some(), a(0xffffffff)),
-            |(on, ink)| format!("visible: {on}; color: #{ink:08x};"),
-        );
-        c.text_keyed(ctx, count_node, (count,), |(count,)| {
-            count.map_or(String::new(), |n| n.to_string())
-        });
+        let view = crate::plate_draw::PlateView {
+            x: (WIDTH / 2 - width / 2) as f32,
+            width: width as f32,
+            back: crate::ui_theme::tone(0x1e1e_1d00 | u32::from(back)),
+            key: key.then(|| (a(0xeeececff), a(0x393939ff))),
+            count: count.map(|n| (n, a(0xffffffff))),
+        };
+        let origin = ctx.ui_node_rect("ingame").map_or((0., 0.), |r| (r.0, r.1));
+        crate::plate_draw::build(&view, origin, &mut self.list);
+        let drawn = (origin.0 + view.x, origin.1 + crate::plate_draw::PLATE_Y);
+        let root = ctx.ui_node_rect(PLATE_PATH);
+        crate::draw_list::check_origin("state plate", drawn, root, &mut self.origin_checked, log);
     }
 }
 
@@ -238,10 +229,10 @@ mod tests {
     #[test]
     fn the_plate_is_centred_under_the_clock_and_clear_of_the_kill_callouts() {
         let plate = plate_template();
-        assert!(plate.contains("#key:color") && plate.contains("text: \"F11\""));
         // Lower and bigger (1.3.6): still centred, still clear of the kill callouts.
         assert!(plate.contains("x: 902px; y: 100px; width: 116px; height: 48px;"));
-        assert!(plate.contains("width: 36px; height: 26px;"));
+        assert_eq!(PLATE_Y as f32, crate::plate_draw::PLATE_Y);
+        assert_eq!(PLATE_H as f32, crate::plate_draw::PLATE_H);
         const { assert!(PLATE_Y + PLATE_H < 150) };
         const { assert!(PLATE_PAD_WIDE * 2 + PLATE_GLYPH + 10 + 36 == PLATE_WIDE) };
     }

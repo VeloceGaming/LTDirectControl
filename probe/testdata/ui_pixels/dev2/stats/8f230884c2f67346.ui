@@ -1,0 +1,30 @@
+lt_stats_own:empty { width: 1920px; height: 150px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true; visible: false;
+#panel:color { x: 612px; y: 2px; width: 208px; height: 92px; color: #4b4a49ff; rounding: Uniform { rounding: 2; } ignore_event: true; z: 1001;
+#shadow:color { x: 0px; y: 3px; width: 208px; height: 92px; color: #00000066; ignore_event: true; z: 1000; }
+#fill:color { x: 1px; y: 1px; width: 206px; height: 90px; color: #211f1dff; ignore_event: true; z: 1002; }
+#i0:image { x: 7px; y: 5px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "ad_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v0:label { font: "asset/lt_direct_control/font/numeric"; x: 30px; y: 5px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i1:image { x: 74px; y: 5px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "ap_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v1:label { font: "asset/lt_direct_control/font/numeric"; x: 97px; y: 5px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i2:image { x: 141px; y: 5px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "attack_speed_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v2:label { font: "asset/lt_direct_control/font/numeric"; x: 164px; y: 5px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i3:image { x: 7px; y: 26px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "armor_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v3:label { font: "asset/lt_direct_control/font/numeric"; x: 30px; y: 26px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i4:image { x: 74px; y: 26px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "magic resistance_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v4:label { font: "asset/lt_direct_control/font/numeric"; x: 97px; y: 26px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i5:image { x: 141px; y: 26px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "haste_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v5:label { font: "asset/lt_direct_control/font/numeric"; x: 164px; y: 26px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i6:image { x: 7px; y: 47px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "crit_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v6:label { font: "asset/lt_direct_control/font/numeric"; x: 30px; y: 47px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i7:image { x: 74px; y: 47px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "speed_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v7:label { font: "asset/lt_direct_control/font/numeric"; x: 97px; y: 47px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i8:image { x: 141px; y: 47px; width: 18px; height: 18px; source: "asset/base/ui/banpick/champion_stat_icon"; rect_tag: "range_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v8:label { font: "asset/lt_direct_control/font/numeric"; x: 164px; y: 47px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i9:image { x: 7px; y: 68px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "lifesteal_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v9:label { font: "asset/lt_direct_control/font/numeric"; x: 30px; y: 68px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i10:image { x: 74px; y: 68px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "armor_pen_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v10:label { font: "asset/lt_direct_control/font/numeric"; x: 97px; y: 68px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+#i11:image { x: 141px; y: 68px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/stat_icons"; rect_tag: "mr_pen_0"; sample_linear: false; color: #ffffffff; ignore_event: true; visible: true; z: 1004; }
+#v11:label { font: "asset/lt_direct_control/font/numeric"; x: 164px; y: 68px; width: 42px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: ""; ignore_event: true; z: 1004; }
+}
+}

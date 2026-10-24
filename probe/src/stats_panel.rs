@@ -45,11 +45,20 @@ pub const FORMATS: [Format; STATS] = {
         Percent,
     ]
 };
+#[cfg(test)]
 pub fn format(value: f64, format: Format) -> String {
-    match format {
-        Format::Whole => format!("{}", value.round() as i64),
-        Format::Decimal => format!("{value:.2}"),
-        Format::Percent => format!("{}%", value.round() as i64),
+    Shown(value, format).to_string()
+}
+/// A value as its cell shows it (`format`), for writing without a String.
+pub struct Shown(pub f64, pub Format);
+impl std::fmt::Display for Shown {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Shown(value, format) = *self;
+        match format {
+            Format::Whole => write!(f, "{}", value.round() as i64),
+            Format::Decimal => write!(f, "{value:.2}"),
+            Format::Percent => write!(f, "{}%", value.round() as i64),
+        }
     }
 }
 

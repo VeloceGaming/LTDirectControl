@@ -2260,7 +2260,6 @@ mod tests {
                 ("team item tile", crate::team_status::tile_for_test()),
                 ("stats", stats_own.clone()),
                 ("stats target", stats_target.clone()),
-                ("screen effect", crate::screen_effect::template()),
                 ("state plate", crate::state_plate::plate_template_for_test()),
             ] {
                 if let Err(e) = crate::lang::check_template(&source) {

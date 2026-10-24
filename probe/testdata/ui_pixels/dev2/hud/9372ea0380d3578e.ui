@@ -1,0 +1,266 @@
+lt_player_hud:empty { width: 1920px; height: 146px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true;
+#strip:color { y: 90px; width: 1560px; height: 56px; z: 1000; color: #1c1a18ff; ignore_event: true; }
+#combat:empty { x: 832px; y: 4px; width: 256px; height: 80px; ignore_event: true; }
+#edge:color { y: 90px; width: 1560px; height: 1px; z: 1001; color: #4b4a49ff; ignore_event: true; }
+#corner0:color { x: 0px; y: 90px; width: 16px; height: 2px; z: 1002; color: #cbc9c7ff; ignore_event: true; }
+#corner1544:color { x: 1544px; y: 90px; width: 16px; height: 2px; z: 1002; color: #cbc9c7ff; ignore_event: true; }
+#kda_icon:image { x: 356px; y: 105px; width: 26px; height: 26px; z: 1003; source: "asset/lt_direct_control/ui/ef_swords"; color: #eeececff; ignore_event: true; }
+#cs_label:image { x: 510px; y: 105px; width: 26px; height: 26px; z: 1003; source: "asset/lt_direct_control/ui/hud_minion"; ignore_event: true; }
+#kills:label { font: "asset/lt_direct_control/font/numeric"; x: 386px; y: 102px; width: 30px; height: 32px; z: 1005; size: 24; color: #ffffffff; align_y: Center;   ignore_event: true; }
+#slash1:label { font: "asset/lt_direct_control/font/numeric"; x: 416px; y: 102px; width: 10px; height: 32px; z: 1005; size: 24; color: #989694ff; align_y: Center;   ignore_event: true; }
+#deaths:label { font: "asset/lt_direct_control/font/numeric"; x: 426px; y: 102px; width: 30px; height: 32px; z: 1005; size: 24; color: #ff642eff; align_y: Center;   ignore_event: true; }
+#slash2:label { font: "asset/lt_direct_control/font/numeric"; x: 456px; y: 102px; width: 10px; height: 32px; z: 1005; size: 24; color: #989694ff; align_y: Center;   ignore_event: true; }
+#assists:label { font: "asset/lt_direct_control/font/numeric"; x: 466px; y: 102px; width: 30px; height: 32px; z: 1005; size: 24; color: #ffffffff; align_y: Center;   ignore_event: true; }
+#cs:label { font: "asset/lt_direct_control/font/numeric"; x: 538px; y: 102px; width: 50px; height: 32px; z: 1005; size: 24; color: #ffffffff; align_y: Center;   ignore_event: true; }
+#level:label { font: "asset/lt_direct_control/font/numeric"; x: 730px; y: 100px; width: 40px; height: 36px; z: 1005; size: 24; color: #ffffffff; align_y: Center; align_x: Center;  ignore_event: true; }
+#health:color { x: 780px; y: 106px; width: 360px; height: 24px; z: 1001; color: #0e0d0cff; ignore_event: true; #trail:color { width: 0%; height: 100%; z: 1002; color: #efe6cfff; ignore_event: true; } #fill:color { width: 0%; height: 100%; z: 1003; color: #2e7d46ff; ignore_event: true; } }
+#hp_tick0:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick1:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick2:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick3:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick4:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick5:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick6:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick7:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick8:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick9:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick10:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick11:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick12:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick13:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick14:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick15:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick16:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick17:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick18:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick19:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick20:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick21:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick22:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick23:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick24:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick25:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick26:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick27:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick28:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick29:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick30:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_tick31:color { x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }
+#hp_current:label { font: "asset/lt_direct_control/font/numeric"; x: 944px; y: 106px; width: 84px; height: 24px; z: 1005; size: 18; color: #ffffffff; align_y: Center;  outline: 1; outline_color: #0e0d0cff; ignore_event: true; }
+#hp_max:label { font: "asset/lt_direct_control/font/numeric"; x: 1030px; y: 106px; width: 104px; height: 24px; z: 1005; size: 18; color: #ffffffff; align_y: Center;  outline: 1; outline_color: #0e0d0cff; ignore_event: true; }
+#hourglass:image { x: 919px; y: 106px; width: 22px; height: 22px; z: 1005; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececff; ignore_event: true; }
+#respawn:label { font: "asset/lt_direct_control/font/numeric"; x: 953px; y: 106px; width: 56px; height: 24px; z: 1005; size: 22; color: #ffffffff; align_y: Center; align_x: Center;  ignore_event: true; }
+#skill0:color { x: 832px; y: 4px; width: 80px; height: 80px; z: 1001; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #shadow:color { x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; } #background:color { x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #png:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #shade:color { x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; } #drain_edge:color { x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; } #keycap:color { x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } } #cooldown:label { font: "asset/lt_direct_control/font/numeric"; x: 2px; y: 25px; width: 76px; height: 34px; z: 1005; size: 30; color: #ffffffff; align_y: Center; align_x: Center;  ignore_event: true; }
+#a3_comet:color { x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffff99; visible: false; ignore_event: true; }
+#uses:label { font: "asset/lt_direct_control/font/numeric"; x: 4px; y: 61px; width: 72px; height: 18px; z: 1005; size: 15; color: #fdee00ff; align_y: Center; align_x: Center;  ignore_event: true; }
+#slot_glow:empty { width: 80px; height: 80px; visible: false; ignore_event: true;
+#b0_0:color { x: 1px; y: 1px; width: 78px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_1:color { x: 1px; y: 78px; width: 78px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_2:color { x: 1px; y: 2px; width: 1px; height: 76px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_3:color { x: 78px; y: 2px; width: 1px; height: 76px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_0:color { x: 2px; y: 2px; width: 76px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_1:color { x: 2px; y: 77px; width: 76px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_2:color { x: 2px; y: 3px; width: 1px; height: 74px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_3:color { x: 77px; y: 3px; width: 1px; height: 74px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_0:color { x: 3px; y: 3px; width: 74px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_1:color { x: 3px; y: 76px; width: 74px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_2:color { x: 3px; y: 4px; width: 1px; height: 72px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_3:color { x: 76px; y: 4px; width: 1px; height: 72px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_0:color { x: 4px; y: 4px; width: 72px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_1:color { x: 4px; y: 75px; width: 72px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_2:color { x: 4px; y: 5px; width: 1px; height: 70px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_3:color { x: 75px; y: 5px; width: 1px; height: 70px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_0:color { x: 5px; y: 5px; width: 70px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_1:color { x: 5px; y: 74px; width: 70px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_2:color { x: 5px; y: 6px; width: 1px; height: 68px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_3:color { x: 74px; y: 6px; width: 1px; height: 68px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_0:color { x: 6px; y: 6px; width: 68px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_1:color { x: 6px; y: 73px; width: 68px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_2:color { x: 6px; y: 7px; width: 1px; height: 66px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_3:color { x: 73px; y: 7px; width: 1px; height: 66px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_0:color { x: 7px; y: 7px; width: 66px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_1:color { x: 7px; y: 72px; width: 66px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_2:color { x: 7px; y: 8px; width: 1px; height: 64px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_3:color { x: 72px; y: 8px; width: 1px; height: 64px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_0:color { x: 8px; y: 8px; width: 64px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_1:color { x: 8px; y: 71px; width: 64px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_2:color { x: 8px; y: 9px; width: 1px; height: 62px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_3:color { x: 71px; y: 9px; width: 1px; height: 62px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_0:color { x: 9px; y: 9px; width: 62px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_1:color { x: 9px; y: 70px; width: 62px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_2:color { x: 9px; y: 10px; width: 1px; height: 60px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_3:color { x: 70px; y: 10px; width: 1px; height: 60px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_0:color { x: 10px; y: 10px; width: 60px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_1:color { x: 10px; y: 69px; width: 60px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_2:color { x: 10px; y: 11px; width: 1px; height: 58px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_3:color { x: 69px; y: 11px; width: 1px; height: 58px; color: #8f162400; z: 1007; ignore_event: true; }
+}
+#charge0:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge1:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge2:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge3:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge4:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge5:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#lock:image { x: 28px; y: 28px; width: 24px; height: 24px; z: 1005; source: "asset/lt_direct_control/ui/lock"; ignore_event: true; }
+#key:label { font: "asset/lt_direct_control/font/numeric"; x: 3px; y: 3px; width: 22px; height: 22px; z: 1006; size: 14; align_x: Center; align_y: Center; color: #393939ff; ignore_event: true; text: "Q"; } }
+#skill1:color { x: 920px; y: 4px; width: 80px; height: 80px; z: 1001; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #shadow:color { x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; } #background:color { x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #png:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #shade:color { x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; } #drain_edge:color { x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; } #keycap:color { x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } } #cooldown:label { font: "asset/lt_direct_control/font/numeric"; x: 2px; y: 25px; width: 76px; height: 34px; z: 1005; size: 30; color: #ffffffff; align_y: Center; align_x: Center;  ignore_event: true; }
+#a3_comet:color { x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffff99; visible: false; ignore_event: true; }
+#uses:label { font: "asset/lt_direct_control/font/numeric"; x: 4px; y: 61px; width: 72px; height: 18px; z: 1005; size: 15; color: #fdee00ff; align_y: Center; align_x: Center;  ignore_event: true; }
+#slot_glow:empty { width: 80px; height: 80px; visible: false; ignore_event: true;
+#b0_0:color { x: 1px; y: 1px; width: 78px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_1:color { x: 1px; y: 78px; width: 78px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_2:color { x: 1px; y: 2px; width: 1px; height: 76px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_3:color { x: 78px; y: 2px; width: 1px; height: 76px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_0:color { x: 2px; y: 2px; width: 76px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_1:color { x: 2px; y: 77px; width: 76px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_2:color { x: 2px; y: 3px; width: 1px; height: 74px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_3:color { x: 77px; y: 3px; width: 1px; height: 74px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_0:color { x: 3px; y: 3px; width: 74px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_1:color { x: 3px; y: 76px; width: 74px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_2:color { x: 3px; y: 4px; width: 1px; height: 72px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_3:color { x: 76px; y: 4px; width: 1px; height: 72px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_0:color { x: 4px; y: 4px; width: 72px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_1:color { x: 4px; y: 75px; width: 72px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_2:color { x: 4px; y: 5px; width: 1px; height: 70px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_3:color { x: 75px; y: 5px; width: 1px; height: 70px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_0:color { x: 5px; y: 5px; width: 70px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_1:color { x: 5px; y: 74px; width: 70px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_2:color { x: 5px; y: 6px; width: 1px; height: 68px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_3:color { x: 74px; y: 6px; width: 1px; height: 68px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_0:color { x: 6px; y: 6px; width: 68px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_1:color { x: 6px; y: 73px; width: 68px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_2:color { x: 6px; y: 7px; width: 1px; height: 66px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_3:color { x: 73px; y: 7px; width: 1px; height: 66px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_0:color { x: 7px; y: 7px; width: 66px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_1:color { x: 7px; y: 72px; width: 66px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_2:color { x: 7px; y: 8px; width: 1px; height: 64px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_3:color { x: 72px; y: 8px; width: 1px; height: 64px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_0:color { x: 8px; y: 8px; width: 64px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_1:color { x: 8px; y: 71px; width: 64px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_2:color { x: 8px; y: 9px; width: 1px; height: 62px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_3:color { x: 71px; y: 9px; width: 1px; height: 62px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_0:color { x: 9px; y: 9px; width: 62px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_1:color { x: 9px; y: 70px; width: 62px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_2:color { x: 9px; y: 10px; width: 1px; height: 60px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_3:color { x: 70px; y: 10px; width: 1px; height: 60px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_0:color { x: 10px; y: 10px; width: 60px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_1:color { x: 10px; y: 69px; width: 60px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_2:color { x: 10px; y: 11px; width: 1px; height: 58px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_3:color { x: 69px; y: 11px; width: 1px; height: 58px; color: #8f162400; z: 1007; ignore_event: true; }
+}
+#charge0:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge1:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge2:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge3:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge4:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge5:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#lock:image { x: 28px; y: 28px; width: 24px; height: 24px; z: 1005; source: "asset/lt_direct_control/ui/lock"; ignore_event: true; }
+#key:label { font: "asset/lt_direct_control/font/numeric"; x: 3px; y: 3px; width: 22px; height: 22px; z: 1006; size: 14; align_x: Center; align_y: Center; color: #393939ff; ignore_event: true; text: "W"; } }
+#skill2:color { x: 1008px; y: 4px; width: 80px; height: 80px; z: 1001; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #shadow:color { x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; } #background:color { x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #png:image { x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #shade:color { x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; } #drain_edge:color { x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; } #keycap:color { x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } } #cooldown:label { font: "asset/lt_direct_control/font/numeric"; x: 2px; y: 25px; width: 76px; height: 34px; z: 1005; size: 30; color: #ffffffff; align_y: Center; align_x: Center;  ignore_event: true; }
+#a3_comet:color { x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffff99; visible: false; ignore_event: true; }
+#uses:label { font: "asset/lt_direct_control/font/numeric"; x: 4px; y: 61px; width: 72px; height: 18px; z: 1005; size: 15; color: #fdee00ff; align_y: Center; align_x: Center;  ignore_event: true; }
+#slot_glow:empty { width: 80px; height: 80px; visible: false; ignore_event: true;
+#b0_0:color { x: 1px; y: 1px; width: 78px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_1:color { x: 1px; y: 78px; width: 78px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_2:color { x: 1px; y: 2px; width: 1px; height: 76px; color: #8f162400; z: 1007; ignore_event: true; }
+#b0_3:color { x: 78px; y: 2px; width: 1px; height: 76px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_0:color { x: 2px; y: 2px; width: 76px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_1:color { x: 2px; y: 77px; width: 76px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_2:color { x: 2px; y: 3px; width: 1px; height: 74px; color: #8f162400; z: 1007; ignore_event: true; }
+#b1_3:color { x: 77px; y: 3px; width: 1px; height: 74px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_0:color { x: 3px; y: 3px; width: 74px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_1:color { x: 3px; y: 76px; width: 74px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_2:color { x: 3px; y: 4px; width: 1px; height: 72px; color: #8f162400; z: 1007; ignore_event: true; }
+#b2_3:color { x: 76px; y: 4px; width: 1px; height: 72px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_0:color { x: 4px; y: 4px; width: 72px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_1:color { x: 4px; y: 75px; width: 72px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_2:color { x: 4px; y: 5px; width: 1px; height: 70px; color: #8f162400; z: 1007; ignore_event: true; }
+#b3_3:color { x: 75px; y: 5px; width: 1px; height: 70px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_0:color { x: 5px; y: 5px; width: 70px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_1:color { x: 5px; y: 74px; width: 70px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_2:color { x: 5px; y: 6px; width: 1px; height: 68px; color: #8f162400; z: 1007; ignore_event: true; }
+#b4_3:color { x: 74px; y: 6px; width: 1px; height: 68px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_0:color { x: 6px; y: 6px; width: 68px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_1:color { x: 6px; y: 73px; width: 68px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_2:color { x: 6px; y: 7px; width: 1px; height: 66px; color: #8f162400; z: 1007; ignore_event: true; }
+#b5_3:color { x: 73px; y: 7px; width: 1px; height: 66px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_0:color { x: 7px; y: 7px; width: 66px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_1:color { x: 7px; y: 72px; width: 66px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_2:color { x: 7px; y: 8px; width: 1px; height: 64px; color: #8f162400; z: 1007; ignore_event: true; }
+#b6_3:color { x: 72px; y: 8px; width: 1px; height: 64px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_0:color { x: 8px; y: 8px; width: 64px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_1:color { x: 8px; y: 71px; width: 64px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_2:color { x: 8px; y: 9px; width: 1px; height: 62px; color: #8f162400; z: 1007; ignore_event: true; }
+#b7_3:color { x: 71px; y: 9px; width: 1px; height: 62px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_0:color { x: 9px; y: 9px; width: 62px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_1:color { x: 9px; y: 70px; width: 62px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_2:color { x: 9px; y: 10px; width: 1px; height: 60px; color: #8f162400; z: 1007; ignore_event: true; }
+#b8_3:color { x: 70px; y: 10px; width: 1px; height: 60px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_0:color { x: 10px; y: 10px; width: 60px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_1:color { x: 10px; y: 69px; width: 60px; height: 1px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_2:color { x: 10px; y: 11px; width: 1px; height: 58px; color: #8f162400; z: 1007; ignore_event: true; }
+#b9_3:color { x: 69px; y: 11px; width: 1px; height: 58px; color: #8f162400; z: 1007; ignore_event: true; }
+}
+#charge0:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge1:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge2:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge3:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge4:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#charge5:color { y: 64px; width: 10px; height: 8px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color { x: 1px; y: 1px; width: 8px; height: 6px; color: #141311ff; z: 1009; ignore_event: true; } }
+#lock:image { x: 28px; y: 28px; width: 24px; height: 24px; z: 1005; source: "asset/lt_direct_control/ui/lock"; ignore_event: true; }
+#key:label { font: "asset/lt_direct_control/font/numeric"; x: 3px; y: 3px; width: 22px; height: 22px; z: 1006; size: 14; align_x: Center; align_y: Center; color: #393939ff; ignore_event: true; text: "R"; } }
+#item0:color { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #unknown:label { font: "asset/lt_direct_control/font/medium"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: "?"; visible: false; ignore_event: true; } }
+#item1:color { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #unknown:label { font: "asset/lt_direct_control/font/medium"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: "?"; visible: false; ignore_event: true; } }
+#item2:color { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #unknown:label { font: "asset/lt_direct_control/font/medium"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: "?"; visible: false; ignore_event: true; } }
+#item3:color { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #unknown:label { font: "asset/lt_direct_control/font/medium"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: "?"; visible: false; ignore_event: true; } }
+#item4:color { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #unknown:label { font: "asset/lt_direct_control/font/medium"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: "?"; visible: false; ignore_event: true; } }
+#item5:color { x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #4b4a49ff; ignore_event: true; rounding: Uniform { rounding: 2; } #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #211f1dff; ignore_event: true; } #icon:image { x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #unknown:label { font: "asset/lt_direct_control/font/medium"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: "?"; visible: false; ignore_event: true; } }
+#next:color { x: 1390px; y: 100px; width: 36px; height: 36px; z: 1001; color: #989694ff; ignore_event: true; #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #141311ff; ignore_event: true; } #icon:image { x: 3px; y: 3px; width: 30px; height: 30px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #progress:color { y: 40px; width: 36px; height: 3px; z: 1001; color: #ffffff26; ignore_event: true; #fill:color { width: 0%; height: 100%; z: 1002; color: #fdee00ff; ignore_event: true; } } #gap0_0:color { x: 6px; y: 0px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap0_1:color { x: 14px; y: 0px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap0_2:color { x: 22px; y: 0px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap0_3:color { x: 30px; y: 0px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap1_0:color { x: 6px; y: 35px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap1_1:color { x: 14px; y: 35px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap1_2:color { x: 22px; y: 35px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap1_3:color { x: 30px; y: 35px; width: 4px; height: 1px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap2_0:color { x: 0px; y: 6px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap2_1:color { x: 0px; y: 14px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap2_2:color { x: 0px; y: 22px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap2_3:color { x: 0px; y: 30px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap3_0:color { x: 35px; y: 6px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap3_1:color { x: 35px; y: 14px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap3_2:color { x: 35px; y: 22px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+#gap3_3:color { x: 35px; y: 30px; width: 1px; height: 4px; z: 1002; color: #1c1a18ff; ignore_event: true; }
+}
+#next_unavailable:image { x: 1398px; y: 108px; width: 20px; height: 20px; z: 1004; source: "asset/lt_direct_control/ui/ef_unavailable"; color: #eeececff; ignore_event: true; }
+#coin:image { x: 1430px; y: 99px; width: 17px; height: 17px; z: 1003; source: "asset/lt_direct_control/ui/ef_coin"; color: #eeececff; ignore_event: true; }
+#gold:label { font: "asset/lt_direct_control/font/numeric"; x: 1450px; y: 94px; width: 58px; height: 26px; z: 1005; size: 21; color: #fdee00ff; align_y: Center;   ignore_event: true; }
+#shop_hit:color { x: 1386px; y: 90px; width: 148px; height: 52px; z: 1001; color: #00000000; ignore_event: true; rounding: Uniform { rounding: 2; } }
+#shop_key:color { x: 1512px; y: 97px; width: 18px; height: 20px; z: 1002; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { font: "asset/lt_direct_control/font/numeric"; width: 100%; height: 100%; size: 12; align_x: Center; align_y: Center; text: "P"; color: #393939ff; z: 1003; ignore_event: true; } }
+#purchase_coin:image { x: 1430px; y: 121px; width: 17px; height: 17px; z: 1003; source: "asset/lt_direct_control/ui/ef_coin"; color: #eeececff; ignore_event: true; }
+#purchase_check:image { x: 1430px; y: 121px; width: 17px; height: 17px; z: 1003; source: "asset/lt_direct_control/ui/ef_check"; color: #eeececff; ignore_event: true; }
+#purchase:label { font: "asset/lt_direct_control/font/numeric"; x: 1450px; y: 117px; width: 58px; height: 23px; z: 1005; size: 16; color: #cbc9c7ff; align_y: Center;   ignore_event: true; }
+#recall_key:color { x: 682px; y: 108px; width: 18px; height: 20px; z: 1002; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { font: "asset/lt_direct_control/font/numeric"; width: 100%; height: 100%; size: 12; align_x: Center; align_y: Center; text: "B"; color: #393939ff; z: 1003; ignore_event: true; } }
+#recall_icon:image { x: 702px; y: 109px; width: 20px; height: 20px; z: 1003; source: "asset/lt_direct_control/ui/ef_recall"; color: #eeececff; ignore_event: true; }
+#a2_recall_line:color { x: 702px; y: 131px; width: 20px; height: 3px; z: 1004; color: #fdee00ff; visible: false; ignore_event: true; }
+#a2_recall_notch0:color { x: 702px; y: 131px; width: 3px; height: 3px; z: 1005; color: #1c1a18ff; visible: false; ignore_event: true; }
+#a2_recall_notch1:color { x: 702px; y: 131px; width: 3px; height: 3px; z: 1005; color: #1c1a18ff; visible: false; ignore_event: true; }
+#b6_veil_skill0:color { x: 832px; y: 4px; width: 80px; height: 80px; z: 1004; color: #00000000; visible: false; ignore_event: true; }
+#b6_veil_skill1:color { x: 920px; y: 4px; width: 80px; height: 80px; z: 1004; color: #00000000; visible: false; ignore_event: true; }
+#b6_veil_skill2:color { x: 1008px; y: 4px; width: 80px; height: 80px; z: 1004; color: #00000000; visible: false; ignore_event: true; }
+#d1_line:color { x: 0px; y: 138px; width: 0px; height: 2px; z: 1004; color: #fdee00ff; visible: false; ignore_event: true; }
+#feedback:color { x: 700px; y: -42px; width: 520px; height: 30px; z: 1112; color: #1e1e1df0; visible: false; ignore_event: true; #text:label { font: "asset/lt_direct_control/font/medium"; x: 10px; width: 500px; height: 30px; z: 1113; size: 16; color: #cbc9c7ff; ignore_event: true; } }
+#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #1e1e1dd9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
+        #art:color { x: 16px; y: 24px; width: 48px; height: 48px; z: 1111; color: #00000000; ignore_event: true; #icon:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } #png:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } }
+        #title:label { font: "asset/lt_direct_control/font/medium"; x: 76px; y: 23px; width: 419px; height: 32px; z: 1112; size: 27; line_height: 32; align_y: Top; color: #ffffffff; ignore_event: true; }
+        #meta:label { font: "asset/lt_direct_control/font/medium"; x: 100px; y: 61px; width: 150px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
+        #range:label { font: "asset/lt_direct_control/font/medium"; x: 208px; y: 61px; width: 100px; height: 26px; z: 1112; size: 20; color: #d6d6d675; ignore_event: true; }
+        #key:label { font: "asset/lt_direct_control/font/medium"; x: 487px; y: 8px; width: 26px; height: 26px; z: 1112; size: 21; color: #d6d6d66b; ignore_event: true; }
+        #meta_clock:image { x: 76px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/ef_clock"; color: #d6d6d675; z: 1112; ignore_event: true; }
+        #meta_range:image { x: 180px; y: 61px; width: 18px; height: 18px; source: "asset/lt_direct_control/ui/ef_range"; color: #d6d6d675; z: 1112; ignore_event: true; }
+        #status:image { x: 16px; y: 16px; width: 24px; height: 24px; source: "asset/lt_direct_control/ui/ef_unavailable"; z: 1112; visible: false; ignore_event: true; }
+        #rule:color { x: 16px; y: 98px; width: 501px; height: 1px; z: 1111; color: #ffffff3b; ignore_event: true; }
+        #text:label { font: "asset/lt_direct_control/font/medium"; x: 16px; y: 106px; width: 501px; height: 100px; z: 1111; size: 20; line_height: 28; align_y: Top; color: #d6d6d6ff; ignore_event: true; }
+        #scroll_track:color { width: 3px; z: 1112; color: #ffffff30; visible: false; ignore_event: true; }
+        #scroll_thumb:color { width: 3px; z: 1113; color: #d6d6d6aa; visible: false; ignore_event: true; }
+    } }

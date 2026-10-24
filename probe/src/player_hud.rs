@@ -373,6 +373,8 @@ fn grey(level: f32) -> String {
     let v = (level.clamp(0., 1.) * 255.).round() as u8;
     format!("{v:02x}{v:02x}{v:02x}ff")
 }
+/// `v` to 0.01, as a node received it (`{v:.2}px`).
+use crate::hud_motion_pass::hundredths;
 /// A slot shows "--": not learned, or the champion's data says it has no
 /// effect. Death is not unavailability: its cooldowns keep showing, like
 /// League (the author, 2026-10-20: all "-" while dead).
@@ -386,10 +388,7 @@ use crate::ui_writes::{Key, NodeId};
 /// source shape on a node. `VIS` is always `visible: {on};`.
 const VIS: u8 = 0;
 const S1: u8 = 1;
-const S2: u8 = 2;
 const CHARGE_MARK_W: usize = 10;
-const CHARGE_MARK_H: usize = 8;
-const CHARGE_MARK_Y: usize = 64;
 const CHARGE_MARK_GAP: usize = 2;
 /// A short held edge warning, then a fade. Repeated presses restart it;
 /// holding a key does not. This is functional feedback, like the ready cue.
@@ -437,34 +436,6 @@ fn charge_display(remaining: Option<usize>, total: Option<usize>) -> ChargeDispl
         None => ChargeDisplay::Count(remaining.to_string()),
         _ => ChargeDisplay::Hidden,
     }
-}
-/// Code-drawn feathered rings: no bitmap dependency, no change to hit areas.
-fn skill_feedback_nodes() -> String {
-    let mut s = String::from(
-        "#slot_glow:empty { width: 80px; height: 80px; visible: false; ignore_event: true;\n",
-    );
-    for band in 0..DENIED_BANDS {
-        let inset = 1 + band;
-        let size = 78 - 2 * band;
-        for (side, (x, y, w, h)) in [
-            (inset, inset, size, 1),
-            (inset, inset + size - 1, size, 1),
-            (inset, inset + 1, 1, size - 2),
-            (inset + size - 1, inset + 1, 1, size - 2),
-        ]
-        .into_iter()
-        .enumerate()
-        {
-            s.push_str(&format!("#b{band}_{side}:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; color: #8f162400; z: 1007; ignore_event: true; }}\n"));
-        }
-    }
-    s.push_str("}\n");
-    for mark in 0..CHARGE_MARKS {
-        let fill_w = CHARGE_MARK_W - 2;
-        let fill_h = CHARGE_MARK_H - 2;
-        s.push_str(&format!("#charge{mark}:color {{ y: {CHARGE_MARK_Y}px; width: {CHARGE_MARK_W}px; height: {CHARGE_MARK_H}px; color: #817c77ff; z: 1008; visible: false; ignore_event: true; #fill:color {{ x: 1px; y: 1px; width: {fill_w}px; height: {fill_h}px; color: #141311ff; z: 1009; ignore_event: true; }} }}\n"));
-    }
-    s
 }
 fn icon_updates(icon: Option<&Icon>, skill: bool) -> Vec<(&'static str, String)> {
     let target = if skill && icon.is_some_and(|i| i.tag.is_none()) {
@@ -526,33 +497,9 @@ fn tile_hover_in(
     }
     .contains(point)
 }
-fn label(
-    source: &mut String,
-    id: &str,
-    rect: (usize, usize, usize, usize),
-    size: usize,
-    color: &str,
-) {
-    let (x, y, w, h) = rect;
-    let outline = if matches!(id, "hp_current" | "hp_max") {
-        "outline: 1; outline_color: #0e0d0cff;"
-    } else {
-        ""
-    };
-    let align = if matches!(
-        id,
-        "cooldown" | "uses" | "respawn" | "level" | "camera_key" | "target_key" | "recall_key"
-    ) {
-        "align_x: Center;"
-    } else {
-        ""
-    };
-    source.push_str(&format!("#{id}:label {{ @\"asset/base/style/main#bold_label\"; x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: 1005; size: {size}; color: #{color}; align_y: Center; {align} {outline} ignore_event: true; }}\n"));
-}
+/// An inventory tile's container and icon (its box is drawn, `hud_draw.rs`).
 fn inventory_tile(i: usize) -> String {
-    // Slot insets: background + 5.
-    let inset = crate::ui_theme::shade(5, 0xff);
-    format!("item{i}:color {{ x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #background:color {{ x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #unknown:label {{ @\"asset/base/style/main#label\"; width: 100%; height: 100%; z: 1005; size: 16; align_x: Center; align_y: Center; text: \"?\"; visible: false; ignore_event: true; }} }}\n")
+    format!("item{i}:empty {{ x: 0px; y: 100px; width: 36px; height: 36px; z: 1001; visible: false; ignore_event: true; #icon:image {{ x: 2px; y: 2px; width: 32px; height: 32px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} }}\n")
 }
 #[cfg(test)]
 pub(crate) fn template_for_test() -> String {
@@ -563,130 +510,30 @@ pub(crate) fn template_for_test() -> String {
 pub(crate) fn tile_for_test() -> String {
     crate::hud_style::fonts(inventory_tile(6))
 }
+/// What stays in the UI tree (1.6.0-perf-dev3): the skill, item and next
+/// purchase icons (sprite-sheet images) in containers with the old tiles'
+/// place and visibility, the purchase coin and check (their tint breathes,
+/// A1), and the tooltip. Everything else of the strip is drawn
+/// (`hud_draw.rs`) at the z its node had.
 fn template() -> String {
     let mut s = format!("lt_player_hud:empty {{ width: {WIDTH}px; height: {HEIGHT}px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true;\n");
-    // Battlefield ends at y1024. Controls remain in the last 50 px.
-    s.push_str(&"#strip:color { y: 90px; width: 1560px; height: 56px; z: 1000; color: #1c1a18ff; ignore_event: true; }\n#combat:empty { x: 832px; y: 4px; width: 256px; height: 80px; ignore_event: true; }\n#edge:color { y: 90px; width: 1560px; height: 1px; z: 1001; color: #~4b4a49ff; ignore_event: true; }\n".replace("#1c1a18ff", &format!("#{}", crate::ui_theme::hex(0xff))));
-    // Session controls (Pause, AI, Camera, Settings, vision group) occupy x 8-350
-    // with their own dividers; K/D/A, CS and Tab follow, then B recall beside HP.
-    for x in [0, 1544] {
-        s.push_str(&format!("#corner{x}:color {{ x: {x}px; y: 90px; width: 16px; height: 2px; z: 1002; color: #cbc9c7ff; ignore_event: true; }}\n"));
-    }
-    for (id, glyph, x) in [
-        ("kda_icon", "ef_swords", 356),
-        ("cs_label", "hud_minion", 510),
-    ] {
-        s.push_str(&crate::ui_graphics::image(id, glyph, x, 105, 26, 1003));
-    }
-    for (id, x, w, size, color) in [
-        ("kills", 386, 30, 24, "ffffffff"),
-        ("slash1", 416, 10, 24, "989694ff"),
-        ("deaths", 426, 30, 24, "ff642eff"),
-        ("slash2", 456, 10, 24, "989694ff"),
-        ("assists", 466, 30, 24, "ffffffff"),
-        ("cs", 538, 50, 24, "ffffffff"),
-    ] {
-        label(&mut s, id, (x, 102, w, 32), size, color);
-    }
-    label(&mut s, "level", (730, 100, 40, 36), 24, "ffffffff");
-    s.push_str("#health:color { x: 780px; y: 106px; width: 360px; height: 24px; z: 1001; color: #~0e0d0cff; ignore_event: true; #trail:color { width: 0%; height: 100%; z: 1002; color: #efe6cfff; ignore_event: true; } #fill:color { width: 0%; height: 100%; z: 1003; color: #2e7d46ff; ignore_event: true; } }\n");
-    for i in 0..32 {
-        s.push_str(&format!("#hp_tick{i}:color {{ x: 780px; y: 106px; width: 1px; height: 24px; z: 1004; color: #00000073; visible: false; ignore_event: true; }}\n"));
-    }
-    label(&mut s, "hp_current", (944, 106, 84, 24), 18, "ffffffff");
-    label(&mut s, "hp_max", (1030, 106, 104, 24), 18, "ffffffff");
-    s.push_str(&crate::ui_graphics::image(
-        "hourglass",
-        "ef_skull",
-        919,
-        106,
-        22,
-        1005,
-    ));
-    label(&mut s, "respawn", (953, 106, 56, 24), 22, "ffffffff");
-    let inset = crate::ui_theme::shade(5, 0xff);
-    for (i, key) in KEYS.iter().enumerate() {
+    for i in 0..3 {
         let x = SKILL_X + i * SKILL_STEP;
-        s.push_str(&format!("#skill{i}:color {{ x: {x}px; y: {SKILL_Y}px; width: 80px; height: 80px; z: 1001; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #shadow:color {{ x: 0px; y: 3px; width: 80px; height: 80px; z: 1000; color: #00000066; ignore_event: true; }} #background:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1002; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #png:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #shade:color {{ x: 1px; y: 1px; width: 78px; height: 78px; z: 1004; color: #0a0908cc; visible: false; ignore_event: true; }} #drain_edge:color {{ x: 1px; y: 1px; width: 78px; height: 2px; z: 1005; color: #ffffffff; visible: false; ignore_event: true; }} #keycap:color {{ x: 3px; y: 3px; width: 22px; height: 22px; z: 1005; color: #eeececff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }} "));
-        label(&mut s, "cooldown", (2, 25, 76, 34), 30, "ffffffff");
-        // motion: A3
-        s.push_str(&pass::a3_nodes());
-        label(&mut s, "uses", (4, 61, 72, 18), 15, "fdee00ff");
-        s.push_str(&skill_feedback_nodes());
-        s.push_str(&crate::ui_graphics::image("lock", "lock", 28, 28, 24, 1005));
-        s.push_str(&format!("#key:label {{ @\"asset/base/style/main#bold_label\"; x: 3px; y: 3px; width: 22px; height: 22px; z: 1006; size: 14; align_x: Center; align_y: Center; color: #393939ff; ignore_event: true; text: {key:?}; }} }}\n"));
+        s.push_str(&format!("#skill{i}:empty {{ x: {x}px; y: {SKILL_Y}px; width: 80px; height: 80px; z: 1001; ignore_event: true; #icon:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} #png:image {{ x: 2px; y: 2px; width: 74px; height: 74px; z: 1003; sample_linear: false; ignore_event: true; visible: false; }} }}\n"));
     }
     for i in 0..6 {
         s.push('#');
         s.push_str(&inventory_tile(i));
     }
-    let next = String::from("#next:color { x: 1390px; y: 100px; width: 36px; height: 36px; z: 1001; color: #989694ff; ignore_event: true; #background:color { x: 1px; y: 1px; width: 34px; height: 34px; z: 1002; color: #141311ff; ignore_event: true; } #icon:image { x: 3px; y: 3px; width: 30px; height: 30px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } #progress:color { y: 40px; width: 36px; height: 3px; z: 1001; color: #ffffff26; ignore_event: true; #fill:color { width: 0%; height: 100%; z: 1002; color: #fdee00ff; ignore_event: true; } } }\n");
-    let mut next = next.strip_suffix("}\n").unwrap().to_owned();
-    for side in 0..4 {
-        for j in 0..4 {
-            let t = 6 + j * 8;
-            let (x, y, w, h) = match side {
-                0 => (t, 0, 4, 1),
-                1 => (t, 35, 4, 1),
-                2 => (0, t, 1, 4),
-                _ => (35, t, 1, 4),
-            };
-            let bg = crate::ui_theme::hex(0xff);
-            next.push_str(&format!("#gap{side}_{j}:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: 1002; color: #{bg}; ignore_event: true; }}\n"));
-        }
+    s.push_str("#next:empty { x: 1390px; y: 100px; width: 36px; height: 36px; z: 1001; ignore_event: true; #icon:image { x: 3px; y: 3px; width: 30px; height: 30px; z: 1003; sample_linear: false; ignore_event: true; visible: false; } }\n");
+    for id in ["purchase_coin", "purchase_check"] {
+        let glyph = if id == "purchase_coin" {
+            "ef_coin"
+        } else {
+            "ef_check"
+        };
+        s.push_str(&crate::ui_graphics::image(id, glyph, 1430, 121, 17, 1003));
     }
-    next.push_str("}\n");
-    s.push_str(&next);
-    s.push_str(&crate::ui_graphics::image(
-        "next_unavailable",
-        "ef_unavailable",
-        1398,
-        108,
-        20,
-        1004,
-    ));
-
-    s.push_str(&crate::ui_graphics::image(
-        "coin", "ef_coin", 1430, 99, 17, 1003,
-    ));
-    label(&mut s, "gold", (1450, 94, 58, 26), 21, "fdee00ff");
-    // Shop button: the whole purchase column (next item, gold, required gold
-    // and the key cap) is one hit area that opens the shop.
-    s.push_str("#shop_hit:color { x: 1386px; y: 90px; width: 148px; height: 52px; z: 1001; color: #00000000; ignore_event: true; rounding: Uniform { rounding: 2; } }\n");
-    s.push_str("#shop_key:color { x: 1512px; y: 97px; width: 18px; height: 20px; z: 1002; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; size: 12; align_x: Center; align_y: Center; text: \"P\"; color: #393939ff; z: 1003; ignore_event: true; } }\n");
-    s.push_str(&crate::ui_graphics::image(
-        "purchase_coin",
-        "ef_coin",
-        1430,
-        121,
-        17,
-        1003,
-    ));
-    s.push_str(&crate::ui_graphics::image(
-        "purchase_check",
-        "ef_check",
-        1430,
-        121,
-        17,
-        1003,
-    ));
-    label(&mut s, "purchase", (1450, 117, 58, 23), 16, "cbc9c7ff");
-    s.push_str("#recall_key:color { x: 682px; y: 108px; width: 18px; height: 20px; z: 1002; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @\"asset/base/style/main#bold_label\"; width: 100%; height: 100%; size: 12; align_x: Center; align_y: Center; text: \"B\"; color: #393939ff; z: 1003; ignore_event: true; } }\n");
-    s.push_str(&crate::ui_graphics::image(
-        "recall_icon",
-        "ef_recall",
-        702,
-        109,
-        20,
-        1003,
-    ));
-    // motion: A2
-    s.push_str(&pass::a2_nodes());
-    // motion: B6
-    s.push_str(&pass::b6_nodes(SKILL_X, SKILL_STEP, SKILL_Y));
-    // motion: D1
-    s.push_str(&pass::d1_nodes());
-    s.push_str("#feedback:color { x: 700px; y: -42px; width: 520px; height: 30px; z: 1112; color: #~1e1e1df0; visible: false; ignore_event: true; #text:label { @\"asset/base/style/main#label\"; x: 10px; width: 500px; height: 30px; z: 1113; size: 16; color: #cbc9c7ff; ignore_event: true; } }\n");
     s.push_str(r##"#tooltip:color { x: 730px; y: -300px; width: 529px; height: 173px; z: 1110; color: #~1e1e1dd9; visible: false; ignore_event: true; rounding: Uniform { rounding: 8; }
         #art:color { x: 16px; y: 24px; width: 48px; height: 48px; z: 1111; color: #00000000; ignore_event: true; #icon:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } #png:image { width: 48px; height: 48px; z: 1112; visible: false; ignore_event: true; sample_linear: false; } }
         #title:label { @"asset/base/style/main#label"; x: 76px; y: 23px; width: 419px; height: 32px; z: 1112; size: 27; line_height: 32; align_y: Top; color: #ffffffff; ignore_event: true; }
@@ -758,12 +605,18 @@ pub struct HudUi {
     shop_click: bool,
     /// Manual shopping with an empty queue: no next purchase is shown.
     purchase_blank: bool,
-    /// The strip's nodes in `cache` (1.6.0).
+    /// The strip's remaining tree nodes in `cache` (1.6.0).
     nodes: Option<Nodes>,
+    /// What the drawn elements show (`hud_draw.rs`), as their nodes held it.
+    view: crate::hud_draw::HudView,
     /// The strip root's rectangle this frame (read once per frame).
     root_rect: Option<(f32, f32, f32, f32)>,
     /// Each image node pair's last icon, with the nodes' write counts.
     icons_shown: Vec<(NodeId, Option<Icon>, [u32; 2], u64)>,
+    /// This frame's commands (`hud_draw.rs`), sent in `post_render`.
+    pub(crate) list: crate::draw_list::DrawList,
+    /// `draw_list::check_origin`'s state.
+    origin_checked: u8,
 }
 impl HudUi {
     /// The visual cues keep the zero-usable-to-ready trigger. The return
@@ -808,70 +661,49 @@ impl HudUi {
     fn full_length(&self, slot: usize, full: Option<usize>) -> usize {
         full.unwrap_or(self.cooldown_peak[slot])
     }
-    #[allow(clippy::too_many_arguments)]
+    /// The denied and ready rings, the charge marks and the uses count.
     fn skill_feedback(
         &mut self,
-        ctx: &mut StableClient<'_>,
-        n: &crate::hud_nodes::Skill,
+        i: usize,
         denied_at: Option<Instant>,
         ready_flash: f32,
         charges: ChargeDisplay,
-        log: &Logger,
     ) {
         let denied = denied_at.map_or(0., |at| {
             denied_strength(crate::clock::since(at).as_secs_f32())
         });
         let shown = denied > 0. || ready_flash > 0.;
-        self.vis(ctx, n.slot_glow, shown, log);
+        let k = &mut self.view.skills[i];
+        k.glow.0 = shown;
         if shown {
             for band in 0..DENIED_BANDS {
-                let color = slot_glow_color(band, denied, ready_flash);
-                for side in 0..4 {
-                    self.pk(ctx, n.bands[band][side], S1, (color,), color_source, log);
-                }
+                k.glow.1[band] = slot_glow_color(band, denied, ready_flash);
             }
         }
-        for mark in 0..CHARGE_MARKS {
+        for (mark, m) in k.charges.iter_mut().enumerate() {
             let (visible, filled, x) = match charges {
                 ChargeDisplay::Marks { filled, total } => {
                     (mark < total, mark < filled, charge_mark_x(total, mark))
                 }
                 _ => (false, false, 0),
             };
-            self.pk(
-                ctx,
-                n.charge[mark],
-                S1,
-                (visible, x),
-                |(visible, x)| format!("visible: {visible}; x: {x}px;"),
-                log,
-            );
+            m.shown = visible;
+            m.x = x as f32;
             if visible {
-                self.pk(
-                    ctx,
-                    n.charge_fill[mark],
-                    S1,
-                    (filled,),
-                    |(filled,)| {
-                        format!("color: #{};", if filled { "fdee00ff" } else { "141311ff" })
-                    },
-                    log,
-                );
+                m.fill = if filled { 0xfdee00ff } else { 0x141311ff };
             }
         }
-        let uses = match &charges {
-            ChargeDisplay::Count(text) => text.as_str(),
-            _ => "",
-        };
-        self.tid(ctx, n.uses, uses, log);
+        match &charges {
+            ChargeDisplay::Count(text) => k.uses.set(text),
+            _ => k.uses.set(""),
+        }
     }
     // motion: A2
-    /// The recall bar (written from client.rs after the strip).
+    /// The recall bar (from client.rs after the strip), then the strip's
+    /// draw list for the frame.
     pub(crate) fn write_recall(&mut self, ctx: &mut StableClient<'_>, a2: pass::A2) {
-        let nodes = self
-            .nodes
-            .get_or_insert_with(|| Nodes::new(&mut self.cache));
-        a2.write(ctx, &mut self.cache, &nodes.a2);
+        self.view.recall = a2.view();
+        crate::hud_draw::build(&self.view, ctx.ui_node_rect("ingame"), &mut self.list);
     }
     /// A completed click on the strip's shop button since the last call.
     pub fn take_shop_click(&mut self) -> bool {
@@ -1087,8 +919,10 @@ impl HudUi {
                 break;
             }
             self.allocated_slots = i + 1;
+            self.view.grow_items(i + 1);
         }
         nodes.grow_items(&mut self.cache, self.allocated_slots.max(count));
+        self.view.grow_items(self.allocated_slots.max(count));
         for i in 0..self.allocated_slots {
             let visible = i < count && self.playing;
             let (x, y) = if visible {
@@ -1096,6 +930,11 @@ impl HudUi {
             } else {
                 (0, 0)
             };
+            let tile = &mut self.view.items[i];
+            tile.shown = visible;
+            if visible {
+                (tile.x, tile.y) = (x as f32, y as f32);
+            }
             self.pk(
                 ctx,
                 nodes.items[i].root,
@@ -1170,17 +1009,6 @@ impl HudUi {
     }
     fn vis(&mut self, ctx: &mut StableClient<'_>, id: NodeId, on: bool, log: &Logger) {
         self.pk(ctx, id, VIS, (on,), |(on,)| format!("visible: {on};"), log);
-    }
-    fn tk<K: Into<Key> + Copy>(
-        &mut self,
-        ctx: &mut StableClient<'_>,
-        id: NodeId,
-        values: K,
-        render: impl FnOnce(K) -> String,
-        log: &Logger,
-    ) {
-        let ok = self.cache.text_keyed(ctx, id, values, render);
-        self.refused(ok, id, "text", log);
     }
     fn purchase(&mut self, ctx: &mut StableClient<'_>, snapshot: Option<&Snapshot>, log: &Logger) {
         // Manual shopping: the next purchase follows the player's shop queue.
@@ -1390,33 +1218,13 @@ impl HudUi {
         };
         self.purchase_icon = icon.clone();
         let unavailable = unavailable && manual.is_none();
-        self.props(
-            ctx,
-            "next_unavailable",
-            format!("visible: {unavailable};"),
-            log,
-        );
+        self.view.next_unavailable = unavailable;
         let next_icon = self.cache.node(&format!("{PATH}.next.icon"));
         self.icon(ctx, (next_icon, None), icon, log);
         let ready = text == "0" || text == "✓";
         self.purchase_ready = ready;
-        for side in 0..4 {
-            for j in 0..4 {
-                self.props(
-                    ctx,
-                    &format!("next.gap{side}_{j}"),
-                    format!("visible: {};", !ready),
-                    log,
-                );
-            }
-        }
-
-        self.props(
-            ctx,
-            "next",
-            format!("color: #{};", if ready { "fdee00ff" } else { "989694ff" }),
-            log,
-        );
+        self.view.next.gaps = !ready;
+        self.view.next.border = if ready { 0xfdee00ff } else { 0x989694ff };
         let blank = self.purchase_blank;
         self.props(
             ctx,
@@ -1430,24 +1238,9 @@ impl HudUi {
             format!("visible: {};", ready && !blank),
             log,
         );
-        self.props(
-            ctx,
-            "purchase",
-            format!(
-                "x: {}px; width: {}px; color: #{};",
-                1450,
-                58,
-                if ready { "fdee00ff" } else { "cbc9c7ff" }
-            ),
-            log,
-        );
-        self.text(ctx, "purchase", text, log);
-        self.props(
-            ctx,
-            "next.progress.fill",
-            format!("width: {progress:.2}%;"),
-            log,
-        );
+        self.view.purchase.color = if ready { 0xfdee00ff } else { 0xcbc9c7ff };
+        self.view.purchase.set(&text);
+        self.view.next.progress = hundredths(progress);
         self.purchase_tooltip = tooltip;
     }
     fn tooltip(
@@ -1840,7 +1633,8 @@ impl HudUi {
         self.text(ctx, "tooltip.range", range.unwrap_or_default(), log);
     }
     /// The strip's opaque surfaces on screen (clicks there are not
-    /// battlefield orders), added to `out`.
+    /// battlefield orders), added to `out`: combat (2 px taller), strip,
+    /// tooltip and feedback while shown, then item tiles above the strip.
     pub fn bounds(&self, ctx: &StableClient<'_>, out: &mut Vec<Rect>) {
         if ctx.ui_visible(PATH) != Some(true) {
             return;
@@ -1848,26 +1642,27 @@ impl HudUi {
         let start = out.len();
         // The transparent root spans the viewport; only opaque surfaces block input.
         if let Some(nodes) = self.nodes.as_ref() {
-            for (k, id) in nodes.surfaces.iter().enumerate() {
-                let path = self.cache.path(*id);
-                if ctx.ui_visible(path) == Some(true) {
-                    if let Some((x, y, w, h)) = ctx.ui_node_rect(path) {
-                        // The first surface is "combat".
-                        let r = if k == 0 {
-                            Rect {
-                                x,
-                                y: y - 2.,
-                                w,
-                                h: h + 4.,
-                            }
-                        } else {
-                            Rect { x, y, w, h }
-                        };
-                        if r.valid() {
-                            out.push(r);
-                        }
+            let ingame = ctx.ui_node_rect("ingame");
+            let drawn = |r| {
+                let (x, y, w, h) = crate::hud_draw::screen(ingame, r);
+                Rect { x, y, w, h }
+            };
+            if self.view.combat {
+                let (x, y, w, h) = crate::hud_draw::COMBAT;
+                out.push(drawn((x, y - 2., w, h + 4.)));
+            }
+            out.push(drawn(crate::hud_draw::STRIP));
+            let tooltip = self.cache.path(nodes.tooltip);
+            if ctx.ui_visible(tooltip) == Some(true) {
+                if let Some((x, y, w, h)) = ctx.ui_node_rect(tooltip) {
+                    let r = Rect { x, y, w, h };
+                    if r.valid() {
+                        out.push(r);
                     }
                 }
+            }
+            if self.view.feedback.shown {
+                out.push(drawn(crate::hud_draw::FEEDBACK));
             }
             for i in 0..self.inventory_count.unwrap_or(0) {
                 if crate::inventory::hud_slot(self.inventory_count.unwrap_or(0), i).1 < 90 {
@@ -1955,6 +1750,9 @@ impl HudUi {
             *area = None;
         }
         self.root_rect = None;
+        // Drawn only once the root shows this frame (it may be missing:
+        // removed for a rebuild, its spawn not due yet).
+        self.view.shown = false;
         if !active || crate::ui_root::hidden() {
             if !active {
                 self.hover = None;
@@ -1975,7 +1773,16 @@ impl HudUi {
             return;
         }
         crate::ui_root::show(ctx, PATH);
+        self.view.shown = !crate::ui_root::hidden();
         self.root_rect = ctx.ui_node_rect(PATH);
+        let drawn = crate::hud_draw::origin(ctx.ui_node_rect("ingame"));
+        crate::draw_list::check_origin(
+            "HUD strip",
+            drawn,
+            self.root_rect,
+            &mut self.origin_checked,
+            log,
+        );
         self.playing = playing;
         self.pass.frame(); // motion: pass
                            // motion: B6, D1
@@ -1991,27 +1798,31 @@ impl HudUi {
             }
         }
         // motion: B6
-        pass::b6_death_dim(&mut self.pass, shown.map(|s| s.alive), playing).write(
-            ctx,
-            &mut self.cache,
-            &n.b6,
-        );
+        self.view.veils =
+            pass::b6_death_dim(&mut self.pass, shown.map(|s| s.alive), playing).view();
         // motion: D1
-        pass::d1_stats_hairline(&mut self.pass, shown.map(|s| s.kda.0), playing).write(
-            ctx,
-            &mut self.cache,
-            n.d1,
-        );
+        self.view.hairline =
+            pass::d1_stats_hairline(&mut self.pass, shown.map(|s| s.kda.0), playing).view();
+        let blank = self.purchase_blank;
         for (k, id) in n.shown_while_playing.iter().enumerate() {
             let node = crate::hud_nodes::SHOWN_WHILE_PLAYING[k];
-            let blank = self.purchase_blank && matches!(node, "next" | "purchase");
-            self.vis(ctx, *id, playing && !blank, log);
+            self.vis(ctx, *id, playing && !(blank && node == "next"), log);
         }
+        self.view.shown_while_playing(playing, blank);
         // Shop button: hover tint over 100 ms; a press-and-release opens the shop.
         let shop_hover = playing
             && cursor.is_some_and(|p| {
-                ctx.ui_node_rect(self.cache.path(n.shop_hit))
-                    .is_some_and(|(x, y, w, h)| Rect { x, y, w, h }.contains(p))
+                self.root_rect.is_some_and(|(rx, ry, rw, rh)| {
+                    let (x, y, w, h) = crate::hud_draw::SHOP_HIT;
+                    let (sx, sy) = (rw / WIDTH as f32, rh / HEIGHT as f32);
+                    Rect {
+                        x: rx + x * sx,
+                        y: ry + y * sy,
+                        w: w * sx,
+                        h: h * sy,
+                    }
+                    .contains(p)
+                })
             });
         if shop_hover && self.shop_pressed && !pressed {
             self.shop_click = true;
@@ -2023,26 +1834,29 @@ impl HudUi {
             crate::ui_theme::tone(0x3a38_37ff),
             tint,
         );
-        self.pk(ctx, n.shop_hit, S1, (back,), color_source, log);
+        self.view.shop_hit.1 = back;
         if !playing {
             self.hover = None;
             self.tooltip_source = None;
             TOOLTIP_SCROLL.store(0, Ordering::Relaxed);
             n.grow_items(&mut self.cache, self.allocated_slots);
+            self.view.grow_items(self.allocated_slots);
             for i in 0..self.allocated_slots {
                 self.vis(ctx, n.items[i].root, false, log);
+                self.view.items[i].shown = false;
             }
-            self.health_ticks(ctx, n, None, log);
+            self.health_ticks(None);
             self.purchase_inputs = None;
             for id in n.hidden_while_watching {
                 self.vis(ctx, id, false, log);
             }
+            self.view.hidden_while_watching();
             return;
         }
-        self.vis(ctx, n.feedback, !status.is_empty(), log);
-        self.tid(ctx, n.feedback_text, status, log);
-        for id in n.slash {
-            self.tid(ctx, id, "/", log);
+        self.view.feedback.shown = !status.is_empty();
+        self.view.feedback.set(status);
+        for slash in &mut self.view.slash {
+            slash.set("/");
         }
         let Some(s) = snapshot else {
             self.no_sample(ctx, n, artwork, log);
@@ -2055,94 +1869,59 @@ impl HudUi {
             self.inventory_count,
         );
         self.inventory_layout(ctx, n, count, Some((s.key, s.player)), log);
-        for (id, value) in [
-            (n.kills, s.kda.0),
-            (n.deaths, s.kda.1),
-            (n.assists, s.kda.2),
-            (n.cs, s.cs),
-            // motion: B2 (restore `s.gold`)
-            (n.gold, pass::b2_gold_roll(&mut self.pass, s.gold)),
-            (n.level, s.level),
+        // motion: B2 (restore `s.gold`)
+        let gold = pass::b2_gold_roll(&mut self.pass, s.gold);
+        let v = &mut self.view;
+        for (label, value) in [
+            (&mut v.kills, s.kda.0),
+            (&mut v.deaths, s.kda.1),
+            (&mut v.assists, s.kda.2),
+            (&mut v.cs, s.cs),
+            (&mut v.gold, gold),
+            (&mut v.level, s.level),
         ] {
-            self.tk(ctx, id, (value,), |(v,)| v.to_string(), log);
+            label.put(format_args!("{value}"));
         }
         // motion: B4
-        let level = pass::b4_level_lift(&mut self.pass, s.level, 0xffffffff);
-        self.pk(ctx, n.level, S1, (level,), color_source, log);
+        self.view.level.color = pass::b4_level_lift(&mut self.pass, s.level, 0xffffffff);
         self.purchase(ctx, Some(s), log);
-        for (k, id) in [n.coin, n.purchase_coin, n.purchase_check]
-            .into_iter()
-            .enumerate()
-        {
-            // motion: A1 (restore one `color: #fdee00ff` for all three)
-            let color = if k == 0 {
-                0xfdee00ff
-            } else {
-                pass::a1_purchase_breathe(&mut self.pass, self.purchase_ready, 0xfdee00ff)
-            };
+        self.view.coin.1 = 0xfdee00ff;
+        for id in [n.purchase_coin, n.purchase_check] {
+            // motion: A1 (restore one `color: #fdee00ff` for both and the coin)
+            let color = pass::a1_purchase_breathe(&mut self.pass, self.purchase_ready, 0xfdee00ff);
             self.pk(ctx, id, S1, (color,), color_source, log);
         }
-        self.vis(ctx, n.hourglass, !s.alive, log);
-        self.vis(ctx, n.respawn, !s.alive, log);
-        self.tk(
-            ctx,
-            n.respawn,
-            (s.alive, s.respawn),
-            |(alive, respawn)| {
-                if !alive {
-                    if respawn > 0 {
-                        respawn.div_ceil(60).to_string()
-                    } else {
-                        "—".into()
-                    }
-                } else {
-                    String::new()
-                }
-            },
-            log,
-        );
-        for id in [n.hp_current, n.hp_max] {
-            self.vis(ctx, id, s.alive, log);
+        let v = &mut self.view;
+        v.hourglass = !s.alive;
+        v.respawn.shown = !s.alive;
+        match (s.alive, s.respawn) {
+            (false, respawn) if respawn > 0 => {
+                v.respawn.put(format_args!("{}", respawn.div_ceil(60)))
+            }
+            (false, _) => v.respawn.set("—"),
+            _ => v.respawn.set(""),
         }
-        let hp = s.hp.map(|(hp, _)| hp);
-        self.tk(
-            ctx,
-            n.hp_current,
-            (hp,),
-            |(hp,)| hp.map_or("—".into(), |hp| hp.to_string()),
-            log,
-        );
-        let max = s.hp.map(|(_, max)| max);
-        self.tk(
-            ctx,
-            n.hp_max,
-            (max,),
-            |(max,)| max.map_or(" / —".into(), |max| format!(" / {max}")),
-            log,
-        );
+        v.hp_current.shown = s.alive;
+        v.hp_max.shown = s.alive;
+        match s.hp {
+            Some((hp, max)) => {
+                v.hp_current.put(format_args!("{hp}"));
+                v.hp_max.put(format_args!(" / {max}"));
+            }
+            None => {
+                v.hp_current.set("—");
+                v.hp_max.set(" / —");
+            }
+        }
         let health_fill = self.motion.value("hp", hp_percent(s), 0.2);
         let health_fill = if s.alive { health_fill } else { 0. };
-        self.pk(
-            ctx,
-            n.health_fill,
-            S1,
-            (health_fill,),
-            |(fill,)| format!("width: {fill:.2}%; color: #2e7d46ff;"),
-            log,
-        );
+        self.view.health.2 = (hundredths(health_fill), 0x2e7d46ff);
         let trail = self.motion.value("hp_trail", hp_percent(s), 0.5);
         let trail = if s.alive { trail } else { 0. };
-        // motion: B1 (restore the trail write without `color`)
+        // motion: B1 (restore the trail colour as 0xefe6cfff)
         let trail_color = pass::b1_damage_chunk(&mut self.pass, hp_percent(s), 0xefe6cfff);
-        self.pk(
-            ctx,
-            n.health_trail,
-            S1,
-            (trail, trail_color),
-            |(trail, color)| format!("width: {trail:.2}%; color: #{color:08x};"),
-            log,
-        );
-        self.health_ticks(ctx, n, s.hp.filter(|_| s.alive).map(|(_, max)| max), log);
+        self.view.health.1 = (hundredths(trail), trail_color);
+        self.health_ticks(s.hp.filter(|_| s.alive).map(|(_, max)| max));
         for (i, unlock_level) in UNLOCK_LEVELS.into_iter().enumerate() {
             self.skill_slot(
                 ctx,
@@ -2160,7 +1939,7 @@ impl HudUi {
             let icon = s.items.get(i).and_then(|key| self.item_icon(key));
             let unknown = s.items.get(i).is_some() && icon.is_none();
             self.icon(ctx, (n.items[i].icon, None), icon, log);
-            self.vis(ctx, n.items[i].unknown, unknown, log);
+            self.view.items[i].unknown = unknown;
         }
         for i in (0..count).chain(std::iter::once(crate::inventory::PURCHASE)) {
             self.item_tile(ctx, n, i, s, cursor, pressed, log);
@@ -2183,6 +1962,7 @@ impl HudUi {
         self.cache.clear();
         self.icons_shown.clear();
         self.allocated_slots = 6;
+        self.view.reset(6);
         self.purchase_inputs = None;
         self.failed = false;
         let spawned = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
@@ -2203,30 +1983,40 @@ impl HudUi {
         if artwork.is_some() {
             self.load_icons(log);
         }
-        for id in [n.kills, n.deaths, n.assists, n.cs, n.gold, n.level] {
-            self.tid(ctx, id, "—", log);
+        let v = &mut self.view;
+        for label in [
+            &mut v.kills,
+            &mut v.deaths,
+            &mut v.assists,
+            &mut v.cs,
+            &mut v.gold,
+            &mut v.level,
+        ] {
+            label.set("—");
         }
-        self.tid(ctx, n.respawn, "", log);
-        self.tid(ctx, n.hp_current, "—", log);
-        self.tid(ctx, n.hp_max, " / —", log);
-        self.pid(ctx, n.hourglass, "visible: false;", log);
-        for id in [n.hp_current, n.hp_max] {
-            self.pid(ctx, id, "visible: true;", log);
-        }
+        v.respawn.set("");
+        v.hp_current.set("—");
+        v.hp_max.set(" / —");
+        v.hourglass = false;
+        v.hp_current.shown = true;
+        v.hp_max.shown = true;
         self.purchase(ctx, None, log);
-        self.pid(ctx, n.health_fill, "width: 0%;", log);
-        self.pid(ctx, n.health_trail, "width: 0%;", log);
-        self.health_ticks(ctx, n, None, log);
+        self.view.health.1 .0 = 0.;
+        self.view.health.2 .0 = 0.;
+        self.health_ticks(None);
         for i in 0..3 {
             let k = &n.skills[i];
-            self.skill_feedback(ctx, k, None, 0., ChargeDisplay::Hidden, log);
+            self.skill_feedback(i, None, 0., ChargeDisplay::Hidden);
             let icon = artwork.and_then(|a| self.skill_icon(&a.champion, i));
             self.icon(ctx, (k.icon, Some(k.png)), icon, log);
-            self.pid(ctx, k.shade, "visible: true; color: #00000088;", log);
-            self.tid(ctx, k.cooldown, "--", log);
-            self.tid(ctx, k.uses, "", log);
-            self.pid(ctx, k.lock, "visible: false;", log);
-            self.pid(ctx, k.root, "color: #555555ff;", log);
+            let v = &mut self.view.skills[i];
+            // The shade keeps its height.
+            v.shade.0 = true;
+            v.shade.2 = 0x00000088;
+            v.cooldown.set("--");
+            v.uses.set("");
+            v.lock = false;
+            v.border = 0x555555ff;
         }
         let retained = artwork
             .filter(|a| self.item_identity == Some(a.identity))
@@ -2239,7 +2029,7 @@ impl HudUi {
                 .and_then(|a| a.items.get(i))
                 .and_then(|key| self.item_icon(key));
             self.icon(ctx, (n.items[i].icon, None), icon, log);
-            self.pid(ctx, n.items[i].unknown, "visible: false;", log);
+            self.view.items[i].unknown = false;
         }
         self.pid(ctx, n.tooltip, "visible: false;", log);
     }
@@ -2314,40 +2104,31 @@ impl HudUi {
         let edge_shown = (!unavailable && !ready) || cue.is_some() || refill.is_some();
         // The cue sits just inside the slot's border, which is 2 px and
         // yellow on a ready R.
-        self.pk(
-            ctx,
-            k.drain_edge,
-            S1,
-            (edge_shown, edge_y, edge),
-            |(on, y, edge)| format!("visible: {on}; y: {y:.2}px; color: #{edge:08x};"),
-            log,
-        );
+        let v = &mut self.view.skills[i];
+        v.drain_edge = crate::hud_draw::Bar {
+            shown: edge_shown,
+            y: hundredths(edge_y),
+            color: edge,
+        };
         // motion: A3
-        pass::a3_drain_comet(
+        let comet = pass::a3_drain_comet(
             &mut self.pass,
             i,
             !unavailable && !ready && cue.is_none(),
             edge_y,
             edge,
         )
-        .write(ctx, &mut self.cache, k.a3);
+        .view();
+        let v = &mut self.view.skills[i];
+        v.comet.shown = comet.is_some();
+        if let Some((y, color)) = comet {
+            (v.comet.y, v.comet.color) = (y, color);
+        }
         // motion: C1 (node and hover moved up from the border code below)
         let hover = self.tile_hover(Tile::Skill(i), cursor);
         // motion: C1
         let c1 = pass::c1_slot_hover(&mut self.pass, i, hover);
-        self.pk(
-            ctx,
-            k.keycap,
-            S1,
-            (c1,),
-            |(c1,)| {
-                format!(
-                    "color: #{};",
-                    crate::hud_motion::color(0xeeececff, 0xffffffff, c1)
-                )
-            },
-            log,
-        );
+        self.view.skills[i].keycap = crate::hud_motion::color_rgba(0xeeececff, 0xffffffff, c1);
         let brightness = match cue {
             Some((_, lift)) => COOLING_ICON + (1. - COOLING_ICON) * lift,
             // motion: B4 (restore `None if live && !ready`)
@@ -2363,16 +2144,7 @@ impl HudUi {
         };
         let shade_on = unavailable || !ready || b4_shade.is_some() || refill.is_some();
         let shade_color = pass::fade(shade, 1. - 0.3 * c1);
-        self.pk(
-            ctx,
-            k.shade,
-            S1,
-            (shade_on, b4_shade.unwrap_or(drain), shade_color),
-            |(on, height, color)| {
-                format!("visible: {on}; height: {height:.2}px; color: #{color:08x};")
-            },
-            log,
-        );
+        self.view.skills[i].shade = (shade_on, hundredths(b4_shade.unwrap_or(drain)), shade_color);
         // 0: nothing, 1: "--", 2: a countdown.
         let (cooldown_kind, ticks) = if !learned {
             (0u8, 0)
@@ -2385,26 +2157,19 @@ impl HudUi {
         } else {
             (0, 0)
         };
-        self.tk(
-            ctx,
-            k.cooldown,
-            (cooldown_kind, ticks),
-            |(kind, ticks)| match kind {
-                1 => "--".into(),
-                2 => cooldown(ticks),
-                _ => String::new(),
-            },
-            log,
-        );
+        let label = &mut self.view.skills[i].cooldown;
+        match cooldown_kind {
+            1 => label.set("--"),
+            2 => label.set(&cooldown(ticks)),
+            _ => label.set(""),
+        }
         self.skill_feedback(
-            ctx,
-            k,
+            i,
             skills.denied_at[i].filter(|_| s.alive),
             ready_flash,
             charge_display(skills.uses[i].filter(|_| !unavailable), skills.uses_max[i]),
-            log,
         );
-        self.vis(ctx, k.lock, !learned, log);
+        self.view.skills[i].lock = !learned;
         let color = if !learned {
             "~4b4a49ff"
         } else if skills.aiming == Some(i) {
@@ -2421,30 +2186,9 @@ impl HudUi {
             .motion
             .tonal(&k.press_key, f32::from(hover && pressed), 0.083);
         let border = crate::ui_theme::color(color).unwrap_or(crate::ui_theme::tone(0x4b4a49ff));
-        let border = crate::hud_motion::color_rgba(border, 0xffffffff, h);
-        self.pk(
-            ctx,
-            k.root,
-            S2,
-            (border,),
-            |(border,)| format!("color: #{border:08x}; y: {:.2}px;", SKILL_Y as f32),
-            log,
-        );
-        let inset: f32 = if color == "fdee00ff" { 2. } else { 1. };
-        self.pk(
-            ctx,
-            k.background,
-            S1,
-            (inset,),
-            |(inset,)| {
-                format!(
-                    "x: {inset}px; y: {inset}px; width: {}px; height: {}px;",
-                    80. - 2. * inset,
-                    80. - 2. * inset
-                )
-            },
-            log,
-        );
+        let v = &mut self.view.skills[i];
+        v.border = crate::hud_motion::color_rgba(border, 0xffffffff, h);
+        v.inset = if color == "fdee00ff" { 2. } else { 1. };
         // The press tint (85 %) on top of the cooldown brightness.
         let level = brightness * (1. - 0.15 * press);
         for art in [k.icon, k.png] {
@@ -2489,15 +2233,18 @@ impl HudUi {
             crate::ui_theme::tone(0x3a3837ff),
             (h - press * 0.25).clamp(0., 1.),
         );
-        self.pk(ctx, t.background, S1, (back,), color_source, log);
+        if purchase {
+            self.view.next.background = back;
+        } else {
+            self.view.items[i].background = back;
+        }
         if !purchase {
             // motion: B5 (restore the 1.3.2 border write)
             let item = s.items.get(i).map(String::as_str);
             let (b5_alpha, b5_edge) = pass::b5_item_bought(&mut self.pass, i, item);
             let border =
                 crate::hud_motion::color_rgba(crate::ui_theme::tone(0x4b4a49ff), 0xffffffff, h);
-            let border = crate::hud_motion::color_rgba(border, 0xfdee00ff, b5_edge);
-            self.pk(ctx, t.root, S2, (border,), color_source, log);
+            self.view.items[i].border = crate::hud_motion::color_rgba(border, 0xfdee00ff, b5_edge);
             // motion: C2, B5
             let brightness = pass::c2_item_press(&self.pass, press);
             self.pk(
@@ -2509,12 +2256,11 @@ impl HudUi {
                 log,
             );
         } else {
-            let border = if self.purchase_ready {
+            self.view.next.border = if self.purchase_ready {
                 0xfdee00ff
             } else {
                 crate::hud_motion::color_rgba(0x989694ff, 0xffffffff, h)
             };
-            self.pk(ctx, t.root, S2, (border,), color_source, log);
             let opacity = if self.purchase_ready {
                 255.
             } else {
@@ -2536,31 +2282,16 @@ impl HudUi {
             );
         }
     }
-    fn health_ticks(
-        &mut self,
-        ctx: &mut StableClient<'_>,
-        n: &Nodes,
-        max: Option<usize>,
-        log: &Logger,
-    ) {
-        for (i, id) in n.ticks.iter().enumerate() {
-            let offset = max.filter(|max| *max > 0).and_then(|max| {
+    /// The health bar's ticks: one per 100 health (more per tick past 3,200).
+    fn health_ticks(&mut self, max: Option<usize>) {
+        for (i, tick) in self.view.ticks.iter_mut().enumerate() {
+            *tick = max.filter(|max| *max > 0).and_then(|max| {
                 let step = max.div_ceil(3200).saturating_mul(100);
                 let value = (i + 1).saturating_mul(step);
-                (value < max).then(|| 360. * value as f64 / max as f64)
+                (value < max).then(|| {
+                    ((780. + 360. * value as f64 / max as f64) * 100.).round() as f32 / 100.
+                })
             });
-            self.pk(
-                ctx,
-                *id,
-                S1,
-                (offset,),
-                |(offset,)| {
-                    offset.map_or("visible: false;".into(), |x| {
-                        format!("visible: true; x: {:.2}px;", 780. + x)
-                    })
-                },
-                log,
-            );
         }
     }
 }
@@ -2616,10 +2347,10 @@ mod tests {
                 );
             }
         }
-        const {
-            assert!(CHARGE_MARK_Y > 25 + 34); // Cooldown label's bottom edge.
-            assert!(CHARGE_MARK_Y + CHARGE_MARK_H <= SKILL_SIZE - 2);
-        }
+        let (y, _, h) = crate::hud_draw::CHARGE_MARK;
+        assert!(y > 25. + 34.); // Cooldown label's bottom edge.
+        assert!(y + h <= SKILL_SIZE as f32 - 2.);
+        assert_eq!(CHARGE_MARK_W as f32, crate::hud_draw::CHARGE_MARK.1);
     }
     #[test]
     fn ready_flash_fades_once_and_red_feedback_keeps_priority() {
@@ -2738,8 +2469,35 @@ mod tests {
         for removed in ["b7_veil", "s4_left", "s4_right"] {
             assert!(!source.contains(removed));
         }
-        assert!(source.contains("#slot_glow:empty") && source.contains("#charge5:color"));
-        assert!(source.contains("#d1_line")); // Kill feedback stays.
+        // Drawn since 1.6.0-perf-dev3, not tree nodes.
+        for drawn in [
+            "#slot_glow",
+            "#charge5",
+            "#d1_line",
+            "#strip",
+            "#hp_tick",
+            "#b6_veil",
+        ] {
+            assert!(!source.contains(drawn), "{drawn}");
+        }
+        // Kill feedback stays: the D1 hairline is drawn while it sweeps.
+        let mut view = crate::hud_draw::HudView {
+            shown: true,
+            hairline: Some(300.),
+            ..Default::default()
+        };
+        let mut list = crate::draw_list::DrawList::default();
+        crate::hud_draw::build(&view, None, &mut list);
+        let line = crate::draw_list::Cmd::Rect {
+            rect: (0., 934. + 138., 300., 2.),
+            z: 1004,
+            rounding: 0.,
+            color: 0xfdee00ff,
+        };
+        assert!(list.commands().contains(&line));
+        view.hairline = None;
+        crate::hud_draw::build(&view, None, &mut list);
+        assert!(!list.commands().contains(&line));
     }
     #[test]
     fn purchase_branch_shortfall_is_compact_and_updates_with_held_gold() {

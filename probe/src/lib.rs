@@ -28,11 +28,20 @@ mod client;
 mod clock;
 mod combat;
 mod cursor;
+mod draw_list;
+mod draw_probe;
+mod drawn_glyphs;
+mod effect_draw;
 mod emote_library;
 mod emotes;
+mod hud_draw;
 mod hud_icons;
 mod hud_motion;
 // motion: pass
+#[cfg(test)]
+mod fake_draw;
+#[cfg(test)]
+mod fake_layout;
 #[cfg(test)]
 mod fake_ui;
 mod game_bundle;
@@ -58,6 +67,7 @@ mod own_selection;
 #[cfg(feature = "research")]
 mod patch_fields;
 mod perf;
+mod plate_draw;
 mod platform_input;
 mod player_hud;
 mod pointer_clip;
@@ -70,6 +80,7 @@ mod result_audit;
 mod runtime_storage;
 mod screen_effect;
 mod season_fix;
+mod session_draw;
 mod session_ui;
 mod settings;
 mod settings_ui;
@@ -87,6 +98,7 @@ mod sprite_art;
 mod sprite_picking;
 mod stat_icons;
 mod state_plate;
+mod stats_draw;
 mod stats_panel;
 mod stats_ui;
 mod team_info;

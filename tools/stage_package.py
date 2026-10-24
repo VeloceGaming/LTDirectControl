@@ -31,6 +31,12 @@ if version.encode() not in dll.read_bytes():
     raise SystemExit(f'The DLL does not carry version {version}. Run `cargo build --release` in probe/ first.')
 if package.resolve() != root / 'dist/lt_direct_control':
     raise RuntimeError('Staging target resolves outside the intended workspace package folder.')
+# The drawn HUD's baked glyphs (1.6.0-perf-dev3) must all be there: the DLL
+# names them and draw_sprite shows nothing for a missing one.
+drawn = json.loads((root / 'tools/records/drawn-glyphs.json').read_text(encoding='utf-8'))
+missing = [name for name in drawn['files'] if not (probe / name).is_file()]
+if missing:
+    raise SystemExit(f'Drawn glyphs missing: {missing}. Run `node tools/generate_endfield_glyphs.cjs --drawn`.')
 if package.exists():
     shutil.rmtree(package)
 package.mkdir(parents=True)

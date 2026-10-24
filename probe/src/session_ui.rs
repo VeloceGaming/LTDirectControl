@@ -1,13 +1,23 @@
-//! Portrait-only preparation; handlers enqueue phase/key-bound choices.
+//! Portrait-only preparation; clicks enqueue phase/key-bound choices.
+//!
+//! Since 1.6.0-perf-dev3 the strip's buttons, boxes and glyphs are drawn
+//! (`session_draw.rs`) and their clicks are the mod's own hit tests
+//! ([`SessionUi::clicks`]): a press that starts on a shown button and is
+//! released on the same button clicks it, once (`ui_click::once`), unless
+//! the Settings window or the shop covers the cursor. The tree keeps the
+//! root, the lane tiles' champion portraits, the vision group's eye glyphs
+//! and the tooltip.
 use crate::{
     camera::Rect,
+    hud_motion_pass::hundredths,
     native_timing::{MatchKey, NativeTiming, Phase},
     own_selection::PlayerIdentity,
+    session_draw::ButtonView,
     ui_graphics,
     ui_writes::{NodeId, PropCache},
     Logger,
 };
-use mod_api_stable::{StableClient, UiEventKindV1};
+use mod_api_stable::StableClient;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -15,9 +25,9 @@ use std::{
 };
 pub(crate) const PATH: &str = "ingame.lt_session_controls";
 /// In-match strip controls: Pause, AI, Camera, Settings, vision group, Tab.
-const STRIP_W: f32 = 656.;
-const VISION_X: f32 = 200.;
-const VISION_STEP: f32 = 46.;
+const STRIP_W: f32 = crate::session_draw::STRIP.0;
+const VISION_X: f32 = crate::session_draw::VISION_X;
+const VISION_STEP: f32 = crate::session_draw::VISION_STEP;
 const TAB_X: f32 = 586.;
 /// Champion swap: a button floating above the strip's left end; its column
 /// of teammate portraits unfolds upward from it, in lane order from the
@@ -70,75 +80,31 @@ struct Events {
     /// The swap column is open (in a match).
     swap: bool,
 }
-fn button(s: &mut String, name: &str, glyph: &str, x: usize, y: usize) {
-    let bg = crate::ui_theme::hex(0xff);
-    s.push_str(&format!("#{name}:color_icon_button {{ x: {x}px; y: {y}px; width: 48px; height: 44px; z: 1102; visible: false; btn: {{ color: #~4b4a49ff; back_color: #{bg}; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }}"));
-    s.push_str(&ui_graphics::image("glyph", glyph, 11, 9, 26, 1105));
-    s.push_str("}\n");
-}
 #[cfg(test)]
 pub(crate) fn template_for_test() -> String {
     template()
 }
+/// What stays in the UI tree: the root (its anchoring follows the phase),
+/// the lane tiles as containers of the champion portraits, the vision
+/// buttons as containers of their eye glyphs (whose ink tweens), and the
+/// tooltip. Everything else is drawn (`session_draw.rs`) at its node's z.
 fn template() -> String {
-    let bg = crate::ui_theme::hex(0xff);
     let mut s=String::from("lt_session_controls:empty { width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62px; z: 1100; ignore_event: true;\n");
     for lane in 0..5 {
-        s.push_str(&format!("#lane{lane}:color_icon_button {{ x: {}px; y: 4px; width: 72px; height: 72px; z: 1102; btn: {{ color: #~4b4a49ff; back_color: #{bg}; stroke: 1; rounding: Uniform {{ rounding: 2; }} }} text: {{ text: \"\"; }} #portrait:image {{ x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; }} }}\n",lane*80));
-    }
-    s.push_str(&ui_graphics::image(
-        "loading",
-        "hourglass",
-        240,
-        24,
-        32,
-        1104,
-    ));
-    for (name, glyph) in [
-        ("primary", "ef_play"),
-        ("watch", "ef_eye"),
-        ("release", "ef_cpu"),
-        ("camera", "ef_camera"),
-        ("settings", "ef_settings"),
-        ("tab", "ef_list"),
-        ("vision_own", "ef_eye"),
-        ("vision_other", "ef_eye"),
-        ("vision_all", "ef_eye"),
-        ("swap", "ef_swap"),
-    ] {
-        button(&mut s, name, glyph, 0, 0);
-    }
-    s.push_str(r##"#tab_key:color { x: 592px; y: 17px; width: 30px; height: 22px; z: 1104; color: #eeececff; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { @"asset/base/style/main#bold_label"; width: 100%; height: 100%; size: 13; align_x: Center; align_y: Center; color: #393939ff; text: "Tab"; ignore_event: true; z: 1105; } }
-    #rule_controls:color { x: 194px; y: 17px; width: 1px; height: 22px; z: 1101; color: #~4b4a49ff; ignore_event: true; }
-    #rule_vision:color { x: 342px; y: 17px; width: 1px; height: 22px; z: 1101; color: #~4b4a49ff; ignore_event: true; }
-    #vision_track:color { x: 200px; y: 6px; width: 136px; height: 44px; z: 1101; color: #~3a3837ff; rounding: Uniform { rounding: 3; } ignore_event: true; }
-    #vision_indicator:color { x: 202px; y: 8px; width: 40px; height: 40px; z: 1102; color: #eeececff; rounding: Uniform { rounding: 2; } ignore_event: true; }
-    #tooltip:color { x: 0px; y: -68px; width: 310px; height: 56px; z: 1200; color: #~1e1e1dd9; ignore_event: true; visible: false; rounding: Uniform { rounding: 3; } #text:label { @"asset/base/style/main#label"; x: 12px; y: 8px; width: 286px; height: 40px; size: 20; color: #ffffffff; ignore_event: true; z: 1201; } }
-    }"##);
-    for (node, color) in [("vision_own", "53b8e4ff"), ("vision_other", "ff642eff")] {
-        s=s.replace(&format!("#{node}:color_icon_button {{"),&format!("#{node}:color_icon_button {{ #mark:color {{ x: 6px; y: 13px; width: 3px; height: 18px; z: 1104; color: #{color}; ignore_event: true; }}"));
+        s.push_str(&format!("#lane{lane}:empty {{ x: {}px; y: 4px; width: 72px; height: 72px; z: 1102; ignore_event: true; #portrait:image {{ x: 0px; y: 0px; anchor_x: 0.5; anchor_y: 0.5; pivot_x: 0.5; pivot_y: 0.5; width: 56px; height: 56px; z: 1104; sample_linear: false; ignore_event: true; visible: false; }} }}\n",lane*80));
     }
     for node in ["vision_own", "vision_other", "vision_all"] {
-        s = s.replace(
-            &format!("#{node}:color_icon_button {{"),
-            &format!("#{node}:color_icon_button {{ #hover:color {{ x: 2px; y: 2px; width: 40px; height: 40px; z: 1103; color: #00000000; ignore_event: true; rounding: Uniform {{ rounding: 2; }} }}"),
-        );
+        s.push_str(&format!("#{node}:empty {{ x: 0px; y: 0px; width: 48px; height: 44px; z: 1102; visible: false; ignore_event: true; "));
+        s.push_str(&ui_graphics::image("glyph", "ef_eye", 11, 9, 26, 1105));
+        s.push_str("}\n");
     }
-    // motion: B8 (inside the root, before the Tab key cap)
-    s = s.replace(
-        "#tab_key:color",
-        &format!(
-            "{}#tab_key:color",
-            crate::hud_motion_pass::b8_nodes(SWAP_Y + SWAP_TILE, SWAP_TILE)
-        ),
-    );
-    s = s.replace("#tab_key:color", "#take_label:label { @\"asset/base/style/main#bold_label\"; x: 52px; y: 6px; width: 204px; height: 44px; size: 18; align_y: Center; color: #eeececff; text: \"Take control · F11\"; visible: false; ignore_event: true; z: 1106; } #tab_key:color");
+    s.push_str(r##"#tooltip:color { x: 0px; y: -68px; width: 310px; height: 56px; z: 1200; color: #~1e1e1dd9; ignore_event: true; visible: false; rounding: Uniform { rounding: 3; } #text:label { @"asset/base/style/main#label"; x: 12px; y: 8px; width: 286px; height: 40px; size: 20; color: #ffffffff; ignore_event: true; z: 1201; } }
+    }"##);
     crate::hud_style::fonts(s)
 }
 #[derive(Default)]
 pub struct SessionUi {
     spawn_at: Option<Instant>,
-    registered: bool,
     events: Arc<Mutex<Events>>,
     cache: crate::ui_writes::PropCache,
     portraits: HashMap<String, String>,
@@ -149,30 +115,31 @@ pub struct SessionUi {
     // motion: pass
     /// The HUD motion pass (hud_motion_pass.rs).
     pass: crate::hud_motion_pass::Pass,
-    /// The strip's nodes in `cache` (1.6.0).
+    /// The strip's remaining tree nodes in `cache` (1.6.0).
     nodes: Option<std::sync::Arc<Nodes>>,
+    /// What the drawn elements show (`session_draw.rs`), as their nodes
+    /// held it.
+    view: crate::session_draw::SessionView,
+    /// The root's rectangle last frame (the clicks' hit tests use the
+    /// layout that was on screen).
+    root: Option<(f32, f32, f32, f32)>,
+    /// The left button last frame, and the button a press started on.
+    was_pressed: bool,
+    press_on: Option<&'static str>,
+    /// This frame's commands (`session_draw.rs`), sent in `post_render`.
+    pub(crate) list: crate::draw_list::DrawList,
+    /// `draw_list::check_origin`'s state.
+    origin_checked: u8,
 }
-/// Glyph images the strip's buttons show.
-const GLYPHS: [&str; 8] = [
-    "ef_pause",
-    "ef_play",
-    "ef_eye",
-    "ef_cpu",
-    "ef_camera",
-    "ef_settings",
-    "ef_list",
-    "ef_swap",
-];
 /// Write sites in the strip's cache: `VIS` is always `visible: {on};`.
 const VIS: u8 = 0;
 const S1: u8 = 1;
 const S2: u8 = 2;
-const S3: u8 = 3;
-/// One button (or swap tile) of the strip.
+/// One button (or swap tile) of the strip: its tweens' names, and for a
+/// lane tile its container and portrait in the tree.
 struct Button {
     name: &'static str,
     root: NodeId,
-    glyph: NodeId,
     portrait: NodeId,
     hover_key: String,
     press_key: String,
@@ -181,26 +148,17 @@ struct Button {
 /// The strip's nodes and paths, found once.
 struct Nodes {
     root: NodeId,
-    loading: NodeId,
-    take_label: NodeId,
-    rules: [NodeId; 3],
-    vision_indicator: NodeId,
-    vision: [(NodeId, NodeId, NodeId); 3],
-    tab_key: NodeId,
-    primary_glyph: NodeId,
-    camera_glyph: NodeId,
-    tab_glyph: NodeId,
+    /// Each vision button's container and eye glyph.
+    vision: [(NodeId, NodeId); 3],
     tooltip: NodeId,
     tooltip_text: NodeId,
-    b8: NodeId,
     /// primary, watch, release, camera, settings, tab, swap, lane0..lane4.
     buttons: Vec<Button>,
     /// Each lane's portrait node name and path (`lane{n}.portrait`).
     portraits: [(String, String); 5],
     /// Each lane tile's path.
     lane_paths: [String; 5],
-    /// The tooltip's candidates' paths, in `TIPS` order.
-    tip_paths: Vec<String>,
+    /// The clickable controls' paths, in `CLICKABLE` order.
     clickable: [String; 15],
 }
 /// The tooltip's candidates, in search order.
@@ -228,7 +186,6 @@ impl Nodes {
             .map(|name| Button {
                 name,
                 root: id(name),
-                glyph: id(&format!("{name}.glyph")),
                 portrait: id(&format!("{name}.portrait")),
                 hover_key: format!("hover_{name}"),
                 press_key: format!("press_{name}"),
@@ -236,21 +193,12 @@ impl Nodes {
             })
             .collect();
         let vision = ["vision_own", "vision_other", "vision_all"]
-            .map(|n| (id(n), id(&format!("{n}.hover")), id(&format!("{n}.glyph"))));
+            .map(|n| (id(n), id(&format!("{n}.glyph"))));
         Self {
             root,
-            loading: id("loading"),
-            take_label: id("take_label"),
-            rules: ["vision_track", "rule_controls", "rule_vision"].map(&mut id),
-            vision_indicator: id("vision_indicator"),
             vision,
-            tab_key: id("tab_key"),
-            primary_glyph: id("primary.glyph"),
-            camera_glyph: id("camera.glyph"),
-            tab_glyph: id("tab.glyph"),
             tooltip: id("tooltip"),
             tooltip_text: id("tooltip.text"),
-            b8: id(crate::hud_motion_pass::B8_NODE),
             buttons,
             portraits: std::array::from_fn(|lane| {
                 let node = format!("lane{lane}.portrait");
@@ -258,7 +206,6 @@ impl Nodes {
                 (node, path)
             }),
             lane_paths: std::array::from_fn(|lane| format!("{PATH}.lane{lane}")),
-            tip_paths: TIPS.iter().map(|n| format!("{PATH}.{n}")).collect(),
             clickable: CLICKABLE.map(|node| format!("{PATH}.{node}")),
         }
     }
@@ -405,32 +352,42 @@ impl SessionUi {
         } else {
             1
         };
-        let flags = u64::from(visible) | stroke << 1;
-        let colors = u64::from(border) << 32 | u64::from(background);
-        self.cache.props_keyed(
-            ctx,
-            b.root,
-            S1,
-            (pair(x, y), pair(w, h), flags, colors),
-            |(xy, wh, flags, colors)| {
-                let ((x, y), (w, h)) = (unpair(xy), unpair(wh));
-                let (visible, stroke) = (flags & 1 == 1, flags >> 1);
-                let offset = 0.;
-                format!("x: {x}px; y: {:.2}px; width: {w}px; height: {h}px; visible: {visible}; ignore_event: {}; btn: {{ color: #{:08x}; back_color: #{:08x}; stroke: {stroke}; }}", y + offset, !visible, colors >> 32, colors as u32)
-            },
-        );
+        let view = ButtonView {
+            rect: (x, hundredths(y), w, h),
+            shown: visible,
+            border,
+            back: background,
+            stroke: stroke as f32,
+        };
         if let Some(glyph) = glyph {
+            let k = crate::session_draw::BUTTONS
+                .iter()
+                .position(|n| *n == node)
+                .expect("a drawn button");
+            self.view.buttons[k] = view;
+            let g = &mut self.view.glyphs[k];
+            g.glyph = glyph;
+            g.size = hundredths(gsize);
+            g.at = (hundredths((w - gsize) / 2.), hundredths((h - gsize) / 2.));
+        } else {
+            // A lane tile: its container keeps the place and visibility of
+            // the portrait; its box is drawn.
+            let lane = b.name.as_bytes()[4] - b'0';
+            self.view.lanes[usize::from(lane)] = view;
+            let flags = u64::from(visible);
             self.cache.props_keyed(
                 ctx,
-                b.glyph,
+                b.root,
                 S1,
-                (glyph, pair(w, h), gsize),
-                |(glyph, wh, size)| {
-                    let (w, h) = unpair(wh);
-                    format!("source: \"asset/lt_direct_control/ui/{}\"; x: {:.2}px; y: {:.2}px; width: {size:.2}px; height: {size:.2}px;", GLYPHS[glyph as usize], (w - size) / 2., (h - size) / 2.)
+                (pair(x, y), pair(w, h), flags),
+                |(xy, wh, flags)| {
+                    let ((x, y), (w, h)) = (unpair(xy), unpair(wh));
+                    format!(
+                        "x: {x}px; y: {y:.2}px; width: {w}px; height: {h}px; visible: {};",
+                        flags & 1 == 1
+                    )
                 },
             );
-        } else {
             // The host resolves a fitted face rectangle. Keep its size;
             // animation must not stretch that rectangle into a square.
             self.cache
@@ -481,6 +438,9 @@ impl SessionUi {
         ) = timing.ui_phase()
         else {
             self.hover.update(false, None, None, false);
+            self.view.shown = false;
+            self.list.clear();
+            (self.was_pressed, self.press_on) = (false, None);
             // Write only on a change (this runs every frame).
             if ctx.ui_visible(PATH) != Some(false) && ctx.ui_exists(PATH) {
                 ctx.ui_set_visible(PATH, false);
@@ -492,6 +452,8 @@ impl SessionUi {
             }
             return;
         };
+        self.view.shown = false;
+        self.list.clear();
         if !ctx.ui_exists(PATH) {
             if self
                 .spawn_at
@@ -503,7 +465,7 @@ impl SessionUi {
             self.cache.clear();
             self.portraits.clear();
             self.attempted.clear();
-            self.registered = false;
+            self.view = Default::default();
             if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
                 || !ctx.ui_exists(PATH)
             {
@@ -511,116 +473,9 @@ impl SessionUi {
             }
             log.write("SESSION portrait UI spawned");
         }
-        if !self.registered {
-            self.registered = true;
-            for (node, primary) in [("primary", true), ("release", false), ("watch", false)] {
-                let owner = timing.clone();
-                let click_path = format!("{PATH}.{node}");
-                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                    if ctx
-                        .ui_current_event()
-                        .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                        && crate::ui_click::once(&click_path)
-                    {
-                        owner.request_action(primary);
-                    }
-                });
-            }
-            let owner = camera.clone();
-            let click_path = format!("{PATH}.camera");
-            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                if ctx
-                    .ui_current_event()
-                    .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                    && crate::ui_click::once(&click_path)
-                {
-                    owner.request_toggle();
-                }
-            });
-            let events = self.events.clone();
-            let click_path = format!("{PATH}.settings");
-            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                if ctx
-                    .ui_current_event()
-                    .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                    && crate::ui_click::once(&click_path)
-                {
-                    if let Ok(mut e) = events.lock() {
-                        e.settings_open = true;
-                    }
-                }
-            });
-            let events = self.events.clone();
-            let click_path = format!("{PATH}.tab");
-            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                if ctx
-                    .ui_current_event()
-                    .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                    && crate::ui_click::once(&click_path)
-                {
-                    if let Ok(mut e) = events.lock() {
-                        e.team = !e.team;
-                    }
-                }
-            });
-            for (node, vision) in [
-                ("vision_own", crate::camera::Vision::Own),
-                ("vision_other", crate::camera::Vision::Other),
-                ("vision_all", crate::camera::Vision::All),
-            ] {
-                let events = self.events.clone();
-                let click_path = format!("{PATH}.{node}");
-                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                    if ctx
-                        .ui_current_event()
-                        .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                        && crate::ui_click::once(&click_path)
-                    {
-                        if let Ok(mut e) = events.lock() {
-                            e.vision = Some(vision);
-                        }
-                    }
-                });
-            }
-            let events = self.events.clone();
-            let click_path = format!("{PATH}.swap");
-            ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                if ctx
-                    .ui_current_event()
-                    .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                    && crate::ui_click::once(&click_path)
-                {
-                    if let Ok(mut e) = events.lock() {
-                        e.swap = !e.swap;
-                    }
-                }
-            });
-            for lane in 0..5 {
-                let owner = timing.clone();
-                let events = self.events.clone();
-                let click_path = format!("{PATH}.lane{lane}");
-                ctx.ui_register_path_events(&click_path.clone(), move |ctx| {
-                    if ctx
-                        .ui_current_event()
-                        .is_some_and(|e| e.kind == Some(UiEventKindV1::Click))
-                        && crate::ui_click::once(&click_path)
-                    {
-                        let (Some(key), Ok(mut events)) = (owner.match_key(), events.lock()) else {
-                            return;
-                        };
-                        // Before Start the tiles are the chooser itself;
-                        // in a match they are the open swap column.
-                        let phase = owner.phase();
-                        if phase == Some(Phase::Ready) || swappable(phase) && events.swap {
-                            events.choice = Some((key, owner.generation(), lane));
-                            events.swap = false;
-                        }
-                    }
-                });
-            }
-        }
         // Write only on a change, as the HUD does (not every frame).
         crate::ui_root::show(ctx, PATH);
+        self.view.shown = !crate::ui_root::hidden();
         let n = match &self.nodes {
             Some(n) => n.clone(),
             None => {
@@ -629,9 +484,91 @@ impl SessionUi {
                 n
             }
         };
+        // Clicks first, as the game's click events came before this frame's
+        // update; on the layout that was on screen.
+        if let Some(clicked) = self.clicks(cursor, pressed) {
+            let k = CLICKABLE.iter().position(|c| *c == clicked).unwrap_or(0);
+            if crate::ui_click::once(&n.clickable[k]) {
+                self.click(clicked, timing, camera);
+            }
+        }
         self.strip(
             ctx, &n, phase, players, selected, camera, cursor, pressed, bounds,
         );
+        let ingame = ctx.ui_node_rect("ingame");
+        let drawn = self.view.origin(ingame);
+        crate::draw_list::check_origin(
+            "session strip",
+            drawn,
+            self.root,
+            &mut self.origin_checked,
+            log,
+        );
+        crate::session_draw::build(&self.view, ingame, &mut self.list);
+    }
+    /// The control a press-and-release clicked this frame: the press began
+    /// on a shown control and the release came over the same one, with
+    /// neither the Settings window nor the shop over the cursor (they take
+    /// the game's clicks there).
+    fn clicks(&mut self, cursor: Option<(f32, f32)>, pressed: bool) -> Option<&'static str> {
+        let covered = covered(cursor);
+        let under = cursor
+            .filter(|_| !covered && self.view.shown)
+            .and_then(|p| self.view.button_at(self.root, p));
+        if pressed && !self.was_pressed {
+            self.press_on = under;
+        }
+        let click = (!pressed && self.was_pressed)
+            .then_some(self.press_on)
+            .flatten()
+            .filter(|on| under == Some(*on));
+        if !pressed {
+            self.press_on = None;
+        }
+        self.was_pressed = pressed;
+        click
+    }
+    /// What a click on `control` does (the 1.5.3 click handlers).
+    fn click(
+        &self,
+        control: &str,
+        timing: &Arc<NativeTiming>,
+        camera: &Arc<crate::camera::CameraControl>,
+    ) {
+        // The events lock only where the old handler took it.
+        let events = |f: &mut dyn FnMut(&mut Events)| {
+            if let Ok(mut e) = self.events.lock() {
+                f(&mut e);
+            }
+        };
+        match control {
+            "primary" => timing.request_action(true),
+            "release" | "watch" => timing.request_action(false),
+            "camera" => camera.request_toggle(),
+            "settings" => events(&mut |e| e.settings_open = true),
+            "tab" => events(&mut |e| e.team = !e.team),
+            "vision_own" => events(&mut |e| e.vision = Some(crate::camera::Vision::Own)),
+            "vision_other" => events(&mut |e| e.vision = Some(crate::camera::Vision::Other)),
+            "vision_all" => events(&mut |e| e.vision = Some(crate::camera::Vision::All)),
+            "swap" => events(&mut |e| e.swap = !e.swap),
+            lane => {
+                let Some(lane) = lane.strip_prefix("lane").and_then(|l| l.parse().ok()) else {
+                    return;
+                };
+                let Some(key) = timing.match_key() else {
+                    return;
+                };
+                events(&mut |e| {
+                    // Before Start the tiles are the chooser itself; in a
+                    // match they are the open swap column.
+                    let phase = timing.phase();
+                    if phase == Some(Phase::Ready) || swappable(phase) && e.swap {
+                        e.choice = Some((key, timing.generation(), lane));
+                        e.swap = false;
+                    }
+                });
+            }
+        }
     }
     /// The strip's writes for one frame (after spawn and registration).
     #[allow(clippy::too_many_arguments)]
@@ -655,7 +592,8 @@ impl SessionUi {
                 format!("width: {STRIP_W}px; height: 56px; anchor_x: 0; anchor_y: 1; pivot_x: 0; pivot_y: 1; x: 8px; y: 0px;")
             }
         });
-        self.vis(ctx, n.loading, phase == Phase::Loading);
+        self.view.preparing = preparing;
+        self.view.loading = phase == Phase::Loading;
         for lane in 0..5 {
             if let Some(p) = players.iter().find(|p| p.lane == lane) {
                 self.portrait(ctx, n, lane, &p.champion, 56.);
@@ -669,11 +607,8 @@ impl SessionUi {
         // motion: pass
         self.pass.frame();
         // motion: B8
-        crate::hud_motion_pass::b8_swap_sweep(&self.pass, in_match, SWAP_TILE).write(
-            ctx,
-            &mut self.cache,
-            n.b8,
-        );
+        self.view.sweep =
+            crate::hud_motion_pass::b8_swap_sweep(&self.pass, in_match, SWAP_TILE).view();
         let root = ctx.ui_node_rect(PATH);
         let scaled = |(x, y, w, h): (f32, f32, f32, f32)| {
             root.map(|(rx, ry, rw, rh)| {
@@ -708,7 +643,7 @@ impl SessionUi {
             }
         }
         let strip = !preparing && !ai;
-        self.vis(ctx, n.take_label, ai);
+        self.view.take_label = ai;
         if let Some(vision) = self
             .events
             .lock()
@@ -719,31 +654,25 @@ impl SessionUi {
             camera.set_vision(vision);
         }
         // Vision: one segmented group on the strip (formerly inside the "..." menu).
-        for id in n.rules {
-            self.vis(ctx, id, strip);
-        }
+        self.view.rules = strip;
         let vision = camera.vision();
         let vision_position = self
             .motion
             .value("vision_indicator", vision.index() as f32, 0.167);
         let hovered_vision =
             vision_hover_index(strip, cursor, root.map(|(x, y, w, h)| Rect { x, y, w, h }));
-        self.cache.props_keyed(
-            ctx,
-            n.vision_indicator,
-            S1,
-            (strip, vision_position),
-            |(strip, position)| {
-                format!(
-                    "visible: {strip}; x: {:.2}px; color: #eeececff;",
-                    VISION_X + 2. + VISION_STEP * position,
-                )
-            },
+        self.view.indicator = (
+            strip,
+            hundredths(VISION_X + 2. + VISION_STEP * vision_position),
         );
-        for (i, (node, hover_node, glyph_node)) in n.vision.iter().enumerate() {
-            self.cache.props_keyed(ctx, *node, S1, (strip, i), |(strip, i)| {
-                format!("x: {}px; y: 6px; width: 44px; height: 44px; visible: {strip}; ignore_event: {}; btn: {{ color: #00000000; back_color: #00000000; stroke: 0; }}", VISION_X + VISION_STEP * i as f32, !strip)
-            });
+        for (i, (node, glyph_node)) in n.vision.iter().enumerate() {
+            self.cache
+                .props_keyed(ctx, *node, S1, (strip, i), |(strip, i)| {
+                    format!(
+                        "x: {}px; y: 6px; width: 44px; height: 44px; visible: {strip};",
+                        VISION_X + VISION_STEP * i as f32
+                    )
+                });
             let selected = self.motion.tonal(
                 ["vision_sel0", "vision_sel1", "vision_sel2"][i],
                 f32::from(vision.index() == i),
@@ -759,15 +688,7 @@ impl SessionUi {
                 0xb8b6b5ff,
                 selected,
             );
-            self.cache.props_keyed(
-                ctx,
-                *hover_node,
-                S1,
-                (strip, shade, (255. * hover) as u8),
-                |(strip, shade, alpha)| {
-                    format!("visible: {strip}; color: #{:06x}{alpha:02x};", shade >> 8)
-                },
-            );
+            self.view.vision[i] = (strip, shade & !0xff | u32::from((255. * hover) as u8));
             let ink = crate::hud_motion::color_rgba(0xb8b6b5ff, 0x393939ff, selected);
             self.cache
                 .props_keyed(ctx, *glyph_node, S1, (ink,), |(ink,)| {
@@ -828,25 +749,19 @@ impl SessionUi {
                 root,
             );
         }
-        self.vis(ctx, n.tab_key, strip);
+        self.view.tab_key = strip;
+        // The glyphs' own writes after their buttons' (primary 0, camera 3, tab 5).
+        let glyphs = &mut self.view.glyphs;
         if ai {
-            self.cache
-                .props_keyed(ctx, n.primary_glyph, S2, (), |()| "x: 9px;".into());
+            glyphs[0].at.0 = 9.;
         }
-        self.cache
-            .props_keyed(ctx, n.primary_glyph, S3, (preparing,), |(preparing,)| {
-                format!(
-                    "color: #{};",
-                    if preparing { "1c1a18ff" } else { "eeececff" }
-                )
-            });
-        self.cache
-            .props_keyed(ctx, n.camera_glyph, S1, (camera.locked(),), |(locked,)| {
-                format!("color: #{};", if locked { "fdee00ff" } else { "cbc9c7ff" })
-            });
-        self.cache.props_keyed(ctx, n.tab_glyph, S1, (), |()| {
-            "x: 38px; y: 9px; width: 26px; height: 26px;".into()
-        });
+        glyphs[0].ink = if preparing { 0x1c1a18ff } else { 0xeeececff };
+        glyphs[3].ink = if camera.locked() {
+            0xfdee00ff
+        } else {
+            0xcbc9c7ff
+        };
+        (glyphs[5].at, glyphs[5].size) = ((38., 9.), 26.);
         for lane in 0..5 {
             let p = players.iter().find(|p| p.lane == lane);
             let b = &n.buttons[7 + lane];
@@ -880,8 +795,8 @@ impl SessionUi {
         }
         let mut tip = None;
         if let Some(cursor) = cursor {
-            for (k, node) in TIPS.iter().enumerate() {
-                let text = match *node {
+            for node in TIPS {
+                let text = match node {
                     "primary" => {
                         if preparing {
                             crate::lang::tr("Start · F11")
@@ -902,13 +817,12 @@ impl SessionUi {
                     "vision_other" => crate::lang::tr("Opposing-team vision"),
                     _ => crate::lang::tr("All-team vision"),
                 };
-                let path = &n.tip_paths[k];
-                if ctx.ui_visible(path) == Some(true)
-                    && ctx
-                        .ui_node_rect(path)
-                        .is_some_and(|(x, y, w, h)| Rect { x, y, w, h }.contains(cursor))
+                if let Some(rect) = self
+                    .view
+                    .control_rect(node, root)
+                    .filter(|&(x, y, w, h)| Rect { x, y, w, h }.contains(cursor))
                 {
-                    tip = Some((text.to_owned(), ctx.ui_node_rect(path).unwrap()));
+                    tip = Some((text.to_owned(), rect));
                     break;
                 }
             }
@@ -972,15 +886,21 @@ impl SessionUi {
             self.tip = None;
             self.vis(ctx, n.tooltip, false);
         }
-        // The Settings window covers the strip; the shop window may.
-        let covered = crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed)
-            || cursor.is_some_and(|p| {
-                crate::shop_ui::AREA
-                    .lock()
-                    .is_ok_and(|area| area.is_some_and(|a| a.contains(p)))
-            });
-        let under = crate::ui_sound::under_cursor(ctx, n.clickable.iter(), cursor);
+        let covered = covered(cursor);
+        // The clickable control under the cursor, the last in `CLICKABLE`
+        // order first (as the old search through the tree's rectangles).
+        let under = cursor.and_then(|(x, y)| {
+            CLICKABLE
+                .iter()
+                .zip(&n.clickable)
+                .rev()
+                .find_map(|(name, path)| {
+                    let (l, t, w, h) = self.view.control_rect(name, root)?;
+                    (x >= l && x < l + w && y >= t && y < t + h).then(|| path.clone())
+                })
+        });
         self.hover.update(true, under, cursor, pressed || covered);
+        self.root = root;
         // Nothing shows while perf_hide_mod_ui hides the mod's windows.
         if crate::ui_root::hidden() {
             return;
@@ -995,6 +915,15 @@ impl SessionUi {
         }
         bounds.extend(swap_bounds.into_iter().flatten());
     }
+}
+/// The Settings window covers the strip; the shop window may.
+fn covered(cursor: Option<(f32, f32)>) -> bool {
+    crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed)
+        || cursor.is_some_and(|p| {
+            crate::shop_ui::AREA
+                .lock()
+                .is_ok_and(|area| area.is_some_and(|a| a.contains(p)))
+        })
 }
 #[cfg(test)]
 mod tests {
@@ -1070,11 +999,78 @@ mod tests {
             Some(4)
         );
     }
+    /// The strip in a match with every button shown, its root on screen.
+    fn strip_ui() -> (SessionUi, Option<(f32, f32, f32, f32)>) {
+        let mut ui = SessionUi::default();
+        ui.view.shown = true;
+        ui.view.preparing = false;
+        for (k, x) in [0., 464., 48., 96., 144., TAB_X, 0.]
+            .into_iter()
+            .enumerate()
+        {
+            let b = &mut ui.view.buttons[k];
+            b.rect = if k == 6 {
+                (0., SWAP_Y, SWAP_TILE, SWAP_TILE)
+            } else {
+                (x, 6., if k == 5 { 68. } else { 44. }, 44.)
+            };
+            b.shown = k != 1; // "watch" shows only in Ready.
+        }
+        ui.view.vision = [(true, 0); 3];
+        (ui, Some((8., 1024., STRIP_W, 56.)))
+    }
+    #[test]
+    fn a_click_is_a_press_and_release_on_the_same_shown_button() {
+        let (mut ui, root) = strip_ui();
+        ui.root = root;
+        let pause = Some((30., 1050.));
+        let camera = Some((126., 1050.));
+        // Press and release on Pause: one click, on the release.
+        assert_eq!(ui.clicks(pause, true), None);
+        assert_eq!(ui.clicks(pause, true), None);
+        assert_eq!(ui.clicks(pause, false), Some("primary"));
+        assert_eq!(ui.clicks(pause, false), None);
+        // Pressed on Pause, released on the camera button: nothing.
+        ui.clicks(pause, true);
+        assert_eq!(ui.clicks(camera, false), None);
+        // Pressed elsewhere, dragged onto the camera button: nothing.
+        ui.clicks(Some((900., 500.)), true);
+        ui.clicks(camera, true);
+        assert_eq!(ui.clicks(camera, false), None);
+        // A hidden button takes no click ("watch" outside Ready).
+        let watch = Some((8. + 480., 1050.));
+        ui.clicks(watch, true);
+        assert_eq!(ui.clicks(watch, false), None);
+        // The vision group and Tab.
+        ui.clicks(Some((230., 1050.)), true);
+        assert_eq!(ui.clicks(Some((230., 1050.)), false), Some("vision_own"));
+        ui.clicks(Some((640., 1050.)), true);
+        assert_eq!(ui.clicks(Some((640., 1050.)), false), Some("tab"));
+        // Nothing while the strip is hidden.
+        ui.view.shown = false;
+        ui.clicks(pause, true);
+        assert_eq!(ui.clicks(pause, false), None);
+    }
+    #[test]
+    fn the_swap_button_takes_the_click_over_a_tile_unfolding_from_under_it() {
+        let (mut ui, root) = strip_ui();
+        ui.root = root;
+        let tile = &mut ui.view.lanes[4];
+        tile.rect = swap_tile(4, 0.5);
+        tile.shown = true;
+        let both = (8. + 20., 1024. + SWAP_Y + 4.);
+        assert_eq!(ui.view.button_at(root, both), Some("swap"));
+        let above = (8. + 20., 1024. + swap_tile(4, 0.5).1 + 2.);
+        assert_eq!(ui.view.button_at(root, above), Some("lane4"));
+        ui.clicks(Some(both), true);
+        assert_eq!(ui.clicks(Some(both), false), Some("swap"));
+    }
     #[test]
     fn strip_holds_controls_in_the_requested_order_without_a_more_menu() {
         let t = template();
         assert!(!t.contains("#more:") && !t.contains("#menu:") && !t.contains("ef_more"));
-        assert!(t.contains("#settings:color_icon_button") && t.contains("ef_settings"));
+        // Drawn since 1.6.0-perf-dev3: no button runners left in the tree.
+        assert!(!t.contains("color_icon_button") && !t.contains("#tab_key"));
         // Pause 0, AI 48, camera 96, settings 144, vision 200-336, Tab after.
         const {
             assert!(VISION_X >= 144. + 44. + 8.);

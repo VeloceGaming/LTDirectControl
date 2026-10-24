@@ -12,6 +12,15 @@
 //! To write a new record after a deliberate change to what a window shows:
 //!     LT_UPDATE_UI_RECORDS=1 cargo test --release ui_identity
 //! and review the record's diff like any other change.
+//!
+//! 1.6.0-perf-dev3: the fake tree lays nodes out from their templates
+//! (`fake_layout.rs`) instead of answering the whole screen, the cursor
+//! points sit on the real controls, and the records note the hover and
+//! click sound requests. The records were made again on the unchanged
+//! 1.6.0-perf-dev2 windows with this rig, then shrunk to the nodes that stay
+//! in the tree (CHANGELOG, 1.6.0-perf-dev3). `LT_UI_EXPORT_DIR=<folder>`
+//! also writes each record with every template it spawned, for the pixel
+//! comparison (`tools/compare_draw_review.cjs`).
 use crate::{
     abilities::HudSkills,
     clock::test_clock,
@@ -24,15 +33,64 @@ use std::time::Duration;
 
 const FRAME: Duration = Duration::from_micros(16_667);
 
-fn record_path(name: &str) -> PathBuf {
+fn record_path(folder: &str, name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("testdata")
-        .join("ui_identity")
+        .join(folder)
         .join(format!("{name}.txt"))
 }
-/// Compare `lines` with the saved record `name` (or save it).
+/// Compare `lines` with the saved write record `name` (or save it).
 pub(crate) fn check_record(name: &str, lines: &[String]) {
-    let path = record_path(name);
+    if let Some(dir) = std::env::var_os("LT_UI_EXPORT_DIR") {
+        let dir = PathBuf::from(dir).join(name);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("record.txt"), lines.join("\n") + "\n").unwrap();
+        for (hash, source) in fake_ui::with(|u| u.sources.clone()) {
+            std::fs::write(dir.join(format!("{hash}.ui")), source).unwrap();
+        }
+    }
+    check_saved("ui_identity", name, lines);
+}
+/// A draw record with every frame that draws exactly what the one before
+/// drew saved as one line, `= as before`.
+fn compact(lines: &[String]) -> Vec<String> {
+    let mut frames: Vec<(&String, Vec<&String>)> = Vec::new();
+    for line in lines {
+        match frames.last_mut() {
+            _ if line.starts_with("## ") => frames.push((line, Vec::new())),
+            Some((_, body)) => body.push(line),
+            None => {}
+        }
+    }
+    let mut out = Vec::new();
+    for (k, (header, body)) in frames.iter().enumerate() {
+        out.push((*header).clone());
+        if k > 0 && !body.is_empty() && *body == frames[k - 1].1 {
+            out.push("= as before".to_owned());
+        } else {
+            out.extend(body.iter().map(|l| (*l).clone()));
+        }
+    }
+    out
+}
+/// Compare `lines` with the saved draw record `name` (1.6.0-perf-dev3),
+/// made in the same run as the write record `window`.
+pub(crate) fn check_draw_record(window: &str, name: &str, lines: &[String]) {
+    let compact = compact(lines);
+    let lines = &compact;
+    if let Some(dir) = std::env::var_os("LT_UI_EXPORT_DIR") {
+        let dir = PathBuf::from(dir).join(window);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join(format!("draw_{name}.txt")),
+            lines.join("\n") + "\n",
+        )
+        .unwrap();
+    }
+    check_saved("ui_draw", name, lines);
+}
+fn check_saved(folder: &str, name: &str, lines: &[String]) {
+    let path = record_path(folder, name);
     let text = lines.join("\n") + "\n";
     if std::env::var_os("LT_UPDATE_UI_RECORDS").is_some() {
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -51,13 +109,23 @@ pub(crate) fn check_record(name: &str, lines: &[String]) {
             .position(|(a, b)| a != b)
             .unwrap_or(saved.lines().count().min(text.lines().count()));
         panic!(
-            "{name}: the writes differ from the 1.5.3 record at line {}:\n  saved:  {:?}\n  actual: {:?}\n(full output in {})",
+            "{folder}/{name}: the record differs at line {}:\n  saved:  {:?}\n  actual: {:?}\n(full output in {})",
             first + 1,
             saved.lines().nth(first),
             text.lines().nth(first),
             actual.display()
         );
     }
+}
+/// What `lists` draw this frame, as `post_render` sends them.
+fn drawn(lists: &[&crate::draw_list::DrawList]) -> Vec<String> {
+    crate::fake_draw::take_log();
+    crate::fake_draw::frame(|ctx| {
+        for list in lists {
+            list.submit(ctx);
+        }
+    });
+    crate::fake_draw::take_log()
 }
 
 /// One HUD frame's inputs, as `Client::apply_windows` passes them.
@@ -120,7 +188,8 @@ fn skill_point(slot: usize) -> (f32, f32) {
 fn next_point() -> (f32, f32) {
     (1390. + 18., HUD_TOP + 100. + 18.)
 }
-const SHOP_HIT: (f32, f32, f32, f32) = (1500., 1000., 40., 40.);
+/// The strip's shop button on screen (strip x 1386, y 90, 148 x 52).
+const SHOP_HIT: (f32, f32, f32, f32) = (1386., HUD_TOP + 90., 148., 52.);
 
 fn hud_frames() -> Vec<HudFrame> {
     let rest = HudFrame {
@@ -311,6 +380,9 @@ struct HudRig {
     ui: HudUi,
     plate: StatePlate,
     log: crate::Logger,
+    /// The draw records: the HUD strip's and the state plate's commands.
+    draws: [Vec<String>; 2],
+    frames: usize,
 }
 impl HudRig {
     fn new() -> Self {
@@ -319,6 +391,8 @@ impl HudRig {
             ui: HudUi::default(),
             plate: StatePlate::default(),
             log: crate::test_support::logger("ui-identity-hud"),
+            draws: Default::default(),
+            frames: 0,
         }
     }
     /// The HUD part of `Client::apply_windows`, in its order.
@@ -357,6 +431,11 @@ impl HudRig {
             (hovered, bounds, self.ui.take_shop_click())
         });
         let mut lines = fake_ui::take_log();
+        for (record, list) in self.draws.iter_mut().zip([&self.ui.list, &self.plate.list]) {
+            record.push(format!("## {}", self.frames));
+            record.extend(drawn(&[list]));
+        }
+        self.frames += 1;
         let chimes = crate::ui_sound::READY_CALLS.with(|n| n.get()) - chimes;
         let bounds: Vec<String> = bounds
             .iter()
@@ -376,8 +455,6 @@ impl HudRig {
 fn hud_strip_and_state_plate_writes_match_1_5_3() {
     fake_ui::reset();
     test_clock::stop();
-    fake_ui::set_rect(player_hud::PATH, (0., HUD_TOP, 1920., 146.));
-    fake_ui::set_rect(&format!("{}.shop_hit", player_hud::PATH), SHOP_HIT);
     let mut rig = HudRig::new();
     let mut out = Vec::new();
     for (i, f) in hud_frames().iter().enumerate() {
@@ -403,6 +480,8 @@ fn hud_strip_and_state_plate_writes_match_1_5_3() {
     crate::ui_theme::TEST_BACKGROUND.with(|b| b.set(None));
     crate::lang::set_for_test(None);
     check_record("hud", &out);
+    check_draw_record("hud", "hud", &rig.draws[0]);
+    check_draw_record("hud", "plate", &rig.draws[1]);
 }
 
 fn lanes() -> Vec<crate::own_selection::PlayerIdentity> {
@@ -433,27 +512,6 @@ fn session_strip_writes_match_1_5_3() {
     use crate::session_ui::{SessionUi, PATH};
     fake_ui::reset();
     test_clock::stop();
-    fake_ui::set_rect(PATH, (8., 1024., 656., 56.));
-    for (node, x) in [
-        ("primary", 8.),
-        ("release", 56.),
-        ("camera", 104.),
-        ("settings", 152.),
-        ("vision_own", 208.),
-        ("vision_other", 254.),
-        ("vision_all", 300.),
-        ("tab", 594.),
-        ("swap", 8.),
-    ] {
-        let y = if node == "swap" { 960. } else { 1030. };
-        fake_ui::set_rect(&format!("{PATH}.{node}"), (x, y, 44., 44.));
-    }
-    for lane in 0..5 {
-        fake_ui::set_rect(
-            &format!("{PATH}.lane{lane}"),
-            (8. + 80. * lane as f32, 900., 72., 72.),
-        );
-    }
     let timing = std::sync::Arc::new(crate::native_timing::NativeTiming::new(true));
     let camera = std::sync::Arc::new(crate::camera::CameraControl::default());
     let settings = crate::settings::Settings::new(None);
@@ -461,13 +519,15 @@ fn session_strip_writes_match_1_5_3() {
     let players = lanes();
     let mut ui = SessionUi::default();
     let mut out = Vec::new();
+    let mut draws = Vec::new();
     // (phase, cursor, pressed, frames)
     type Step = (Option<Phase>, Option<(f32, f32)>, bool, usize);
     let script: Vec<Step> = vec![
         (None, None, false, 3),
         (Some(Phase::Loading), None, false, 5),
         (Some(Phase::Ready), None, false, 5),
-        (Some(Phase::Ready), Some((40., 930.)), false, 10),
+        // Over lane 0 of the chooser (root 704, 938; tile 0, 4, 72 x 72).
+        (Some(Phase::Ready), Some((740., 978.)), false, 10),
         (Some(Phase::Running), None, false, 10),
         (Some(Phase::Running), Some((30., 1050.)), false, 15),
         (Some(Phase::Running), Some((30., 1050.)), true, 3),
@@ -512,13 +572,25 @@ fn session_strip_writes_match_1_5_3() {
             });
             out.push(format!("## frame {i}"));
             out.extend(fake_ui::take_log());
-            out.push(format!("# bounds=[{}]", rects(&bounds)));
+            draws.push(format!("## {i}"));
+            draws.extend(drawn(&[&ui.list]));
+            let sounds = (
+                crate::ui_sound::HOVER_CALLS.with(|n| n.replace(0)),
+                crate::ui_sound::CLICK_CALLS.with(|n| n.replace(0)),
+            );
+            out.push(format!(
+                "# bounds=[{}] hovers={} clicks={}",
+                rects(&bounds),
+                sounds.0,
+                sounds.1
+            ));
             test_clock::advance(FRAME);
             i += 1;
         }
     }
     test_clock::release();
     check_record("session", &out);
+    check_draw_record("session", "session", &draws);
 }
 
 fn team_player(side: usize, lane: usize, t: usize) -> crate::team_status::Player {
@@ -603,6 +675,7 @@ fn stats_panels_writes_match_1_5_3() {
     let log = crate::test_support::logger("ui-identity-stats");
     let mut ui = StatsUi::default();
     let mut out = Vec::new();
+    let mut draws = Vec::new();
     for i in 0..90usize {
         let own = (i >= 3).then(|| stats_unit(i, Some("hammerer"), true));
         let target = match i {
@@ -621,6 +694,8 @@ fn stats_panels_writes_match_1_5_3() {
         });
         out.push(format!("## frame {i}"));
         out.extend(fake_ui::take_log());
+        draws.push(format!("## {i}"));
+        draws.extend(drawn(&[&ui.list]));
         out.push(format!("# bounds=[{}]", rects(&bounds)));
         test_clock::advance(FRAME);
     }
@@ -628,6 +703,7 @@ fn stats_panels_writes_match_1_5_3() {
     crate::ui_theme::TEST_BACKGROUND.with(|b| b.set(None));
     test_clock::release();
     check_record("stats", &out);
+    check_draw_record("stats", "stats", &draws);
 }
 
 /// The screen effect: off, the low-health tint rising and breathing, a
@@ -659,6 +735,7 @@ fn screen_effect_writes_match_1_5_3() {
     };
     let mut effect = Effect::default();
     let mut out = Vec::new();
+    let mut draws = Vec::new();
     for i in 0..150usize {
         camera.capture(frame);
         let mut s = athlete();
@@ -670,13 +747,16 @@ fn screen_effect_writes_match_1_5_3() {
         });
         s.alive = !(60..100).contains(&i);
         effect.update(true, i < 140, Some(&s), 16_667);
-        fake_ui::frame(|ctx| effect.apply(ctx, &camera, &log));
+        fake_ui::frame(|_| effect.apply(&camera, &log));
         out.push(format!("## frame {i}"));
         out.extend(fake_ui::take_log());
+        draws.push(format!("## {i}"));
+        draws.extend(drawn(&[&effect.list]));
         test_clock::advance(FRAME);
     }
     test_clock::release();
     check_record("effect", &out);
+    check_draw_record("effect", "effect", &draws);
 }
 
 /// Steady play (nothing changes on screen): how many of the HUD's typed
@@ -685,7 +765,6 @@ fn screen_effect_writes_match_1_5_3() {
 fn steady_hud_frames_format_almost_nothing() {
     fake_ui::reset();
     test_clock::stop();
-    fake_ui::set_rect(player_hud::PATH, (0., HUD_TOP, 1920., 146.));
     let mut rig = HudRig::new();
     let frames = hud_frames();
     // Control start, then the athlete standing still: let tweens settle.
@@ -708,6 +787,8 @@ fn steady_hud_frames_format_almost_nothing() {
     let (calls, formatted) = crate::ui_writes::COUNTS.with(|c| c.get());
     test_clock::release();
     println!("steady HUD frames: {calls} typed writes, {formatted} formatted (60 frames)");
-    assert!(calls > 60 * 100, "{calls}");
+    // 1.6.0-perf-dev3: about 24 typed writes a frame remain (the tree nodes
+    // that stay); the drawn elements are values in `HudView`, not writes.
+    assert!(calls > 60 * 20, "{calls}");
     assert!(formatted * 100 <= calls, "{formatted} of {calls} formatted");
 }

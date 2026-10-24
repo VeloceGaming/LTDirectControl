@@ -1,0 +1,1248 @@
+## frame 0
+# bounds=[] hovers=0 clicks=0
+## frame 1
+# bounds=[] hovers=0 clicks=0
+## frame 2
+# bounds=[] hovers=0 clicks=0
+## frame 3
+S ingame.lt_session_controls len=8133 fnv=0ea650af849bb519
+R ingame.lt_session_controls.primary
+R ingame.lt_session_controls.release
+R ingame.lt_session_controls.watch
+R ingame.lt_session_controls.camera
+R ingame.lt_session_controls.settings
+R ingame.lt_session_controls.tab
+R ingame.lt_session_controls.vision_own
+R ingame.lt_session_controls.vision_other
+R ingame.lt_session_controls.vision_all
+R ingame.lt_session_controls.swap
+R ingame.lt_session_controls.lane0
+R ingame.lt_session_controls.lane1
+R ingame.lt_session_controls.lane2
+R ingame.lt_session_controls.lane3
+R ingame.lt_session_controls.lane4
+P ingame.lt_session_controls | width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: -62.00px; x: 0px;
+P ingame.lt_session_controls.loading | visible: true;
+P ingame.lt_session_controls.lane0.portrait | visible: false;
+P ingame.lt_session_controls.lane1.portrait | visible: false;
+P ingame.lt_session_controls.lane2.portrait | visible: false;
+P ingame.lt_session_controls.b8_sweep | visible: false;
+P ingame.lt_session_controls.take_label | visible: false;
+P ingame.lt_session_controls.vision_track | visible: false;
+P ingame.lt_session_controls.rule_controls | visible: false;
+P ingame.lt_session_controls.rule_vision | visible: false;
+P ingame.lt_session_controls.vision_indicator | visible: false; x: 202.00px; color: #eeececff;
+P ingame.lt_session_controls.vision_own | x: 200px; y: 6px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #5b5b5b00;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #b8b6b5ff;
+P ingame.lt_session_controls.vision_other | x: 246px; y: 6px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_other.hover | visible: false; color: #5b5b5b00;
+P ingame.lt_session_controls.vision_other.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #b8b6b5ff;
+P ingame.lt_session_controls.vision_all | x: 292px; y: 6px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_all.hover | visible: false; color: #5b5b5b00;
+P ingame.lt_session_controls.vision_all.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #b8b6b5ff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 11.00px; y: 11.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.watch | x: 464px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.watch.glyph | source: "asset/lt_direct_control/ui/ef_eye"; x: 11.00px; y: 11.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.release | x: 48px; y: 6.00px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.release.glyph | source: "asset/lt_direct_control/ui/ef_cpu"; x: 9.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.camera.glyph | source: "asset/lt_direct_control/ui/ef_camera"; x: 9.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.settings | x: 144px; y: 6.00px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.settings.glyph | source: "asset/lt_direct_control/ui/ef_settings"; x: 9.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.swap.glyph | source: "asset/lt_direct_control/ui/ef_swap"; x: 12.00px; y: 12.00px; width: 32.00px; height: 32.00px;
+P ingame.lt_session_controls.tab_key | visible: false;
+P ingame.lt_session_controls.primary.glyph | color: #1c1a18ff;
+P ingame.lt_session_controls.camera.glyph | color: #cbc9c7ff;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane0.portrait | x: 0px; y: 0px;
+P ingame.lt_session_controls.lane0.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane1.portrait | x: 0px; y: 0px;
+P ingame.lt_session_controls.lane1.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane2 | x: 160px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane2.portrait | x: 0px; y: 0px;
+P ingame.lt_session_controls.lane2.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane3 | x: 240px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3.portrait | x: 0px; y: 0px;
+P ingame.lt_session_controls.lane3.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane4 | x: 320px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4.portrait | x: 0px; y: 0px;
+P ingame.lt_session_controls.lane4.portrait | color: #ffffffff;
+P ingame.lt_session_controls.tooltip | visible: false;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 4
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #64646400;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #acaaa9ff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #b7ae1dff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #b7ae1dff; back_color: #1c1a18ff; stroke: 2; }
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 5
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #78787700;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #908f8eff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #e0d30cff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #e0d30cff; back_color: #1c1a18ff; stroke: 2; }
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 6
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #93929100;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #6c6b6aff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #f1e305ff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #f1e305ff; back_color: #1c1a18ff; stroke: 2; }
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 7
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #a9a7a600;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #4e4e4eff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #f9ea02ff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: false; ignore_event: true; btn: { color: #f9ea02ff; back_color: #1c1a18ff; stroke: 2; }
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 8
+P ingame.lt_session_controls.loading | visible: false;
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #b5b3b200;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #3e3e3eff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: true; ignore_event: false; btn: { color: #fced00ff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.watch | x: 464px; y: 16.00px; width: 48px; height: 48px; visible: true; ignore_event: false; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #fced00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 160px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 240px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 320px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #4b4a49ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 9
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #b8b6b500;
+P ingame.lt_session_controls.vision_own.glyph | x: 10px; y: 10px; width: 24px; height: 24px; color: #393939ff;
+P ingame.lt_session_controls.primary | x: 408px; y: 16.00px; width: 48px; height: 48px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #fdee00ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane1 | x: 80px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 10
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 11
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 12
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 13
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = hammerer
+
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 14
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #5d5c5bff; back_color: #1f1d1bff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffff13;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 15
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #848382ff; back_color: #252322ff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffff3d;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 16
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #b7b7b6ff; back_color: #2e2c2bff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffff79;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 17
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #e1e1e1ff; back_color: #353332ff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffffb5;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 18
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #f8f8f8ff; back_color: #393736ff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffffe0;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 19
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: 4.00px; width: 72px; height: 72px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #fffffff7;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 20
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #fffffffe;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 21
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -26.24px; y: -76.00px; width: 124.48px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 100.48001px; height: 52px; color: #ffffffff;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 22
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[704.0,938.0,512.0,80.0] hovers=0 clicks=0
+## frame 23
+P ingame.lt_session_controls | width: 656px; height: 56px; anchor_x: 0; anchor_y: 1; pivot_x: 0; pivot_y: 1; x: 8px; y: 0px;
+P ingame.lt_session_controls.vision_track | visible: true;
+P ingame.lt_session_controls.rule_controls | visible: true;
+P ingame.lt_session_controls.rule_vision | visible: true;
+P ingame.lt_session_controls.vision_indicator | visible: true; x: 202.00px; color: #eeececff;
+P ingame.lt_session_controls.vision_own | x: 200px; y: 6px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b500;
+P ingame.lt_session_controls.vision_other | x: 246px; y: 6px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_other.hover | visible: true; color: #5b5b5b00;
+P ingame.lt_session_controls.vision_all | x: 292px; y: 6px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b00;
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_pause"; x: 9.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.watch | x: 464px; y: 16.00px; width: 48px; height: 48px; visible: false; ignore_event: true; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.release | x: 48px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.settings | x: 144px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #eeececff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.tab_key | visible: true;
+P ingame.lt_session_controls.primary.glyph | color: #eeececff;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tooltip | visible: false;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 24
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #918a2c64; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #f4f3f3ff; back_color: #373534ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 25
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #68653d29; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #dad9d9ff; back_color: #312f2dff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 26
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #57554411; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #b9b7b6ff; back_color: #282624ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 27
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4f4e4706; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #9d9c9aff; back_color: #211f1dff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 28
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4c4b4901; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8e8c8bff; back_color: #1d1b19ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 29
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 30
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 31
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 32
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 33
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = Pause · 
+F11
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 34
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #5d5c5b19; back_color: #1f1d1bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 35
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #84838250; back_color: #252322ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 36
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #b7b7b699; back_color: #2e2c2bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 37
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #e1e1e1d5; back_color: #353332ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 38
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #f8f8f8f6; back_color: #393736ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 39
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 40
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 41
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 125.28px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 101.28px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 42
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 43
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 44
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 45
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 46
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 47
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 48
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 49
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3e3d3cff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 50
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #484747ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 51
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #535252ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = Lock camera · Y
+Hold Space to follow
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 52
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ededede6; back_color: #4f4e4eff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #5d5c5b19; back_color: #1f1d1bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 53
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #c6c6c6af; back_color: #434241ff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #84838250; back_color: #252322ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 54
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #93929266; back_color: #31302eff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #b7b7b699; back_color: #2e2c2bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 55
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #6968672a; back_color: #23211fff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #e1e1e1d5; back_color: #353332ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 56
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #52515009; back_color: #1d1b19ff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #f8f8f8f6; back_color: #393736ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 57
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 58
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 59
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 365.14px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 341.14px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 60
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 61
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = Own-team 
+vision
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 62
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b518;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ededede6; back_color: #373534ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 63
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b550;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #c6c6c6af; back_color: #312f2dff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 64
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b599;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #93929266; back_color: #282624ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 65
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b5d4;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #6968672a; back_color: #211f1dff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 66
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b5f5;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #52515009; back_color: #1d1b19ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 67
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b5ff;
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 68
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 69
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 128.81px; y: -74.00px; width: 186.38px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 162.38px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 70
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 71
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = All-team 
+vision
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 72
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b5e6;
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b18;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 73
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b5ae;
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b50;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 74
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b565;
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b99;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 75
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b52a;
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5bd4;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 76
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b509;
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5bf5;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 77
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b500;
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5bff;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 78
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 79
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 230.52px; y: -74.00px; width: 166.96px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 142.96px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 80
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 81
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = Team details · 
+Tab
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 82
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5be6;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #5d5c5b19; back_color: #1f1d1bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 83
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5bae;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #84838250; back_color: #252322ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 84
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b65;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #b7b7b699; back_color: #2e2c2bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 85
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b2a;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #e1e1e1d5; back_color: #353332ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 86
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b09;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #f8f8f8f6; back_color: #393736ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 87
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b00;
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 88
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 89
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 521.89px; y: -74.00px; width: 196.22px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 172.22px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 90
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 91
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: false;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 92
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #ededede6; back_color: #373534ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #f0eeeeff; back_color: #1f1d1bff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 93
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #c6c6c6af; back_color: #312f2dff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #f3f2f2ff; back_color: #252322ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 94
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #93929266; back_color: #282624ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #f8f7f7ff; back_color: #2e2c2bff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 95
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #6968672a; back_color: #211f1dff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fcfcfcff; back_color: #353332ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 96
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #52515009; back_color: #1d1b19ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fefefeff; back_color: #393736ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 97
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 98
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 99
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 100
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 101
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 102
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 103
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 104
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 105
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0.portrait | color: #ffffff00;
+P ingame.lt_session_controls.lane1.portrait | color: #ffffff00;
+P ingame.lt_session_controls.lane2.portrait | color: #ffffff00;
+P ingame.lt_session_controls.lane3.portrait | color: #ffffff00;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 106
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #faf49dff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -175.86px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -153.49px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -131.12px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -108.75px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -86.37px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,848.1,56.0,111.9] hovers=0 clicks=0
+## frame 107
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fcf149ff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -246.09px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -209.67px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -173.25px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -136.84px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -100.42px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,777.9,56.0,182.1] hovers=0 clicks=0
+## frame 108
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fcef20ff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -288.56px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -243.65px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -198.74px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -153.83px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane4 | x: 0px; y: -108.91px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,735.4,56.0,224.6] hovers=0 clicks=0
+## frame 109
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee0bff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -315.19px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -264.95px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -214.71px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -164.47px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -114.24px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,708.8,56.0,251.2] hovers=0 clicks=0
+## frame 110
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee02ff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -332.56px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -278.85px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -225.13px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -171.42px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -117.71px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,691.4,56.0,268.6] hovers=0 clicks=0
+## frame 111
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -344.15px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -288.12px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -232.09px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane2.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane3 | x: 0px; y: -176.06px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -120.03px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,679.8,56.0,280.2] hovers=0 clicks=0
+## frame 112
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #3c3a39ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -351.96px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane0.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane1 | x: 0px; y: -294.37px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane1.portrait | color: #ffffffff;
+P ingame.lt_session_controls.lane2 | x: 0px; y: -236.78px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -179.19px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -121.59px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,672.0,56.0,288.0] hovers=0 clicks=0
+## frame 113
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #f9f4beff; back_color: #434241ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -244.59px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -208.47px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -172.35px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -136.24px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -100.12px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,779.4,56.0,180.6] hovers=0 clicks=0
+## frame 114
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #f5f2d9ff; back_color: #3b3a39ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -177.18px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -154.54px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -131.91px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -109.27px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -86.64px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,846.8,56.0,113.2] hovers=0 clicks=0
+## frame 115
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #f1efe1ff; back_color: #2f2e2cff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -136.41px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -121.93px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -107.45px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -92.96px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -78.48px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,887.6,56.0,72.4] hovers=0 clicks=0
+## frame 116
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #efede8ff; back_color: #242220ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -110.85px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -101.48px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -92.11px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -82.74px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -73.37px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,913.1,56.0,46.9] hovers=0 clicks=0
+## frame 117
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #eeecebff; back_color: #1d1b1aff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -94.18px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -88.15px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -82.11px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -76.07px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -70.04px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,929.8,56.0,30.2] hovers=0 clicks=0
+## frame 118
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.swap | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #eeececff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -83.05px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -79.24px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -75.43px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -71.62px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -67.81px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,940.9,56.0,19.1] hovers=0 clicks=0
+## frame 119
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -75.55px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -73.24px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -70.93px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -68.62px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -66.31px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,948.4,56.0,11.6] hovers=0 clicks=0
+## frame 120
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -70.53px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -69.23px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -67.92px; width: 56px; height: 56px; visible: true; ignore_event: false; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -66.61px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -65.31px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0 8.0,953.5,56.0,6.5] hovers=0 clicks=0
+## frame 121
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -67.28px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -66.63px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -65.97px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -65.31px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -64.66px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 122
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -65.31px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -65.05px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -64.79px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -64.53px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -64.26px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 123
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.30px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -64.24px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -64.18px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -64.12px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -64.06px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 124
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.lane0 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane1 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.lane2 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane3 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.lane4 | x: 0px; y: -64.00px; width: 56px; height: 56px; visible: false; ignore_event: true; btn: { color: #8a8886ff; back_color: #1c1a18ff; stroke: 1; }
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 125
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 126
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 127
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 128
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 9.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = Resume · 
+F11
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 129
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #5d5c5b19; back_color: #1f1d1bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 130
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #84838250; back_color: #252322ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 131
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #b7b7b699; back_color: #2e2c2bff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 132
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #e1e1e1d5; back_color: #353332ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 133
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #f8f8f8f6; back_color: #393736ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 134
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 135
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 136
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: -8.00px; y: -74.00px; width: 143.62px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 119.62001px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 137
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 138
+P ingame.lt_session_controls.take_label | visible: true;
+P ingame.lt_session_controls.vision_track | visible: false;
+P ingame.lt_session_controls.rule_controls | visible: false;
+P ingame.lt_session_controls.rule_vision | visible: false;
+P ingame.lt_session_controls.vision_indicator | visible: false; x: 202.00px; color: #eeececff;
+P ingame.lt_session_controls.vision_own | x: 200px; y: 6px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_own.hover | visible: false; color: #b8b6b500;
+P ingame.lt_session_controls.vision_other | x: 246px; y: 6px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_other.hover | visible: false; color: #5b5b5b00;
+P ingame.lt_session_controls.vision_all | x: 292px; y: 6px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_all.hover | visible: false; color: #5b5b5b00;
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #ffffffff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.release | x: 48px; y: 6.00px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.settings | x: 144px; y: 6.00px; width: 44px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: false; ignore_event: true; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab_key | visible: false;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: false;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 139
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #d1cb6dbe; back_color: #373534ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 140
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #e3d827db; back_color: #312f2dff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 141
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #f1e40cee; back_color: #282624ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 142
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #f9ea03f9; back_color: #211f1dff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 143
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fced00fe; back_color: #1d1b19ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 144
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1c1a18ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 145
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 146
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 147
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 148
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1d00;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffff00;
+T ingame.lt_session_controls.tooltip.text = Take control · 
+F11
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 149
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #1f1d1bff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1d10;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffff13;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 150
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #252322ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1d34;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffff3d;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 151
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #2e2c2bff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1d67;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffff79;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 152
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #353332ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1d9a;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffffb5;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 153
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #393736ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1dbe;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffffe0;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 154
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 260px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #3a3837ff; stroke: 2; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1dd2;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #fffffff7;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 155
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1dd8;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #fffffffe;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 156
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: true; x: 37.76px; y: -74.00px; width: 184.48px; height: 68px; color: #1e1e1dd9;
+P ingame.lt_session_controls.tooltip.text | width: 160.48px; height: 52px; color: #ffffffff;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 157
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_play"; x: 117.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.primary.glyph | x: 9px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,260.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 158
+P ingame.lt_session_controls.take_label | visible: false;
+P ingame.lt_session_controls.vision_track | visible: true;
+P ingame.lt_session_controls.rule_controls | visible: true;
+P ingame.lt_session_controls.rule_vision | visible: true;
+P ingame.lt_session_controls.vision_indicator | visible: true; x: 202.00px; color: #eeececff;
+P ingame.lt_session_controls.vision_own | x: 200px; y: 6px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_own.hover | visible: true; color: #b8b6b500;
+P ingame.lt_session_controls.vision_other | x: 246px; y: 6px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_other.hover | visible: true; color: #5b5b5b00;
+P ingame.lt_session_controls.vision_all | x: 292px; y: 6px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #00000000; back_color: #00000000; stroke: 0; }
+P ingame.lt_session_controls.vision_all.hover | visible: true; color: #5b5b5b00;
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #fdee00ff; back_color: #3a3837ff; stroke: 1; }
+P ingame.lt_session_controls.primary.glyph | source: "asset/lt_direct_control/ui/ef_pause"; x: 9.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.release | x: 48px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.camera | x: 96px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.settings | x: 144px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab | x: 586px; y: 6.00px; width: 68px; height: 44px; visible: true; ignore_event: false; btn: { color: #4b4a4900; back_color: #1c1a18ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab_key | visible: true;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+P ingame.lt_session_controls.tooltip | visible: false;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 159
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #cdcaa0b9; back_color: #373534ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 160
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #bfbdaca4; back_color: #312f2dff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 161
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #96948a6a; back_color: #282624ff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 162
+P ingame.lt_session_controls.primary | x: 0px; y: 6.00px; width: 44px; height: 44px; visible: true; ignore_event: false; btn: { color: #6b6b652e; back_color: #211f1dff; stroke: 1; }
+P ingame.lt_session_controls.tab.glyph | source: "asset/lt_direct_control/ui/ef_list"; x: 21.00px; y: 9.00px; width: 26.00px; height: 26.00px;
+P ingame.lt_session_controls.tab.glyph | x: 38px; y: 9px; width: 26px; height: 26px;
+# bounds=[8.0,1024.0,656.0,56.0 8.0,960.0,56.0,56.0] hovers=0 clicks=0
+## frame 163
+V ingame.lt_session_controls false
+# bounds=[] hovers=0 clicks=0
+## frame 164
+# bounds=[] hovers=0 clicks=0
+## frame 165
+# bounds=[] hovers=0 clicks=0
+## frame 166
+# bounds=[] hovers=0 clicks=0
+## frame 167
+# bounds=[] hovers=0 clicks=0
+## frame 168
+# bounds=[] hovers=0 clicks=0

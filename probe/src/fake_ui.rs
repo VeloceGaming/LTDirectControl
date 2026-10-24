@@ -10,7 +10,9 @@
 //!
 //! The model is deliberately small: a spawned window's root and every path
 //! under it exist; a node is visible until a write hides it; node
-//! rectangles are the whole 1920 x 1080 screen unless a test sets one.
+//! rectangles are laid out from the templates and the writes
+//! (`fake_layout.rs`, 1.6.0-perf-dev3; the whole 1920 x 1080 screen before),
+//! unless a test sets one.
 use mod_api_stable::{ClientCtxV1, StableClient, UiVtableV1};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -23,6 +25,10 @@ pub struct FakeUi {
     roots: Vec<String>,
     visible: HashMap<String, bool>,
     rects: HashMap<String, (f32, f32, f32, f32)>,
+    /// Node geometry from the spawned templates and writes (`fake_layout.rs`).
+    layouts: HashMap<String, crate::fake_layout::Layout>,
+    /// Every spawned source by its record id (`fnv` in the `S` line).
+    pub sources: HashMap<String, String>,
     /// While set, property and text writes are refused (a failing host).
     pub refuse_writes: bool,
 }
@@ -39,11 +45,6 @@ pub fn with<R>(f: impl FnOnce(&mut FakeUi) -> R) -> R {
 /// The record so far, emptied.
 pub fn take_log() -> Vec<String> {
     with(|u| std::mem::take(&mut u.log))
-}
-pub fn set_rect(path: &str, rect: (f32, f32, f32, f32)) {
-    with(|u| {
-        u.rects.insert(path.into(), rect);
-    });
 }
 /// A path that exists in the model (the game's own root "ingame" always).
 pub fn exists(path: &str) -> bool {
@@ -156,11 +157,11 @@ unsafe extern "C" fn spawn_source(
             return false;
         };
         let root = format!("{parent}.{id}");
-        u.log.push(format!(
-            "S {root} len={} fnv={:016x}",
-            source.len(),
-            fnv(source)
-        ));
+        let hash = format!("{:016x}", fnv(source));
+        u.log
+            .push(format!("S {root} len={} fnv={hash}", source.len()));
+        u.sources.insert(hash, source.to_owned());
+        u.layouts.extend(crate::fake_layout::parse(parent, source));
         let first_line = source.lines().next().unwrap_or_default();
         let header = first_line.split('#').next().unwrap_or(first_line);
         if header.contains("visible: false") {
@@ -183,6 +184,9 @@ unsafe extern "C" fn set_properties(
             return false;
         }
         u.log.push(format!("P {path} | {source}"));
+        if let Some(layout) = u.layouts.get_mut(path) {
+            layout.apply(source);
+        }
         if let Some(v) = top_visible(source) {
             u.visible.insert(path.into(), v);
         }
@@ -199,6 +203,7 @@ unsafe extern "C" fn remove_node(_: *mut c_void, p: *const u8, n: usize) -> bool
         let under = |q: &str| q == path || q.starts_with(&format!("{path}."));
         u.roots.retain(|r| !under(r));
         u.visible.retain(|q, _| !under(q));
+        u.layouts.retain(|q, _| !under(q));
         true
     })
 }
@@ -218,7 +223,7 @@ unsafe extern "C" fn node_rect(
         if !u.exists(path) {
             return false;
         }
-        let r = u.rects.get(path).copied().unwrap_or((0., 0., 1920., 1080.));
+        let r = crate::fake_layout::rect(path, &u.layouts, &u.rects);
         (*x, *y, *w, *h) = r;
         true
     })
@@ -258,6 +263,10 @@ fn ui_table() -> UiVtableV1 {
     t.node_rect = Some(node_rect);
     t.register_path_events = Some(register_path_events);
     t
+}
+/// This thread's fake UI table (`fake_draw::frame` answers UI calls with it).
+pub fn table() -> *const UiVtableV1 {
+    TABLES.with(|t| &t.ui as *const UiVtableV1)
 }
 /// Run `f` with a client context answered by this thread's fake UI. No
 /// other table (scene, data, assets, drawing) is present: those calls

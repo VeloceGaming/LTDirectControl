@@ -5,7 +5,8 @@
 //! crate::stats_panel.
 use crate::{
     camera::Rect,
-    stats_panel::{self, Kind, Unit, FORMATS, ICONS},
+    stats_draw,
+    stats_panel::{self, Kind, Unit, ICONS},
     ui_writes::NodeId,
     Logger,
 };
@@ -19,27 +20,22 @@ pub const OWN: &str = "ingame.lt_stats_own";
 pub const TARGET: &str = "ingame.lt_stats_target";
 const OWN_PANEL: &str = "ingame.lt_stats_own.panel";
 const TARGET_PANEL: &str = "ingame.lt_stats_target.panel";
-const NUMERIC: &str = "asset/lt_direct_control/font/numeric";
 
-/// One grid of stat cells (icon + value) inside `parent`.
-fn cells(s: &mut String, (x0, y0): (i32, i32), (dx, dy): (i32, i32)) {
+/// One grid of stat icons inside `parent` (the value texts are drawn).
+fn cells(s: &mut String, grid: ((f32, f32), (f32, f32))) {
     for (k, icon) in ICONS.iter().enumerate() {
-        let (x, y) = (x0 + (k as i32 % 3) * dx, y0 + (k as i32 / 3) * dy);
+        let (x, y) = stats_draw::cell(grid, k);
         s.push_str(
             &icon
-                .node(&format!("i{k}"), (x, y, 18), 1004)
+                .node(&format!("i{k}"), (x as i32, y as i32, 18), 1004)
                 .replace("visible: false;", "visible: true;"),
         );
-        s.push_str(&format!("#v{k}:label {{ font: \"{NUMERIC}\"; x: {}px; y: {y}px; width: {}px; height: 18px; size: 15; align_x: Left; align_y: Center; color: #eeececff; text: \"\"; ignore_event: true; z: 1004; }}\n", x + 23, dx - 25));
     }
 }
-/// A skill-slot style frame: grey edge, shadow, inset fill.
-fn frame(s: &mut String, (x, y, w, h): (i32, i32, i32, i32)) {
+/// The panel's container: the frame itself is drawn (`stats_draw.rs`).
+fn panel(s: &mut String, (x, y, w, h): (f32, f32, f32, f32)) {
     s.push_str(&format!(
-        "#panel:color {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; color: #~4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; z: 1001;\n#shadow:color {{ x: 0px; y: 3px; width: {w}px; height: {h}px; color: #00000066; ignore_event: true; z: 1000; }}\n#fill:color {{ x: 1px; y: 1px; width: {}px; height: {}px; color: #{}; ignore_event: true; z: 1002; }}\n",
-        w - 2,
-        h - 2,
-        crate::ui_theme::shade(5, 0xff)
+        "#panel:empty {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; ignore_event: true; z: 1001;\n"
     ));
 }
 #[cfg(test)]
@@ -50,22 +46,23 @@ fn own_template() -> String {
     // The HUD's root (bottom-anchored, 1920 wide) 4 px taller, so the panel
     // stays beside the Q slot (HUD y 4, 80 tall) at any resolution. The panel
     // is 92 tall for row spacing, centred on the slots (HUD y -2 = root y 2).
-    let mut s = String::from("lt_stats_own:empty { width: 1920px; height: 150px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true; visible: false;\n");
-    frame(&mut s, (612, 2, 208, 92));
-    cells(&mut s, (7, 5), (67, 21));
+    let (w, h) = stats_draw::OWN_ROOT;
+    let mut s = format!("lt_stats_own:empty {{ width: {w}px; height: {h}px; anchor_x: 0.5; pivot_x: 0.5; anchor_y: 1; pivot_y: 1; z: 1000; ignore_event: true; visible: false;\n");
+    panel(&mut s, stats_draw::OWN_PANEL);
+    cells(&mut s, stats_draw::OWN_CELLS);
     s.push_str("}\n}\n");
     s
 }
 fn target_template() -> String {
     // Top left, under the team-name header: health across the top, the
     // portrait beside the stats grid (centred on its four rows).
-    let mut s = String::from("lt_stats_target:empty { x: 8px; y: 56px; width: 292px; height: 129px; z: 1000; ignore_event: true; visible: false;\n");
-    frame(&mut s, (0, 0, 292, 129));
-    s.push_str("#face:color { x: 10px; y: 46px; width: 64px; height: 64px; color: #~4b4a49ff; rounding: Uniform { rounding: 2; } ignore_event: true; z: 1003;\n#well:color { x: 1px; y: 1px; width: 62px; height: 62px; color: #~0e0d0cff; ignore_event: true; z: 1004; }\n#portrait:image { x: 1px; y: 1px; width: 62px; height: 62px; sample_linear: false; visible: false; ignore_event: true; z: 1005; }\n#unit:image { x: 11px; y: 11px; width: 40px; height: 40px; source: \"asset/lt_direct_control/ui/hud_minion\"; color: #cbc9c7ff; visible: false; ignore_event: true; z: 1005; }\n#badge:color { x: 0px; y: 46px; width: 26px; height: 18px; color: #1c1a18ee; ignore_event: true; z: 1006; }\n");
-    s.push_str(&format!("#level:label {{ font: \"{NUMERIC}\"; x: 0px; y: 46px; width: 26px; height: 18px; size: 14; align_x: Center; align_y: Center; color: #eeececff; text: \"\"; ignore_event: true; z: 1007; }}\n}}\n"));
-    s.push_str("#hp_back:color { x: 10px; y: 10px; width: 272px; height: 20px; color: #~0e0d0cff; ignore_event: true; z: 1003; }\n#hp_fill:color { x: 11px; y: 11px; width: 270px; height: 18px; color: #6aff55ff; ignore_event: true; z: 1004; }\n");
-    s.push_str(&format!("#hp_text:label {{ font: \"{NUMERIC}\"; x: 10px; y: 10px; width: 272px; height: 20px; size: 13; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; text: \"\"; ignore_event: true; z: 1005; }}\n"));
-    cells(&mut s, (84, 38), (68, 21));
+    let (x, y) = stats_draw::TARGET_AT;
+    let (_, _, w, h) = stats_draw::TARGET_PANEL;
+    let mut s = format!("lt_stats_target:empty {{ x: {x}px; y: {y}px; width: {w}px; height: {h}px; z: 1000; ignore_event: true; visible: false;\n");
+    panel(&mut s, stats_draw::TARGET_PANEL);
+    let (fx, fy, fw, fh) = stats_draw::FACE;
+    s.push_str(&format!("#face:empty {{ x: {fx}px; y: {fy}px; width: {fw}px; height: {fh}px; ignore_event: true; z: 1003;\n#portrait:image {{ x: 1px; y: 1px; width: 62px; height: 62px; sample_linear: false; visible: false; ignore_event: true; z: 1005; }}\n#unit:image {{ x: 11px; y: 11px; width: 40px; height: 40px; source: \"asset/lt_direct_control/ui/hud_minion\"; color: #cbc9c7ff; visible: false; ignore_event: true; z: 1005; }}\n}}\n"));
+    cells(&mut s, stats_draw::TARGET_CELLS);
     s.push_str("}\n}\n");
     s
 }
@@ -75,13 +72,8 @@ fn target_template() -> String {
 struct Nodes {
     own: NodeId,
     target: NodeId,
-    own_values: [NodeId; stats_panel::STATS],
-    target_values: [NodeId; stats_panel::STATS],
     portrait: NodeId,
     unit: NodeId,
-    level: NodeId,
-    hp_fill: NodeId,
-    hp_text: NodeId,
 }
 #[derive(Default)]
 pub struct StatsUi {
@@ -90,6 +82,10 @@ pub struct StatsUi {
     spawn: HashMap<&'static str, Instant>,
     portrait: Option<(String, bool)>,
     previous_key: bool,
+    /// This frame's commands (`stats_draw.rs`), sent in `post_render`.
+    pub(crate) list: crate::draw_list::DrawList,
+    /// `draw_list::check_origin`'s state for the own and target panels.
+    origin_checked: [u8; 2],
 }
 impl StatsUi {
     /// Spawn a root if missing; false while it does not exist.
@@ -129,28 +125,10 @@ impl StatsUi {
             Nodes {
                 own: id(OWN.into()),
                 target: id(TARGET.into()),
-                own_values: std::array::from_fn(|k| id(format!("{OWN}.panel.v{k}"))),
-                target_values: std::array::from_fn(|k| id(format!("{TARGET}.panel.v{k}"))),
                 portrait: id(format!("{TARGET}.panel.face.portrait")),
                 unit: id(format!("{TARGET}.panel.face.unit")),
-                level: id(format!("{TARGET}.panel.face.level")),
-                hp_fill: id(format!("{TARGET}.panel.hp_fill")),
-                hp_text: id(format!("{TARGET}.panel.hp_text")),
             }
         })
-    }
-    fn values(
-        &mut self,
-        ctx: &mut StableClient<'_>,
-        ids: &[NodeId; stats_panel::STATS],
-        unit: &Unit,
-    ) {
-        for (k, (value, format)) in unit.values.iter().zip(FORMATS).enumerate() {
-            // The cell's format is fixed per cell.
-            self.cache.text_keyed(ctx, ids[k], (*value,), |(value,)| {
-                stats_panel::format(value, format)
-            });
-        }
     }
     fn show(&mut self, ctx: &mut StableClient<'_>, id: NodeId, on: bool) {
         let on = on && !crate::ui_root::hidden();
@@ -168,6 +146,8 @@ impl StatsUi {
         log: &Logger,
         bounds: &mut Vec<Rect>,
     ) {
+        self.list.clear();
+        let ingame = ctx.ui_node_rect("ingame");
         // The binding toggles the own panel; the choice is remembered.
         if toggle && !self.previous_key && battlefield {
             let shown = crate::settings::current_shared().number("stats_panel_shown") == 1.;
@@ -187,7 +167,14 @@ impl StatsUi {
             if let Some(unit) = own.as_ref() {
                 if self.ensure(ctx, OWN, log) {
                     self.show(ctx, n.own, true);
-                    self.values(ctx, &n.own_values, unit);
+                    stats_draw::own(unit, ingame, &mut self.list);
+                    crate::draw_list::check_origin(
+                        "own stats panel",
+                        stats_draw::own_origin(ingame),
+                        ctx.ui_node_rect(OWN),
+                        &mut self.origin_checked[0],
+                        log,
+                    );
                     if !crate::ui_root::hidden() {
                         bounds.extend(rect(ctx, OWN_PANEL));
                     }
@@ -201,6 +188,14 @@ impl StatsUi {
             if self.ensure(ctx, TARGET, log) {
                 self.show(ctx, n.target, true);
                 self.target(ctx, &n, unit);
+                stats_draw::target(unit, ingame, &mut self.list);
+                crate::draw_list::check_origin(
+                    "target stats panel",
+                    stats_draw::target_origin(ingame),
+                    ctx.ui_node_rect(TARGET),
+                    &mut self.origin_checked[1],
+                    log,
+                );
                 if !crate::ui_root::hidden() {
                     bounds.extend(rect(ctx, TARGET_PANEL));
                 }
@@ -243,36 +238,6 @@ impl StatsUi {
             .props_keyed(ctx, n.unit, 1, (!face_shown, glyph_index), |(on, _)| {
                 format!("visible: {on}; source: \"{glyph}\";")
             });
-        self.cache
-            .text_keyed(ctx, n.level, (unit.level,), |(level,)| level.to_string());
-        let (hp, max) = unit.hp;
-        let ratio = if max > 0 { hp as f32 / max as f32 } else { 0. };
-        let color = if unit.friendly {
-            "6aff55ff"
-        } else {
-            "ff5c6cff"
-        };
-        self.cache.props_keyed(
-            ctx,
-            n.hp_fill,
-            0,
-            (270. * ratio.clamp(0., 1.), unit.friendly),
-            |(width, _)| format!("width: {width:.0}px; color: #{color};"),
-        );
-        self.cache.text_keyed(
-            ctx,
-            n.hp_text,
-            (hp, max, unit.shield),
-            |(hp, max, shield)| {
-                let shield = if shield > 0 {
-                    format!(" (+{shield})")
-                } else {
-                    String::new()
-                };
-                format!("{hp} / {max}{shield}")
-            },
-        );
-        self.values(ctx, &n.target_values, unit);
     }
 }
 fn rect(ctx: &StableClient<'_>, path: &str) -> Option<Rect> {
@@ -305,7 +270,7 @@ mod tests {
         for t in [own_template(), target_template()] {
             assert_eq!(t.matches('{').count(), t.matches('}').count());
             for k in 0..crate::stats_panel::STATS {
-                assert!(t.contains(&format!("#i{k}:image")) && t.contains(&format!("#v{k}:label")));
+                assert!(t.contains(&format!("#i{k}:image")));
             }
         }
         assert!(target_template().contains("#portrait:image"));

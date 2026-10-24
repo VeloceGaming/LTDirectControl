@@ -404,6 +404,22 @@ impl Client {
     }
 
     fn post_render_inner(&self, ctx: &mut StableClient<'_>) {
+        // The hidden drawing probe (perf_draw_probe): nothing while off.
+        crate::draw_probe::draw(ctx, &self.logger);
+        // The mod's drawn windows (1.6.0-perf-dev3, draw_list.rs): built in
+        // post_update, sent here at the z values their nodes had.
+        if let Ok(o) = self.observations.lock() {
+            crate::draw_list::submit(
+                ctx,
+                &[
+                    &o.screen_effect.list,
+                    &o.hud_ui.list,
+                    &o.state_plate.list,
+                    &o.stats_ui.list,
+                    &o.session_ui.list,
+                ],
+            );
+        }
         if !matches!(
             ctx.client_scene_kind(),
             Some(
@@ -610,6 +626,7 @@ impl StableExtension for Client {
             self.settings.hidden_switch("perf_hide_mod_ui"),
             &self.logger,
         );
+        crate::draw_probe::configure(self.settings.hidden_switch("perf_draw_probe"), &self.logger);
         crate::input_delay::set_shown(self.settings.number("show_input_delay") == 1.);
         self.post_update_inner(ctx, dt_micros);
     }
@@ -1014,9 +1031,7 @@ impl Client {
                 snapshot.as_deref(),
                 dt_micros,
             );
-            observations
-                .screen_effect
-                .apply(ctx, &self.camera, &self.logger);
+            observations.screen_effect.apply(&self.camera, &self.logger);
             observations.sounds.flush(
                 ctx,
                 ui_sound::Config::from_values(&settings::current_shared()),
@@ -1051,7 +1066,6 @@ impl Client {
                     prespawn,
                     stats_ui,
                     state_plate,
-                    screen_effect,
                     team_ui,
                     shop_ui,
                     settings_ui,
@@ -1060,15 +1074,7 @@ impl Client {
                 } = &mut *observations;
                 prespawn.step(
                     ctx,
-                    &mut [
-                        stats_ui,
-                        state_plate,
-                        screen_effect,
-                        team_ui,
-                        shop_ui,
-                        settings_ui,
-                        emotes,
-                    ],
+                    &mut [stats_ui, state_plate, team_ui, shop_ui, settings_ui, emotes],
                     &self.logger,
                 );
             }

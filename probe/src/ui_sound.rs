@@ -44,9 +44,13 @@ pub fn cast_denied() {
 }
 pub fn hover() {
     REQUESTS.fetch_or(R_HOVER, Ordering::Relaxed);
+    #[cfg(test)]
+    HOVER_CALLS.with(|n| n.set(n.get() + 1));
 }
 pub fn click() {
     REQUESTS.fetch_or(R_CLICK, Ordering::Relaxed);
+    #[cfg(test)]
+    CLICK_CALLS.with(|n| n.set(n.get() + 1));
 }
 /// A refused action in a window (a purchase the shop turned away).
 pub fn denied() {
@@ -61,6 +65,9 @@ pub fn ready() {
 thread_local! {
     /// Chime requests made on this thread (window identity tests).
     pub static READY_CALLS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    /// Hover and click sound requests made on this thread (window tests).
+    pub static HOVER_CALLS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    pub static CLICK_CALLS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 #[derive(Clone, Copy)]

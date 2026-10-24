@@ -218,3 +218,104 @@ the author decides with the numbers.
   use for what. A modder who wants a new window with buttons, scrolling
   or rich text keeps using templates; one who wants a readout, a bar, a
   marker or a glyph draws it.
+
+## 7. Probe results (seen in game, 2026-10-24 18:47-19:00, 1.6.0-perf-dev2, game 0.6.5)
+
+The author played one match of about 12 minutes with `perf_draw_probe`
+on (own-team vision), with the PERF capture and Frame Lab 0.6.3 running,
+and answered the checklist with screenshots.
+
+**Layering: direct draws sort by z with the tree's nodes.** Box A (z
+1510) showed only below the shop header band (z 1521) and over the shop
+fill; box B (z 999) lost its bottom under the HUD strip (z 1000) while box
+C (z 1001) showed whole over it; box D (z 1998) was hidden behind the open
+Settings window (backdrop z 1999) and visible with it closed. Three
+windows, one answer. A drawn HUD can therefore keep its few tree nodes
+(icons, portraits, tooltips) in the same z bands and they interleave as
+designed.
+
+**SVG: loads, scales and tints, but strokes are filled.** The 32 px and
+17 px `draw_svg` samples appeared, white, at the right sizes, but as
+filled shapes (a disc and a dot) instead of the coin's outline: the
+renderer ignores stroke attributes and fills each path. Glyph SVGs for
+Stage 2 must be converted from strokes to filled outlines (a stroke-to-
+path step in `tools/generate_endfield_glyphs.cjs`), or glyphs ship as one
+PNG per size. Both are tool work, not mod code.
+
+**Sprites and text.** Both `draw_sprite` samples showed at 32 px at their
+top-left position (pivot 0,0). The drawn "88"s matched the HUD's level
+number in size and weight to the author's eye, and the four-offset
+outline was judged acceptable.
+
+**The button runner.** The author saw the session strip's buttons take a
+lighter outline on hover while the HUD's shop button only tints; that
+lighter outline is the mod's own border tween (`session_ui::animate`), so
+nothing of the game's own hover drawing was visible on top of it. Low
+risk for moving the strip.
+
+**Cost per direct draw command.** Levels aligned to the 10-second windows
+that lie wholly inside one level (36 PERF windows, 74 Frame Lab windows,
+7-8 cycles):
+
+| Level | Commands a frame | Mod `post_render` avg | Frame Lab fps | Game's own time per frame (`other_ms_p50`) | Delta against level 0 of the same cycle |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 0 | 16 µs | 98.8 | 8.23 ms | — |
+| 1 | 120 | 33 µs | 93.6 | 8.80 ms | +0.55 ms |
+| 2 | 240 | 39 µs | 91.9 | 8.99 ms | +0.72 ms |
+| 4 | 480 | 59 µs | 87.6 | 9.46 ms | +1.19 ms |
+| 8 | 960 | 103 µs | 81.4 | 10.32 ms | +2.05 ms |
+
+The mod's side is about 0.1 µs a command (the SDK call). The game's side
+is about 2.1-2.5 µs a command for this 5:1 mix of 6 × 6 px boxes and
+three-digit texts, with large per-cycle noise (level 8 deltas ranged
++0.5 to +4.7 ms). Against the tree: 1.5 ms for 350-400 nodes is about
+4 µs a node averaged over every node, hidden ones included. Which nodes
+carry that cost is not known: if hidden nodes are nearly free (the A/B
+hid whole roots, so hidden subtrees cost little), the roughly 175-200
+nodes visible on a normal frame cost about 8 µs each.
+
+**What that means for 2b (guess, from these numbers):** a drawn HUD
+submits only what is visible, about 175-200 commands a frame at about
+2.2 µs, or 0.4 ms, against the 1.5 ms the tree costs now; the 40-50 nodes
+that stay cost about 0.1-0.4 ms. Expected net gain about 0.8-1.1 ms a
+frame (roughly 86 to 93-95 fps on this machine), smaller than the 1.5 ms
+ceiling and three to four times Stage 1's gain. Text commands may cost
+more than boxes; the probe cannot separate them, so the HUD's 20-odd
+labels are the uncertain part of that estimate.
+
+## 8. Result (seen in game, 2026-10-24 20:38-20:50, 1.6.0-perf-dev3, game 0.6.5)
+
+The author played two games of one match (about 8 minutes of battlefield
+time, own-team vision, mod language zh-hant) through the checklist:
+chooser clicks, every session-strip button, skills with cooldown, denied
+flash and tooltips, shop by key and by button, both stats panels, low
+health, death and respawn, pause and AI control, a background-colour
+change with its rebuild. Verdict: "All looking great." Nothing shifted,
+missing or layered wrong was reported, so the equal-z and default-
+alignment guesses of the CHANGELOG held in the author's eye.
+
+| Run (same match) | Mod windows | fps mean | Game's own time per frame | Mod's own callbacks per frame | Frame Lab own-code share |
+| --- | --- | --- | --- | --- | --- |
+| 1.5.3 baseline (05:17) | tree | 81.9 | (not split) | 656 µs | 2.6 % |
+| dev1, 14:38 / 14:50 / 15:38 | tree | 86.0 / 85.8 / 80.6 | 9.3 / 9.4 / 10.1 ms | ~390 µs | 1.65 % |
+| dev1, windows hidden (15:06) | none | 101.4 | 7.9 ms | — | 1.70 % |
+| **dev3 (20:38)** | **drawn** | **95.8** | **8.4 ms** | **346 µs** | **1.59 %** |
+
+Against the dev1 runs the game's own time per frame fell by about 0.9-1.6
+ms, three quarters of the way to the hidden-windows ceiling, as section 7
+estimated (0.8-1.1 ms). Against the 1.5.3 baseline the whole overhaul
+stands at about +14 fps (81.9 → 95.8, +17 %), the mod's own callbacks
+roughly halved, and the drawing-thread share of its code down 40 %.
+
+Slow frames: of 78 frames over 25 ms, 5 were the mod's: the known
+match-start ones (the season audit, the HUD's first item frame, the shop
+opening by itself) and, in the second game, one 56 ms frame in the
+chooser where the pre-build of all windows ran at once (the author's
+start-mode change made Ready long enough for it); the other 73 were the
+game's. Hitches during play are unchanged.
+
+Small things to tidy (read from the log): the `DRAW origin` self-check
+compared against a root rectangle of 0 × 0 at (0, 0) on the frame the
+root was spawned, so it logged DIFFERENT once per window although the
+drawn places were right; it should skip an unlaid-out root.
+`tools/verify_ui_graphics.py` is stale since dev2 (older asset counts).

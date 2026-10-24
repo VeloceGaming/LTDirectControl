@@ -1,0 +1,5 @@
+lt_state_plate:color { x: 902px; y: 100px; width: 116px; height: 48px; z: 1120; color: #1e1e1df0; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; }
+#glyph:image { x: 20px; y: 9px; width: 30px; height: 30px; z: 1121; source: "asset/lt_direct_control/ui/ef_skull"; color: #eeececff; ignore_event: true; }
+#key:color { x: 60px; y: 11px; width: 36px; height: 26px; z: 1121; color: #eeececff; visible: false; ignore_event: true; rounding: Uniform { rounding: 2; } #text:label { font: "asset/lt_direct_control/font/numeric"; width: 100%; height: 100%; size: 14; align_x: Center; align_y: Center; color: #393939ff; text: "F11"; ignore_event: true; z: 1122; } }
+#count:label { font: "asset/lt_direct_control/font/numeric"; x: 56px; y: 8px; width: 44px; height: 32px; size: 23; align_x: Center; align_y: Center; color: #ffffffff; text: ""; visible: false; ignore_event: true; z: 1122; }
+}

@@ -68,12 +68,16 @@ Rules that follow from this:
    `install_once` (title screen only) → scene flags → movement input →
    `choose_prepared_athlete` (before Start) → heartbeat → `rearm_if_needed`
    (new match or save exit) → session buttons → `apply_windows` (Tab, HUD
-   strip, session bar, settings, shop, screen effect, result audit) →
+   strip, session bar, settings, shop, screen effect, result audit; each
+   drawn window also builds its draw list here) →
    `block_native_ui` (UI rectangles where clicks are not orders) → gameplay
    input → `update_pointer` (hover, outlines, cursor) →
    `log_frame_diagnostics`.
-3. `post_render`: battlefield drawing (skill previews, minimap frame, attack
-   range, target markers, click markers).
+3. `post_render`: the drawing probe while its hidden switch is on, then
+   the drawn windows (1.6.0-perf-dev3: each window's draw list, built in
+   `post_update`: screen effect, HUD strip, state plate, stats panels,
+   session strip; `draw_list::submit`), then battlefield drawing (skill
+   previews, minimap frame, attack range, target markers, click markers).
 
 `Simulation::think` (in `simulation.rs`): `bind_session` →
 `sample_prepared_roster` → `sample_team` → `trace_purchases` →
@@ -193,31 +197,107 @@ font generator applies the same rule.
 
 ### Add a HUD element or a window
 
-The native UI is built from template strings (see `player_hud::template`
-and `shop_ui::template`), spawned with `ctx.ui_spawn_source`, and updated
-through the window's write cache (`ui_writes::PropCache`), which sends the
-game only what changed. Clicks are registered with
-`ctx.ui_register_path_events`; check `crate::ui_click::once(path)` in the
-callback. The game keeps a path's callbacks when your window is removed and
-rebuilt within a match (background colour or language change), and your
-rebuild registers again, so without it every click fires twice and toggles
-undo themselves. Put shown text through `tr`/`trf`.
+Since 1.6.0-perf-dev3 there are two ways to put something on screen. Pick
+the drawn one unless the element needs what only the game's UI tree can do.
 
-To add one:
+| Need | Path |
+|---|---|
+| A box, bar, hairline, tick, a single-colour text in one line, a glyph from the mod's own PNGs | **Drawn**: a few lines in the window's draw list |
+| An image cut from one of the game's sprite sheets (skill, item, stat icons), a champion portrait (`ui_set_champion_icon`), wrapped, scrolled or several-colour text (tooltips), a scaled or tint-animated image, the game's own widgets (text fields, sliders, the shop and Settings windows) | **A tree node**: a template and the write cache |
+
+The design, the measured cost per draw command and the limits of the draw
+calls are in [investigation-direct-draw-hud.md](investigation-direct-draw-hud.md).
+
+#### A drawn element
+
+Each drawn window has three parts:
+
+1. **State** (the window's module, e.g. `player_hud.rs`): unchanged in
+   kind from before. Everything with a side effect happens here, every
+   frame: tweens (`hud_motion::Motion`), the motion pass, the ready chime,
+   press and release, hover sounds, tooltip timers.
+2. **View** (e.g. `hud_draw::HudView`): a plain struct with one field per
+   drawn element, set by the state step where it used to write the node.
+   A field not set this frame keeps its value, as a node kept its last
+   write; the defaults are what the old template said.
+3. **Draw list** (e.g. `hud_draw::build`): a pure function from the view
+   to a `draw_list::DrawList` of boxes, texts and sprites, in UI-map
+   pixels (1920 x 1080), at a z value. The client sends every window's
+   list in `post_render` (`draw_list::submit`), which sends nothing while
+   `perf_hide_mod_ui` is on.
+
+So adding a readout to the strip is: a field in `HudView`, one line that
+sets it in `player_hud.rs`, and in `hud_draw::build`:
+
+```rust
+if v.my_readout.shown {
+    list.text(&v.my_readout.text, at(o, (600., 102., 60., 32.)), 1005,
+              TextStyle::numeric(24., Align::Start), 0xffffffff);
+}
+```
+
+Rules:
+
+- **z sorts with the tree.** A drawn command lands between tree nodes by
+  its z (seen in game with the 1.6.0-perf-dev2 probe): the HUD strip is z
+  1000-1113, the session strip 1100-1201, the shop 1500 and up, Tab 1600
+  and up, Settings 1999 and up. Commands of equal z keep their order in
+  the list (a guess the probe did not measure); add them in back-to-front
+  order.
+- **Positions** come from the game's `ingame` root (`ctx.ui_node_rect("ingame")`)
+  through `draw_list::anchored`, as a template root's anchor and pivot
+  placed it. No scaling: the UI map is 1920 x 1080.
+- **Text**: `list.text` or, without allocating, `list.text_fmt(format_args!(..))`
+  in the mod's fonts (`Font::Numeric` was the `bold_label` style,
+  `Font::Medium` was `label`). One colour per call; nothing wraps or
+  clips. An outline is four 1 px offset copies (`outlined_text`).
+- **Glyphs**: `draw_sprite` draws a PNG at its own size and cannot tint,
+  so a glyph ships once per size and tint
+  (`node tools/generate_endfield_glyphs.cjs --drawn`, listed in
+  `tools/records/drawn-glyphs.json` and `drawn_glyphs::BAKED`; then add the
+  files to `tools/records/ui-graphics.json` and the count in
+  `tools/verify_build.py`). A glyph whose tint animates stays a tree node.
+- **Clicks**: a draw takes no events. Hit-test the cursor yourself, as
+  the strip's tiles, its shop button and the session strip's buttons do
+  (`SessionUi::clicks`: the press starts on a shown control and the release
+  comes over the same one, through `ui_click::once`), and return the
+  rectangle so `block_native_ui` keeps clicks there off the battlefield.
+- **Tests**: the window tests (`ui_identity.rs`) record each window's
+  commands per frame through a fake draw table (`fake_draw.rs`) under
+  `probe/testdata/ui_draw/`; a deliberate change records anew with
+  `LT_UPDATE_UI_RECORDS=1`. `tools/compare_draw_review.cjs` renders the
+  dev2 tree and the dev3 tree plus draw list for review states and counts
+  the differing pixels.
+
+#### A tree node
+
+The native UI is built from template strings (see `shop_ui::template`),
+spawned with `ctx.ui_spawn_source`, and updated through the window's write
+cache (`ui_writes::PropCache`), which sends the game only what changed.
+Clicks on a node are registered with `ctx.ui_register_path_events`; check
+`crate::ui_click::once(path)` in the callback. The game keeps a path's
+callbacks when your window is removed and rebuilt within a match
+(background colour or language change), and your rebuild registers again,
+so without it every click fires twice and toggles undo themselves. Put
+shown text through `tr`/`trf`.
+
+To add a window:
 
 1. Give it a struct with an `apply(ctx, ...)` method, like `ShopUi` or
    `TeamUi`.
 2. Store it in `ClientObservations` and call it from
-   `Client::apply_windows`.
+   `Client::apply_windows`; if it draws, add its list to the
+   `draw_list::submit` call in `Client::post_render_inner`.
 3. Return its screen rectangle, so `block_native_ui` stops clicks there
    from becoming battlefield orders.
 4. Pick a z-order band that does not collide: HUD below 1120, shop
    1500–1560, settings around 2000.
-5. If it is built the first time it is needed in a match, implement
-   `prewarm::Prespawn` and add it to the list in `Client::apply_windows`,
-   so it is built hidden while the player chooses an athlete.
+5. If its tree part is built the first time it is needed in a match,
+   implement `prewarm::Prespawn` and add it to the list in
+   `Client::apply_windows`, so it is built hidden while the player chooses
+   an athlete.
 
-#### A window is a state, a comparison and a write (1.6.0)
+#### A tree node's writes: a state, a comparison and a write (1.6.0)
 
 A window runs every frame, and most frames nothing on it changes. So the
 per-frame work is split in three:
@@ -300,6 +380,15 @@ Draw in `Client::post_render`. `camera::CameraFrame` projects world
 positions to the screen. `skill_preview::Drawing` collects lines and shapes
 and clips them against the HUD and minimap. What the game's drawing calls
 can and cannot do is in [preview-drawing.md](preview-drawing.md).
+
+Two hidden switches (controls.json only, no control in the Settings
+window, default off, read with `Settings::hidden_switch`, a `PERF` line
+when they change) exist for performance measurements:
+`perf_hide_mod_ui` keeps every mod window hidden (`ui_root.rs`; since 1.6.0-perf-dev3 it also stops `draw_list::submit`, so the drawn windows hide too), and
+`perf_draw_probe` draws a measurement load, layering boxes, image samples
+and text samples directly in the UI map (`draw_probe.rs`, 1.6.0-perf-dev2;
+how to read it in `CHANGELOG.md`). With the probe off its function returns
+at its first check.
 
 ### Change what a skill preview shows
 

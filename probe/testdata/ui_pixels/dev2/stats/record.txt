@@ -1,0 +1,306 @@
+## frame 0
+# bounds=[]
+## frame 1
+# bounds=[]
+## frame 2
+# bounds=[]
+## frame 3
+S ingame.lt_stats_own len=5560 fnv=8f230884c2f67346
+P ingame.lt_stats_own | visible: true;
+T ingame.lt_stats_own.panel.v0 = 0
+T ingame.lt_stats_own.panel.v1 = 10
+T ingame.lt_stats_own.panel.v2 = 20.00
+T ingame.lt_stats_own.panel.v3 = 30
+T ingame.lt_stats_own.panel.v4 = 40
+T ingame.lt_stats_own.panel.v5 = 50
+T ingame.lt_stats_own.panel.v6 = 60%
+T ingame.lt_stats_own.panel.v7 = 70
+T ingame.lt_stats_own.panel.v8 = 80
+T ingame.lt_stats_own.panel.v9 = 90%
+T ingame.lt_stats_own.panel.v10 = 100%
+T ingame.lt_stats_own.panel.v11 = 110%
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 4
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 5
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 6
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 7
+T ingame.lt_stats_own.panel.v0 = 1
+T ingame.lt_stats_own.panel.v1 = 11
+T ingame.lt_stats_own.panel.v2 = 20.50
+T ingame.lt_stats_own.panel.v3 = 31
+T ingame.lt_stats_own.panel.v4 = 41
+T ingame.lt_stats_own.panel.v5 = 51
+T ingame.lt_stats_own.panel.v6 = 61%
+T ingame.lt_stats_own.panel.v7 = 71
+T ingame.lt_stats_own.panel.v8 = 81
+T ingame.lt_stats_own.panel.v9 = 91%
+T ingame.lt_stats_own.panel.v10 = 101%
+T ingame.lt_stats_own.panel.v11 = 111%
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 8
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 9
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 10
+S ingame.lt_stats_target len=6896 fnv=174fa416e84490af
+P ingame.lt_stats_target | visible: true;
+P ingame.lt_stats_target.panel.face.portrait | visible: false;
+P ingame.lt_stats_target.panel.face.unit | visible: true; source: "asset/lt_direct_control/ui/hud_minion";
+T ingame.lt_stats_target.panel.face.level = 1
+P ingame.lt_stats_target.panel.hp_fill | width: 235px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 870 / 1000
+T ingame.lt_stats_target.panel.v0 = 1
+T ingame.lt_stats_target.panel.v1 = 11
+T ingame.lt_stats_target.panel.v2 = 20.50
+T ingame.lt_stats_target.panel.v3 = 31
+T ingame.lt_stats_target.panel.v4 = 41
+T ingame.lt_stats_target.panel.v5 = 51
+T ingame.lt_stats_target.panel.v6 = 61%
+T ingame.lt_stats_target.panel.v7 = 71
+T ingame.lt_stats_target.panel.v8 = 81
+T ingame.lt_stats_target.panel.v9 = 91%
+T ingame.lt_stats_target.panel.v10 = 101%
+T ingame.lt_stats_target.panel.v11 = 111%
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 11
+P ingame.lt_stats_target.panel.hp_fill | width: 234px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 867 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 12
+P ingame.lt_stats_target.panel.hp_fill | width: 233px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 864 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 13
+P ingame.lt_stats_target.panel.hp_fill | width: 232px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 861 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 14
+T ingame.lt_stats_own.panel.v2 = 21.00
+T ingame.lt_stats_target.panel.hp_text = 858 / 1000
+T ingame.lt_stats_target.panel.v2 = 21.00
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 15
+P ingame.lt_stats_target.panel.hp_fill | width: 231px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 855 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 16
+P ingame.lt_stats_target.panel.hp_fill | width: 230px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 852 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 17
+P ingame.lt_stats_target.panel.hp_fill | width: 229px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 849 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 18
+P ingame.lt_stats_target.panel.hp_fill | width: 228px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 846 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 19
+T ingame.lt_stats_target.panel.hp_text = 843 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 20
+T ingame.lt_stats_target.panel.face.level = 2
+P ingame.lt_stats_target.panel.hp_fill | width: 227px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 840 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 21
+T ingame.lt_stats_own.panel.v0 = 2
+T ingame.lt_stats_own.panel.v1 = 12
+T ingame.lt_stats_own.panel.v2 = 21.50
+T ingame.lt_stats_own.panel.v3 = 32
+T ingame.lt_stats_own.panel.v4 = 42
+T ingame.lt_stats_own.panel.v5 = 52
+T ingame.lt_stats_own.panel.v6 = 62%
+T ingame.lt_stats_own.panel.v7 = 72
+T ingame.lt_stats_own.panel.v8 = 82
+T ingame.lt_stats_own.panel.v9 = 92%
+T ingame.lt_stats_own.panel.v10 = 102%
+T ingame.lt_stats_own.panel.v11 = 112%
+P ingame.lt_stats_target.panel.hp_fill | width: 226px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 837 / 1000
+T ingame.lt_stats_target.panel.v0 = 2
+T ingame.lt_stats_target.panel.v1 = 12
+T ingame.lt_stats_target.panel.v2 = 21.50
+T ingame.lt_stats_target.panel.v3 = 32
+T ingame.lt_stats_target.panel.v4 = 42
+T ingame.lt_stats_target.panel.v5 = 52
+T ingame.lt_stats_target.panel.v6 = 62%
+T ingame.lt_stats_target.panel.v7 = 72
+T ingame.lt_stats_target.panel.v8 = 82
+T ingame.lt_stats_target.panel.v9 = 92%
+T ingame.lt_stats_target.panel.v10 = 102%
+T ingame.lt_stats_target.panel.v11 = 112%
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 22
+P ingame.lt_stats_target.panel.hp_fill | width: 225px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 834 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 23
+P ingame.lt_stats_target.panel.hp_fill | width: 224px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 831 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 24
+T ingame.lt_stats_target.panel.hp_text = 828 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 25
+P ingame.lt_stats_target.panel.hp_fill | width: 223px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 825 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 26
+P ingame.lt_stats_target.panel.hp_fill | width: 222px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 822 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 27
+P ingame.lt_stats_target.panel.hp_fill | width: 221px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 819 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 28
+T ingame.lt_stats_own.panel.v2 = 22.00
+P ingame.lt_stats_target.panel.hp_fill | width: 220px; color: #ff5c6cff;
+T ingame.lt_stats_target.panel.hp_text = 816 / 1000
+T ingame.lt_stats_target.panel.v2 = 22.00
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 29
+T ingame.lt_stats_target.panel.hp_text = 813 / 1000
+# bounds=[612.0,932.0,208.0,92.0 8.0,56.0,292.0,129.0]
+## frame 30
+X ingame.lt_stats_own
+X ingame.lt_stats_target
+# bounds=[]
+## frame 31
+# bounds=[]
+## frame 32
+# bounds=[]
+## frame 33
+# bounds=[]
+## frame 34
+# bounds=[]
+## frame 35
+# bounds=[]
+## frame 36
+# bounds=[]
+## frame 37
+# bounds=[]
+## frame 38
+# bounds=[]
+## frame 39
+# bounds=[]
+## frame 40
+# bounds=[]
+## frame 41
+# bounds=[]
+## frame 42
+# bounds=[]
+## frame 43
+# bounds=[]
+## frame 44
+# bounds=[]
+## frame 45
+# bounds=[]
+## frame 46
+# bounds=[]
+## frame 47
+# bounds=[]
+## frame 48
+# bounds=[]
+## frame 49
+# bounds=[]
+## frame 50
+# bounds=[]
+## frame 51
+# bounds=[]
+## frame 52
+# bounds=[]
+## frame 53
+# bounds=[]
+## frame 54
+# bounds=[]
+## frame 55
+# bounds=[]
+## frame 56
+# bounds=[]
+## frame 57
+# bounds=[]
+## frame 58
+# bounds=[]
+## frame 59
+# bounds=[]
+## frame 60
+# bounds=[]
+## frame 61
+# bounds=[]
+## frame 62
+# bounds=[]
+## frame 63
+S ingame.lt_stats_own len=5560 fnv=8f230884c2f67346
+P ingame.lt_stats_own | visible: true;
+T ingame.lt_stats_own.panel.v0 = 5
+T ingame.lt_stats_own.panel.v1 = 15
+T ingame.lt_stats_own.panel.v2 = 24.50
+T ingame.lt_stats_own.panel.v3 = 35
+T ingame.lt_stats_own.panel.v4 = 45
+T ingame.lt_stats_own.panel.v5 = 55
+T ingame.lt_stats_own.panel.v6 = 65%
+T ingame.lt_stats_own.panel.v7 = 75
+T ingame.lt_stats_own.panel.v8 = 85
+T ingame.lt_stats_own.panel.v9 = 95%
+T ingame.lt_stats_own.panel.v10 = 105%
+T ingame.lt_stats_own.panel.v11 = 115%
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 64
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 65
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 66
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 67
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 68
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 69
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 70
+T ingame.lt_stats_own.panel.v2 = 25.00
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 71
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 72
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 73
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 74
+# bounds=[612.0,932.0,208.0,92.0]
+## frame 75
+P ingame.lt_stats_own | visible: false;
+# bounds=[]
+## frame 76
+# bounds=[]
+## frame 77
+# bounds=[]
+## frame 78
+# bounds=[]
+## frame 79
+# bounds=[]
+## frame 80
+# bounds=[]
+## frame 81
+# bounds=[]
+## frame 82
+# bounds=[]
+## frame 83
+# bounds=[]
+## frame 84
+# bounds=[]
+## frame 85
+# bounds=[]
+## frame 86
+# bounds=[]
+## frame 87
+# bounds=[]
+## frame 88
+# bounds=[]
+## frame 89
+# bounds=[]
