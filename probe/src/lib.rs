@@ -25,6 +25,7 @@ mod athlete_rules;
 mod attack_trace;
 mod camera;
 mod client;
+mod clock;
 mod combat;
 mod cursor;
 mod emote_library;
@@ -32,9 +33,12 @@ mod emotes;
 mod hud_icons;
 mod hud_motion;
 // motion: pass
+#[cfg(test)]
+mod fake_ui;
 mod game_bundle;
 mod ground_ring;
 mod hud_motion_pass;
+mod hud_nodes;
 mod hud_style;
 mod input_delay;
 mod input_trace;
@@ -60,6 +64,7 @@ mod pointer_clip;
 mod practice;
 mod preview_style;
 mod preview_table;
+mod prewarm;
 mod purchase_tracker;
 mod result_audit;
 mod runtime_storage;
@@ -68,6 +73,7 @@ mod season_fix;
 mod session_ui;
 mod settings;
 mod settings_ui;
+mod settings_writer;
 mod shape_json;
 #[cfg(feature = "research")]
 mod shape_record;
@@ -80,6 +86,7 @@ mod skill_preview;
 mod sprite_art;
 mod sprite_picking;
 mod stat_icons;
+mod state_plate;
 mod stats_panel;
 mod stats_ui;
 mod team_info;
@@ -91,9 +98,13 @@ mod tooltip_layout;
 mod tooltips;
 mod ui_click;
 mod ui_graphics;
+#[cfg(test)]
+mod ui_identity;
+mod ui_root;
 mod ui_sound;
 mod ui_state;
 mod ui_theme;
+mod ui_writes;
 mod wheel;
 mod worker_watch;
 

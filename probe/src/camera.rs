@@ -183,15 +183,19 @@ impl CameraControl {
     pub fn vision(&self) -> Vision {
         self.state.lock().map_or(Vision::Own, |s| s.vision)
     }
-    pub fn set_blocked(&self, rects: Vec<Rect>) {
+    /// Copied into the camera's own lists (kept between frames).
+    pub fn set_blocked(&self, rects: &[Rect]) {
         if let Ok(mut s) = self.state.lock() {
-            s.blocked = rects;
-            s.command_blocked = s.blocked.clone();
+            s.blocked.clear();
+            s.blocked.extend_from_slice(rects);
+            s.command_blocked.clear();
+            s.command_blocked.extend_from_slice(rects);
         }
     }
-    pub fn set_command_blocked(&self, rects: Vec<Rect>) {
+    pub fn set_command_blocked(&self, rects: &[Rect]) {
         if let Ok(mut s) = self.state.lock() {
-            s.command_blocked = rects;
+            s.command_blocked.clear();
+            s.command_blocked.extend_from_slice(rects);
         }
     }
     pub fn command_blocked(&self, p: (f32, f32)) -> bool {
@@ -733,7 +737,7 @@ mod tests {
             Some(Request::Free((430., 480.)))
         );
         assert_eq!(camera.describe(), "camera free");
-        camera.set_blocked(vec![Rect {
+        camera.set_blocked(&[Rect {
             x: 900.,
             y: 500.,
             w: 100.,
@@ -810,7 +814,7 @@ mod tests {
             0.016,
             &log,
         );
-        camera.set_blocked(vec![Rect {
+        camera.set_blocked(&[Rect {
             x: 1000.,
             y: 500.,
             w: 100.,
@@ -901,7 +905,7 @@ mod tests {
             Some(Request::Follow(7))
         );
         camera.reset();
-        camera.set_blocked(vec![Rect {
+        camera.set_blocked(&[Rect {
             x: 900.,
             y: 500.,
             w: 100.,
@@ -979,7 +983,7 @@ mod tests {
         };
         let f = frame();
         camera.step(f, 0, k, 7, (200_000, 300_000), true, 0.016, &log);
-        camera.set_blocked(vec![
+        camera.set_blocked(&[
             Rect {
                 x: 0.,
                 y: 0.,
@@ -1073,7 +1077,7 @@ mod tests {
         };
         let f = frame();
         camera.step(f, 0, k, 7, (200_000, 300_000), false, 0.016, &log);
-        camera.set_blocked(vec![Rect {
+        camera.set_blocked(&[Rect {
             x: 900.,
             y: 500.,
             w: 100.,

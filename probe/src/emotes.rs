@@ -7,10 +7,7 @@ use crate::{
     Logger,
 };
 use mod_api_stable::StableClient;
-use std::{
-    collections::HashMap,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 pub const PATH: &str = "ingame.lt_emotes";
 const DISPLAY_TICKS: usize = 120;
@@ -278,7 +275,7 @@ fn template() -> String {
 pub struct Emotes {
     state: State,
     pending_sound: bool,
-    cache: HashMap<String, String>,
+    cache: crate::ui_writes::PropCache,
     spawn_attempt: Option<Instant>,
     shown: bool,
     ready: bool,
@@ -318,10 +315,7 @@ impl Emotes {
         crate::hud_motion::properties(ctx, &mut self.cache, path, value);
     }
     fn text(&mut self, ctx: &mut StableClient<'_>, path: &str, value: &str) {
-        let key = format!("text:{path}");
-        if self.cache.get(&key).map(String::as_str) != Some(value) && ctx.ui_set_text(path, value) {
-            self.cache.insert(key, value.into());
-        }
+        self.cache.text_at(ctx, path, value);
     }
     pub fn apply(
         &mut self,
@@ -356,7 +350,8 @@ impl Emotes {
             }
         }
         self.ready = true;
-        self.props(ctx, PATH, &format!("visible: {wanted};"));
+        let visible = wanted && !crate::ui_root::hidden();
+        self.props(ctx, PATH, &format!("visible: {visible};"));
         self.shown = wanted;
         if !wanted {
             self.pending_sound = false;
@@ -485,6 +480,21 @@ fn animation(age: f32) -> (f32, f32, u8) {
         8. * (age / 0.24).min(1.),
         (alpha * 255.).round() as u8,
     )
+}
+
+impl crate::prewarm::Prespawn for Emotes {
+    fn built(&self, ctx: &StableClient<'_>) -> bool {
+        ctx.ui_exists(PATH)
+    }
+    /// The template's root is hidden. `ready` and `shown` stay as they
+    /// are: the first frame that shows the wheel writes as after a build.
+    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        self.cache.clear();
+        let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
+            && ctx.ui_exists(PATH);
+        log.write(&format!("EMOTE UI spawned ahead ok={ok}"));
+        ok
+    }
 }
 
 #[cfg(test)]

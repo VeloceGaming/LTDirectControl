@@ -45,22 +45,29 @@ pub fn easing(time: f32, tonal: bool) -> f32 {
 pub struct Motion(HashMap<String, Tween>);
 impl Motion {
     pub fn value(&mut self, key: &str, target: f32, seconds: f32) -> f32 {
-        self.at(key, target, seconds, Instant::now())
+        self.at(key, target, seconds, crate::clock::now())
     }
     pub fn tonal(&mut self, key: &str, target: f32, seconds: f32) -> f32 {
-        self.curve_at(key, target, seconds, true, Instant::now())
+        self.curve_at(key, target, seconds, true, crate::clock::now())
     }
     fn at(&mut self, key: &str, target: f32, seconds: f32, now: Instant) -> f32 {
         self.curve_at(key, target, seconds, false, now)
     }
     fn curve_at(&mut self, key: &str, target: f32, seconds: f32, tonal: bool, now: Instant) -> f32 {
-        let tween = self.0.entry(key.into()).or_insert(Tween {
-            from: 0.,
-            target: 0.,
-            at: now,
-            seconds,
-            tonal,
-        });
+        // A new key only when the tween is new (not one per call).
+        if !self.0.contains_key(key) {
+            self.0.insert(
+                key.into(),
+                Tween {
+                    from: 0.,
+                    target: 0.,
+                    at: now,
+                    seconds,
+                    tonal,
+                },
+            );
+        }
+        let tween = self.0.get_mut(key).expect("inserted above");
         if tween.target != target {
             *tween = Tween {
                 from: tween.value(now),
@@ -76,7 +83,10 @@ impl Motion {
     /// Start `key` at rest on `value` (a new key otherwise tweens from 0).
     /// Does nothing once the key exists.
     pub fn seed(&mut self, key: &str, value: f32) {
-        let now = Instant::now();
+        if self.0.contains_key(key) {
+            return;
+        }
+        let now = crate::clock::now();
         self.0.entry(key.into()).or_insert(Tween {
             from: value,
             target: value,
@@ -95,134 +105,26 @@ impl Motion {
     }
 }
 pub fn color(from: u32, to: u32, t: f32) -> String {
+    format!("{:08x}", color_rgba(from, to, t))
+}
+/// [`color`] as 0xRRGGBBAA (the same channels, before formatting).
+pub fn color_rgba(from: u32, to: u32, t: f32) -> u32 {
     let t = t.clamp(0., 1.);
-    (0..4)
-        .rev()
-        .map(|n| {
-            let a = ((from >> (n * 8)) & 255) as f32;
-            let b = ((to >> (n * 8)) & 255) as f32;
-            format!("{:02x}", (a + (b - a) * t).round() as u8)
-        })
-        .collect()
-}
-// Compare top-level properties separately: changing geometry must not force
-// unchanged visibility/source setters to run again every frame.
-fn fields(source: &str) -> Vec<(&str, &str)> {
-    let mut result = Vec::new();
-    let (mut start, mut depth, mut quoted, mut escape) = (0, 0, false, false);
-    for (i, c) in source.char_indices() {
-        if quoted {
-            if escape {
-                escape = false;
-            } else if c == '\\' {
-                escape = true;
-            } else if c == '"' {
-                quoted = false;
-            }
-            continue;
-        }
-        match c {
-            '"' => quoted = true,
-            '{' => depth += 1,
-            '}' => depth -= 1,
-            ';' if depth == 0 => {
-                if let Some((key, value)) = source[start..i].split_once(':') {
-                    result.push((key.trim(), value.trim()));
-                }
-                start = i + 1;
-            }
-            _ => {}
-        }
-    }
-    if let Some((key, value)) = source[start..].split_once(':') {
-        result.push((key.trim(), value.trim()));
-    }
-    result
-}
-// Fast path: most frames send a node the very text it got last frame. Two
-// whole-text slots per path answer that with one lookup, before any parsing:
-// `whole:` holds the text last written, `whole2:` a text the field check
-// found already applied since that write (several nodes get a visibility
-// text and a colour text each frame). Each holds the source as given, before
-// theming, behind the background it was themed with ("rrggbb"), so a
-// background change falls through to the field check. Both keys contain the
-// path, so `cache.clear()` and path-scoped `retain` drop them with the
-// fields.
-const WHOLE: &str = "whole:";
-const WHOLE2: &str = "whole2:";
-thread_local! {
-    static KEY: std::cell::RefCell<String> = const { std::cell::RefCell::new(String::new()) };
-}
-fn slot_holds(cache: &HashMap<String, String>, tag: &str, path: &str, source: &str) -> bool {
-    let stored = KEY.with(|key| {
-        let mut key = key.borrow_mut();
-        key.clear();
-        key.push_str(tag);
-        key.push_str(path);
-        cache.get(key.as_str())
-    });
-    stored.is_some_and(|stored| {
-        stored.len() == 6 + source.len()
-            && stored.get(6..) == Some(source)
-            && stored
-                .get(..6)
-                .and_then(|bg| u32::from_str_radix(bg, 16).ok())
-                == Some(crate::ui_theme::background())
+    (0..4).rev().fold(0, |out, n| {
+        let a = ((from >> (n * 8)) & 255) as f32;
+        let b = ((to >> (n * 8)) & 255) as f32;
+        out << 8 | u32::from((a + (b - a) * t).round() as u8)
     })
 }
-fn slot_value(source: &str) -> String {
-    format!("{:06x}{source}", crate::ui_theme::background())
-}
-fn whole_unchanged(cache: &HashMap<String, String>, path: &str, source: &str) -> bool {
-    slot_holds(cache, WHOLE, path, source) || slot_holds(cache, WHOLE2, path, source)
-}
-fn fields_unchanged(cache: &HashMap<String, String>, path: &str, source: &str) -> bool {
-    fields(source).iter().all(|(key, value)| {
-        cache
-            .get(&format!("field:{path}:{key}"))
-            .is_some_and(|old| old == value)
-    })
-}
-pub fn unchanged(cache: &HashMap<String, String>, path: &str, source: &str) -> bool {
-    whole_unchanged(cache, path, source) || fields_unchanged(cache, path, source)
-}
+/// One property write through a window's cache (`ui_writes.rs` has the
+/// rules): true once the node holds `source`, written now or before.
 pub fn properties(
     ctx: &mut mod_api_stable::StableClient<'_>,
-    cache: &mut HashMap<String, String>,
+    cache: &mut crate::ui_writes::PropCache,
     path: &str,
     source: &str,
 ) -> bool {
-    write_properties(cache, path, source, |value| {
-        ctx.ui_set_properties(path, value)
-    })
-}
-fn write_properties(
-    cache: &mut HashMap<String, String>,
-    path: &str,
-    source: &str,
-    mut write: impl FnMut(&str) -> bool,
-) -> bool {
-    // The same text as before needs neither theming nor parsing.
-    if whole_unchanged(cache, path, source) {
-        return true;
-    }
-    // Design greys (`#~rrggbbaa`) follow the background colour.
-    let themed = crate::ui_theme::themed(source);
-    // Compare top-level fields: a geometry change must not resend the
-    // unchanged visibility or source setters.
-    if fields_unchanged(cache, path, &themed) {
-        cache.insert(format!("{WHOLE2}{path}"), slot_value(source));
-        return true;
-    }
-    if !write(&themed) {
-        return false;
-    }
-    for (key, value) in fields(&themed) {
-        cache.insert(format!("field:{path}:{key}"), value.into());
-    }
-    cache.insert(format!("{WHOLE}{path}"), slot_value(source));
-    cache.remove(&format!("{WHOLE2}{path}"));
-    true
+    cache.props_at(ctx, path, source)
 }
 pub fn fade_rich(text: &str, t: f32) -> String {
     let mut s = text.to_owned();
@@ -249,98 +151,28 @@ pub fn fade_rich(text: &str, t: f32) -> String {
 mod tests {
     use super::*;
     #[test]
-    fn repeated_panel_close_reopen_updates_host_and_cache_together() {
-        let mut cache = HashMap::new();
-        let mut host_visible = false;
-        let mut writes = 0;
-        for active in [true, true, false, false, true, false, true] {
-            let source = format!("visible: {active};");
-            assert!(write_properties(&mut cache, "panel", &source, |value| {
-                host_visible = value.contains("visible: true;");
-                writes += 1;
-                true
-            }));
-            assert_eq!(host_visible, active);
-        }
-        assert_eq!(writes, 5);
-        assert!(!write_properties(
-            &mut cache,
-            "panel",
-            "visible: false;",
-            |_| false
-        ));
-        assert!(host_visible);
-        assert!(!unchanged(&cache, "panel", "visible: false;"));
-    }
-    #[test]
-    fn equal_text_returns_before_parsing_and_writes_nothing() {
-        let mut cache = HashMap::new();
-        let mut writes = 0;
-        let source = "visible: true; x: 4px;";
-        assert!(write_properties(&mut cache, "p", source, |_| {
-            writes += 1;
-            true
-        }));
-        // Without the field keys only the whole-text slot can answer.
-        cache.retain(|k, _| !k.starts_with("field:"));
-        assert!(write_properties(&mut cache, "p", source, |_| {
-            writes += 1;
-            true
-        }));
-        assert!(unchanged(&cache, "p", source));
-        assert_eq!(writes, 1);
-        // A different text is written once, then is the equal text.
-        for _ in 0..3 {
-            assert!(write_properties(&mut cache, "p", "visible: false;", |_| {
-                writes += 1;
-                true
-            }));
-        }
-        assert_eq!(writes, 2);
-    }
-    #[test]
-    fn alternating_texts_hit_and_geometry_does_not_resend_visibility() {
-        let mut cache = HashMap::new();
-        let mut sent = Vec::new();
-        for x in [1, 1, 1, 2, 2, 2] {
-            for source in ["visible: true;".to_owned(), format!("x: {x}px;")] {
-                assert!(write_properties(&mut cache, "p", &source, |value| {
-                    sent.push(value.to_owned());
-                    true
-                }));
+    fn colour_mix_formats_as_1_5_3_did() {
+        let old = |from: u32, to: u32, t: f32| -> String {
+            let t = t.clamp(0., 1.);
+            (0..4)
+                .rev()
+                .map(|n| {
+                    let a = ((from >> (n * 8)) & 255) as f32;
+                    let b = ((to >> (n * 8)) & 255) as f32;
+                    format!("{:02x}", (a + (b - a) * t).round() as u8)
+                })
+                .collect()
+        };
+        for (from, to) in [
+            (0x3a383700, 0x3a3837ff),
+            (0xffffffff, 0xfdee00ff),
+            (0, 0xffffffff),
+        ] {
+            for k in -2..=22 {
+                let t = k as f32 / 20.;
+                assert_eq!(color(from, to, t), old(from, to, t));
             }
         }
-        assert_eq!(sent, ["visible: true;", "x: 1px;", "x: 2px;"]);
-        // Fields changed together with geometry: only the text that differs.
-        let mut sent = Vec::new();
-        for source in ["visible: true; x: 2px;", "visible: true; x: 3px;"] {
-            write_properties(&mut cache, "p", source, |value| {
-                sent.push(value.to_owned());
-                true
-            });
-        }
-        assert_eq!(sent, ["visible: true; x: 3px;"]);
-    }
-    #[test]
-    fn failed_write_retries_and_another_background_misses_the_slot() {
-        let mut cache = HashMap::new();
-        let mut writes = 0;
-        for ok in [false, false, true, true] {
-            write_properties(&mut cache, "p", "visible: true;", |_| {
-                writes += 1;
-                ok
-            });
-        }
-        assert_eq!(writes, 3);
-        // A slot written under another background is no answer: the field
-        // check decides (and here finds the text applied).
-        cache.clear();
-        cache.insert("whole:p".into(), "000000visible: true;".into());
-        assert!(!whole_unchanged(&cache, "p", "visible: true;"));
-        assert!(!unchanged(&cache, "p", "visible: true;"));
-        cache.insert("whole:p".into(), slot_value("visible: true;"));
-        assert!(whole_unchanged(&cache, "p", "visible: true;"));
-        assert!(!whole_unchanged(&cache, "p", "visible: true; "));
     }
     #[test]
     fn interrupted_hover_is_continuous_and_settles_without_drift() {
@@ -358,8 +190,13 @@ mod tests {
     }
     #[test]
     fn cache_distinguishes_geometry_from_sources_and_fade_keeps_rich_stat_types() {
+        let mut fields = Vec::new();
+        crate::ui_writes::for_each_field(
+            "source: \"asset/a;b\"; btn: { color: #fff; stroke: 1; }",
+            |k, v| fields.push((k, v)),
+        );
         assert_eq!(
-            fields("source: \"asset/a;b\"; btn: { color: #fff; stroke: 1; }"),
+            fields,
             vec![
                 ("source", "\"asset/a;b\""),
                 ("btn", "{ color: #fff; stroke: 1; }")

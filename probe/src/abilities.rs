@@ -3089,7 +3089,7 @@ mod tests {
             &log,
         );
         assert_eq!(a.0.lock().unwrap().preview, Some(0));
-        c.set_command_blocked(vec![crate::camera::Rect {
+        c.set_command_blocked(&[crate::camera::Rect {
             x: 1100.,
             y: 500.,
             w: 100.,

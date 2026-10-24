@@ -877,47 +877,72 @@ impl Settings {
             }
         }
     }
-    pub(crate) fn save(&self) -> std::io::Result<()> {
+    /// The values a save writes now (taken on the client thread).
+    fn save_job(&self) -> std::io::Result<crate::settings_writer::Job> {
         let root = self
             .root
             .as_ref()
             .ok_or_else(|| std::io::Error::other("Settings folder unavailable"))?;
-        std::fs::create_dir_all(root)?;
-        let path = root.join("controls.json");
-        let mut old = match std::fs::read(&path) {
-            Ok(b) if b.len() <= 1_048_576 => {
-                serde_json::from_slice::<Value>(&b).map_err(std::io::Error::other)?
-            }
-            Ok(_) => return Err(std::io::Error::other("Existing controls.json too large")),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => json!({}),
-            Err(e) => return Err(e),
-        };
-        let object = old
-            .as_object_mut()
-            .ok_or_else(|| std::io::Error::other("Existing controls.json is not an object"))?;
-        let current = self.snapshot();
-        for (k, v) in current.0.as_object().unwrap() {
-            object.insert(k.clone(), v.clone());
-        }
-        object.insert("version".into(), json!(1));
-        object.insert("cursor_size".into(), json!(self.size()));
-        object.insert("low_health_effect".into(), json!(self.low_health()));
-        let tmp = root.join("controls.settings.tmp");
-        std::fs::write(&tmp, serde_json::to_vec_pretty(&old)?)?;
-        std::fs::rename(tmp, path)
+        Ok(crate::settings_writer::Job {
+            root: root.clone(),
+            values: self.snapshot().0,
+            cursor_size: self.size(),
+            low_health: self.low_health(),
+        })
     }
+    /// Save now, on this thread (tests).
+    #[cfg(test)]
+    pub(crate) fn save(&self) -> std::io::Result<()> {
+        crate::settings_writer::save_to(&self.save_job()?)
+    }
+    /// Once per frame (`force`: now, synchronously; the Settings window's
+    /// Apply and shutdown). A change is saved 300 ms after it was made, on
+    /// the settings writer thread (1.6.0), so the frame does not wait for
+    /// the disk; a failed save is tried again 5 s later.
     pub fn flush(&self, force: bool, log: &Logger) {
+        for result in crate::settings_writer::take_results() {
+            self.saved(result.map_err(std::io::Error::other), false, log);
+        }
         let ready = self
             .dirty
             .lock()
             .is_ok_and(|at| at.is_some_and(|t| force || t.elapsed() >= Duration::from_millis(300)));
+        if force {
+            // A queued save must not land after this one.
+            crate::settings_writer::settle(Duration::from_secs(2));
+            for result in crate::settings_writer::take_results() {
+                self.saved(result.map_err(std::io::Error::other), false, log);
+            }
+        }
         if !ready {
             return;
         }
-        match self.save() {
+        let job = match self.save_job() {
+            Ok(job) => job,
+            Err(e) => return self.saved(Err(e), false, log),
+        };
+        if !force {
+            if let Ok(mut at) = self.dirty.lock() {
+                *at = None;
+            }
+            // No writer thread: save here, as before 1.6.0.
+            if let Err(job) = crate::settings_writer::queue(job) {
+                self.saved(crate::settings_writer::save_to(&job), false, log);
+            }
+            return;
+        }
+        self.saved(crate::settings_writer::save_to(&job), true, log);
+    }
+    /// Log a save's result. `clear`: a synchronous save of the current
+    /// values, so nothing is left to save; a background save leaves alone
+    /// a change made after its values were taken.
+    fn saved(&self, result: std::io::Result<()>, clear: bool, log: &Logger) {
+        match result {
             Ok(()) => {
-                if let Ok(mut at) = self.dirty.lock() {
-                    *at = None
+                if clear {
+                    if let Ok(mut at) = self.dirty.lock() {
+                        *at = None;
+                    }
                 }
                 log.write("SETTINGS saved controls.json");
             }

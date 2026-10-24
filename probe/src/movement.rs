@@ -1897,7 +1897,7 @@ mod tests {
             cursor: Some((100., 100.)),
             ..keys(0, 0)
         };
-        camera.set_command_blocked(vec![crate::camera::Rect {
+        camera.set_command_blocked(&[crate::camera::Rect {
             x: 80.,
             y: 80.,
             w: 40.,
@@ -2045,7 +2045,7 @@ mod tests {
         assert!(m.click_feedback().is_empty());
         assert_eq!(m.state.lock().unwrap().target, Some(Order::Attack(29)));
         assert_eq!(m.state.lock().unwrap().attack_click.map(|v| v.0), Some(29));
-        camera.set_command_blocked(vec![crate::camera::Rect {
+        camera.set_command_blocked(&[crate::camera::Rect {
             x: 1140.,
             y: 520.,
             w: 40.,
@@ -2266,7 +2266,7 @@ mod tests {
             .is_none());
         assert!(m.refresh_hover(&camera, false, None).0.is_none());
         assert!(m.state.lock().unwrap().frame_markers.0.is_none());
-        camera.set_command_blocked(vec![crate::camera::Rect {
+        camera.set_command_blocked(&[crate::camera::Rect {
             x: 1140.,
             y: 520.,
             w: 40.,
@@ -2320,7 +2320,7 @@ mod tests {
         let (h, a) = m.refresh_hover(&camera, true, None);
         assert!(h.is_none() && m.cursor_enemy().is_none());
         assert_eq!(a.unwrap().id, target.id);
-        camera.set_command_blocked(vec![crate::camera::Rect {
+        camera.set_command_blocked(&[crate::camera::Rect {
             x: 1140.,
             y: 520.,
             w: 40.,
@@ -2330,7 +2330,7 @@ mod tests {
         let (h, a) = m.refresh_hover(&camera, true, None);
         assert!(h.is_none() && m.cursor_enemy().is_none());
         assert_eq!(a.unwrap().id, target.id);
-        camera.set_command_blocked(Vec::new());
+        camera.set_command_blocked(&[]);
         // The new visibility snapshot must beat the still-fresh enemy list.
         m.observe_hover_units((1, 33, 1), 5, 100, &[pointed]);
         assert!(m.refresh_hover(&camera, true, None).1.is_none());
@@ -2418,7 +2418,7 @@ mod tests {
         assert!(m.attack_click_feedback().unwrap().1 > earlier);
         // Blocked UI clicks don't trigger or replace accepted feedback.
         let accepted = m.attack_click_feedback();
-        camera.set_command_blocked(vec![crate::camera::Rect {
+        camera.set_command_blocked(&[crate::camera::Rect {
             x: 1140.,
             y: 520.,
             w: 40.,
@@ -3125,14 +3125,14 @@ mod tests {
             9
         );
         assert_eq!(movement.target_markers(&camera).1.unwrap().id, 9);
-        camera.set_command_blocked(vec![crate::camera::Rect {
+        camera.set_command_blocked(&[crate::camera::Rect {
             x: 1100.,
             y: 500.,
             w: 100.,
             h: 100.,
         }]);
         assert!(movement.target_markers(&camera).0.is_none());
-        camera.set_command_blocked(Vec::new());
+        camera.set_command_blocked(&[]);
         movement.state.lock().unwrap().units_updated =
             Some(Instant::now() - Duration::from_secs(1));
         assert!(
@@ -3800,8 +3800,8 @@ mod tests {
             w: 907.,
             h: 300.,
         };
-        camera.set_blocked(vec![scoreboard]);
-        camera.set_command_blocked(vec![]);
+        camera.set_blocked(&[scoreboard]);
+        camera.set_command_blocked(&[]);
         let units = vec![
             Unit {
                 id: 2,
@@ -3932,7 +3932,7 @@ mod tests {
             InputV1::move_to(pos.0, pos.1)
         );
         // Genuine HUD still blocks commands; only the scoreboard is excluded.
-        camera.set_command_blocked(vec![scoreboard]);
+        camera.set_command_blocked(&[scoreboard]);
         movement.update_mouse(keys(0, 0), true, &camera, &log);
         movement.update_mouse(
             Keys {

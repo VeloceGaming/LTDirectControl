@@ -195,8 +195,8 @@ font generator applies the same rule.
 
 The native UI is built from template strings (see `player_hud::template`
 and `shop_ui::template`), spawned with `ctx.ui_spawn_source`, and updated
-through small cached helpers (`props`, `text`, `visible`) that skip writes
-when nothing changed. Clicks are registered with
+through the window's write cache (`ui_writes::PropCache`), which sends the
+game only what changed. Clicks are registered with
 `ctx.ui_register_path_events`; check `crate::ui_click::once(path)` in the
 callback. The game keeps a path's callbacks when your window is removed and
 rebuilt within a match (background colour or language change), and your
@@ -213,6 +213,55 @@ To add one:
    from becoming battlefield orders.
 4. Pick a z-order band that does not collide: HUD below 1120, shop
    1500–1560, settings around 2000.
+5. If it is built the first time it is needed in a match, implement
+   `prewarm::Prespawn` and add it to the list in `Client::apply_windows`,
+   so it is built hidden while the player chooses an athlete.
+
+#### A window is a state, a comparison and a write (1.6.0)
+
+A window runs every frame, and most frames nothing on it changes. So the
+per-frame work is split in three:
+
+1. **State**: from the frame's inputs, work out what each node shows as
+   plain values: numbers, flags, colours as `u32`. Everything with a side
+   effect happens here, every frame, whatever is drawn: tweens
+   (`hud_motion::Motion`), the motion pass, the ready chime, press and
+   release, hover sounds, tooltip timers.
+2. **Comparison**: pass those values to the node's write site. The cache
+   keeps, per node and site, the values it last had accepted. Unchanged
+   values (and an unchanged background colour and language) mean nothing
+   to do, not even formatting the text.
+3. **Write**: only on a change, the site's function formats the property
+   source and the cache applies the usual rules (fields compared after
+   theming; a refused write is retried next frame).
+
+In code: look a node up once (`cache.node(path)` gives a `NodeId`; keep
+them in a node table such as `hud_nodes::Nodes`), then per frame:
+
+```rust
+// The values the source is made of, then how it is written.
+cache.props_keyed(ctx, nodes.shade, SITE, (shown, height, color), |(shown, height, color)| {
+    format!("visible: {shown}; height: {height:.2}px; color: #{color:08x};")
+});
+cache.text_keyed(ctx, nodes.kills, (kills,), |(kills,)| kills.to_string());
+```
+
+Rules that keep this exact:
+
+- The format function may use only its values and constants of that
+  node. Anything else it reads (a setting, a name) belongs in the values.
+- Two different sources on one node need two site numbers (`VIS` = 0 is
+  always `visible: {on};`). A write from one site makes the others check
+  again, so the node always ends as 1.5.3's rules would leave it.
+- Show and hide a root with `ui_root::show` / `ui_root::hide`, which
+  write only when the game's state differs, and keep the
+  `perf_hide_mod_ui` switch working.
+- `ui_identity.rs` drives frame sequences through each window on a fake
+  UI tree (`fake_ui.rs`) and compares every write with a saved record
+  (`probe/testdata/ui_identity/`). A change that should not change the
+  screen must keep those records; a deliberate change records anew
+  (`LT_UPDATE_UI_RECORDS=1 cargo test --release ui_identity`) and the
+  record's diff is reviewed like the code.
 
 ### Change how the shop buys
 

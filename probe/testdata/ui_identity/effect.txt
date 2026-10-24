@@ -1,0 +1,1511 @@
+## frame 0
+## frame 1
+## frame 2
+## frame 3
+## frame 4
+## frame 5
+## frame 6
+## frame 7
+## frame 8
+## frame 9
+## frame 10
+## frame 11
+## frame 12
+## frame 13
+## frame 14
+## frame 15
+## frame 16
+## frame 17
+## frame 18
+## frame 19
+## frame 20
+## frame 21
+## frame 22
+## frame 23
+## frame 24
+## frame 25
+## frame 26
+## frame 27
+## frame 28
+## frame 29
+## frame 30
+## frame 31
+## frame 32
+## frame 33
+## frame 34
+## frame 35
+## frame 36
+## frame 37
+## frame 38
+## frame 39
+## frame 40
+## frame 41
+## frame 42
+## frame 43
+## frame 44
+## frame 45
+## frame 46
+## frame 47
+## frame 48
+## frame 49
+## frame 50
+## frame 51
+S ingame.lt_screen_effect len=12369 fnv=8a0d1b925d7efe43
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253604;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253604;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e253603;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e253603;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e253603;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253603;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253603;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e253602;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e253602;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e253602;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e253602;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253601;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253601;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253601;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253601;
+P ingame.lt_screen_effect.band31 | visible: true; x: 74.67px; y: 124.67px; width: 1770.67px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band32 | visible: true; x: 74.67px; y: 938.67px; width: 1502.33px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band33 | visible: true; x: 74.67px; y: 135.33px; width: 10.67px; height: 803.33px; color: #9e253601;
+P ingame.lt_screen_effect.band34 | visible: true; x: 1834.67px; y: 135.33px; width: 10.67px; height: 600.67px; color: #9e253601;
+P ingame.lt_screen_effect.band35 | visible: false;
+P ingame.lt_screen_effect.band36 | visible: false;
+P ingame.lt_screen_effect.band37 | visible: false;
+P ingame.lt_screen_effect.band38 | visible: false;
+P ingame.lt_screen_effect.band39 | visible: false;
+P ingame.lt_screen_effect.band40 | visible: false;
+P ingame.lt_screen_effect.band41 | visible: false;
+P ingame.lt_screen_effect.band42 | visible: false;
+P ingame.lt_screen_effect.band43 | visible: false;
+P ingame.lt_screen_effect.band44 | visible: false;
+P ingame.lt_screen_effect.band45 | visible: false;
+P ingame.lt_screen_effect.band46 | visible: false;
+P ingame.lt_screen_effect.band47 | visible: false;
+P ingame.lt_screen_effect.band48 | visible: false;
+P ingame.lt_screen_effect.band49 | visible: false;
+P ingame.lt_screen_effect.band50 | visible: false;
+P ingame.lt_screen_effect.band51 | visible: false;
+P ingame.lt_screen_effect.band52 | visible: false;
+P ingame.lt_screen_effect.band53 | visible: false;
+P ingame.lt_screen_effect.band54 | visible: false;
+P ingame.lt_screen_effect.band55 | visible: false;
+P ingame.lt_screen_effect.band56 | visible: false;
+P ingame.lt_screen_effect.band57 | visible: false;
+P ingame.lt_screen_effect.band58 | visible: false;
+P ingame.lt_screen_effect.band59 | visible: false;
+P ingame.lt_screen_effect.band60 | visible: false;
+P ingame.lt_screen_effect.band61 | visible: false;
+P ingame.lt_screen_effect.band62 | visible: false;
+P ingame.lt_screen_effect.band63 | visible: false;
+P ingame.lt_screen_effect.band64 | visible: false;
+P ingame.lt_screen_effect.band65 | visible: false;
+P ingame.lt_screen_effect.band66 | visible: false;
+P ingame.lt_screen_effect.band67 | visible: false;
+P ingame.lt_screen_effect.band68 | visible: false;
+P ingame.lt_screen_effect.band69 | visible: false;
+P ingame.lt_screen_effect.band70 | visible: false;
+P ingame.lt_screen_effect.band71 | visible: false;
+P ingame.lt_screen_effect.band72 | visible: false;
+P ingame.lt_screen_effect.band73 | visible: false;
+P ingame.lt_screen_effect.band74 | visible: false;
+P ingame.lt_screen_effect.band75 | visible: false;
+P ingame.lt_screen_effect.band76 | visible: false;
+P ingame.lt_screen_effect.band77 | visible: false;
+P ingame.lt_screen_effect.band78 | visible: false;
+P ingame.lt_screen_effect.band79 | visible: false;
+P ingame.lt_screen_effect.band80 | visible: false;
+P ingame.lt_screen_effect.band81 | visible: false;
+P ingame.lt_screen_effect.band82 | visible: false;
+P ingame.lt_screen_effect.band83 | visible: false;
+P ingame.lt_screen_effect.band84 | visible: false;
+P ingame.lt_screen_effect.band85 | visible: false;
+P ingame.lt_screen_effect.band86 | visible: false;
+P ingame.lt_screen_effect.band87 | visible: false;
+P ingame.lt_screen_effect.band88 | visible: false;
+P ingame.lt_screen_effect.band89 | visible: false;
+P ingame.lt_screen_effect.band90 | visible: false;
+P ingame.lt_screen_effect.band91 | visible: false;
+P ingame.lt_screen_effect.band92 | visible: false;
+P ingame.lt_screen_effect.band93 | visible: false;
+P ingame.lt_screen_effect.band94 | visible: false;
+P ingame.lt_screen_effect.band95 | visible: false;
+P ingame.lt_screen_effect.band96 | visible: false;
+P ingame.lt_screen_effect.band97 | visible: false;
+P ingame.lt_screen_effect.band98 | visible: false;
+P ingame.lt_screen_effect.band99 | visible: false;
+P ingame.lt_screen_effect.band100 | visible: false;
+P ingame.lt_screen_effect.band101 | visible: false;
+P ingame.lt_screen_effect.band102 | visible: false;
+P ingame.lt_screen_effect.band103 | visible: false;
+P ingame.lt_screen_effect.band104 | visible: false;
+P ingame.lt_screen_effect.band105 | visible: false;
+P ingame.lt_screen_effect.band106 | visible: false;
+P ingame.lt_screen_effect.band107 | visible: false;
+P ingame.lt_screen_effect.band108 | visible: false;
+P ingame.lt_screen_effect.band109 | visible: false;
+P ingame.lt_screen_effect.band110 | visible: false;
+P ingame.lt_screen_effect.band111 | visible: false;
+P ingame.lt_screen_effect.band112 | visible: false;
+P ingame.lt_screen_effect.band113 | visible: false;
+P ingame.lt_screen_effect.band114 | visible: false;
+P ingame.lt_screen_effect.band115 | visible: false;
+P ingame.lt_screen_effect.band116 | visible: false;
+P ingame.lt_screen_effect.band117 | visible: false;
+P ingame.lt_screen_effect.band118 | visible: false;
+P ingame.lt_screen_effect.band119 | visible: false;
+P ingame.lt_screen_effect.band120 | visible: false;
+P ingame.lt_screen_effect.band121 | visible: false;
+P ingame.lt_screen_effect.band122 | visible: false;
+P ingame.lt_screen_effect.band123 | visible: false;
+P ingame.lt_screen_effect.band124 | visible: false;
+P ingame.lt_screen_effect.band125 | visible: false;
+P ingame.lt_screen_effect.band126 | visible: false;
+P ingame.lt_screen_effect.band127 | visible: false;
+P ingame.lt_screen_effect.band128 | visible: false;
+P ingame.lt_screen_effect.band129 | visible: false;
+P ingame.lt_screen_effect.band130 | visible: false;
+P ingame.lt_screen_effect.band131 | visible: false;
+P ingame.lt_screen_effect.band132 | visible: false;
+P ingame.lt_screen_effect.band133 | visible: false;
+P ingame.lt_screen_effect.band134 | visible: false;
+P ingame.lt_screen_effect.band135 | visible: false;
+P ingame.lt_screen_effect.band136 | visible: false;
+P ingame.lt_screen_effect.band137 | visible: false;
+P ingame.lt_screen_effect.band138 | visible: false;
+P ingame.lt_screen_effect.band139 | visible: false;
+P ingame.lt_screen_effect.band140 | visible: false;
+P ingame.lt_screen_effect.band141 | visible: false;
+P ingame.lt_screen_effect.band142 | visible: false;
+P ingame.lt_screen_effect.band143 | visible: false;
+P ingame.lt_screen_effect.band144 | visible: false;
+P ingame.lt_screen_effect.band145 | visible: false;
+P ingame.lt_screen_effect.band146 | visible: false;
+P ingame.lt_screen_effect.band147 | visible: false;
+P ingame.lt_screen_effect.band148 | visible: false;
+P ingame.lt_screen_effect.band149 | visible: false;
+P ingame.lt_screen_effect.band150 | visible: false;
+P ingame.lt_screen_effect.band151 | visible: false;
+P ingame.lt_screen_effect.band152 | visible: false;
+P ingame.lt_screen_effect.band153 | visible: false;
+P ingame.lt_screen_effect.band154 | visible: false;
+P ingame.lt_screen_effect.band155 | visible: false;
+P ingame.lt_screen_effect.band156 | visible: false;
+P ingame.lt_screen_effect.band157 | visible: false;
+P ingame.lt_screen_effect.band158 | visible: false;
+P ingame.lt_screen_effect.band159 | visible: false;
+P ingame.lt_screen_effect.band160 | visible: false;
+P ingame.lt_screen_effect.band161 | visible: false;
+P ingame.lt_screen_effect.band162 | visible: false;
+P ingame.lt_screen_effect.band163 | visible: false;
+P ingame.lt_screen_effect.band164 | visible: false;
+P ingame.lt_screen_effect.band165 | visible: false;
+P ingame.lt_screen_effect.band166 | visible: false;
+P ingame.lt_screen_effect.band167 | visible: false;
+P ingame.lt_screen_effect.band168 | visible: false;
+P ingame.lt_screen_effect.band169 | visible: false;
+P ingame.lt_screen_effect.band170 | visible: false;
+P ingame.lt_screen_effect.band171 | visible: false;
+P ingame.lt_screen_effect.band172 | visible: false;
+P ingame.lt_screen_effect.band173 | visible: false;
+P ingame.lt_screen_effect.band174 | visible: false;
+P ingame.lt_screen_effect.band175 | visible: false;
+P ingame.lt_screen_effect.band176 | visible: false;
+P ingame.lt_screen_effect.band177 | visible: false;
+P ingame.lt_screen_effect.band178 | visible: false;
+P ingame.lt_screen_effect.band179 | visible: false;
+P ingame.lt_screen_effect.band180 | visible: false;
+P ingame.lt_screen_effect.band181 | visible: false;
+P ingame.lt_screen_effect.band182 | visible: false;
+P ingame.lt_screen_effect.band183 | visible: false;
+P ingame.lt_screen_effect.band184 | visible: false;
+P ingame.lt_screen_effect.band185 | visible: false;
+P ingame.lt_screen_effect.band186 | visible: false;
+P ingame.lt_screen_effect.band187 | visible: false;
+P ingame.lt_screen_effect.band188 | visible: false;
+P ingame.lt_screen_effect.band189 | visible: false;
+P ingame.lt_screen_effect.band190 | visible: false;
+P ingame.lt_screen_effect.band191 | visible: false;
+P ingame.lt_screen_effect.band192 | visible: false;
+P ingame.lt_screen_effect.band193 | visible: false;
+P ingame.lt_screen_effect.band194 | visible: false;
+P ingame.lt_screen_effect.band195 | visible: false;
+## frame 52
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253607;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253607;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e253606;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e253606;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e253606;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253605;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253605;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e253604;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e253604;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e253603;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e253603;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253602;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253602;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253602;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253602;
+P ingame.lt_screen_effect.band35 | visible: true; x: 85.33px; y: 135.33px; width: 1749.33px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band36 | visible: true; x: 85.33px; y: 928.00px; width: 1491.67px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band37 | visible: true; x: 85.33px; y: 146.00px; width: 10.67px; height: 782.00px; color: #9e253601;
+P ingame.lt_screen_effect.band38 | visible: true; x: 1824.00px; y: 146.00px; width: 10.67px; height: 590.00px; color: #9e253601;
+## frame 53
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e253609;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e253609;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e253609;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253608;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253608;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e253606;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e253606;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e253605;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e253605;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253604;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253604;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253603;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253603;
+P ingame.lt_screen_effect.band31 | visible: true; x: 74.67px; y: 124.67px; width: 1770.67px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band32 | visible: true; x: 74.67px; y: 938.67px; width: 1502.33px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band33 | visible: true; x: 74.67px; y: 135.33px; width: 10.67px; height: 803.33px; color: #9e253602;
+P ingame.lt_screen_effect.band34 | visible: true; x: 1834.67px; y: 135.33px; width: 10.67px; height: 600.67px; color: #9e253602;
+P ingame.lt_screen_effect.band39 | visible: true; x: 96.00px; y: 146.00px; width: 1728.00px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band40 | visible: true; x: 96.00px; y: 917.33px; width: 1481.00px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band41 | visible: true; x: 96.00px; y: 156.67px; width: 10.67px; height: 760.67px; color: #9e253601;
+P ingame.lt_screen_effect.band42 | visible: true; x: 1813.33px; y: 156.67px; width: 10.67px; height: 579.33px; color: #9e253601;
+## frame 54
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e25360d;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e25360a;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e25360a;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e253608;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e253608;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e253607;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e253607;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253605;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253605;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253604;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253604;
+P ingame.lt_screen_effect.band31 | visible: true; x: 74.67px; y: 124.67px; width: 1770.67px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band32 | visible: true; x: 74.67px; y: 938.67px; width: 1502.33px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band33 | visible: true; x: 74.67px; y: 135.33px; width: 10.67px; height: 803.33px; color: #9e253603;
+P ingame.lt_screen_effect.band34 | visible: true; x: 1834.67px; y: 135.33px; width: 10.67px; height: 600.67px; color: #9e253603;
+P ingame.lt_screen_effect.band35 | visible: true; x: 85.33px; y: 135.33px; width: 1749.33px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band36 | visible: true; x: 85.33px; y: 928.00px; width: 1491.67px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band37 | visible: true; x: 85.33px; y: 146.00px; width: 10.67px; height: 782.00px; color: #9e253602;
+P ingame.lt_screen_effect.band38 | visible: true; x: 1824.00px; y: 146.00px; width: 10.67px; height: 590.00px; color: #9e253602;
+## frame 55
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253613;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253613;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e253610;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e253610;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e253610;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e25360d;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e25360d;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e25360b;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e25360b;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e253608;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e253608;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253606;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253606;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253605;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253605;
+P ingame.lt_screen_effect.band43 | visible: true; x: 106.67px; y: 156.67px; width: 1706.67px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band44 | visible: true; x: 106.67px; y: 906.67px; width: 1470.33px; height: 10.67px; color: #9e253601;
+P ingame.lt_screen_effect.band45 | visible: true; x: 106.67px; y: 167.33px; width: 10.67px; height: 739.33px; color: #9e253601;
+P ingame.lt_screen_effect.band46 | visible: true; x: 1802.67px; y: 167.33px; width: 10.67px; height: 568.67px; color: #9e253601;
+## frame 56
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e253617;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e253617;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e253617;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253617;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253617;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e253613;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e253613;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e253613;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253610;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253610;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e25360d;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e25360d;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e25360a;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253608;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253608;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253606;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253606;
+P ingame.lt_screen_effect.band31 | visible: true; x: 74.67px; y: 124.67px; width: 1770.67px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band32 | visible: true; x: 74.67px; y: 938.67px; width: 1502.33px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band33 | visible: true; x: 74.67px; y: 135.33px; width: 10.67px; height: 803.33px; color: #9e253604;
+P ingame.lt_screen_effect.band34 | visible: true; x: 1834.67px; y: 135.33px; width: 10.67px; height: 600.67px; color: #9e253604;
+P ingame.lt_screen_effect.band35 | visible: true; x: 85.33px; y: 135.33px; width: 1749.33px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band36 | visible: true; x: 85.33px; y: 928.00px; width: 1491.67px; height: 10.67px; color: #9e253603;
+P ingame.lt_screen_effect.band37 | visible: true; x: 85.33px; y: 146.00px; width: 10.67px; height: 782.00px; color: #9e253603;
+P ingame.lt_screen_effect.band38 | visible: true; x: 1824.00px; y: 146.00px; width: 10.67px; height: 590.00px; color: #9e253603;
+## frame 57
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e25361b;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e25361b;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e25361b;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25361b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25361b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e253617;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e253617;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e253617;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e253617;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e253617;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e253617;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253613;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253613;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253613;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e25360f;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e25360f;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e25360c;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e25360c;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e25360c;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e25360c;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e253609;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e253609;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253607;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253607;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253607;
+P ingame.lt_screen_effect.band31 | visible: true; x: 74.67px; y: 124.67px; width: 1770.67px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band32 | visible: true; x: 74.67px; y: 938.67px; width: 1502.33px; height: 10.67px; color: #9e253605;
+P ingame.lt_screen_effect.band33 | visible: true; x: 74.67px; y: 135.33px; width: 10.67px; height: 803.33px; color: #9e253605;
+P ingame.lt_screen_effect.band34 | visible: true; x: 1834.67px; y: 135.33px; width: 10.67px; height: 600.67px; color: #9e253605;
+P ingame.lt_screen_effect.band39 | visible: true; x: 96.00px; y: 146.00px; width: 1728.00px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band40 | visible: true; x: 96.00px; y: 917.33px; width: 1481.00px; height: 10.67px; color: #9e253602;
+P ingame.lt_screen_effect.band41 | visible: true; x: 96.00px; y: 156.67px; width: 10.67px; height: 760.67px; color: #9e253602;
+P ingame.lt_screen_effect.band42 | visible: true; x: 1813.33px; y: 156.67px; width: 10.67px; height: 579.33px; color: #9e253602;
+## frame 58
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e25361f;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e25361f;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e25361f;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25361f;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e25361f;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e25361a;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e25361a;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e25361a;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e25361a;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e25361a;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e25361a;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253615;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253615;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253615;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253615;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e253611;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e253611;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e253611;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e253611;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e25360e;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e25360e;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e25360e;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e25360e;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e25360a;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e25360a;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e25360a;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253608;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253608;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253608;
+## frame 59
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 10.67px; color: #9e253623;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 1013.33px; width: 1577.00px; height: 10.67px; color: #9e253623;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 1013.33px; width: 15.00px; height: 10.67px; color: #9e253623;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253623;
+P ingame.lt_screen_effect.band4 | visible: true; x: 1909.33px; y: 60.67px; width: 10.67px; height: 952.67px; color: #9e253623;
+P ingame.lt_screen_effect.band5 | visible: true; x: 10.67px; y: 60.67px; width: 1898.67px; height: 10.67px; color: #9e25361d;
+P ingame.lt_screen_effect.band6 | visible: true; x: 10.67px; y: 1002.67px; width: 1566.33px; height: 10.67px; color: #9e25361d;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1905.00px; y: 1002.67px; width: 4.33px; height: 10.67px; color: #9e25361d;
+P ingame.lt_screen_effect.band8 | visible: true; x: 10.67px; y: 71.33px; width: 10.67px; height: 931.33px; color: #9e25361d;
+P ingame.lt_screen_effect.band9 | visible: true; x: 1898.67px; y: 71.33px; width: 10.67px; height: 664.67px; color: #9e25361d;
+P ingame.lt_screen_effect.band10 | visible: true; x: 1905.00px; y: 736.00px; width: 4.33px; height: 266.67px; color: #9e25361d;
+P ingame.lt_screen_effect.band11 | visible: true; x: 21.33px; y: 71.33px; width: 1877.33px; height: 10.67px; color: #9e253618;
+P ingame.lt_screen_effect.band12 | visible: true; x: 21.33px; y: 992.00px; width: 1555.67px; height: 10.67px; color: #9e253618;
+P ingame.lt_screen_effect.band13 | visible: true; x: 21.33px; y: 82.00px; width: 10.67px; height: 910.00px; color: #9e253618;
+P ingame.lt_screen_effect.band14 | visible: true; x: 1888.00px; y: 82.00px; width: 10.67px; height: 654.00px; color: #9e253618;
+P ingame.lt_screen_effect.band15 | visible: true; x: 32.00px; y: 82.00px; width: 1856.00px; height: 10.67px; color: #9e253614;
+P ingame.lt_screen_effect.band16 | visible: true; x: 32.00px; y: 981.33px; width: 1545.00px; height: 10.67px; color: #9e253614;
+P ingame.lt_screen_effect.band17 | visible: true; x: 32.00px; y: 92.67px; width: 10.67px; height: 888.67px; color: #9e253614;
+P ingame.lt_screen_effect.band18 | visible: true; x: 1877.33px; y: 92.67px; width: 10.67px; height: 643.33px; color: #9e253614;
+P ingame.lt_screen_effect.band19 | visible: true; x: 42.67px; y: 92.67px; width: 1834.67px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band20 | visible: true; x: 42.67px; y: 970.67px; width: 1534.33px; height: 10.67px; color: #9e253610;
+P ingame.lt_screen_effect.band21 | visible: true; x: 42.67px; y: 103.33px; width: 10.67px; height: 867.33px; color: #9e253610;
+P ingame.lt_screen_effect.band22 | visible: true; x: 1866.67px; y: 103.33px; width: 10.67px; height: 632.67px; color: #9e253610;
+P ingame.lt_screen_effect.band23 | visible: true; x: 53.33px; y: 103.33px; width: 1813.33px; height: 10.67px; color: #9e25360c;
+P ingame.lt_screen_effect.band24 | visible: true; x: 53.33px; y: 960.00px; width: 1523.67px; height: 10.67px; color: #9e25360c;
+P ingame.lt_screen_effect.band25 | visible: true; x: 53.33px; y: 114.00px; width: 10.67px; height: 846.00px; color: #9e25360c;
+P ingame.lt_screen_effect.band26 | visible: true; x: 1856.00px; y: 114.00px; width: 10.67px; height: 622.00px; color: #9e25360c;
+P ingame.lt_screen_effect.band27 | visible: true; x: 64.00px; y: 114.00px; width: 1792.00px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band28 | visible: true; x: 64.00px; y: 949.33px; width: 1513.00px; height: 10.67px; color: #9e253609;
+P ingame.lt_screen_effect.band29 | visible: true; x: 64.00px; y: 124.67px; width: 10.67px; height: 824.67px; color: #9e253609;
+P ingame.lt_screen_effect.band30 | visible: true; x: 1845.33px; y: 124.67px; width: 10.67px; height: 611.33px; color: #9e253609;
+P ingame.lt_screen_effect.band31 | visible: true; x: 74.67px; y: 124.67px; width: 1770.67px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band32 | visible: true; x: 74.67px; y: 938.67px; width: 1502.33px; height: 10.67px; color: #9e253606;
+P ingame.lt_screen_effect.band33 | visible: true; x: 74.67px; y: 135.33px; width: 10.67px; height: 803.33px; color: #9e253606;
+P ingame.lt_screen_effect.band34 | visible: true; x: 1834.67px; y: 135.33px; width: 10.67px; height: 600.67px; color: #9e253606;
+P ingame.lt_screen_effect.band35 | visible: true; x: 85.33px; y: 135.33px; width: 1749.33px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band36 | visible: true; x: 85.33px; y: 928.00px; width: 1491.67px; height: 10.67px; color: #9e253604;
+P ingame.lt_screen_effect.band37 | visible: true; x: 85.33px; y: 146.00px; width: 10.67px; height: 782.00px; color: #9e253604;
+P ingame.lt_screen_effect.band38 | visible: true; x: 1824.00px; y: 146.00px; width: 10.67px; height: 590.00px; color: #9e253604;
+## frame 60
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2402;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2402;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2402;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e05;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e05;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e05;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e04;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e04;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e04;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e04;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e03;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e03;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e02;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e02;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e02;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e02;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e01;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e01;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e01;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e01;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e01;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e01;
+P ingame.lt_screen_effect.band41 | visible: false;
+P ingame.lt_screen_effect.band42 | visible: false;
+P ingame.lt_screen_effect.band43 | visible: false;
+P ingame.lt_screen_effect.band44 | visible: false;
+P ingame.lt_screen_effect.band45 | visible: false;
+P ingame.lt_screen_effect.band46 | visible: false;
+## frame 61
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2404;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2404;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2404;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e09;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e09;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e07;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e07;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e06;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e06;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e05;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e05;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e04;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e04;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e03;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e03;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e02;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e02;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e01;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e01;
+## frame 62
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2407;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2407;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2407;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e10;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e10;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e10;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e09;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e09;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e07;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e07;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e05;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e05;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e04;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e04;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e03;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e03;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e02;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e02;
+## frame 63
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2409;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2409;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2409;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e15;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e15;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e15;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e12;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e12;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e09;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e09;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e07;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e07;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e05;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e05;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e04;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e04;
+P ingame.lt_screen_effect.band45 | visible: true; x: 200.00px; y: 250.00px; width: 1520.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band46 | visible: true; x: 200.00px; y: 804.00px; width: 1377.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band47 | visible: true; x: 200.00px; y: 270.00px; width: 20.00px; height: 534.00px; color: #05080e01;
+P ingame.lt_screen_effect.band48 | visible: true; x: 1700.00px; y: 270.00px; width: 20.00px; height: 466.00px; color: #05080e01;
+## frame 64
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a240b;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a240b;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a240b;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e16;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e16;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e16;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e16;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e13;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e13;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e09;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e09;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e07;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e07;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e05;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e05;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e03;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e03;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e02;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e02;
+## frame 65
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a240d;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a240d;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a240d;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e20;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e20;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e20;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e20;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e20;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e20;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e16;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e16;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e16;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e16;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e12;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e12;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e08;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e08;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e08;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e08;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e06;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e06;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e04;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e04;
+## frame 66
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a240f;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a240f;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a240f;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e25;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e25;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e25;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e25;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e25;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e25;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e15;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e15;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e11;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e11;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e11;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e11;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e09;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e09;
+## frame 67
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2412;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2412;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2412;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e24;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e24;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e18;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e18;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e13;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e13;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e07;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e07;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e05;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e05;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e03;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e03;
+## frame 68
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2414;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2414;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2414;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e30;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e30;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e30;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e28;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e28;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e28;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e28;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e21;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e21;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e15;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e15;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e10;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e10;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e08;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e08;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e08;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e08;
+## frame 69
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2416;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2416;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2416;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e35;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e35;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e35;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e35;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e35;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e35;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e25;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e25;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e25;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e25;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e1e;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e18;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e18;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e12;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e12;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e09;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e09;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e06;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e06;
+## frame 70
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2418;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2418;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2418;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e31;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e31;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e31;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e31;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e29;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e29;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e29;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e29;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e21;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e21;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e1a;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e14;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e14;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e14;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e14;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e07;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e07;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e04;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e04;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e04;
+P ingame.lt_screen_effect.band45 | visible: true; x: 200.00px; y: 250.00px; width: 1520.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band46 | visible: true; x: 200.00px; y: 804.00px; width: 1377.00px; height: 20.00px; color: #05080e02;
+P ingame.lt_screen_effect.band47 | visible: true; x: 200.00px; y: 270.00px; width: 20.00px; height: 534.00px; color: #05080e02;
+P ingame.lt_screen_effect.band48 | visible: true; x: 1700.00px; y: 270.00px; width: 20.00px; height: 466.00px; color: #05080e02;
+## frame 71
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a241a;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a241a;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a241a;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e40;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e40;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e40;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e40;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e40;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e40;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e36;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e36;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e36;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e36;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e2c;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e2c;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e2c;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e2c;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e24;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e24;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e16;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e16;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e16;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e16;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e10;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e10;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e0b;
+## frame 72
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a241c;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a241c;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a241c;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e45;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e45;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e45;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e45;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e45;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e45;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e3a;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e3a;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e3a;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e3a;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e30;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e30;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e27;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e27;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e27;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e27;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e18;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e18;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e11;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e11;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e11;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e11;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e08;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e08;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e08;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e08;
+## frame 73
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a241f;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a241f;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a241f;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e4b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e4b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e4b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e4b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e4b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e4b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e34;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e34;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e34;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e34;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e2a;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e2a;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e2a;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e2a;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e21;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e21;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e19;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e19;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e19;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e19;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e13;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e13;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e0d;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e05;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e05;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e05;
+P ingame.lt_screen_effect.band49 | visible: true; x: 220.00px; y: 270.00px; width: 1480.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band50 | visible: true; x: 220.00px; y: 784.00px; width: 1357.00px; height: 20.00px; color: #05080e01;
+P ingame.lt_screen_effect.band51 | visible: true; x: 220.00px; y: 290.00px; width: 20.00px; height: 494.00px; color: #05080e01;
+P ingame.lt_screen_effect.band52 | visible: true; x: 1680.00px; y: 290.00px; width: 20.00px; height: 446.00px; color: #05080e01;
+## frame 74
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2421;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2421;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2421;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e50;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e50;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e50;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e50;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e50;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e50;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e43;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e43;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e43;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e43;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e38;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e38;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e38;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e38;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e24;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e24;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e14;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e14;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e14;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e14;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e0e;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e09;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e09;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e09;
+## frame 75
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2423;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2423;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2423;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e55;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e55;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e55;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e55;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e55;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e55;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e48;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e48;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e48;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e48;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e3b;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e30;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e30;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e30;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e26;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e26;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e26;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e26;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e1d;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e1d;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e1d;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e1d;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e15;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e15;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e15;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e0f;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e0f;
+## frame 76
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2425;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2425;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2425;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e5b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e5b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e5b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e5b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e5b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e5b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e4c;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e4c;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e4c;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e4c;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e33;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e33;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e33;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e33;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e28;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e28;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e28;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e28;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e1f;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e17;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e17;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e17;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e17;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e10;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e10;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e10;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e0a;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e06;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e06;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e06;
+P ingame.lt_screen_effect.band45 | visible: true; x: 200.00px; y: 250.00px; width: 1520.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band46 | visible: true; x: 200.00px; y: 804.00px; width: 1377.00px; height: 20.00px; color: #05080e03;
+P ingame.lt_screen_effect.band47 | visible: true; x: 200.00px; y: 270.00px; width: 20.00px; height: 534.00px; color: #05080e03;
+P ingame.lt_screen_effect.band48 | visible: true; x: 1700.00px; y: 270.00px; width: 20.00px; height: 466.00px; color: #05080e03;
+## frame 77
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a2427;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a2427;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a2427;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e60;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e60;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e60;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e60;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e60;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e60;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e51;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e51;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e51;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e51;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e43;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e43;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e43;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e43;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e36;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e36;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e36;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e36;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e2b;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e21;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e21;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e21;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e18;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e18;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e18;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e11;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e11;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e11;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e11;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e0b;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e0b;
+## frame 78
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a242a;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a242a;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a242a;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e65;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e65;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e65;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e65;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e65;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e65;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e55;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e55;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e55;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e55;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e46;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e46;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e46;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e46;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e39;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e39;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e39;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e39;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e2d;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e22;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e22;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e22;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e22;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e19;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e19;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e19;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e19;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e12;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e12;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e12;
+## frame 79
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a242c;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a242c;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a242c;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e6b;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e6b;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e6b;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e6b;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e6b;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e6b;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e5a;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e5a;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e5a;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e5a;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e4a;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e4a;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e4a;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e4a;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e3c;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e3c;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e3c;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e3c;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e2f;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e2f;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e2f;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e2f;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e24;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e24;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e24;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e1b;
+P ingame.lt_screen_effect.band33 | visible: true; x: 140.00px; y: 190.00px; width: 1640.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band34 | visible: true; x: 140.00px; y: 864.00px; width: 1437.00px; height: 20.00px; color: #05080e13;
+P ingame.lt_screen_effect.band35 | visible: true; x: 140.00px; y: 210.00px; width: 20.00px; height: 654.00px; color: #05080e13;
+P ingame.lt_screen_effect.band36 | visible: true; x: 1760.00px; y: 210.00px; width: 20.00px; height: 526.00px; color: #05080e13;
+P ingame.lt_screen_effect.band37 | visible: true; x: 160.00px; y: 210.00px; width: 1600.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band38 | visible: true; x: 160.00px; y: 844.00px; width: 1417.00px; height: 20.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band39 | visible: true; x: 160.00px; y: 230.00px; width: 20.00px; height: 614.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band40 | visible: true; x: 1740.00px; y: 230.00px; width: 20.00px; height: 506.00px; color: #05080e0c;
+P ingame.lt_screen_effect.band41 | visible: true; x: 180.00px; y: 230.00px; width: 1560.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band42 | visible: true; x: 180.00px; y: 824.00px; width: 1397.00px; height: 20.00px; color: #05080e07;
+P ingame.lt_screen_effect.band43 | visible: true; x: 180.00px; y: 250.00px; width: 20.00px; height: 574.00px; color: #05080e07;
+P ingame.lt_screen_effect.band44 | visible: true; x: 1720.00px; y: 250.00px; width: 20.00px; height: 486.00px; color: #05080e07;
+## frame 80
+P ingame.lt_screen_effect.band0 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 686.00px; color: #141a242e;
+P ingame.lt_screen_effect.band1 | visible: true; x: 0.00px; y: 736.00px; width: 1577.00px; height: 288.00px; color: #141a242e;
+P ingame.lt_screen_effect.band2 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 288.00px; color: #141a242e;
+P ingame.lt_screen_effect.band3 | visible: true; x: 0.00px; y: 50.00px; width: 1920.00px; height: 20.00px; color: #05080e70;
+P ingame.lt_screen_effect.band4 | visible: true; x: 0.00px; y: 1004.00px; width: 1577.00px; height: 20.00px; color: #05080e70;
+P ingame.lt_screen_effect.band5 | visible: true; x: 1905.00px; y: 1004.00px; width: 15.00px; height: 20.00px; color: #05080e70;
+P ingame.lt_screen_effect.band6 | visible: true; x: 0.00px; y: 70.00px; width: 20.00px; height: 934.00px; color: #05080e70;
+P ingame.lt_screen_effect.band7 | visible: true; x: 1900.00px; y: 70.00px; width: 20.00px; height: 666.00px; color: #05080e70;
+P ingame.lt_screen_effect.band8 | visible: true; x: 1905.00px; y: 736.00px; width: 15.00px; height: 268.00px; color: #05080e70;
+P ingame.lt_screen_effect.band9 | visible: true; x: 20.00px; y: 70.00px; width: 1880.00px; height: 20.00px; color: #05080e5e;
+P ingame.lt_screen_effect.band10 | visible: true; x: 20.00px; y: 984.00px; width: 1557.00px; height: 20.00px; color: #05080e5e;
+P ingame.lt_screen_effect.band11 | visible: true; x: 20.00px; y: 90.00px; width: 20.00px; height: 894.00px; color: #05080e5e;
+P ingame.lt_screen_effect.band12 | visible: true; x: 1880.00px; y: 90.00px; width: 20.00px; height: 646.00px; color: #05080e5e;
+P ingame.lt_screen_effect.band13 | visible: true; x: 40.00px; y: 90.00px; width: 1840.00px; height: 20.00px; color: #05080e4e;
+P ingame.lt_screen_effect.band14 | visible: true; x: 40.00px; y: 964.00px; width: 1537.00px; height: 20.00px; color: #05080e4e;
+P ingame.lt_screen_effect.band15 | visible: true; x: 40.00px; y: 110.00px; width: 20.00px; height: 854.00px; color: #05080e4e;
+P ingame.lt_screen_effect.band16 | visible: true; x: 1860.00px; y: 110.00px; width: 20.00px; height: 626.00px; color: #05080e4e;
+P ingame.lt_screen_effect.band17 | visible: true; x: 60.00px; y: 110.00px; width: 1800.00px; height: 20.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band18 | visible: true; x: 60.00px; y: 944.00px; width: 1517.00px; height: 20.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band19 | visible: true; x: 60.00px; y: 130.00px; width: 20.00px; height: 814.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band20 | visible: true; x: 1840.00px; y: 130.00px; width: 20.00px; height: 606.00px; color: #05080e3f;
+P ingame.lt_screen_effect.band21 | visible: true; x: 80.00px; y: 130.00px; width: 1760.00px; height: 20.00px; color: #05080e32;
+P ingame.lt_screen_effect.band22 | visible: true; x: 80.00px; y: 924.00px; width: 1497.00px; height: 20.00px; color: #05080e32;
+P ingame.lt_screen_effect.band23 | visible: true; x: 80.00px; y: 150.00px; width: 20.00px; height: 774.00px; color: #05080e32;
+P ingame.lt_screen_effect.band24 | visible: true; x: 1820.00px; y: 150.00px; width: 20.00px; height: 586.00px; color: #05080e32;
+P ingame.lt_screen_effect.band25 | visible: true; x: 100.00px; y: 150.00px; width: 1720.00px; height: 20.00px; color: #05080e26;
+P ingame.lt_screen_effect.band26 | visible: true; x: 100.00px; y: 904.00px; width: 1477.00px; height: 20.00px; color: #05080e26;
+P ingame.lt_screen_effect.band27 | visible: true; x: 100.00px; y: 170.00px; width: 20.00px; height: 734.00px; color: #05080e26;
+P ingame.lt_screen_effect.band28 | visible: true; x: 1800.00px; y: 170.00px; width: 20.00px; height: 566.00px; color: #05080e26;
+P ingame.lt_screen_effect.band29 | visible: true; x: 120.00px; y: 170.00px; width: 1680.00px; height: 20.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band30 | visible: true; x: 120.00px; y: 884.00px; width: 1457.00px; height: 20.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band31 | visible: true; x: 120.00px; y: 190.00px; width: 20.00px; height: 694.00px; color: #05080e1c;
+P ingame.lt_screen_effect.band32 | visible: true; x: 1780.00px; y: 190.00px; width: 20.00px; height: 546.00px; color: #05080e1c;
+## frame 81
+## frame 82
+## frame 83
+## frame 84
+## frame 85
+## frame 86
+## frame 87
+## frame 88
+## frame 89
+## frame 90
+## frame 91
+## frame 92
+## frame 93
+## frame 94
+## frame 95
+## frame 96
+## frame 97
+## frame 98
+## frame 99
+## frame 100
+V ingame.lt_screen_effect false
+## frame 101
+## frame 102
+## frame 103
+## frame 104
+## frame 105
+## frame 106
+## frame 107
+## frame 108
+## frame 109
+## frame 110
+## frame 111
+## frame 112
+## frame 113
+## frame 114
+## frame 115
+## frame 116
+## frame 117
+## frame 118
+## frame 119
+## frame 120
+## frame 121
+## frame 122
+## frame 123
+## frame 124
+## frame 125
+## frame 126
+## frame 127
+## frame 128
+## frame 129
+## frame 130
+## frame 131
+## frame 132
+## frame 133
+## frame 134
+## frame 135
+## frame 136
+## frame 137
+## frame 138
+## frame 139
+## frame 140
+## frame 141
+## frame 142
+## frame 143
+## frame 144
+## frame 145
+## frame 146
+## frame 147
+## frame 148
+## frame 149

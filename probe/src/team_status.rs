@@ -1,4 +1,5 @@
 //! Ten player status cards from the bound live worker, never replay candidates.
+use crate::ui_writes::{NodeId, PropCache};
 use crate::{own_selection::MatchKey, Logger};
 use mod_api_stable::StableClient;
 use std::{
@@ -77,7 +78,7 @@ impl TeamStatus {
             }
         }
         s.players = players;
-        s.at = Some(Instant::now());
+        s.at = Some(crate::clock::now());
     }
     /// This match's last sample. When every actor stops calling think (the
     /// nexus explosion) the last values stay frozen, as in a pause (the
@@ -184,9 +185,87 @@ fn template() -> String {
     s.push('}');
     s
 }
+/// One row of the panel: its nodes in the cache (1.6.0).
+struct Row {
+    root: NodeId,
+    selected: NodeId,
+    icon: NodeId,
+    icon_path: String,
+    portrait: NodeId,
+    shade: NodeId,
+    timer: NodeId,
+    level: NodeId,
+    cs: NodeId,
+    gold: NodeId,
+    kda: NodeId,
+    /// (tile, icon, unknown) per inventory slot, grown with the panel.
+    items: Vec<(NodeId, NodeId, NodeId)>,
+    path: String,
+}
+struct Side {
+    root: NodeId,
+    /// level, kda, cs, items, gold
+    headers: [NodeId; 5],
+    rows: [Row; 5],
+}
+struct Nodes {
+    root: NodeId,
+    sides: [Side; 2],
+}
+impl Nodes {
+    fn new(c: &mut PropCache) -> Self {
+        let root = c.node(PATH);
+        let sides = std::array::from_fn(|side| {
+            let side_path = format!("{PATH}.side{side}");
+            Side {
+                root: c.node(&side_path),
+                headers: ["level", "kda", "cs", "items", "gold"]
+                    .map(|h| c.node(&format!("{side_path}.headers.{h}"))),
+                rows: std::array::from_fn(|lane| {
+                    let path = format!("{side_path}.lane{lane}");
+                    let mut row = |node: &str| c.node(&format!("{path}.{node}"));
+                    Row {
+                        selected: row("selected"),
+                        icon: row("portrait.icon"),
+                        portrait: row("portrait"),
+                        shade: row("portrait.shade"),
+                        timer: row("portrait.timer"),
+                        level: row("level"),
+                        cs: row("cs"),
+                        gold: row("gold"),
+                        kda: row("kda"),
+                        root: c.node(&path),
+                        icon_path: format!("{path}.portrait.icon"),
+                        items: Vec::new(),
+                        path,
+                    }
+                }),
+            }
+        });
+        Self { root, sides }
+    }
+    fn grow(&mut self, c: &mut PropCache, count: usize) {
+        for s in self.sides.iter_mut() {
+            for r in s.rows.iter_mut() {
+                for i in r.items.len()..count {
+                    let item = format!("{}.item{i}", r.path);
+                    r.items.push((
+                        c.node(&item),
+                        c.node(&format!("{item}.icon")),
+                        c.node(&format!("{item}.unknown")),
+                    ));
+                }
+            }
+        }
+    }
+}
+fn vis_source((on,): (bool,)) -> String {
+    format!("visible: {on};")
+}
 #[derive(Default)]
 pub struct TeamUi {
-    cache: HashMap<String, String>,
+    nodes: Option<Nodes>,
+    cache: crate::ui_writes::PropCache,
     spawn_at: Option<Instant>,
     allocated: usize,
     portraits: HashMap<String, (String, Instant, bool)>,
@@ -194,18 +273,6 @@ pub struct TeamUi {
     failed: bool,
 }
 impl TeamUi {
-    fn props(&mut self, ctx: &mut StableClient<'_>, path: &str, value: String, log: &Logger) {
-        if !crate::hud_motion::properties(ctx, &mut self.cache, path, &value) && !self.failed {
-            log.write(&format!("TAB property rejected path={path}"));
-            self.failed = true;
-        }
-    }
-    fn text(&mut self, ctx: &mut StableClient<'_>, path: &str, value: String) {
-        let key = format!("text:{path}");
-        if self.cache.get(&key) != Some(&value) && ctx.ui_set_text(path, &value) {
-            self.cache.insert(key, value);
-        }
-    }
     #[allow(clippy::too_many_arguments)]
     pub fn apply(
         &mut self,
@@ -216,34 +283,45 @@ impl TeamUi {
         artwork: &crate::player_hud::HudUi,
         log: &Logger,
     ) {
-        if !active {
+        let mut n = self
+            .nodes
+            .take()
+            .unwrap_or_else(|| Nodes::new(&mut self.cache));
+        self.panel(ctx, &mut n, active, players, selected, artwork, log);
+        self.nodes = Some(n);
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn panel(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        n: &mut Nodes,
+        active: bool,
+        players: &[Player],
+        selected: Option<usize>,
+        artwork: &crate::player_hud::HudUi,
+        log: &Logger,
+    ) {
+        if !active || crate::ui_root::hidden() {
             if ctx.ui_exists(PATH) {
-                self.props(ctx, PATH, "visible: false;".into(), log);
+                let ok = self.cache.props_keyed(ctx, n.root, 0, (false,), vis_source);
+                self.refused(ok, PATH, log);
             }
-            self.spawn_at = None;
+            if !active {
+                self.spawn_at = None;
+            }
             return;
         }
         if !ctx.ui_exists(PATH) {
             if self
                 .spawn_at
-                .is_some_and(|at| at.elapsed() < Duration::from_secs(1))
+                .is_some_and(|at| crate::clock::since(at) < Duration::from_secs(1))
             {
                 return;
             }
-            self.spawn_at = Some(Instant::now());
-            let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
-            log.write(&format!(
-                "TAB styled panel spawn={ok} exists={}",
-                ctx.ui_exists(PATH)
-            ));
-            if !ok || !ctx.ui_exists(PATH) {
+            self.spawn_at = Some(crate::clock::now());
+            if !self.spawn(ctx, log) {
                 return;
             }
-            self.cache.clear();
-            self.portraits.clear();
-            self.layout = None;
-            self.allocated = 6;
-            self.failed = false;
         }
         // The game buyer iterates this target vector; catalogue length does not
         // represent capacity. All rows share a column width, even for mixed plans.
@@ -268,136 +346,137 @@ impl TeamUi {
             }
             self.allocated = i + 1;
         }
+        n.grow(&mut self.cache, self.allocated);
         let g = geometry(count);
         if self.layout != Some(g) {
             log.write(&format!("TAB layout slots={count} geometry={g:?}"));
             self.layout = Some(g);
         }
-        self.props(
-            ctx,
-            PATH,
-            format!(
-                "visible: true; width: {}px; height: {}px;",
-                g.width, g.height
-            ),
-            log,
-        );
+        let (width, height) = (g.width, g.height);
+        let ok = self
+            .cache
+            .props_keyed(ctx, n.root, 1, (width, height), |(width, height)| {
+                format!("visible: true; width: {width}px; height: {height}px;")
+            });
+        self.refused(ok, PATH, log);
         for side in 0..2 {
-            let side_path = format!("{PATH}.side{side}");
-            self.props(
+            let s = &n.sides[side];
+            let ok = self.cache.props_keyed(
                 ctx,
-                &side_path,
-                format!(
-                    "x: {}px; width: {}px; height: {}px;",
-                    20 + side * (g.side_width + 26),
-                    g.side_width,
-                    g.height - 32
-                ),
-                log,
+                s.root,
+                1,
+                (side, g.side_width, g.height),
+                |(side, side_width, height)| {
+                    format!(
+                        "x: {}px; width: {side_width}px; height: {}px;",
+                        20 + side * (side_width + 26),
+                        height - 32
+                    )
+                },
             );
+            self.refused(ok, PATH, log);
             let gold_x = g.side_width - 100;
-            for (id, text) in [
-                ("level", "LV"),
-                ("kda", "K / D / A"),
-                ("cs", "CS"),
-                ("items", crate::lang::tr("ITEMS")),
-                ("gold", crate::lang::tr("GOLD")),
-            ] {
-                self.text(ctx, &format!("{side_path}.headers.{id}"), text.into());
+            for (k, text) in [
+                "LV",
+                "K / D / A",
+                "CS",
+                crate::lang::tr("ITEMS"),
+                crate::lang::tr("GOLD"),
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                self.cache.text(ctx, s.headers[k], text);
             }
-            self.props(
-                ctx,
-                &format!("{side_path}.headers.gold"),
-                format!("x: {gold_x}px;"),
-                log,
-            );
-            self.props(
-                ctx,
-                &format!("{side_path}.headers.items"),
-                format!("visible: {};", count > 0),
-                log,
-            );
+            self.cache
+                .props_keyed(ctx, s.headers[4], 1, (gold_x,), |(x,)| format!("x: {x}px;"));
+            self.cache
+                .props_keyed(ctx, s.headers[3], 0, (count > 0,), vis_source);
             for lane in 0..5 {
-                let path = format!("{side_path}.lane{lane}");
+                let r = &s.rows[lane];
                 let Some(p) = slot(players, side, lane) else {
-                    self.props(ctx, &path, "visible: false;".into(), log);
+                    let ok = self.cache.props_keyed(ctx, r.root, 0, (false,), vis_source);
+                    self.refused(ok, &r.path, log);
                     continue;
                 };
-                self.props(
+                self.cache.props_keyed(
                     ctx,
-                    &path,
-                    format!(
-                        "visible: true; y: {}px; width: {}px; height: {}px;",
-                        34 + lane * g.row_height,
-                        g.side_width,
-                        g.row_height
-                    ),
-                    log,
+                    r.root,
+                    1,
+                    (lane, g.side_width, g.row_height),
+                    |(lane, side_width, row_height)| {
+                        format!(
+                            "visible: true; y: {}px; width: {side_width}px; height: {row_height}px;",
+                            34 + lane * row_height,
+                        )
+                    },
                 );
                 let mine = selected == Some(p.id);
-                self.props(
-                    ctx,
-                    &format!("{path}.selected"),
-                    format!("visible: {mine};"),
-                    log,
-                );
-                self.props(
-                    ctx,
-                    &path,
-                    format!("color: #{};", if mine { "fdee0009" } else { "00000000" }),
-                    log,
-                );
-                let icon_path = format!("{path}.portrait.icon");
-                let retry = self.portraits.get(&icon_path).is_none_or(|(name, at, ok)| {
-                    name != &p.champion || (!ok && at.elapsed() >= Duration::from_secs(1))
+                self.cache
+                    .props_keyed(ctx, r.selected, 0, (mine,), vis_source);
+                self.cache.props_keyed(ctx, r.root, 2, (mine,), |(mine,)| {
+                    format!("color: #{};", if mine { "fdee0009" } else { "00000000" })
                 });
+                let retry = self
+                    .portraits
+                    .get(&r.icon_path)
+                    .is_none_or(|(name, at, ok)| {
+                        name != &p.champion
+                            || (!ok && crate::clock::since(at) >= Duration::from_secs(1))
+                    });
                 if retry && !p.champion.is_empty() {
-                    let ok = ctx.ui_set_champion_icon(&icon_path, &p.champion, 44., 48., 2.);
-                    self.portraits
-                        .insert(icon_path.clone(), (p.champion.clone(), Instant::now(), ok));
+                    let ok = ctx.ui_set_champion_icon(&r.icon_path, &p.champion, 44., 48., 2.);
+                    self.portraits.insert(
+                        r.icon_path.clone(),
+                        (p.champion.clone(), crate::clock::now(), ok),
+                    );
                 }
                 let visible = self
                     .portraits
-                    .get(&icon_path)
+                    .get(&r.icon_path)
                     .is_some_and(|(name, _, ok)| *ok && name == &p.champion);
-                self.props(ctx, &icon_path, format!("visible: {visible};"), log);
-                self.props(
-                    ctx,
-                    &format!("{path}.portrait"),
-                    format!(
-                        "color: #{};",
-                        if side == 0 { "536979ff" } else { "79535dff" }
-                    ),
-                    log,
-                );
-                self.props(
-                    ctx,
-                    &format!("{path}.portrait.shade"),
-                    format!("visible: {};", p.alive != Some(true)),
-                    log,
-                );
-                self.text(ctx, &format!("{path}.portrait.timer"), caption(p));
-                self.text(ctx, &format!("{path}.level"), p.level.to_string());
-                self.text(ctx, &format!("{path}.cs"), p.cs.to_string());
-                self.text(ctx, &format!("{path}.gold"), p.gold.to_string());
+                self.cache
+                    .props_keyed(ctx, r.icon, 0, (visible,), vis_source);
+                self.cache
+                    .props_keyed(ctx, r.portrait, 1, (side,), |(side,)| {
+                        format!(
+                            "color: #{};",
+                            if side == 0 { "536979ff" } else { "79535dff" }
+                        )
+                    });
+                self.cache
+                    .props_keyed(ctx, r.shade, 0, (p.alive != Some(true),), vis_source);
+                let alive = match p.alive {
+                    Some(true) => 1u8,
+                    Some(false) => 0,
+                    None => 2,
+                };
+                self.cache
+                    .text_keyed(ctx, r.timer, (alive, p.respawn), |_| caption(p));
+                self.cache
+                    .text_keyed(ctx, r.level, (p.level,), |(v,)| v.to_string());
+                self.cache
+                    .text_keyed(ctx, r.cs, (p.cs,), |(v,)| v.to_string());
+                self.cache
+                    .text_keyed(ctx, r.gold, (p.gold,), |(v,)| v.to_string());
                 let (k, d, a) = p.kda;
-                self.text(ctx, &format!("{path}.kda"), kda_caption(k, d, a));
-                self.props(ctx, &format!("{path}.gold"), format!("x: {gold_x}px;"), log);
+                self.cache
+                    .text_keyed(ctx, r.kda, (k, d, a), |(k, d, a)| kda_caption(k, d, a));
+                self.cache
+                    .props_keyed(ctx, r.gold, 1, (gold_x,), |(x,)| format!("x: {x}px;"));
                 let capacity =
                     crate::inventory::slots(p.build.as_ref().map(Vec::len), p.items.len(), None);
                 for i in 0..self.allocated {
-                    let item_path = format!("{path}.item{i}");
+                    let (tile, icon_node, unknown) = r.items[i];
                     let visible = i < capacity;
-                    self.props(
-                        ctx,
-                        &item_path,
-                        format!(
-                            "visible: {visible}; x: {}px; y: {}px;",
-                            294 + i % crate::inventory::TAB_COLUMNS * 36,
-                            18 + i / crate::inventory::TAB_COLUMNS * 36
-                        ),
-                        log,
-                    );
+                    self.cache
+                        .props_keyed(ctx, tile, 1, (visible, i), |(visible, i)| {
+                            format!(
+                                "visible: {visible}; x: {}px; y: {}px;",
+                                294 + i % crate::inventory::TAB_COLUMNS * 36,
+                                18 + i / crate::inventory::TAB_COLUMNS * 36
+                            )
+                        });
                     if !visible {
                         continue;
                     }
@@ -406,22 +485,66 @@ impl TeamUi {
                         || "visible: false;".into(),
                         |icon| format!("visible: true; {}", icon.properties()),
                     );
-                    self.props(ctx, &format!("{item_path}.icon"), props, log);
-                    self.props(
+                    self.cache.props(ctx, icon_node, &props);
+                    self.cache.props_keyed(
                         ctx,
-                        &format!("{item_path}.unknown"),
-                        format!("visible: {};", p.items.get(i).is_some() && icon.is_none()),
-                        log,
+                        unknown,
+                        0,
+                        (p.items.get(i).is_some() && icon.is_none(),),
+                        vis_source,
                     );
                 }
             }
         }
         // No input-blocking rectangles: battlefield commands pass through Tab.
     }
+    /// The first refused write is logged once per panel build.
+    fn refused(&mut self, ok: bool, path: &str, log: &Logger) {
+        if !ok && !self.failed {
+            log.write(&format!("TAB property rejected path={path}"));
+            self.failed = true;
+        }
+    }
 }
 
 fn kda_caption(kills: usize, deaths: usize, assists: usize) -> String {
     format!("<#eeececff>{kills}<#989694ff>/<#ff855bff>{deaths}<#989694ff>/<#eeececff>{assists}<>")
+}
+
+impl TeamUi {
+    fn spawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
+        log.write(&format!(
+            "TAB styled panel spawn={ok} exists={}",
+            ctx.ui_exists(PATH)
+        ));
+        if !ok || !ctx.ui_exists(PATH) {
+            return false;
+        }
+        self.cache.clear();
+        self.portraits.clear();
+        self.layout = None;
+        self.allocated = 6;
+        self.failed = false;
+        true
+    }
+}
+impl crate::prewarm::Prespawn for TeamUi {
+    fn built(&self, ctx: &StableClient<'_>) -> bool {
+        ctx.ui_exists(PATH)
+    }
+    /// The template's root shows; it is hidden at once, as with Tab released.
+    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        if !self.spawn(ctx, log) {
+            return false;
+        }
+        let root = self
+            .nodes
+            .get_or_insert_with(|| Nodes::new(&mut self.cache))
+            .root;
+        self.cache.props_keyed(ctx, root, 0, (false,), vis_source);
+        true
+    }
 }
 
 #[cfg(test)]

@@ -85,6 +85,12 @@ static SHARED: Mutex<Shared> = Mutex::new(Shared {
     logged: None,
 });
 static TARGET: AtomicUsize = AtomicUsize::new(usize::MAX);
+#[cfg(test)]
+thread_local! {
+    /// What `snapshot` answers on this thread (window identity tests).
+    pub static TEST_UNITS: std::cell::RefCell<Option<(Option<Unit>, Option<Unit>)>> =
+        const { std::cell::RefCell::new(None) };
+}
 
 /// A new match: nothing sampled yet.
 pub fn reset_session() {
@@ -110,6 +116,10 @@ pub(crate) fn target_id() -> Option<usize> {
 /// Your champion and the selected unit. When samples stop (a pause, the
 /// nexus explosion) the last ones stay (the author, 2026-10-20, option a).
 pub fn snapshot() -> (Option<Unit>, Option<Unit>) {
+    #[cfg(test)]
+    if let Some(units) = TEST_UNITS.with(|t| t.borrow().clone()) {
+        return units;
+    }
     SHARED
         .lock()
         .map(|s| (s.own.clone(), s.target.clone()))
@@ -140,9 +150,9 @@ pub fn sample(sim: &StableSim<'_>, own: Option<&StableEntity<'_, '_>>, team: usi
     // Raw values once every 10 s, to check them against the game's panel.
     if let Some(c) = own.filter(|_| {
         s.logged
-            .is_none_or(|t| t.elapsed() > Duration::from_secs(10))
+            .is_none_or(|t| crate::clock::since(t) > Duration::from_secs(10))
     }) {
-        s.logged = Some(Instant::now());
+        s.logged = Some(crate::clock::now());
         let st = c.stat();
         let b = buffs(c);
         log.write(&format!(

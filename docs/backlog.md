@@ -308,6 +308,14 @@ addition (not to be copied).
     happen. Wanted: a more graceful answer that keeps the look-ahead where
     it does not hurt control (details in
     [migration-0.6.5.md](migration-0.6.5.md)).
+19. **Performance, Stage 2: a HUD drawn directly** (2026-10-24, after
+    1.6.0-perf-dev1). Stage 1 (1.6.0-perf-dev1) left what the player sees
+    untouched and cut only the mod's own work. Whether the HUD strip and
+    panels should be drawn with the SDK's draw calls instead of the game's
+    UI tree is decided by an A/B: the same match with and without the
+    hidden switch `perf_hide_mod_ui` (controls.json, 1 = on), read in Frame
+    Lab and the PERF lines. The difference is what the game spends on the
+    mod's UI nodes; only a large difference justifies the rewrite.
 
 ## Done
 

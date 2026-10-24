@@ -20,7 +20,16 @@ pub fn sync() {
 }
 /// The background as 0xRRGGBB.
 pub fn background() -> u32 {
+    #[cfg(test)]
+    if let Some(bg) = TEST_BACKGROUND.with(|b| b.get()) {
+        return bg;
+    }
     BACKGROUND.load(Ordering::Relaxed)
+}
+#[cfg(test)]
+thread_local! {
+    /// Tests: this thread's background, without touching other tests.
+    pub static TEST_BACKGROUND: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
 }
 /// The background with `alpha`, as 0xRRGGBBAA.
 pub fn rgba(alpha: u8) -> u32 {
@@ -106,6 +115,20 @@ pub fn parse(text: &str) -> Option<u32> {
 /// 0xRRGGBB as "#rrggbb".
 pub fn format(rgb: u32) -> String {
     format!("#{:06x}", rgb & 0xff_ffff)
+}
+/// The background and language the windows were last checked against.
+static CHECKED: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(u64::MAX);
+/// Once per frame, before the windows: [`refresh`] for each of `paths`, but
+/// only when the background or language changed since the last call (every
+/// path was then already checked against it, so there is nothing to do).
+pub fn refresh_all(ctx: &mut StableClient<'_>, paths: &[&'static str]) {
+    let now = u64::from(background()) | (crate::lang::generation() as u64) << 32;
+    if CHECKED.swap(now, Ordering::Relaxed) == now {
+        return;
+    }
+    for path in paths {
+        refresh(ctx, path);
+    }
 }
 /// Call before a window's "does my root node exist" check: a window built
 /// with an older background is removed, so it rebuilds with the current one

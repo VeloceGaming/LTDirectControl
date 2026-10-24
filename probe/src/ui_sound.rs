@@ -54,6 +54,13 @@ pub fn denied() {
 }
 pub fn ready() {
     REQUESTS.fetch_or(R_READY, Ordering::Relaxed);
+    #[cfg(test)]
+    READY_CALLS.with(|n| n.set(n.get() + 1));
+}
+#[cfg(test)]
+thread_local! {
+    /// Chime requests made on this thread (window identity tests).
+    pub static READY_CALLS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 #[derive(Clone, Copy)]

@@ -1296,7 +1296,7 @@ pub struct ShopUi {
     chips: Vec<usize>,
     /// Filter button slots: None = "All", Some(i) = STAT_FILTERS[i].
     filters: Vec<Option<usize>>,
-    cache: HashMap<String, String>,
+    cache: crate::ui_writes::PropCache,
     names: HashMap<String, String>,
     bodies: HashMap<String, String>,
     /// `native_tooltips::item_revision` when names and bodies were stored.
@@ -1332,11 +1332,7 @@ impl ShopUi {
         hud_motion::properties(ctx, &mut self.cache, &path, &text);
     }
     fn text(&mut self, ctx: &mut StableClient<'_>, node: &str, text: &str) {
-        let path = format!("{PATH}.{node}");
-        let key = format!("{path}#text");
-        if self.cache.get(&key).is_none_or(|t| t != text) && ctx.ui_set_text(&path, text) {
-            self.cache.insert(key, text.into());
-        }
+        self.cache.text_at(ctx, &format!("{PATH}.{node}"), text);
     }
     fn visible(&mut self, ctx: &mut StableClient<'_>, node: &str, on: bool) {
         self.props(ctx, node, format!("visible: {on};"));
@@ -1658,9 +1654,8 @@ impl ShopUi {
         }
         let Some(mut view) = view.filter(|_| shown) else {
             self.hover.update(false, None, None, false);
-            if ctx.ui_exists(PATH) {
-                ctx.ui_set_visible(PATH, false);
-            }
+            // Write only on a change (this runs every frame).
+            crate::ui_root::hide(ctx, PATH);
             SCROLL.store(0, Ordering::Relaxed);
             return Vec::new();
         };
@@ -1683,11 +1678,7 @@ impl ShopUi {
                 return Vec::new();
             }
             self.spawn = Some(Instant::now());
-            self.cache.clear();
-            self.registered = false;
-            if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
-                || !ctx.ui_exists(PATH)
-            {
+            if !self.spawn_window(ctx, log) {
                 self.open = false;
                 log.write("SHOP UI spawn failed");
                 return Vec::new();
@@ -1698,7 +1689,7 @@ impl ShopUi {
             self.registered = true;
             self.register(ctx);
         }
-        ctx.ui_set_visible(PATH, true);
+        crate::ui_root::show(ctx, PATH);
         crate::hud_motion_pass::write(ctx, &mut self.cache, PATH, s6); // motion: S6
         let cursor = keys.cursor.filter(|_| keys.focused);
         let (entries, height) = layout(&view.cat, &self.active);
@@ -3051,6 +3042,26 @@ fn number(n: usize) -> String {
         out.push(c);
     }
     out
+}
+
+impl ShopUi {
+    /// Build the window (hidden, as its template is); its clicks register
+    /// on the first opening.
+    fn spawn_window(&mut self, ctx: &mut StableClient<'_>, _log: &Logger) -> bool {
+        self.cache.clear();
+        self.registered = false;
+        ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template())) && ctx.ui_exists(PATH)
+    }
+}
+impl crate::prewarm::Prespawn for ShopUi {
+    fn built(&self, ctx: &StableClient<'_>) -> bool {
+        ctx.ui_exists(PATH)
+    }
+    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        let ok = self.spawn_window(ctx, log);
+        log.write(&format!("SHOP UI window spawned ahead ok={ok}"));
+        ok
+    }
 }
 
 #[cfg(test)]

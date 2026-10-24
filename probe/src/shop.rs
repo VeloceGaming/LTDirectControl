@@ -711,6 +711,19 @@ impl Shop {
         }
     }
     /// Shop window data; None until the catalogue is known this match.
+    /// Whether the manual shop queue (what `view().filter(|v| v.manual)`
+    /// would give as `queue`) is `queue`, without copying the view.
+    pub fn manual_queue_is(&self, queue: Option<&[usize]>) -> bool {
+        let Ok(s) = self.0.lock() else {
+            return queue.is_none() && self.view().is_none();
+        };
+        let manual = s.cat.is_some() && s.player != 0;
+        match (manual, queue) {
+            (false, None) => true,
+            (true, Some(q)) => s.queue.iter().map(|o| o.item).eq(q.iter().copied()),
+            _ => false,
+        }
+    }
     pub fn view(&self) -> Option<View> {
         let s = self.0.lock().ok()?;
         let cat = s.cat.clone()?;

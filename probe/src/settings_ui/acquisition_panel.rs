@@ -770,16 +770,22 @@ mod tests {
         panel.render_portrait(&mut ui, &mut ctx, i, "ghost", None);
         assert_eq!(panel.faces[i], "ghost");
         panel.render_portrait(&mut ui, &mut ctx, i, "", None);
-        assert_eq!(ui.cache[&format!("field:{path}:visible")], "false");
-        assert_eq!(ui.cache[&format!("field:{path}.face:visible")], "false");
+        assert_eq!(ui.cache.field(&path, "visible").unwrap(), "false");
+        assert_eq!(
+            ui.cache.field(&format!("{path}.face"), "visible").unwrap(),
+            "false"
+        );
         assert!(panel.slots[i].is_empty() && panel.faces[i].is_empty());
         panel.name = "soldier".into();
         panel.handle(Action::Select(i), &mut Values::default());
         assert_eq!(panel.name, "soldier");
         panel.render_portrait(&mut ui, &mut ctx, i, "ghost", None);
-        assert_eq!(ui.cache[&format!("field:{path}:visible")], "true");
-        assert_eq!(ui.cache[&format!("field:{path}:ignore_event")], "false");
-        assert_eq!(ui.cache[&format!("field:{path}.face:visible")], "true");
+        assert_eq!(ui.cache.field(&path, "visible").unwrap(), "true");
+        assert_eq!(ui.cache.field(&path, "ignore_event").unwrap(), "false");
+        assert_eq!(
+            ui.cache.field(&format!("{path}.face"), "visible").unwrap(),
+            "true"
+        );
         panel.handle(Action::Select(i), &mut Values::default());
         assert_eq!(panel.name, "ghost");
     }

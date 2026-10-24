@@ -3,7 +3,9 @@ use crate::{
     camera::Rect,
     native_timing::{MatchKey, NativeTiming, Phase},
     own_selection::PlayerIdentity,
-    ui_graphics, Logger,
+    ui_graphics,
+    ui_writes::{NodeId, PropCache},
+    Logger,
 };
 use mod_api_stable::{StableClient, UiEventKindV1};
 use std::{
@@ -138,7 +140,7 @@ pub struct SessionUi {
     spawn_at: Option<Instant>,
     registered: bool,
     events: Arc<Mutex<Events>>,
-    cache: HashMap<String, String>,
+    cache: crate::ui_writes::PropCache,
     portraits: HashMap<String, String>,
     attempted: HashMap<String, (String, Instant)>,
     motion: crate::hud_motion::Motion,
@@ -147,6 +149,132 @@ pub struct SessionUi {
     // motion: pass
     /// The HUD motion pass (hud_motion_pass.rs).
     pass: crate::hud_motion_pass::Pass,
+    /// The strip's nodes in `cache` (1.6.0).
+    nodes: Option<std::sync::Arc<Nodes>>,
+}
+/// Glyph images the strip's buttons show.
+const GLYPHS: [&str; 8] = [
+    "ef_pause",
+    "ef_play",
+    "ef_eye",
+    "ef_cpu",
+    "ef_camera",
+    "ef_settings",
+    "ef_list",
+    "ef_swap",
+];
+/// Write sites in the strip's cache: `VIS` is always `visible: {on};`.
+const VIS: u8 = 0;
+const S1: u8 = 1;
+const S2: u8 = 2;
+const S3: u8 = 3;
+/// One button (or swap tile) of the strip.
+struct Button {
+    name: &'static str,
+    root: NodeId,
+    glyph: NodeId,
+    portrait: NodeId,
+    hover_key: String,
+    press_key: String,
+    select_key: String,
+}
+/// The strip's nodes and paths, found once.
+struct Nodes {
+    root: NodeId,
+    loading: NodeId,
+    take_label: NodeId,
+    rules: [NodeId; 3],
+    vision_indicator: NodeId,
+    vision: [(NodeId, NodeId, NodeId); 3],
+    tab_key: NodeId,
+    primary_glyph: NodeId,
+    camera_glyph: NodeId,
+    tab_glyph: NodeId,
+    tooltip: NodeId,
+    tooltip_text: NodeId,
+    b8: NodeId,
+    /// primary, watch, release, camera, settings, tab, swap, lane0..lane4.
+    buttons: Vec<Button>,
+    /// Each lane's portrait node name and path (`lane{n}.portrait`).
+    portraits: [(String, String); 5],
+    /// Each lane tile's path.
+    lane_paths: [String; 5],
+    /// The tooltip's candidates' paths, in `TIPS` order.
+    tip_paths: Vec<String>,
+    clickable: [String; 15],
+}
+/// The tooltip's candidates, in search order.
+const TIPS: [&str; 9] = [
+    "primary",
+    "camera",
+    "watch",
+    "tab",
+    "release",
+    "settings",
+    "vision_own",
+    "vision_other",
+    "vision_all",
+];
+const BUTTONS: [&str; 12] = [
+    "primary", "watch", "release", "camera", "settings", "tab", "swap", "lane0", "lane1", "lane2",
+    "lane3", "lane4",
+];
+impl Nodes {
+    fn new(c: &mut PropCache) -> Self {
+        let root = c.node(PATH);
+        let mut id = |node: &str| c.node(&format!("{PATH}.{node}"));
+        let buttons = BUTTONS
+            .iter()
+            .map(|name| Button {
+                name,
+                root: id(name),
+                glyph: id(&format!("{name}.glyph")),
+                portrait: id(&format!("{name}.portrait")),
+                hover_key: format!("hover_{name}"),
+                press_key: format!("press_{name}"),
+                select_key: format!("select_{name}"),
+            })
+            .collect();
+        let vision = ["vision_own", "vision_other", "vision_all"]
+            .map(|n| (id(n), id(&format!("{n}.hover")), id(&format!("{n}.glyph"))));
+        Self {
+            root,
+            loading: id("loading"),
+            take_label: id("take_label"),
+            rules: ["vision_track", "rule_controls", "rule_vision"].map(&mut id),
+            vision_indicator: id("vision_indicator"),
+            vision,
+            tab_key: id("tab_key"),
+            primary_glyph: id("primary.glyph"),
+            camera_glyph: id("camera.glyph"),
+            tab_glyph: id("tab.glyph"),
+            tooltip: id("tooltip"),
+            tooltip_text: id("tooltip.text"),
+            b8: id(crate::hud_motion_pass::B8_NODE),
+            buttons,
+            portraits: std::array::from_fn(|lane| {
+                let node = format!("lane{lane}.portrait");
+                let path = format!("{PATH}.{node}");
+                (node, path)
+            }),
+            lane_paths: std::array::from_fn(|lane| format!("{PATH}.lane{lane}")),
+            tip_paths: TIPS.iter().map(|n| format!("{PATH}.{n}")).collect(),
+            clickable: CLICKABLE.map(|node| format!("{PATH}.{node}")),
+        }
+    }
+    fn button(&self, name: &str) -> &Button {
+        self.buttons
+            .iter()
+            .find(|b| b.name == name)
+            .expect("a strip button")
+    }
+}
+/// Two f32 values in one key part.
+fn pair(a: f32, b: f32) -> u64 {
+    u64::from(a.to_bits()) << 32 | u64::from(b.to_bits())
+}
+fn unpair(v: u64) -> (f32, f32) {
+    (f32::from_bits((v >> 32) as u32), f32::from_bits(v as u32))
 }
 /// The clickable controls, for the hover sound.
 const CLICKABLE: [&str; 15] = [
@@ -190,27 +318,35 @@ impl SessionUi {
             e.swap = false;
         }
     }
-    fn props(&mut self, ctx: &mut StableClient<'_>, node: &str, text: String) {
-        crate::hud_motion::properties(ctx, &mut self.cache, &format!("{PATH}.{node}"), &text);
+    /// The swap button's click (window tests cannot fake the game's event).
+    #[cfg(test)]
+    pub(crate) fn open_swap_for_test(&self) {
+        self.events.lock().unwrap().swap = true;
+    }
+    fn vis(&mut self, ctx: &mut StableClient<'_>, id: NodeId, on: bool) {
+        self.cache
+            .props_keyed(ctx, id, VIS, (on,), |(on,)| format!("visible: {on};"));
     }
     #[allow(clippy::too_many_arguments)]
     fn animate(
         &mut self,
         ctx: &mut StableClient<'_>,
-        node: &str,
+        b: &Button,
         rect: (f32, f32, f32, f32),
         preparing: bool,
         cursor: Option<(f32, f32)>,
         pressed: bool,
         accent: bool,
         visible: bool,
-        glyph: &str,
+        glyph: Option<u8>,
         gsize: f32,
+        root: Option<(f32, f32, f32, f32)>,
     ) {
+        let node = b.name;
         let (x, y, w, h) = rect;
         let hover = visible
             && cursor.is_some_and(|p| {
-                ctx.ui_node_rect(PATH).is_some_and(|(rx, ry, rw, rh)| {
+                root.is_some_and(|(rx, ry, rw, rh)| {
                     let sx = rw / if preparing { 512. } else { STRIP_W };
                     let sy = rh / if preparing { 80. } else { 56. };
                     Rect {
@@ -224,15 +360,15 @@ impl SessionUi {
             });
         let hover = self
             .motion
-            .tonal(&format!("hover_{node}"), if hover { 1. } else { 0. }, 0.1);
+            .tonal(&b.hover_key, if hover { 1. } else { 0. }, 0.1);
         let press = self.motion.tonal(
-            &format!("press_{node}"),
+            &b.press_key,
             if hover > 0.5 && pressed { 1. } else { 0. },
             0.083,
         );
-        let selected =
-            self.motion
-                .value(&format!("select_{node}"), if accent { 1. } else { 0. }, 0.1);
+        let selected = self
+            .motion
+            .value(&b.select_key, if accent { 1. } else { 0. }, 0.1);
         let primary = node == "primary" && preparing;
         let base = if preparing {
             crate::ui_theme::tone(0x4b4a49ff)
@@ -244,23 +380,19 @@ impl SessionUi {
         } else {
             crate::ui_theme::tone(0x4b4a4900)
         };
-        let border = crate::hud_motion::color(base, 0xfdee00ff, selected);
-        let border = crate::hud_motion::color(
-            u32::from_str_radix(&border, 16).unwrap_or(base),
-            0xffffffff,
-            hover * (1. - selected),
-        );
+        let border = crate::hud_motion::color_rgba(base, 0xfdee00ff, selected);
+        let border = crate::hud_motion::color_rgba(border, 0xffffffff, hover * (1. - selected));
         let background = if primary {
-            crate::hud_motion::color(0xfdee00ff, 0xc9be00ff, hover)
+            crate::hud_motion::color_rgba(0xfdee00ff, 0xc9be00ff, hover)
         } else {
-            crate::hud_motion::color(
+            crate::hud_motion::color_rgba(
                 crate::ui_theme::rgba(0xff),
                 crate::ui_theme::tone(0x3a3837ff),
                 hover,
             )
         };
-        let background = crate::hud_motion::color(
-            u32::from_str_radix(&background, 16).unwrap_or(crate::ui_theme::rgba(0xff)),
+        let background = crate::hud_motion::color_rgba(
+            background,
             if primary {
                 0xaea400ff
             } else {
@@ -269,48 +401,66 @@ impl SessionUi {
             press,
         );
         let stroke = if accent && !primary || node == "swap" {
-            2
+            2u64
         } else {
             1
         };
-        let offset = 0.;
-        self.props(ctx,node,format!("x: {x}px; y: {:.2}px; width: {w}px; height: {h}px; visible: {visible}; ignore_event: {}; btn: {{ color: #{border}; back_color: #{background}; stroke: {stroke}; }}",y+offset,!visible));
-        if !glyph.is_empty() {
-            let size = gsize;
-            self.props(ctx,&format!("{node}.glyph"),format!("source: \"asset/lt_direct_control/ui/{glyph}\"; x: {:.2}px; y: {:.2}px; width: {size:.2}px; height: {size:.2}px;",(w-size)/2.,(h-size)/2.));
-        } else {
-            self.props(
+        let flags = u64::from(visible) | stroke << 1;
+        let colors = u64::from(border) << 32 | u64::from(background);
+        self.cache.props_keyed(
+            ctx,
+            b.root,
+            S1,
+            (pair(x, y), pair(w, h), flags, colors),
+            |(xy, wh, flags, colors)| {
+                let ((x, y), (w, h)) = (unpair(xy), unpair(wh));
+                let (visible, stroke) = (flags & 1 == 1, flags >> 1);
+                let offset = 0.;
+                format!("x: {x}px; y: {:.2}px; width: {w}px; height: {h}px; visible: {visible}; ignore_event: {}; btn: {{ color: #{:08x}; back_color: #{:08x}; stroke: {stroke}; }}", y + offset, !visible, colors >> 32, colors as u32)
+            },
+        );
+        if let Some(glyph) = glyph {
+            self.cache.props_keyed(
                 ctx,
-                &format!("{node}.portrait"),
-                // The host resolves a fitted face rectangle. Keep its size;
-                // animation must not stretch that rectangle into a square.
-                "x: 0px; y: 0px;".into(),
+                b.glyph,
+                S1,
+                (glyph, pair(w, h), gsize),
+                |(glyph, wh, size)| {
+                    let (w, h) = unpair(wh);
+                    format!("source: \"asset/lt_direct_control/ui/{}\"; x: {:.2}px; y: {:.2}px; width: {size:.2}px; height: {size:.2}px;", GLYPHS[glyph as usize], (w - size) / 2., (h - size) / 2.)
+                },
             );
+        } else {
+            // The host resolves a fitted face rectangle. Keep its size;
+            // animation must not stretch that rectangle into a square.
+            self.cache
+                .props_keyed(ctx, b.portrait, S1, (), |()| "x: 0px; y: 0px;".into());
         }
     }
-    fn portrait(&mut self, ctx: &mut StableClient<'_>, node: &str, name: &str, size: f32) {
-        let path = format!("{PATH}.{node}");
+    fn portrait(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        n: &Nodes,
+        lane: usize,
+        name: &str,
+        size: f32,
+    ) {
+        let (node, path) = &n.portraits[lane];
         if !name.is_empty()
             && self.portraits.get(node).is_none_or(|n| n != name)
-            && self
-                .attempted
-                .get(node)
-                .is_none_or(|(old, at)| old != name || at.elapsed() >= Duration::from_secs(1))
+            && self.attempted.get(node).is_none_or(|(old, at)| {
+                old != name || crate::clock::since(at) >= Duration::from_secs(1)
+            })
         {
             self.attempted
-                .insert(node.into(), (name.into(), Instant::now()));
-            if ctx.ui_set_champion_icon(&path, name, size, size, 2.) {
-                self.portraits.insert(node.into(), name.into());
+                .insert(node.clone(), (name.into(), crate::clock::now()));
+            if ctx.ui_set_champion_icon(path, name, size, size, 2.) {
+                self.portraits.insert(node.clone(), name.into());
             }
         }
-        self.props(
-            ctx,
-            node,
-            format!(
-                "visible: {};",
-                self.portraits.get(node).is_some_and(|n| n == name)
-            ),
-        );
+        let shown = self.portraits.get(node).is_some_and(|n| n == name);
+        let id = n.button(&node[..5]).portrait;
+        self.vis(ctx, id, shown);
     }
     #[allow(clippy::too_many_arguments)]
     pub fn apply(
@@ -324,7 +474,8 @@ impl SessionUi {
         cursor: Option<(f32, f32)>,
         pressed: bool,
         log: &Logger,
-    ) -> Vec<Rect> {
+        bounds: &mut Vec<Rect>,
+    ) {
         let Some(
             phase @ (Phase::Loading | Phase::Ready | Phase::Running | Phase::Paused | Phase::Ai),
         ) = timing.ui_phase()
@@ -339,16 +490,16 @@ impl SessionUi {
             if let Ok(mut e) = self.events.lock() {
                 e.team = false;
             }
-            return Vec::new();
+            return;
         };
         if !ctx.ui_exists(PATH) {
             if self
                 .spawn_at
-                .is_some_and(|t| t.elapsed() < Duration::from_secs(1))
+                .is_some_and(|t| crate::clock::since(t) < Duration::from_secs(1))
             {
-                return Vec::new();
+                return;
             }
-            self.spawn_at = Some(Instant::now());
+            self.spawn_at = Some(crate::clock::now());
             self.cache.clear();
             self.portraits.clear();
             self.attempted.clear();
@@ -356,7 +507,7 @@ impl SessionUi {
             if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
                 || !ctx.ui_exists(PATH)
             {
-                return Vec::new();
+                return;
             }
             log.write("SESSION portrait UI spawned");
         }
@@ -469,24 +620,45 @@ impl SessionUi {
             }
         }
         // Write only on a change, as the HUD does (not every frame).
-        if ctx.ui_visible(PATH) != Some(true) {
-            ctx.ui_set_visible(PATH, true);
-        }
-        let preparing = matches!(phase, Phase::Loading | Phase::Ready);
-        let properties = if preparing {
-            format!("width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: {:.2}px; x: 0px;",-62.)
-        } else {
-            format!("width: {STRIP_W}px; height: 56px; anchor_x: 0; anchor_y: 1; pivot_x: 0; pivot_y: 1; x: 8px; y: 0px;")
+        crate::ui_root::show(ctx, PATH);
+        let n = match &self.nodes {
+            Some(n) => n.clone(),
+            None => {
+                let n = std::sync::Arc::new(Nodes::new(&mut self.cache));
+                self.nodes = Some(n.clone());
+                n
+            }
         };
-        crate::hud_motion::properties(ctx, &mut self.cache, PATH, &properties);
-        self.props(
-            ctx,
-            "loading",
-            format!("visible: {};", phase == Phase::Loading),
+        self.strip(
+            ctx, &n, phase, players, selected, camera, cursor, pressed, bounds,
         );
+    }
+    /// The strip's writes for one frame (after spawn and registration).
+    #[allow(clippy::too_many_arguments)]
+    fn strip(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        n: &Nodes,
+        phase: Phase,
+        players: &[PlayerIdentity],
+        selected: Option<usize>,
+        camera: &Arc<crate::camera::CameraControl>,
+        cursor: Option<(f32, f32)>,
+        pressed: bool,
+        bounds: &mut Vec<Rect>,
+    ) {
+        let preparing = matches!(phase, Phase::Loading | Phase::Ready);
+        self.cache.props_keyed(ctx, n.root, S1, (preparing,), |(preparing,)| {
+            if preparing {
+                format!("width: 512px; height: 80px; anchor_x: 0.5; anchor_y: 1; pivot_x: 0.5; pivot_y: 1; y: {:.2}px; x: 0px;", -62.)
+            } else {
+                format!("width: {STRIP_W}px; height: 56px; anchor_x: 0; anchor_y: 1; pivot_x: 0; pivot_y: 1; x: 8px; y: 0px;")
+            }
+        });
+        self.vis(ctx, n.loading, phase == Phase::Loading);
         for lane in 0..5 {
             if let Some(p) = players.iter().find(|p| p.lane == lane) {
-                self.portrait(ctx, &format!("lane{lane}.portrait"), &p.champion, 56.);
+                self.portrait(ctx, n, lane, &p.champion, 56.);
             }
         }
         let ai = phase == Phase::Ai;
@@ -497,8 +669,11 @@ impl SessionUi {
         // motion: pass
         self.pass.frame();
         // motion: B8
-        let b8 = crate::hud_motion_pass::b8_swap_sweep(&self.pass, in_match, SWAP_TILE);
-        crate::hud_motion_pass::write(ctx, &mut self.cache, PATH, b8);
+        crate::hud_motion_pass::b8_swap_sweep(&self.pass, in_match, SWAP_TILE).write(
+            ctx,
+            &mut self.cache,
+            n.b8,
+        );
         let root = ctx.ui_node_rect(PATH);
         let scaled = |(x, y, w, h): (f32, f32, f32, f32)| {
             root.map(|(rx, ry, rw, rh)| {
@@ -511,15 +686,19 @@ impl SessionUi {
                 }
             })
         };
-        let mut swap_bounds = Vec::new();
+        // At most the button and the unfolded column.
+        let mut swap_bounds: [Option<Rect>; 2] = [None; 2];
         if in_match {
-            swap_bounds.extend(scaled((0., SWAP_Y, SWAP_TILE, SWAP_TILE)));
+            swap_bounds[0] = scaled((0., SWAP_Y, SWAP_TILE, SWAP_TILE));
             if unfold > 0.02 {
                 let (_, top, _, _) = swap_tile(0, unfold);
-                swap_bounds.extend(scaled((0., top, SWAP_TILE, SWAP_Y - top)));
+                swap_bounds[1] = scaled((0., top, SWAP_TILE, SWAP_Y - top));
             }
         }
-        if open && pressed && cursor.is_some_and(|p| !swap_bounds.iter().any(|r| r.contains(p))) {
+        if open
+            && pressed
+            && cursor.is_some_and(|p| !swap_bounds.iter().flatten().any(|r| r.contains(p)))
+        {
             self.close_swap();
         }
         if preparing || ai {
@@ -529,7 +708,7 @@ impl SessionUi {
             }
         }
         let strip = !preparing && !ai;
-        self.props(ctx, "take_label", format!("visible: {ai};"));
+        self.vis(ctx, n.take_label, ai);
         if let Some(vision) = self
             .events
             .lock()
@@ -540,67 +719,64 @@ impl SessionUi {
             camera.set_vision(vision);
         }
         // Vision: one segmented group on the strip (formerly inside the "..." menu).
-        for node in ["vision_track", "rule_controls", "rule_vision"] {
-            self.props(ctx, node, format!("visible: {strip};"));
+        for id in n.rules {
+            self.vis(ctx, id, strip);
         }
         let vision = camera.vision();
         let vision_position = self
             .motion
             .value("vision_indicator", vision.index() as f32, 0.167);
-        let hovered_vision = vision_hover_index(
-            strip,
-            cursor,
-            ctx.ui_node_rect(PATH)
-                .map(|(x, y, w, h)| Rect { x, y, w, h }),
-        );
-        self.props(
+        let hovered_vision =
+            vision_hover_index(strip, cursor, root.map(|(x, y, w, h)| Rect { x, y, w, h }));
+        self.cache.props_keyed(
             ctx,
-            "vision_indicator",
-            format!(
-                "visible: {strip}; x: {:.2}px; color: #eeececff;",
-                VISION_X + 2. + VISION_STEP * vision_position,
-            ),
+            n.vision_indicator,
+            S1,
+            (strip, vision_position),
+            |(strip, position)| {
+                format!(
+                    "visible: {strip}; x: {:.2}px; color: #eeececff;",
+                    VISION_X + 2. + VISION_STEP * position,
+                )
+            },
         );
-        for (i, node) in ["vision_own", "vision_other", "vision_all"]
-            .into_iter()
-            .enumerate()
-        {
-            self.props(ctx,node,format!("x: {}px; y: 6px; width: 44px; height: 44px; visible: {strip}; ignore_event: {}; btn: {{ color: #00000000; back_color: #00000000; stroke: 0; }}",VISION_X+VISION_STEP*i as f32,!strip));
+        for (i, (node, hover_node, glyph_node)) in n.vision.iter().enumerate() {
+            self.cache.props_keyed(ctx, *node, S1, (strip, i), |(strip, i)| {
+                format!("x: {}px; y: 6px; width: 44px; height: 44px; visible: {strip}; ignore_event: {}; btn: {{ color: #00000000; back_color: #00000000; stroke: 0; }}", VISION_X + VISION_STEP * i as f32, !strip)
+            });
             let selected = self.motion.tonal(
-                &format!("vision_sel{i}"),
+                ["vision_sel0", "vision_sel1", "vision_sel2"][i],
                 f32::from(vision.index() == i),
                 0.1,
             );
             let hover = self.motion.tonal(
-                &format!("vision_hover{i}"),
+                ["vision_hover0", "vision_hover1", "vision_hover2"][i],
                 f32::from(hovered_vision == Some(i)),
                 0.1,
             );
-            let shade =
-                crate::hud_motion::color(crate::ui_theme::tone(0x5b5b5bff), 0xb8b6b5ff, selected);
-            self.props(
-                ctx,
-                &format!("{node}.hover"),
-                format!(
-                    "visible: {strip}; color: #{}{:02x};",
-                    &shade[..6],
-                    (255. * hover) as u8,
-                ),
+            let shade = crate::hud_motion::color_rgba(
+                crate::ui_theme::tone(0x5b5b5bff),
+                0xb8b6b5ff,
+                selected,
             );
-            self.props(
+            self.cache.props_keyed(
                 ctx,
-                &format!("{node}.glyph"),
-                format!(
-                    "x: 10px; y: 10px; width: 24px; height: 24px; color: #{};",
-                    crate::hud_motion::color(0xb8b6b5ff, 0x393939ff, selected)
-                ),
+                *hover_node,
+                S1,
+                (strip, shade, (255. * hover) as u8),
+                |(strip, shade, alpha)| {
+                    format!("visible: {strip}; color: #{:06x}{alpha:02x};", shade >> 8)
+                },
             );
+            let ink = crate::hud_motion::color_rgba(0xb8b6b5ff, 0x393939ff, selected);
+            self.cache
+                .props_keyed(ctx, *glyph_node, S1, (ink,), |(ink,)| {
+                    format!("x: 10px; y: 10px; width: 24px; height: 24px; color: #{ink:08x};")
+                });
         }
-        let glyph = if phase == Phase::Running {
-            "ef_pause"
-        } else {
-            "ef_play"
-        };
+        // GLYPHS: 0 ef_pause, 1 ef_play, 2 ef_eye, 3 ef_cpu, 4 ef_camera,
+        // 5 ef_settings, 6 ef_list, 7 ef_swap.
+        let glyph = if phase == Phase::Running { 0 } else { 1 };
         for (node, x, y, w, h, visible, accent, glyph, gsize) in [
             (
                 "primary",
@@ -627,82 +803,53 @@ impl SessionUi {
                 48.,
                 phase == Phase::Ready,
                 false,
-                "ef_eye",
+                2,
                 26.,
             ),
-            ("release", 48., 6., 44., 44., strip, false, "ef_cpu", 26.),
+            ("release", 48., 6., 44., 44., strip, false, 3, 26.),
+            ("camera", 96., 6., 44., 44., strip, camera.locked(), 4, 26.),
+            ("settings", 144., 6., 44., 44., strip, false, 5, 26.),
+            ("tab", TAB_X, 6., 68., 44., strip, false, 6, 26.),
             (
-                "camera",
-                96.,
-                6.,
-                44.,
-                44.,
-                strip,
-                camera.locked(),
-                "ef_camera",
-                26.,
-            ),
-            (
-                "settings",
-                144.,
-                6.,
-                44.,
-                44.,
-                strip,
-                false,
-                "ef_settings",
-                26.,
-            ),
-            ("tab", TAB_X, 6., 68., 44., strip, false, "ef_list", 26.),
-            (
-                "swap", 0., SWAP_Y, SWAP_TILE, SWAP_TILE, in_match, open, "ef_swap", 32.,
+                "swap", 0., SWAP_Y, SWAP_TILE, SWAP_TILE, in_match, open, 7, 32.,
             ),
         ] {
             self.animate(
                 ctx,
-                node,
+                n.button(node),
                 (x, y, w, h),
                 preparing,
                 cursor,
                 pressed,
                 accent,
                 visible,
-                glyph,
+                Some(glyph),
                 gsize,
+                root,
             );
         }
-        self.props(ctx, "tab_key", format!("visible: {strip};"));
+        self.vis(ctx, n.tab_key, strip);
         if ai {
-            self.props(ctx, "primary.glyph", "x: 9px;".into());
+            self.cache
+                .props_keyed(ctx, n.primary_glyph, S2, (), |()| "x: 9px;".into());
         }
-        self.props(
-            ctx,
-            "primary.glyph",
-            format!(
-                "color: #{};",
-                if preparing { "1c1a18ff" } else { "eeececff" }
-            ),
-        );
-        self.props(
-            ctx,
-            "camera.glyph",
-            format!(
-                "color: #{};",
-                if camera.locked() {
-                    "fdee00ff"
-                } else {
-                    "cbc9c7ff"
-                }
-            ),
-        );
-        self.props(
-            ctx,
-            "tab.glyph",
-            "x: 38px; y: 9px; width: 26px; height: 26px;".into(),
-        );
+        self.cache
+            .props_keyed(ctx, n.primary_glyph, S3, (preparing,), |(preparing,)| {
+                format!(
+                    "color: #{};",
+                    if preparing { "1c1a18ff" } else { "eeececff" }
+                )
+            });
+        self.cache
+            .props_keyed(ctx, n.camera_glyph, S1, (camera.locked(),), |(locked,)| {
+                format!("color: #{};", if locked { "fdee00ff" } else { "cbc9c7ff" })
+            });
+        self.cache.props_keyed(ctx, n.tab_glyph, S1, (), |()| {
+            "x: 38px; y: 9px; width: 26px; height: 26px;".into()
+        });
         for lane in 0..5 {
             let p = players.iter().find(|p| p.lane == lane);
-            let node = format!("lane{lane}");
+            let b = &n.buttons[7 + lane];
             let (rect, visible) = if preparing {
                 ((lane as f32 * 80., 4., 72., 72.), phase == Phase::Ready)
             } else {
@@ -710,72 +857,78 @@ impl SessionUi {
             };
             self.animate(
                 ctx,
-                &node,
+                b,
                 rect,
                 preparing,
                 cursor,
                 pressed,
                 p.is_some_and(|p| selected == Some(p.player)),
                 visible && (preparing || p.is_some()),
-                "",
+                None,
                 56.,
+                root,
             );
             // motion: B8
             let b8 = crate::hud_motion_pass::b8_swap_stagger(&mut self.pass, lane, open);
-            self.props(
+            self.cache.props_keyed(
                 ctx,
-                &format!("{node}.portrait"),
-                format!("color: #ffffff{:02x};", (255. * b8).round() as u8),
+                b.portrait,
+                S2,
+                ((255. * b8).round() as u8,),
+                |(alpha,)| format!("color: #ffffff{alpha:02x};"),
             );
         }
         let mut tip = None;
         if let Some(cursor) = cursor {
-            for (node, text) in [
-                (
-                    "primary",
-                    if preparing {
-                        crate::lang::tr("Start · F11")
-                    } else if ai {
-                        crate::lang::tr("Take control · F11")
-                    } else {
-                        if phase == Phase::Paused {
+            for (k, node) in TIPS.iter().enumerate() {
+                let text = match *node {
+                    "primary" => {
+                        if preparing {
+                            crate::lang::tr("Start · F11")
+                        } else if ai {
+                            crate::lang::tr("Take control · F11")
+                        } else if phase == Phase::Paused {
                             crate::lang::tr("Resume · F11")
                         } else {
                             crate::lang::tr("Pause · F11")
                         }
-                    },
-                ),
-                (
-                    "camera",
-                    crate::lang::tr("Lock camera · Y\nHold Space to follow"),
-                ),
-                ("watch", crate::lang::tr("Watch this match")),
-                ("tab", crate::lang::tr("Team details · Tab")),
-                ("release", crate::lang::tr("Return control to AI · F12")),
-                ("settings", crate::lang::tr("Settings")),
-                ("vision_own", crate::lang::tr("Own-team vision")),
-                ("vision_other", crate::lang::tr("Opposing-team vision")),
-                ("vision_all", crate::lang::tr("All-team vision")),
-            ] {
-                let path = format!("{PATH}.{node}");
-                if ctx.ui_visible(&path) == Some(true)
+                    }
+                    "camera" => crate::lang::tr("Lock camera · Y\nHold Space to follow"),
+                    "watch" => crate::lang::tr("Watch this match"),
+                    "tab" => crate::lang::tr("Team details · Tab"),
+                    "release" => crate::lang::tr("Return control to AI · F12"),
+                    "settings" => crate::lang::tr("Settings"),
+                    "vision_own" => crate::lang::tr("Own-team vision"),
+                    "vision_other" => crate::lang::tr("Opposing-team vision"),
+                    _ => crate::lang::tr("All-team vision"),
+                };
+                let path = &n.tip_paths[k];
+                if ctx.ui_visible(path) == Some(true)
                     && ctx
-                        .ui_node_rect(&path)
+                        .ui_node_rect(path)
                         .is_some_and(|(x, y, w, h)| Rect { x, y, w, h }.contains(cursor))
                 {
-                    tip = Some((text.to_owned(), ctx.ui_node_rect(&path).unwrap()));
+                    tip = Some((text.to_owned(), ctx.ui_node_rect(path).unwrap()));
                     break;
                 }
             }
             if preparing && tip.is_none() {
                 for p in players {
+                    let owned;
+                    let path = match n.lane_paths.get(p.lane) {
+                        Some(path) => path.as_str(),
+                        None => {
+                            owned = format!("{PATH}.lane{}", p.lane);
+                            owned.as_str()
+                        }
+                    };
                     if ctx
-                        .ui_node_rect(&format!("{PATH}.lane{}", p.lane))
+                        .ui_node_rect(path)
                         .is_some_and(|(x, y, w, h)| Rect { x, y, w, h }.contains(cursor))
                     {
                         tip = Some((
                             crate::tooltips::champion_name(ctx, &p.champion),
-                            ctx.ui_node_rect(&format!("{PATH}.lane{}", p.lane)).unwrap(),
+                            ctx.ui_node_rect(path).unwrap(),
                         ));
                         break;
                     }
@@ -784,26 +937,29 @@ impl SessionUi {
         }
         if let Some((text, (tx, ty, tw, _))) = tip {
             if self.tip.as_ref().is_none_or(|(old, _)| old != &text) {
-                self.tip = Some((text.clone(), Instant::now()));
+                self.tip = Some((text.clone(), crate::clock::now()));
             }
             let fade = self.tip.as_ref().map_or(1., |(_, at)| {
-                crate::hud_motion::easing((at.elapsed().as_secs_f32() / 0.117).min(1.), true)
+                crate::hud_motion::easing(
+                    (crate::clock::since(at).as_secs_f32() / 0.117).min(1.),
+                    true,
+                )
             });
             let width =
                 (crate::hud_style::width(&text.replace('\n', " "), 20.) + 28.).clamp(120., 440.);
             let (text, lines) = crate::hud_style::wrap(&text, 20., width - 24.);
             let height = lines * 26 + 16;
-            let (bx, by, bw, bh) = ctx.ui_node_rect(PATH).unwrap_or((0., 0., 1920., 1080.));
+            let (bx, by, bw, bh) = root.unwrap_or((0., 0., 1920., 1080.));
             let sx = if preparing { 512. } else { STRIP_W } / bw;
             let sy = if preparing { 80. } else { 56. } / bh;
             let x =
                 ((tx + tw / 2. - bx) * sx - width / 2.).clamp(-bx * sx, 1920. - bx * sx - width);
             let y = (ty - by) * sy - height as f32 - 12.;
-            self.props(ctx,"tooltip",format!("visible: true; x: {x:.2}px; y: {y:.2}px; width: {width:.2}px; height: {height}px; color: #~1e1e1d{:02x};",(217.*fade)as u8));
-            self.props(
+            self.cache.props(ctx, n.tooltip, &format!("visible: true; x: {x:.2}px; y: {y:.2}px; width: {width:.2}px; height: {height}px; color: #~1e1e1d{:02x};",(217.*fade)as u8));
+            self.cache.props(
                 ctx,
-                "tooltip.text",
-                format!(
+                n.tooltip_text,
+                &format!(
                     "width: {}px; height: {}px; color: #ffffff{:02x};",
                     width - 24.,
                     height - 16,
@@ -811,14 +967,10 @@ impl SessionUi {
                 ),
             );
             // Write only on a change, not every frame the tip shows.
-            if self.cache.get("text:tooltip").is_none_or(|t| *t != text)
-                && ctx.ui_set_text(&format!("{PATH}.tooltip.text"), &text)
-            {
-                self.cache.insert("text:tooltip".into(), text);
-            }
+            self.cache.text(ctx, n.tooltip_text, &text);
         } else {
             self.tip = None;
-            self.props(ctx, "tooltip", "visible: false;".into());
+            self.vis(ctx, n.tooltip, false);
         }
         // The Settings window covers the strip; the shop window may.
         let covered = crate::ui_state::SETTINGS_OPEN.load(std::sync::atomic::Ordering::Relaxed)
@@ -827,11 +979,13 @@ impl SessionUi {
                     .lock()
                     .is_ok_and(|area| area.is_some_and(|a| a.contains(p)))
             });
-        let paths = CLICKABLE.map(|node| format!("{PATH}.{node}"));
-        let under = crate::ui_sound::under_cursor(ctx, paths.iter(), cursor);
+        let under = crate::ui_sound::under_cursor(ctx, n.clickable.iter(), cursor);
         self.hover.update(true, under, cursor, pressed || covered);
-        let mut bounds = Vec::new();
-        if let Some((x, y, w, h)) = ctx.ui_node_rect(PATH) {
+        // Nothing shows while perf_hide_mod_ui hides the mod's windows.
+        if crate::ui_root::hidden() {
+            return;
+        }
+        if let Some((x, y, w, h)) = root {
             bounds.push(Rect {
                 x,
                 y,
@@ -839,8 +993,7 @@ impl SessionUi {
                 h,
             });
         }
-        bounds.extend(swap_bounds);
-        bounds
+        bounds.extend(swap_bounds.into_iter().flatten());
     }
 }
 #[cfg(test)]

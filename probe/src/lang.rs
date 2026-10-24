@@ -201,8 +201,14 @@ pub fn code() -> &'static str {
     LANGS[current()].0
 }
 /// A number that changes with the language (windows rebuild on change).
+#[cfg(not(test))]
 pub fn generation() -> usize {
     CURRENT.load(Ordering::Relaxed)
+}
+/// Tests: this thread's language (see `set_for_test`).
+#[cfg(test)]
+pub fn generation() -> usize {
+    current()
 }
 /// The LANGS index of the game's word for "Close", if it is one of them.
 pub fn identify(displayed: &str) -> Option<usize> {

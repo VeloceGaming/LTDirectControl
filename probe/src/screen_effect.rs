@@ -5,10 +5,7 @@ use crate::{
     Logger,
 };
 use mod_api_stable::StableClient;
-use std::{
-    collections::HashMap,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 const PATH: &str = "ingame.lt_screen_effect";
 pub(crate) fn template() -> String {
     let mut source = String::from(
@@ -41,7 +38,9 @@ pub struct Effect {
     dead: bool,
     /// 0 to 1 while dead, over `DEATH_FADE`.
     death: f32,
-    cache: HashMap<String, String>,
+    cache: crate::ui_writes::PropCache,
+    /// Each band's node in `cache` (1.6.0).
+    bands: Vec<crate::ui_writes::NodeId>,
     attempted: Option<Instant>,
     reported: Option<u8>,
     failed: bool,
@@ -85,10 +84,13 @@ impl Effect {
             0
         };
         let frame = camera.frame();
+        if mode != 0 && frame.is_some() && crate::ui_root::hidden() {
+            crate::ui_root::hide(ctx, PATH);
+            return;
+        }
         if mode == 0 || frame.is_none() {
-            if ctx.ui_exists(PATH) {
-                ctx.ui_set_visible(PATH, false);
-            }
+            // Write only on a change (this runs every frame).
+            crate::ui_root::hide(ctx, PATH);
             if self.reported != Some(0) {
                 log.write("SCREEN EFFECT inactive");
                 self.reported = Some(0);
@@ -98,22 +100,22 @@ impl Effect {
         if !ctx.ui_exists(PATH) {
             if self
                 .attempted
-                .is_some_and(|at| at.elapsed() < Duration::from_secs(2))
+                .is_some_and(|at| crate::clock::since(at) < Duration::from_secs(2))
             {
                 return;
             }
-            self.attempted = Some(Instant::now());
-            let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
-            log.write(&format!(
-                "SCREEN EFFECT native UI spawn={ok} exists={}",
-                ctx.ui_exists(PATH)
-            ));
-            if !ok || !ctx.ui_exists(PATH) {
+            self.attempted = Some(crate::clock::now());
+            if !self.spawn(ctx, log) {
                 return;
             }
-            self.cache.clear();
         }
-        ctx.ui_set_visible(PATH, true);
+        crate::ui_root::show(ctx, PATH);
+        if self.bands.is_empty() {
+            let cache = &mut self.cache;
+            self.bands = (0..BANDS)
+                .map(|i| cache.node(&format!("{PATH}.band{i}")))
+                .collect();
+        }
         let frame = frame.unwrap();
         let v = frame.viewport;
         let m = frame.minimap;
@@ -132,17 +134,20 @@ impl Effect {
             })
         };
         let (ox, oy, _, _) = ctx.ui_node_rect("ingame").unwrap_or((0., 0., 1920., 1080.));
+        let pair = |a: f32, b: f32| u64::from(a.to_bits()) << 32 | u64::from(b.to_bits());
+        let unpair = |v: u64| (f32::from_bits((v >> 32) as u32), f32::from_bits(v as u32));
         for i in 0..BANDS {
-            let props = pieces.get(i).map_or_else(|| "visible: false;".into(), |(r, color)| {
-                format!("visible: true; x: {:.2}px; y: {:.2}px; width: {:.2}px; height: {:.2}px; color: #{color:08x};", r.x-ox, r.y-oy, r.w, r.h)
+            let key = pieces.get(i).map_or((false, 0, 0, 0), |(r, color)| {
+                (true, pair(r.x - ox, r.y - oy), pair(r.w, r.h), *color)
             });
-            if !crate::hud_motion::properties(
-                ctx,
-                &mut self.cache,
-                &format!("{PATH}.band{i}"),
-                &props,
-            ) && !self.failed
-            {
+            let written = self.cache.props_keyed(ctx, self.bands[i], 0, key, |(shown, xy, wh, color)| {
+                if !shown {
+                    return "visible: false;".into();
+                }
+                let ((x, y), (w, h)) = (unpair(xy), unpair(wh));
+                format!("visible: true; x: {x:.2}px; y: {y:.2}px; width: {w:.2}px; height: {h:.2}px; color: #{color:08x};")
+            });
+            if !written && !self.failed {
                 log.write(&format!("SCREEN EFFECT property failed band={i}"));
                 self.failed = true;
             }
@@ -275,6 +280,34 @@ fn subtract(r: Rect, cut: Rect) -> Vec<Rect> {
     .filter(|r| r.w > 0. && r.h > 0.)
     .collect()
 }
+impl Effect {
+    fn spawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
+        log.write(&format!(
+            "SCREEN EFFECT native UI spawn={ok} exists={}",
+            ctx.ui_exists(PATH)
+        ));
+        if !ok || !ctx.ui_exists(PATH) {
+            return false;
+        }
+        self.cache.clear();
+        true
+    }
+}
+impl crate::prewarm::Prespawn for Effect {
+    fn built(&self, ctx: &StableClient<'_>) -> bool {
+        ctx.ui_exists(PATH)
+    }
+    /// Its bands are hidden; the root is hidden too, as when inactive.
+    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        let ok = self.spawn(ctx, log);
+        if ok {
+            ctx.ui_set_visible(PATH, false);
+        }
+        ok
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

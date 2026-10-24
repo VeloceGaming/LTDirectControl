@@ -72,11 +72,16 @@ const DRAW_Z: i32 = 1130;
 
 /// Property writes for nodes under one root: (node, source).
 pub type Writes = Vec<(String, String)>;
+/// The write site the typed items use in a window's cache (`ui_writes.rs`):
+/// their nodes are written by nothing else.
+const SITE: u8 = 9;
+use crate::ui_writes::{NodeId, PropCache};
+use mod_api_stable::StableClient;
 
 /// Writes through the host's property cache: unchanged fields cost nothing.
 pub fn write(
     ctx: &mut mod_api_stable::StableClient<'_>,
-    cache: &mut HashMap<String, String>,
+    cache: &mut crate::ui_writes::PropCache,
     root: &str,
     writes: Writes,
 ) {
@@ -118,18 +123,32 @@ impl Pass {
     /// the first time (nothing animates on first sight) and when unchanged.
     /// Tracked while Off too, so turning On never replays an old change.
     fn change(&mut self, key: &str, value: f64) -> Option<f64> {
-        self.seen
-            .insert(key.into(), value)
-            .filter(|old| *old != value)
+        // As `insert(key, value).filter(|old| *old != value)`, without
+        // making a new key every frame.
+        match self.seen.get_mut(key) {
+            Some(old) => Some(std::mem::replace(old, value)).filter(|old| *old != value),
+            None => {
+                self.seen.insert(key.into(), value);
+                None
+            }
+        }
     }
     fn change_text(&mut self, key: &str, value: &str) -> bool {
-        self.seen_text
-            .insert(key.into(), value.into())
-            .is_some_and(|old| old != value)
+        match self.seen_text.get_mut(key) {
+            Some(old) if old == value => false,
+            Some(old) => {
+                value.clone_into(old);
+                true
+            }
+            None => {
+                self.seen_text.insert(key.into(), value.into());
+                false
+            }
+        }
     }
     fn mark(&mut self, key: &str) {
         if self.on {
-            self.marks.insert(key.into(), Instant::now());
+            self.marks.insert(key.into(), crate::clock::now());
         }
     }
     fn forget(&mut self, key: &str) {
@@ -137,7 +156,9 @@ impl Pass {
     }
     /// Seconds since `key` was marked.
     fn age(&self, key: &str) -> Option<f32> {
-        self.marks.get(key).map(|at| at.elapsed().as_secs_f32())
+        self.marks
+            .get(key)
+            .map(|at| crate::clock::since(at).as_secs_f32())
     }
     /// Seconds since `key` was marked, marking it now if it was not.
     fn since(&mut self, key: &str) -> f32 {
@@ -278,7 +299,7 @@ pub fn a2_nodes() -> String {
 /// (its action number 1, read from the code), the line shows and notches
 /// march along it left to right, 0.3 s per pass. The client does not read
 /// the recall's duration, so the line shows no progress fill.
-pub fn a2_recall_progress(p: &mut Pass, recalling: bool, playing: bool) -> Writes {
+pub fn a2_recall_progress(p: &mut Pass, recalling: bool, playing: bool) -> A2 {
     let shown = p.on && recalling && playing;
     let t = if shown {
         p.since("a2")
@@ -286,15 +307,40 @@ pub fn a2_recall_progress(p: &mut Pass, recalling: bool, playing: bool) -> Write
         p.forget("a2");
         0.
     };
-    let mut writes = vec![("a2_recall_line".into(), format!("visible: {shown};"))];
-    for k in 0..2 {
-        let x = 702. + 17. * ((t / 0.3 + k as f32 * 0.5).rem_euclid(1.));
-        writes.push((
-            format!("a2_recall_notch{k}"),
-            format!("visible: {shown}; x: {x:.2}px;"),
-        ));
+    A2 {
+        shown,
+        x: std::array::from_fn(|k| 702. + 17. * ((t / 0.3 + k as f32 * 0.5).rem_euclid(1.))),
     }
-    writes
+}
+/// A2's nodes under the HUD root, in write order.
+pub const A2_NODES: [&str; 3] = ["a2_recall_line", "a2_recall_notch0", "a2_recall_notch1"];
+/// What A2's nodes show this frame.
+#[derive(Clone, Copy)]
+pub struct A2 {
+    shown: bool,
+    x: [f32; 2],
+}
+impl A2 {
+    fn line((shown,): (bool,)) -> String {
+        format!("visible: {shown};")
+    }
+    fn notch((shown, x): (bool, f32)) -> String {
+        format!("visible: {shown}; x: {x:.2}px;")
+    }
+    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, ids: &[NodeId; 3]) {
+        c.props_keyed(ctx, ids[0], SITE, (self.shown,), Self::line);
+        for k in 0..2 {
+            c.props_keyed(ctx, ids[k + 1], SITE, (self.shown, self.x[k]), Self::notch);
+        }
+    }
+    #[cfg(test)]
+    fn sources(self) -> Writes {
+        let mut w = vec![(A2_NODES[0].into(), Self::line((self.shown,)))];
+        for k in 0..2 {
+            w.push((A2_NODES[k + 1].into(), Self::notch((self.shown, self.x[k]))));
+        }
+        w
+    }
 }
 
 /// A3 Drain-edge comet, template node inside each skill slot.
@@ -305,21 +351,40 @@ pub fn a3_nodes() -> String {
 /// edge on the ease curve over 150 ms (an eased follow, not an exact delay),
 /// in the edge's warming colour. Hidden with the edge and during the ready
 /// cue.
-pub fn a3_drain_comet(p: &mut Pass, slot: usize, shown: bool, y: f32, color: u32) -> Writes {
-    let node = format!("skill{slot}.a3_comet");
-    let key = format!("a3_{slot}");
+pub fn a3_drain_comet(p: &mut Pass, slot: usize, shown: bool, y: f32, color: u32) -> A3 {
+    let key = A3_KEYS[slot];
     if !p.on || !shown {
-        p.motion.remove(&key);
-        return vec![(node, "visible: false;".into())];
+        p.motion.remove(key);
+        return A3(None);
     }
-    let y = p.follow(&key, y, 0.15);
-    vec![(
-        node,
+    A3(Some((p.follow(key, y, 0.15), color)))
+}
+const A3_KEYS: [&str; 3] = ["a3_0", "a3_1", "a3_2"];
+/// A3's node in each skill slot, under the HUD root.
+pub const A3_NODES: [&str; 3] = ["skill0.a3_comet", "skill1.a3_comet", "skill2.a3_comet"];
+/// What one slot's A3 comet shows: its y and the edge colour, or hidden.
+#[derive(Clone, Copy)]
+pub struct A3(Option<(f32, u32)>);
+impl A3 {
+    fn source((shown, y, color): (bool, f32, u32)) -> String {
+        if !shown {
+            return "visible: false;".into();
+        }
         format!(
             "visible: true; y: {y:.2}px; color: #{:08x};",
             fade(color, 0.6)
-        ),
-    )]
+        )
+    }
+    fn key(self) -> (bool, f32, u32) {
+        self.0.map_or((false, 0., 0), |(y, c)| (true, y, c))
+    }
+    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, id: NodeId) {
+        c.props_keyed(ctx, id, SITE, self.key(), Self::source);
+    }
+    #[cfg(test)]
+    fn sources(self) -> Writes {
+        vec![(A3_NODES[0].into(), Self::source(self.key()))]
+    }
 }
 
 // ---- B. Event-driven -------------------------------------------------------
@@ -371,16 +436,16 @@ const B4_DRAIN: f32 = 0.3;
 /// and true once when the drain ends, when the 1.3.1 ready cue takes over
 /// (a learned slot was never cooling, so that cue would not play by itself).
 pub fn b4_learned_drain(p: &mut Pass, slot: usize, learned: bool) -> (Option<f32>, bool) {
-    let key = format!("b4_slot{slot}");
-    if p.change(&key, f64::from(u8::from(learned))) == Some(0.) {
-        p.mark(&key);
+    let key = ["b4_slot0", "b4_slot1", "b4_slot2"][slot];
+    if p.change(key, f64::from(u8::from(learned))) == Some(0.) {
+        p.mark(key);
     }
-    let Some(age) = p.age(&key).filter(|_| p.on && learned) else {
-        p.forget(&key);
+    let Some(age) = p.age(key).filter(|_| p.on && learned) else {
+        p.forget(key);
         return (None, false);
     };
     if age >= B4_DRAIN {
-        p.forget(&key);
+        p.forget(key);
         return (None, true);
     }
     (Some(78. * (1. - ease(age / B4_DRAIN))), false)
@@ -390,14 +455,25 @@ pub fn b4_learned_drain(p: &mut Pass, slot: usize, learned: bool) -> (Option<f32
 /// edge is signal yellow for 300 ms, then fades over 200 ms tonal. Returns
 /// (icon opacity, edge yellow 0 to 1).
 pub fn b5_item_bought(p: &mut Pass, slot: usize, item: Option<&str>) -> (f32, f32) {
-    let key = format!("b5_slot{slot}");
-    if p.change_text(&key, item.unwrap_or("")) && item.is_some() {
-        p.mark(&key);
+    const KEYS: [&str; 8] = [
+        "b5_slot0", "b5_slot1", "b5_slot2", "b5_slot3", "b5_slot4", "b5_slot5", "b5_slot6",
+        "b5_slot7",
+    ];
+    let owned;
+    let key = match KEYS.get(slot) {
+        Some(key) => *key,
+        None => {
+            owned = format!("b5_slot{slot}");
+            &owned
+        }
+    };
+    if p.change_text(key, item.unwrap_or("")) && item.is_some() {
+        p.mark(key);
     }
-    match p.age(&key).filter(|_| p.on) {
+    match p.age(key).filter(|_| p.on) {
         Some(age) if age < 0.5 => (tonal(age / 0.15), hold_fade(age, 0.3, 0.2)),
         _ => {
-            p.forget(&key);
+            p.forget(key);
             (1., 0.)
         }
     }
@@ -448,7 +524,7 @@ fn b6_dim(dead: bool, age: Option<f32>, delay: f32) -> f32 {
 /// black veil, which multiplies the skills' 75 % cooling brightness instead
 /// of replacing it). On respawn they lift back over 400 ms, 60 ms apart,
 /// left to right. The state plate's fade is S1.
-pub fn b6_death_dim(p: &mut Pass, alive: Option<bool>, playing: bool) -> Writes {
+pub fn b6_death_dim(p: &mut Pass, alive: Option<bool>, playing: bool) -> B6 {
     let shown = p.on && playing && alive.is_some();
     let dead = alive == Some(false);
     match p.change("b6_alive", f64::from(u8::from(!dead))) {
@@ -463,17 +539,38 @@ pub fn b6_death_dim(p: &mut Pass, alive: Option<bool>, playing: bool) -> Writes 
         None => {}
     }
     let age = p.age(if dead { "b6_died" } else { "b6_respawn" });
-    let veil = |delay: f32| {
-        let a = if shown { b6_dim(dead, age, delay) } else { 0. };
+    B6(std::array::from_fn(|i| {
+        if shown {
+            b6_dim(dead, age, i as f32 * B6_STEP)
+        } else {
+            0.
+        }
+    }))
+}
+/// B6's veil over each skill slot, under the HUD root.
+pub const B6_NODES: [&str; 3] = ["b6_veil_skill0", "b6_veil_skill1", "b6_veil_skill2"];
+/// Each skill slot's veil strength this frame (0 to 1).
+#[derive(Clone, Copy)]
+pub struct B6([f32; 3]);
+impl B6 {
+    fn veil((a,): (f32,)) -> String {
         format!(
             "visible: {}; color: #000000{:02x};",
             a > 0.,
             (128. * a).round() as u8
         )
-    };
-    (0..3)
-        .map(|i| (format!("b6_veil_skill{i}"), veil(i as f32 * B6_STEP)))
-        .collect()
+    }
+    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, ids: &[NodeId; 3]) {
+        for (i, id) in ids.iter().enumerate() {
+            c.props_keyed(ctx, *id, SITE, (self.0[i],), Self::veil);
+        }
+    }
+    #[cfg(test)]
+    fn sources(self) -> Writes {
+        (0..3)
+            .map(|i| (B6_NODES[i].into(), Self::veil((self.0[i],))))
+            .collect()
+    }
 }
 
 /// B8 Swap stagger, template node: a hairline on the swap button's
@@ -485,7 +582,7 @@ static B8_LANDED: Mutex<Option<Instant>> = Mutex::new(None);
 /// B8, the swap landing: called where a champion swap succeeds.
 pub fn b8_swap_landed() {
     if let Ok(mut landed) = B8_LANDED.lock() {
-        *landed = Some(Instant::now());
+        *landed = Some(crate::clock::now());
     }
 }
 const B8_STEP: f32 = 0.05;
@@ -506,22 +603,42 @@ pub fn b8_swap_stagger(p: &mut Pass, lane: usize, open: bool) -> f32 {
 /// button's bottom edge over 300 ms ease, then fades over 117 ms. The
 /// column folds away as the swap lands, so the button carries the sweep
 /// rather than the chosen portrait.
-pub fn b8_swap_sweep(p: &Pass, in_match: bool, width: f32) -> Writes {
+pub fn b8_swap_sweep(p: &Pass, in_match: bool, width: f32) -> B8 {
     let age = B8_LANDED
         .lock()
         .ok()
         .and_then(|l| *l)
-        .map(|at| at.elapsed().as_secs_f32())
+        .map(|at| crate::clock::since(at).as_secs_f32())
         .filter(|age| p.on && in_match && *age < B8_SWEEP + FADE);
-    let source = match age {
-        Some(age) => format!(
-            "visible: true; width: {:.2}px; color: #{:08x};",
+    B8(age.map(|age| {
+        (
             width * ease(age / B8_SWEEP),
-            fade(YELLOW, 1. - tonal((age - B8_SWEEP) / FADE))
-        ),
-        None => "visible: false;".into(),
-    };
-    vec![("b8_sweep".into(), source)]
+            fade(YELLOW, 1. - tonal((age - B8_SWEEP) / FADE)),
+        )
+    }))
+}
+/// B8's sweep line under the session strip's root.
+pub const B8_NODE: &str = "b8_sweep";
+/// The sweep line's width and colour this frame, or hidden.
+#[derive(Clone, Copy)]
+pub struct B8(Option<(f32, u32)>);
+impl B8 {
+    fn source((shown, width, color): (bool, f32, u32)) -> String {
+        if !shown {
+            return "visible: false;".into();
+        }
+        format!("visible: true; width: {width:.2}px; color: #{color:08x};")
+    }
+    fn key(self) -> (bool, f32, u32) {
+        self.0.map_or((false, 0., 0), |(w, c)| (true, w, c))
+    }
+    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, id: NodeId) {
+        c.props_keyed(ctx, id, SITE, self.key(), Self::source);
+    }
+    #[cfg(test)]
+    fn sources(self) -> Writes {
+        vec![(B8_NODE.into(), Self::source(self.key()))]
+    }
 }
 
 // ---- C. Interaction --------------------------------------------------------
@@ -534,7 +651,7 @@ pub fn c1_slot_hover(p: &mut Pass, slot: usize, hover: bool) -> f32 {
         return 0.;
     }
     p.motion
-        .tonal(&format!("c1_{slot}"), f32::from(hover), TONAL)
+        .tonal(["c1_0", "c1_1", "c1_2"][slot], f32::from(hover), TONAL)
 }
 
 /// C2 Slot press, items: a pressed item slot's icon dims to 85 % over
@@ -558,7 +675,7 @@ pub fn d1_nodes() -> String {
 /// D1 Stats hairline: a 2 px yellow line sweeps left to right across the
 /// whole strip (1560 px) once per kill of your athlete, 500 ms ease,
 /// then is gone. No match-start trigger.
-pub fn d1_stats_hairline(p: &mut Pass, kills: Option<usize>, playing: bool) -> Writes {
+pub fn d1_stats_hairline(p: &mut Pass, kills: Option<usize>, playing: bool) -> D1 {
     if let Some(kills) = kills {
         if p.change("d1_kills", kills as f64)
             .is_some_and(|old| kills as f64 > old)
@@ -570,14 +687,30 @@ pub fn d1_stats_hairline(p: &mut Pass, kills: Option<usize>, playing: bool) -> W
     if age.is_none() {
         p.forget("d1");
     }
-    let source = match age {
-        Some(age) => format!(
-            "visible: true; width: {:.2}px;",
-            D1_WIDTH * ease(age / D1_SWEEP)
-        ),
-        None => "visible: false;".into(),
-    };
-    vec![("d1_line".into(), source)]
+    D1(age.map(|age| D1_WIDTH * ease(age / D1_SWEEP)))
+}
+/// D1's line under the HUD root.
+pub const D1_NODE: &str = "d1_line";
+/// The hairline's width this frame, or hidden.
+#[derive(Clone, Copy)]
+pub struct D1(Option<f32>);
+impl D1 {
+    fn source((shown, width): (bool, f32)) -> String {
+        if !shown {
+            return "visible: false;".into();
+        }
+        format!("visible: true; width: {width:.2}px;")
+    }
+    fn key(self) -> (bool, f32) {
+        self.0.map_or((false, 0.), |w| (true, w))
+    }
+    pub fn write(self, ctx: &mut StableClient<'_>, c: &mut PropCache, id: NodeId) {
+        c.props_keyed(ctx, id, SITE, self.key(), Self::source);
+    }
+    #[cfg(test)]
+    fn sources(self) -> Writes {
+        vec![(D1_NODE.into(), Self::source(self.key()))]
+    }
 }
 
 /// Camera centre changes up to this much per frame count as still (a guess:
@@ -874,10 +1007,10 @@ mod tests {
         let mut d = on();
         d1_stats_hairline(&mut d, Some(0), true);
         assert_eq!(
-            d1_stats_hairline(&mut d, Some(0), true)[0].1,
+            d1_stats_hairline(&mut d, Some(0), true).sources()[0].1,
             "visible: false;"
         );
-        assert!(d1_stats_hairline(&mut d, Some(1), true)[0]
+        assert!(d1_stats_hairline(&mut d, Some(1), true).sources()[0]
             .1
             .starts_with("visible: true"));
     }
@@ -911,16 +1044,17 @@ mod tests {
         let mut p = off();
         s6_window_entrance(&mut p, false, 1360.);
         for (_, source) in a2_recall_progress(&mut p, true, true)
+            .sources()
             .into_iter()
-            .chain(a3_drain_comet(&mut p, 0, true, 30., 0xffffffff))
-            .chain(b8_swap_sweep(&p, true, 56.))
-            .chain(d1_stats_hairline(&mut p, Some(3), true))
+            .chain(a3_drain_comet(&mut p, 0, true, 30., 0xffffffff).sources())
+            .chain(b8_swap_sweep(&p, true, 56.).sources())
+            .chain(d1_stats_hairline(&mut p, Some(3), true).sources())
             .chain(s6_window_entrance(&mut p, true, 1360.))
         {
             assert!(source.starts_with("visible: false"), "{source}");
         }
         b6_death_dim(&mut p, Some(true), true);
-        for (_, source) in b6_death_dim(&mut p, Some(false), true) {
+        for (_, source) in b6_death_dim(&mut p, Some(false), true).sources() {
             assert!(source.starts_with("visible: false"), "{source}");
         }
     }
@@ -934,7 +1068,7 @@ mod tests {
         let mut p = Pass::default();
         p.set_on(true);
         b6_death_dim(&mut p, Some(true), true);
-        let writes = b6_death_dim(&mut p, Some(false), true);
+        let writes = b6_death_dim(&mut p, Some(false), true).sources();
         assert_eq!(writes.len(), 3);
         assert!(writes.iter().all(|(id, _)| id.starts_with("b6_veil_skill")));
     }

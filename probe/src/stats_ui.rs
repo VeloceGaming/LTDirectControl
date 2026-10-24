@@ -6,6 +6,7 @@
 use crate::{
     camera::Rect,
     stats_panel::{self, Kind, Unit, FORMATS, ICONS},
+    ui_writes::NodeId,
     Logger,
 };
 use mod_api_stable::StableClient;
@@ -16,6 +17,8 @@ use std::{
 
 pub const OWN: &str = "ingame.lt_stats_own";
 pub const TARGET: &str = "ingame.lt_stats_target";
+const OWN_PANEL: &str = "ingame.lt_stats_own.panel";
+const TARGET_PANEL: &str = "ingame.lt_stats_target.panel";
 const NUMERIC: &str = "asset/lt_direct_control/font/numeric";
 
 /// One grid of stat cells (icon + value) inside `parent`.
@@ -67,23 +70,28 @@ fn target_template() -> String {
     s
 }
 
+/// The panels' nodes in the cache (1.6.0).
+#[derive(Clone, Copy)]
+struct Nodes {
+    own: NodeId,
+    target: NodeId,
+    own_values: [NodeId; stats_panel::STATS],
+    target_values: [NodeId; stats_panel::STATS],
+    portrait: NodeId,
+    unit: NodeId,
+    level: NodeId,
+    hp_fill: NodeId,
+    hp_text: NodeId,
+}
 #[derive(Default)]
 pub struct StatsUi {
-    cache: HashMap<String, String>,
+    nodes: Option<Nodes>,
+    cache: crate::ui_writes::PropCache,
     spawn: HashMap<&'static str, Instant>,
     portrait: Option<(String, bool)>,
     previous_key: bool,
 }
 impl StatsUi {
-    fn props(&mut self, ctx: &mut StableClient<'_>, path: &str, value: &str) {
-        crate::hud_motion::properties(ctx, &mut self.cache, path, value);
-    }
-    fn text(&mut self, ctx: &mut StableClient<'_>, path: &str, value: &str) {
-        let key = format!("text:{path}");
-        if self.cache.get(&key).map(String::as_str) != Some(value) && ctx.ui_set_text(path, value) {
-            self.cache.insert(key, value.to_owned());
-        }
-    }
     /// Spawn a root if missing; false while it does not exist.
     fn ensure(&mut self, ctx: &mut StableClient<'_>, path: &'static str, log: &Logger) -> bool {
         if ctx.ui_exists(path) {
@@ -92,12 +100,15 @@ impl StatsUi {
         if self
             .spawn
             .get(path)
-            .is_some_and(|t| t.elapsed() < Duration::from_secs(1))
+            .is_some_and(|t| crate::clock::since(t) < Duration::from_secs(1))
         {
             return false;
         }
-        self.spawn.insert(path, Instant::now());
-        self.cache.retain(|k, _| !k.contains(path));
+        self.spawn.insert(path, crate::clock::now());
+        self.spawn_root(ctx, path, log)
+    }
+    fn spawn_root(&mut self, ctx: &mut StableClient<'_>, path: &'static str, log: &Logger) -> bool {
+        self.cache.forget(path);
         if path == TARGET {
             self.portrait = None;
         }
@@ -111,11 +122,40 @@ impl StatsUi {
         log.write(&format!("STATS UI spawn {path} ok={ok}"));
         ok
     }
-    fn values(&mut self, ctx: &mut StableClient<'_>, root: &str, unit: &Unit) {
+    fn nodes(&mut self) -> Nodes {
+        let cache = &mut self.cache;
+        *self.nodes.get_or_insert_with(|| {
+            let mut id = |p: String| cache.node(&p);
+            Nodes {
+                own: id(OWN.into()),
+                target: id(TARGET.into()),
+                own_values: std::array::from_fn(|k| id(format!("{OWN}.panel.v{k}"))),
+                target_values: std::array::from_fn(|k| id(format!("{TARGET}.panel.v{k}"))),
+                portrait: id(format!("{TARGET}.panel.face.portrait")),
+                unit: id(format!("{TARGET}.panel.face.unit")),
+                level: id(format!("{TARGET}.panel.face.level")),
+                hp_fill: id(format!("{TARGET}.panel.hp_fill")),
+                hp_text: id(format!("{TARGET}.panel.hp_text")),
+            }
+        })
+    }
+    fn values(
+        &mut self,
+        ctx: &mut StableClient<'_>,
+        ids: &[NodeId; stats_panel::STATS],
+        unit: &Unit,
+    ) {
         for (k, (value, format)) in unit.values.iter().zip(FORMATS).enumerate() {
-            let text = stats_panel::format(*value, format);
-            self.text(ctx, &format!("{root}.panel.v{k}"), &text);
+            // The cell's format is fixed per cell.
+            self.cache.text_keyed(ctx, ids[k], (*value,), |(value,)| {
+                stats_panel::format(value, format)
+            });
         }
+    }
+    fn show(&mut self, ctx: &mut StableClient<'_>, id: NodeId, on: bool) {
+        let on = on && !crate::ui_root::hidden();
+        self.cache
+            .props_keyed(ctx, id, 0, (on,), |(on,)| format!("visible: {on};"));
     }
     /// `battlefield`: in a match; `controls`: under direct control. Returns
     /// the visible panels' screen rectangles (clicks there are not orders).
@@ -126,10 +166,11 @@ impl StatsUi {
         controls: bool,
         toggle: bool,
         log: &Logger,
-    ) -> Vec<Rect> {
+        bounds: &mut Vec<Rect>,
+    ) {
         // The binding toggles the own panel; the choice is remembered.
         if toggle && !self.previous_key && battlefield {
-            let shown = crate::settings::current().number("stats_panel_shown") == 1.;
+            let shown = crate::settings::current_shared().number("stats_panel_shown") == 1.;
             crate::settings::set_option("stats_panel_shown", if shown { 0. } else { 1. });
         }
         self.previous_key = toggle;
@@ -138,43 +179,50 @@ impl StatsUi {
         } else {
             (None, None)
         };
-        let shown = crate::settings::current().number("stats_panel_shown") == 1.;
-        let mut bounds = Vec::new();
+        let shown = crate::settings::current_shared().number("stats_panel_shown") == 1.;
+        let n = self.nodes();
         // Own panel.
         let own = own.filter(|_| controls && shown);
         if own.is_some() || ctx.ui_exists(OWN) {
             if let Some(unit) = own.as_ref() {
                 if self.ensure(ctx, OWN, log) {
-                    self.props(ctx, OWN, "visible: true;");
-                    self.values(ctx, OWN, unit);
-                    bounds.extend(rect(ctx, &format!("{OWN}.panel")));
+                    self.show(ctx, n.own, true);
+                    self.values(ctx, &n.own_values, unit);
+                    if !crate::ui_root::hidden() {
+                        bounds.extend(rect(ctx, OWN_PANEL));
+                    }
                 }
             } else {
-                self.props(ctx, OWN, "visible: false;");
+                self.show(ctx, n.own, false);
             }
         }
         // Target frame.
         if let Some(unit) = target.as_ref() {
             if self.ensure(ctx, TARGET, log) {
-                self.props(ctx, TARGET, "visible: true;");
-                self.target(ctx, unit);
-                bounds.extend(rect(ctx, &format!("{TARGET}.panel")));
+                self.show(ctx, n.target, true);
+                self.target(ctx, &n, unit);
+                if !crate::ui_root::hidden() {
+                    bounds.extend(rect(ctx, TARGET_PANEL));
+                }
             }
         } else if ctx.ui_exists(TARGET) {
-            self.props(ctx, TARGET, "visible: false;");
+            self.show(ctx, n.target, false);
         }
-        bounds
     }
-    fn target(&mut self, ctx: &mut StableClient<'_>, unit: &Unit) {
-        let face = format!("{TARGET}.panel.face");
+    fn target(&mut self, ctx: &mut StableClient<'_>, n: &Nodes, unit: &Unit) {
         // Champions show their face; other units (or a face that failed to
         // load) a glyph: the game's own tower and jungle icons, the mod's
         // minion.
         let face_shown = match unit.champion.as_ref() {
             Some(name) => {
                 if self.portrait.as_ref().map(|p| &p.0) != Some(name) {
-                    let ok =
-                        ctx.ui_set_champion_icon(&format!("{face}.portrait"), name, 62., 62., 2.);
+                    let ok = ctx.ui_set_champion_icon(
+                        &format!("{TARGET_PANEL}.face.portrait"),
+                        name,
+                        62.,
+                        62.,
+                        2.,
+                    );
                     self.portrait = Some((name.clone(), ok));
                 }
                 self.portrait.as_ref().is_some_and(|p| p.1)
@@ -186,17 +234,17 @@ impl StatsUi {
             Kind::Monster => "asset/base/ui/icons/jungle",
             Kind::Minion | Kind::Champion => "asset/lt_direct_control/ui/hud_minion",
         };
-        self.props(
-            ctx,
-            &format!("{face}.portrait"),
-            &format!("visible: {face_shown};"),
-        );
-        self.props(
-            ctx,
-            &format!("{face}.unit"),
-            &format!("visible: {}; source: \"{glyph}\";", !face_shown),
-        );
-        self.text(ctx, &format!("{face}.level"), &unit.level.to_string());
+        self.cache
+            .props_keyed(ctx, n.portrait, 0, (face_shown,), |(on,)| {
+                format!("visible: {on};")
+            });
+        let glyph_index = unit.kind as u8;
+        self.cache
+            .props_keyed(ctx, n.unit, 1, (!face_shown, glyph_index), |(on, _)| {
+                format!("visible: {on}; source: \"{glyph}\";")
+            });
+        self.cache
+            .text_keyed(ctx, n.level, (unit.level,), |(level,)| level.to_string());
         let (hp, max) = unit.hp;
         let ratio = if max > 0 { hp as f32 / max as f32 } else { 0. };
         let color = if unit.friendly {
@@ -204,31 +252,49 @@ impl StatsUi {
         } else {
             "ff5c6cff"
         };
-        self.props(
+        self.cache.props_keyed(
             ctx,
-            &format!("{TARGET}.panel.hp_fill"),
-            &format!(
-                "width: {:.0}px; color: #{color};",
-                270. * ratio.clamp(0., 1.)
-            ),
+            n.hp_fill,
+            0,
+            (270. * ratio.clamp(0., 1.), unit.friendly),
+            |(width, _)| format!("width: {width:.0}px; color: #{color};"),
         );
-        let shield = if unit.shield > 0 {
-            format!(" (+{})", unit.shield)
-        } else {
-            String::new()
-        };
-        self.text(
+        self.cache.text_keyed(
             ctx,
-            &format!("{TARGET}.panel.hp_text"),
-            &format!("{hp} / {max}{shield}"),
+            n.hp_text,
+            (hp, max, unit.shield),
+            |(hp, max, shield)| {
+                let shield = if shield > 0 {
+                    format!(" (+{shield})")
+                } else {
+                    String::new()
+                };
+                format!("{hp} / {max}{shield}")
+            },
         );
-        self.values(ctx, TARGET, unit);
+        self.values(ctx, &n.target_values, unit);
     }
 }
 fn rect(ctx: &StableClient<'_>, path: &str) -> Option<Rect> {
     let (x, y, w, h) = ctx.ui_node_rect(path)?;
     let r = Rect { x, y, w, h };
     r.valid().then_some(r)
+}
+
+impl crate::prewarm::Prespawn for StatsUi {
+    fn built(&self, ctx: &StableClient<'_>) -> bool {
+        ctx.ui_exists(OWN) && ctx.ui_exists(TARGET)
+    }
+    /// Both templates' roots are hidden.
+    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        let mut ok = true;
+        for path in [OWN, TARGET] {
+            if !ctx.ui_exists(path) {
+                ok &= self.spawn_root(ctx, path, log);
+            }
+        }
+        ok
+    }
 }
 
 #[cfg(test)]

@@ -12,7 +12,6 @@ use crate::{
 };
 use mod_api_stable::{StableClient, UiEventKindV1};
 use std::{
-    collections::HashMap,
     sync::{
         atomic::{AtomicI32, Ordering},
         Arc, Mutex,
@@ -742,7 +741,7 @@ pub struct SettingsUi {
     drop: Option<usize>,
     /// Entry shown in each row slot during the last frame; events resolve through it.
     slots: [Option<Entry>; ROWS],
-    cache: HashMap<String, String>,
+    cache: crate::ui_writes::PropCache,
     spawn: Option<Instant>,
     registered: bool,
     pointer_down: bool,
@@ -898,11 +897,8 @@ impl SettingsUi {
     }
     fn text(&mut self, ctx: &mut StableClient<'_>, node: &str, text: &str) {
         // Raw text keeps real line breaks; source-escaped "\n" would render literally.
-        let path = format!("{PATH}.window.{node}");
-        let key = format!("{path}#text");
-        if self.cache.get(&key).is_none_or(|t| t != text) && ctx.ui_set_text(&path, text) {
-            self.cache.insert(key, text.into());
-        }
+        self.cache
+            .text_at(ctx, &format!("{PATH}.window.{node}"), text);
     }
     fn visible(&mut self, ctx: &mut StableClient<'_>, node: &str, on: bool) {
         self.props(ctx, node, format!("visible: {on};"));
@@ -1175,9 +1171,8 @@ impl SettingsUi {
         let s6 = crate::hud_motion_pass::s6_window_entrance(&mut self.pass, self.open, 1360.);
         if !self.open {
             self.hover.update(false, None, None, false);
-            if ctx.ui_exists(PATH) {
-                ctx.ui_set_visible(PATH, false);
-            }
+            // Write only on a change (this runs every frame).
+            crate::ui_root::hide(ctx, PATH);
             return Vec::new();
         }
         if !ctx.ui_exists(PATH) {
@@ -1188,11 +1183,7 @@ impl SettingsUi {
                 return full;
             }
             self.spawn = Some(Instant::now());
-            self.cache.clear();
-            self.registered = false;
-            if !ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()))
-                || !ctx.ui_exists(PATH)
-            {
+            if !self.spawn_window(ctx) {
                 self.close(timing, store, false, log);
                 log.write("SETTINGS window spawn failed; pause ownership restored");
                 return Vec::new();
@@ -1202,7 +1193,7 @@ impl SettingsUi {
             self.registered = true;
             self.register(ctx);
         }
-        ctx.ui_set_visible(PATH, true);
+        crate::ui_root::show(ctx, PATH);
         // motion: S6
         crate::hud_motion_pass::write(ctx, &mut self.cache, &format!("{PATH}.window"), s6);
         if active_page(self.page, self.advanced) == 6 {
@@ -2229,6 +2220,26 @@ fn bits(raw: &[bool; 256]) -> [u64; 4] {
 fn bit(bits: [u64; 4], i: usize) -> bool {
     bits[i / 64] & (1u64 << (i % 64)) != 0
 }
+impl SettingsUi {
+    /// Build the window (hidden, as its template is); its clicks register
+    /// on the first opening.
+    fn spawn_window(&mut self, ctx: &mut StableClient<'_>) -> bool {
+        self.cache.clear();
+        self.registered = false;
+        ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template())) && ctx.ui_exists(PATH)
+    }
+}
+impl crate::prewarm::Prespawn for SettingsUi {
+    fn built(&self, ctx: &StableClient<'_>) -> bool {
+        ctx.ui_exists(PATH)
+    }
+    fn prespawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
+        let ok = self.spawn_window(ctx);
+        log.write(&format!("SETTINGS window spawned ahead ok={ok}"));
+        ok
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
@@ -2250,7 +2261,7 @@ mod tests {
                 ("stats", stats_own.clone()),
                 ("stats target", stats_target.clone()),
                 ("screen effect", crate::screen_effect::template()),
-                ("state plate", crate::player_hud::plate_template_for_test()),
+                ("state plate", crate::state_plate::plate_template_for_test()),
             ] {
                 if let Err(e) = crate::lang::check_template(&source) {
                     panic!("{code} {name}: {e}");

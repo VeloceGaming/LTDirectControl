@@ -267,6 +267,19 @@ impl NativeTiming {
         }
         t
     }
+    /// A session in `phase` on the battlefield, owned by this thread's
+    /// client (window tests); None: off the battlefield.
+    #[cfg(test)]
+    pub(crate) fn set_test_phase(&self, phase: Option<Phase>) {
+        let mut s = self.state.lock().unwrap();
+        s.installed = true;
+        s.battlefield = phase.is_some();
+        s.client = Some(crate::platform_input::thread_id());
+        s.key = Some((1, 2, 3));
+        if let Some(phase) = phase {
+            s.phase = phase;
+        }
+    }
     pub fn new(enabled: bool) -> Self {
         Self {
             enabled,

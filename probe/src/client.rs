@@ -26,6 +26,8 @@ pub(crate) struct ClientObservations {
     pub(crate) emotes: emotes::Emotes,
     pub(crate) sounds: ui_sound::Sounds,
     pub(crate) language: lang::Probe,
+    /// Windows built hidden before the match (1.6.0, prewarm.rs).
+    pub(crate) prespawn: crate::prewarm::Schedule,
 }
 
 pub(crate) struct Client {
@@ -217,18 +219,19 @@ impl Client {
                 .write(&format!("LANGUAGE mod text now {}", lang::code()));
         }
         ui_theme::sync();
-        for path in [
-            player_hud::PATH,
-            session_ui::PATH,
-            settings_ui::PATH,
-            shop_ui::PATH,
-            team_status::PATH,
-            stats_ui::OWN,
-            stats_ui::TARGET,
-            emotes::PATH,
-        ] {
-            ui_theme::refresh(ctx, path);
-        }
+        ui_theme::refresh_all(
+            ctx,
+            &[
+                player_hud::PATH,
+                session_ui::PATH,
+                settings_ui::PATH,
+                shop_ui::PATH,
+                team_status::PATH,
+                stats_ui::OWN,
+                stats_ui::TARGET,
+                emotes::PATH,
+            ],
+        );
         self.install_once(ctx);
         let scene = ctx.client_scene_kind();
         let battlefield = scene == Some(mod_api_stable::ClientSceneKindV1::InGame);
@@ -371,10 +374,13 @@ impl Client {
             skills,
             status,
         };
-        let (hud_bounds, hovered_skill) = self.apply_windows(ctx, &mut frame);
+        let mut hud_bounds = FRAME_RECTS.with(|r| std::mem::take(&mut *r.borrow_mut()));
+        hud_bounds.clear();
+        let hovered_skill = self.apply_windows(ctx, &mut frame, &mut hud_bounds);
         keys = frame.keys;
         let Frame { snapshot, .. } = frame;
-        self.block_native_ui(ctx, hud_bounds);
+        self.block_native_ui(ctx, &hud_bounds);
+        FRAME_RECTS.with(|r| *r.borrow_mut() = hud_bounds);
         if early.is_none() || !gameplay_active {
             let paused = controls
                 && battlefield
@@ -391,7 +397,7 @@ impl Client {
             battlefield,
             controls,
             gameplay_active,
-            &snapshot,
+            snapshot.as_deref(),
             hovered_skill,
         );
         self.log_frame_diagnostics(ctx, dt_micros, battlefield);
@@ -410,6 +416,16 @@ impl Client {
         ) || !ctx.can_draw()
         {
             return;
+        }
+        if matches!(
+            ctx.client_scene_kind(),
+            Some(
+                mod_api_stable::ClientSceneKindV1::StadiumEntrance
+                    | mod_api_stable::ClientSceneKindV1::Lineup
+                    | mod_api_stable::ClientSceneKindV1::Main
+            )
+        ) {
+            crate::prewarm::warm_fonts(ctx, &self.logger);
         }
         self.abilities.draw(ctx, &self.camera);
         // A game version whose minimap family is off keeps its own minimap
@@ -590,6 +606,10 @@ impl StableExtension for Client {
             self.settings.number("stat_collision_margin") as u32,
         );
         perf::set_capture(self.settings.number("perf_capture") == 1.);
+        crate::ui_root::configure(
+            self.settings.hidden_switch("perf_hide_mod_ui"),
+            &self.logger,
+        );
         crate::input_delay::set_shown(self.settings.number("show_input_delay") == 1.);
         self.post_update_inner(ctx, dt_micros);
     }
@@ -606,7 +626,7 @@ struct Frame {
     controls: bool,
     running: bool,
     dt_micros: u64,
-    snapshot: Option<player_hud::Snapshot>,
+    snapshot: Option<std::sync::Arc<player_hud::Snapshot>>,
     artwork: Option<player_hud::Artwork>,
     skills: abilities::HudSkills,
     status: String,
@@ -800,7 +820,8 @@ impl Client {
         &self,
         ctx: &mut StableClient<'_>,
         frame: &mut Frame,
-    ) -> (Vec<camera::Rect>, Option<usize>) {
+        hud_bounds: &mut Vec<camera::Rect>,
+    ) -> Option<usize> {
         let Frame {
             keys,
             battlefield,
@@ -812,7 +833,6 @@ impl Client {
             skills,
             ref status,
         } = *frame;
-        let mut hud_bounds = Vec::new();
         let mut hovered_skill = None;
         if let Ok(mut observations) = self.observations.lock() {
             let team_open = keys.team_info || observations.session_ui.team_open();
@@ -833,7 +853,7 @@ impl Client {
                     self.timing.phase(),
                     Some(native_timing::Phase::Running | native_timing::Phase::Paused)
                 ),
-                snapshot.as_ref(),
+                snapshot.as_deref(),
                 artwork.as_ref(),
                 skills,
                 status,
@@ -850,12 +870,12 @@ impl Client {
                 hovered_skill = observations.hud_ui.hovered_skill(ctx, keys.cursor);
             }
             // motion: A2
-            let a2 = hud_motion_pass::a2_recall_progress(
-                &mut observations.hud_ui.pass,
+            write_recall_progress(
+                ctx,
+                &mut observations.hud_ui,
                 self.movement.recalling(),
                 controls && snapshot.as_ref().is_some_and(|s| s.alive),
             );
-            hud_motion_pass::write(ctx, &mut observations.hud_ui.cache, player_hud::PATH, a2);
             // The state plate under the game's clock (paused, dead, AI). The
             // worker keeps sampling in AI control, and the frame's snapshot
             // keeps the last values when samples stop; the plate checks
@@ -868,15 +888,16 @@ impl Client {
             };
             observations
                 .state_plate
-                .apply(ctx, phase, plate_snapshot.as_ref(), &self.logger);
-            hud_bounds = observations.hud_ui.bounds(ctx);
-            hud_bounds.extend(observations.stats_ui.apply(
+                .apply(ctx, phase, plate_snapshot.as_deref(), &self.logger);
+            observations.hud_ui.bounds(ctx, hud_bounds);
+            observations.stats_ui.apply(
                 ctx,
                 battlefield,
                 controls,
                 keys.stats_panel && keys.focused && !keys.emote_capture,
                 &self.logger,
-            ));
+                hud_bounds,
+            );
             drop(t);
             let t = perf::time(perf::Section::Team);
             {
@@ -900,17 +921,20 @@ impl Client {
             }
             drop(t);
             let t = perf::time(perf::Section::Session);
-            hud_bounds.extend(observations.session_ui.apply(
+            // One read of your team's players for the strip and the audit.
+            let own_players = self.movement.own_players();
+            observations.session_ui.apply(
                 ctx,
                 &self.timing,
-                &self.movement.own_players(),
+                &own_players,
                 self.movement.selected(),
                 &self.camera,
                 &self.settings,
                 keys.cursor.filter(|_| keys.focused),
                 keys.left && keys.focused && !keys.emote_capture,
                 &self.logger,
-            ));
+                hud_bounds,
+            );
             if keys.raw.0[0x1b] {
                 observations.session_ui.close_swap();
             }
@@ -987,7 +1011,7 @@ impl Client {
             observations.screen_effect.update(
                 self.settings.low_health(),
                 controls && battlefield,
-                snapshot.as_ref(),
+                snapshot.as_deref(),
                 dt_micros,
             );
             observations
@@ -1002,12 +1026,7 @@ impl Client {
             drop(t);
             let _t = perf::time(perf::Section::Audit);
             let last_player = self.hud.snapshot(self.movement.hud_identity());
-            let own_athletes = self
-                .movement
-                .own_players()
-                .iter()
-                .map(|p| p.athlete)
-                .collect::<Vec<_>>();
+            let own_athletes = own_players.iter().map(|p| p.athlete).collect::<Vec<_>>();
             observations
                 .season_fix
                 .update(ctx, self.timing.match_key(), battlefield, &self.logger);
@@ -1016,20 +1035,62 @@ impl Client {
                 self.timing.match_key(),
                 self.timing.generation(),
                 battlefield,
-                last_player.as_ref(),
+                last_player.as_deref(),
                 &own_athletes,
                 &self.logger,
             );
+            drop(_t);
+            // While you choose your athlete: windows built ahead of their
+            // first use (prewarm.rs). After the HUD strip exists, which it
+            // does in Ready (`phase` is None while Loading).
+            if battlefield
+                && self.timing.phase() == Some(native_timing::Phase::Ready)
+                && ctx.ui_exists(player_hud::PATH)
+            {
+                let ClientObservations {
+                    prespawn,
+                    stats_ui,
+                    state_plate,
+                    screen_effect,
+                    team_ui,
+                    shop_ui,
+                    settings_ui,
+                    emotes,
+                    ..
+                } = &mut *observations;
+                prespawn.step(
+                    ctx,
+                    &mut [
+                        stats_ui,
+                        state_plate,
+                        screen_effect,
+                        team_ui,
+                        shop_ui,
+                        settings_ui,
+                        emotes,
+                    ],
+                    &self.logger,
+                );
+            }
         }
-        (hud_bounds, hovered_skill)
+        hovered_skill
     }
     /// Tell the camera which screen areas are UI, so clicks there are not orders.
-    fn block_native_ui(&self, ctx: &StableClient<'_>, hud_bounds: Vec<camera::Rect>) {
+    fn block_native_ui(&self, ctx: &StableClient<'_>, hud_bounds: &[camera::Rect]) {
+        BLOCKED.with(|lists| self.block_native_ui_into(ctx, hud_bounds, &mut lists.borrow_mut()));
+    }
+    fn block_native_ui_into(
+        &self,
+        ctx: &StableClient<'_>,
+        hud_bounds: &[camera::Rect],
+        (blocked, command_blocked): &mut (Vec<camera::Rect>, Vec<camera::Rect>),
+    ) {
         // Read native UI geometry, respecting ancestor visibility. The native
         // renderer's minimap is separately excluded by CameraFrame.
-        let mut blocked = Vec::new();
-        blocked.extend(hud_bounds);
-        let mut command_blocked = blocked.clone();
+        blocked.clear();
+        blocked.extend_from_slice(hud_bounds);
+        command_blocked.clear();
+        command_blocked.extend_from_slice(hud_bounds);
         for path in [
             "ingame.header",
             "ingame.player_info",
@@ -1067,7 +1128,7 @@ impl Client {
         battlefield: bool,
         controls: bool,
         gameplay_active: bool,
-        snapshot: &Option<player_hud::Snapshot>,
+        snapshot: Option<&player_hud::Snapshot>,
         hovered_skill: Option<usize>,
     ) {
         self.abilities.set_hud_hover(hovered_skill);
@@ -1301,6 +1362,24 @@ static STAT_WAIT_LOGGED: std::sync::atomic::AtomicBool = std::sync::atomic::Atom
 /// The last cursor position the pointer step saw (screen pixels), kept as
 /// two f32 bit patterns so the render step can read it without a lock.
 static CURSOR_BITS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(u64::MAX);
+// motion: A2
+/// The recall bar under the HUD strip (written after the strip, every frame).
+pub(crate) fn write_recall_progress(
+    ctx: &mut StableClient<'_>,
+    hud_ui: &mut player_hud::HudUi,
+    recalling: bool,
+    shown: bool,
+) {
+    let a2 = hud_motion_pass::a2_recall_progress(&mut hud_ui.pass, recalling, shown);
+    hud_ui.write_recall(ctx, a2);
+}
+thread_local! {
+    /// The client thread's rectangle lists, reused every frame: the UI's
+    /// own areas, then (blocked, command_blocked) for the camera.
+    static FRAME_RECTS: std::cell::RefCell<Vec<camera::Rect>> = const { std::cell::RefCell::new(Vec::new()) };
+    static BLOCKED: std::cell::RefCell<(Vec<camera::Rect>, Vec<camera::Rect>)> =
+        const { std::cell::RefCell::new((Vec::new(), Vec::new())) };
+}
 fn store_cursor(cursor: Option<(f32, f32)>) {
     let bits = cursor.map_or(u64::MAX, |(x, y)| {
         u64::from(x.to_bits()) << 32 | u64::from(y.to_bits())
