@@ -3,6 +3,123 @@
 Every build of LT Direct Control, newest first. Entries are the technical
 notes recorded when each build was verified; dates are build dates (UTC+8).
 
+## 1.6.1 — 2026-10-26
+
+Release of 1.6.1-dev1 and 1.6.1-dev2 below, as one DLL for game 0.6.4, 0.6.5 and 0.7.0 Beta 2. Nothing changed between dev2 and this build apart from the version number and this entry.
+
+- **The Tab panel drawn directly** (dev1). Seen in game by the author on 0.6.5, 2026-10-25 and 26, over many matches: holding Tab no longer drops the frame rate the way it did on 1.6.0 (the game's cost for the panel fell from about 6 ms to about 2.4 ms a frame in the author's PERF logs); the panel looks as before. Not yet looked at on 0.6.4 and the 0.7 beta.
+- **A hidden diagnosis switch, `perf_pacing_off`** (dev2), default off; with it off the mod behaves exactly as 1.6.0. With `"perf_pacing_off": 1` in controls.json, from the next match the game's viewer runs on its own frame clock and the worker is held at a fixed lead of 2 ticks, which can add up to one tick of input delay above 60 fps; the details are in the dev2 entry. Seen in game by the author with it on, 2026-10-25 and 26: control, shopping and the HUD as usual, several capped matches smooth. Why it ships: with a frame cap, some matches on 1.5.x and 1.6.0 grow slower over 5-10 minutes; whole-game profiles of three such matches (xperf, 2026-10-25) put the growth in one call chain inside the game's own viewer update, switched on by an in-match event not yet identified, with the mod's own work flat at 0.2-0.3 ms a frame and the pacing idle in the match that grew most. Whether the pacing is involved in the trigger is open (paced matches grew in 3 of 5 recorded, unpaced in 0 of 4); the switch lets a player with the problem try without it. Log detail = Verbose adds a `PACING` line every 10 s.
+- Other slowdowns looked at the same days were not the mod's: a Workshop shop-button mod reading the game every frame (1.9 ms a frame while loaded), and desktop programs sharing the processor with the game (lock stalls and hyper-thread sharing with Firefox, an AI chat app and the Claude app open: slow; closed: smooth), measured with the processor's cycle counters at an unchanged 4.36 GHz.
+
+## 1.6.1-dev2 (development) — 2026-10-25
+
+**Not seen in game. Development build, never for the Workshop.** One hidden diagnosis switch, `perf_pacing_off`, and nothing else. Why: seen in game 2026-10-25, with a frame cap (RivaTuner 70, the game's own 60 or the NVIDIA driver at 72) the game's own viewer update grows in some matches from about 1 ms to 5-12 ms a frame over 5-10 minutes while the mod's own work stays flat, and with the mod disabled two capped games stayed flat at 72 fps. The growing game's end line read `TIMING slow playback 41.0 ticks/s of 60; lead=2; changes=217; dropped=187.8 ticks`. The pacing's writes to the viewer are the prime suspect; this switch lets a capped match run without them while everything else stays on. Everything below is read from the code or measured by the tests named.
+
+### The switch (read from the code)
+
+- `"perf_pacing_off": 1` (or `true`) in controls.json; no control in the Settings window; default off. Read once per frame in `Client::post_update` like `perf_hide_mod_ui` and `perf_draw_probe` (`NativeTiming::configure_pacing_off`), with one `PERF perf_pacing_off=... : from the next match, ...` line when it changes (Verbose, like the other two).
+- **It takes effect at the next match.** It is latched when a match is bound (`observe_start`), so a match is never half paced; turning it on or off mid-match changes nothing until the next one. A match bound with it on writes `TIMING pacing off for this match (perf_pacing_off): ...` (at every log level), so a log says which kind of match it was.
+
+### What it turns off, for the whole match (read from the code)
+
+- **Running viewer frames go to the game untouched** (control and AI control alike; `NativeTiming::untouched`, checked in `view_hook_body`): no write to the viewer's frame clock (no owed time held back, none paid back, none dropped), no trim of `dt` (the game's own `dt` is passed), no `PlaybackOverride` (sync, mode, speed and pause stay as the game has them; they are only read, for the AI-control speed multiplier), no lead computation. The frame time is still measured on the wall clock, only for the PACING line.
+- **The worker keeps a fixed lead of 2 ticks** (`PACING_OFF_LEAD`; in AI control 2 times the speed button, rounded up, as today). Why 2: it is what the mod settles on under a 60-72 fps cap today (the growing match logged `lead=2`), so the worker's side matches the matches that grew, and at 60 fps and up it leaves a tick of slack for the game's own frame clock.
+- **Why the worker is still held at all** (read from the code and the mod's logs, 0.6.x): the game does not pace its on-screen simulation by itself. Its worker loop sends a frame and starts the next tick without waiting, and the client moves every sent frame into the viewer's list, which has no limit. After the "View result" hand-back in a kept log, the worker ran about 3,300 ticks/s (about 55x real time). With no hold at all the match would be simulated in 10-20 s while the screen plays it at 1x, and every click would land a minute or more ahead of the picture. Built as option (a) of the director's choice, 2026-10-25.
+
+### What stays as it is (read from the code)
+
+- **The start hold and Pause work as today**, viewer included: before Start and while paused the worker waits at the publication boundary, and the held viewer frames keep the usual handling (dt 0 and the frame clock cleared; the one initial frame; speed and pause overridden for the held frame only, then put back). Why: an untouched viewer would keep the whole hold's time in its frame clock and play it back fast after Start or Resume. So the switch tests the running frames, which is where the update grew.
+- **The camera family still steers the camera** (follow, free camera, wheel zoom, the vision setting and the forced full-screen layout, `prepare_camera`). These write the camera fields of the config (+0x18 to +0x20, +0x45, +0x4b) and the view's zoom and pan, not the playback fields or the frame clock. Kept because control needs a usable camera. So "untouched" means the playback path; the camera writes are the same as in dev1.
+- Everything else: the think, steer, move, attack, skill and outline hooks, the shop and its hooks, the stat rules, the HUD, the session strip, the stats panels, the Tab panel, input, sounds and the PERF lines (`viewer_incl_native` then measures the untouched game update, which is the point). The HUD, strip, panels and Tab draw and write exactly as in dev1 (the record tests pass with no record changed).
+- **Nothing releases control because pacing is off.** Every release path was read: `check_limits` (15 s loading, 2 s heartbeat) is unchanged and still reachable only as before, since the start hold still sets the initial frame and the pause acknowledgement; the frame-count guard in `after_view` holds because one frame can play at most what is queued, and the queue is at most the lead (2, or 2 times the speed in AI control), under the guard's limit of at least 4; "Playback advanced while held" cannot fire because held frames still get dt 0; the `tps`/queue and viewer-identity checks in `view_hook_body` are unchanged and the queue stays small; `watch_worker` only logs; "TIMING slow" only logs.
+
+### What the author should expect in the test match (read from the code; a guess until played)
+
+- Control, buying and the HUD as usual. Input timing is a little less exact: the worker is always allowed 2 ticks ahead (up to about 17 ms more than the lead of 1 at 60 fps and up), and the game's own frame clock decides when a tick is shown. When the queue runs empty the game keeps the time and catches up by itself instead of the mod paying it back gently, so a short run of two ticks in a frame can happen. The input-delay readout and the `INPUT TRACE` lines measure this as they always do.
+- **Keep the game's speed at 1x and do not use the game's own pause button while in control:** in running frames the game's speed field is no longer forced to 1x, and the game's own pause and highlight fields are no longer overridden.
+- The camera behaves as in dev1.
+
+### How to read the result
+
+- Play a capped series (the same cap as when it grew) with the switch on and Log detail = Verbose, and compare the PERF `viewer_incl_native` and Frame Lab's windows with the matches that grew.
+- If the game's update stays flat in a capped series with the switch on, the cause is the pacing's work on the viewer: the frame-clock rewrite, the dt trim or the playback-field override. If it still grows, those are cleared, and the cause is elsewhere.
+- **This switch tests the viewer-side manipulation only.** The worker gate (the wait after each publication) stays on at a fixed lead, so it is not tested by this switch; if the update still grows with the switch on, the worker gate stays a suspect.
+
+### The PACING line (read from the code; format tested)
+
+- `PACING playback ...` (every 10 s of running, Verbose; prefix unchanged, and the same text after `TIMING slow` when a window plays slow) now carries the current owed time, `owed=<n> ticks`, beside the rate, lead, average client frame in ms (already there), changes and dropped. A match bound with the switch on adds `; pacing off (perf_pacing_off), the game's own frame clock`, and its owed and dropped stay 0 (the mod holds nothing back). Format, with made-up numbers: `PACING playback 59.8 ticks/s of 60 over 10 s; lead=2 average client frame 13.9 ms owed=0.31 ticks changes=3 dropped=0.0 ticks this match`.
+
+### Tests and checks
+
+- New unit tests in `native_timing/pacing_off_tests.rs` (a child module of `native_timing`, kept apart so `native_timing.rs` stays under the 3,000-line limit of `tools/check_source_size.py`): the switch is read every frame, logged once per change and latched only at the next bind (`the_pacing_switch_is_read_each_frame_and_applies_from_the_next_match`); with it on, running frames (control and AI control) are untouched, the start hold and pause are not, the game's update playing the whole queue in one frame releases nothing, and control and input stay allowed (`with_pacing_off_running_frames_are_untouched_and_holds_and_control_stay`); the worker publishes up to the fixed lead without waiting and waits only beyond it, and 30 fps never changes the lead, owes nothing and writes the new PACING fields (`with_pacing_off_the_worker_keeps_the_fixed_lead_and_the_frame_time_only_measures`). The existing timing tests are unchanged and pass.
+
+## 1.6.1-dev1 (development) — 2026-10-25
+
+**Not seen in game. Development build, never for the Workshop.** Build "2c" of the Stage 2 design (`docs/investigation-direct-draw-hud.md`, section 3): the Tab panel is drawn with the SDK's direct draw calls, as the HUD strip was in 1.6.0-perf-dev3. Why: on 1.6.0 the author saw holding Tab drop the frame rate from about 70 to about 50, the game's cost about 6 ms a frame while the mod's own Tab work is 7-13 µs (seen in game, 2026-10-25). Nothing else changed. Everything below is read from the code or measured by the tests and tools named; nothing of it is seen in game.
+
+### What moved and what stayed (read from the code; node counts measured by the template test and the pixel tool's tree model)
+
+- **Drawn** (`team_draw.rs`, at the z values the nodes had, 1600-1607, in the old template's node order): the panel and its top, bottom, left and right rules; per side the five headers (LV, K/D/A, CS, and the translated ITEMS and GOLD, read through `lang::tr` each frame as before; ITEMS only while a row has a slot); per row the row tint (yellow on your athlete's row), the selected bar, the row line, the portrait's frame (blue or red by side), its inset and the dark shade while dead or unknown, the outlined respawn count, the level, K/D/A, CS and gold texts; per item tile its box, inset and the "?" of an item without an icon.
+- **Stays in the tree** (`team_status::template`): the root `lt_team_status` (now a container, shown and hidden as before), the two `side{s}` and ten `lane{l}` containers, each row's `portrait` container with its `icon` image (`ui_set_champion_icon` needs an image node), and the `item{i}` tiles as containers of their `icon` images (sprite-sheet frames), so every path the existing code writes is unchanged. The template has 153 nodes instead of 379 (no colour box or label left; a unit test counts them). Shown while the panel is open in the scripted test: 83 nodes instead of 210-211 (the fake tree has no champion portraits; in game add the 10 portraits: about 93, up to 113 with four items in every row, against about 220-240 before). The brief aimed at 70-80: reaching that would mean dropping the `portrait` and `item{i}` containers, which changes the paths (and the write lines) of the portraits and item icons, so the paths were kept.
+- **Draw commands while open:** 207 a frame in the scripted test, 213 with one row dead (the countdown is five texts: four dark copies and the white one). At the probe's 2.1-2.5 µs a command (section 7 of the design) that is roughly 0.4-0.5 ms, against the about 6 ms the tree panel cost (a guess until the PERF capture says so).
+- **When it draws:** only while the root is shown in this frame (Tab held, the panel built), in `post_update` inside the `Team` PERF section (`tab` in the log; name unchanged); sent in `post_render` with the other windows' lists (`Client::post_render_inner`); nothing while `perf_hide_mod_ui` is on (`draw_list::submit` returns first; the panel's own step also hides it), nothing during the one-second rebuild gap after a background or language change. One `DRAW origin tab panel: ...` log line compares the drawn corner with the root's laid-out rectangle, as the other drawn windows do.
+- **The state step is unchanged:** the same values every frame (`slot`, capacity, portrait retries, the respawn caption), no input-blocking rectangle (none before either), the panel still built ahead by `prewarm.rs` (fewer nodes now). `draw_list::Align` gained `End` (right-aligned gold and its header; the game's `Right`).
+
+### The K/D/A (read from the code; measured by a unit test and the pixel tool)
+
+- The rich label (`<#eeececff>k<#989694ff>/<#ff855bff>d<#989694ff>/<#eeececff>a<>`, size 22, centred in its 110 px box) cannot be a draw call, so it is **five** single-colour texts: kills `#eeececff`, slash `#989694ff`, deaths `#ff855bff`, slash `#989694ff`, assists `#eeececff` (the brief's "three" read as three colours: kills and assists share one but are not adjacent). Each run's width is `hud_style::width(run, 22)`; the five are laid side by side and the whole centred in the box; each run is drawn left-aligned from its place (`team_draw::KdaView::set`, recomputed only when the numbers change). A unit test checks the run texts, that they touch, and that the whole is centred.
+- **Expected deviation (measured offline):** `hud_style::width` reads the advance table `tools/generate_hud_fonts.py` writes from the *medium* weight, while the K/D/A is set in the *numeric* weight, whose digits and slash are 0-0.5 px wider each at 22 px (canvas measurement of `manrope_numeric.ttf` in the pixel tool's browser: "0/0/13" 69.5 px against 66.5 px from the table, "12/3/24" 79.8 against 77.5, "99/99/99" 100.8 against 99.7). So the drawn K/D/A is up to about 3 px narrower: its first glyph sits up to about 1.5 px right and its last up to about 1.5 px left of where a label laid out with the numeric advances puts them, and the inner glyphs move by less. How the game itself lays out rich text (rounding per run, kerning) is not known; a guess: the same advances, so the same 1-3 px.
+- Not done (the brief named `hud_style::width`): a small numeric-weight advance table for 0-9 and "/" would remove this difference. Left for the author to decide.
+
+### Records (measured by tests)
+
+- `probe/testdata/ui_identity/team.txt` (rewritten on purpose with `LT_UPDATE_UI_RECORDS=1 cargo test --offline --release team_panel`): 1,493 → 217 lines. A frame-by-frame check of the kept nodes (every line of the root, the sides, the rows' visibility and place, `portrait.icon` and `item{i}`/`item{i}.icon`, against the 1.6.0 record) found them identical in all 80 frames. The only changed line is the spawn line (`len=54530 fnv=73555dbd…` → `len=15213 fnv=fdbf1e34…`, the shrunk template). The 1,276 lines that left all belong to drawn elements: 500 CS texts, 500 gold texts, 100 K/D/A texts, 60 level texts, 11 respawn texts, 10 headers' texts, 2 GOLD header places, 2 ITEMS header visibilities, 10 row gold places, 10 row tints (`lane{l} | color`), 10 selected bars, 10 portrait frame colours, 11 portrait shades and 40 "?" visibilities.
+- `probe/testdata/ui_draw/team.txt` (new, 10,460 lines): the same scripted Tab test's draw commands per frame, as the other windows' draw records. The scripts never show a "?" (every scripted item has an icon); `team_draw::tests` covers it.
+- No other record changed (`git diff --stat probe/testdata`: only these two files and the new pixel fixture).
+
+### Pixel comparison (measured by `tools/compare_draw_review.cjs`)
+
+- **Against 1.6.0's own Tab** (new fixture set `probe/testdata/ui_pixels/dev5/team/`, 136 KB: 1.6.0's write record from git and its template, whose hash is the record's spawn line; 1.6.0-dev5 and 1.6.0 drew the same Tab): `node tools/compare_draw_review.cjs --base=dev5 team`
+
+```
+team      7  Tab open, one row dead (countdown)               nodes 379 (211 shown) -> 153 ( 83 shown), 213 drawn  differing px   947  largest region 47 px 11x12 at (519,604)
+team     20  Tab held open                                    nodes 379 (210 shown) -> 153 ( 83 shown), 207 drawn  differing px   806  largest region 34 px 4x14 at (1136,332)
+team     65  Tab open again, values changed                   nodes 379 (210 shown) -> 153 ( 83 shown), 207 drawn  differing px  1166  largest region 58 px 7x15 at (514,400)
+Largest differing region over all states: 15 px across.
+```
+
+  Every differing pixel of the three states lies inside the two K/D/A boxes (counted on the diff images: 947 of 947, 806 of 806, 1,166 of 1,166), the glyph-edge shift above; the panel, rules, rows, tints, tiles, portrait frames, the dead row's shade and its outlined countdown (four offset copies against the tool's stroke) show no difference at the tool's threshold. Frame 7 (one row dead) is a review state new in this build.
+- **Against dev3** (`--base=dev3`, the brief's command): 0 differing pixels in all 33 HUD, plate, session, stats and effect states (unchanged windows). The three Tab states differ by 34,024, 35,878 and 36,281 pixels, largest region 810 px (27 × 30) at (659,326): the dev3 fixture holds the Tab **before** 1.6.0-dev4 moved its columns (dev4's entry reported the same 35,800 and 36,143 for that intended move), so these numbers measure dev4's layout change, not this build.
+
+### Allocation (read from the code)
+
+The view keeps its texts and formats a number again only when it changes (`NumberView`, `TimerView`, `KdaView`; a unit test checks a steady value keeps its buffer); the list keeps its storage. What still allocates on a steady frame, as in 1.6.0 and left as it was: `TeamStatus::snapshot` clones the ten players every frame, and the item icon write builds its property text (`artwork.item_icon` and `format!("visible: true; …")`) for every shown tile every frame before the cache compares it.
+
+### Tests and tools
+
+- New unit tests: the K/D/A runs (texts, contiguity, centring, colours), steady texts keep their buffers, headers and values share each column's box and alignment for 4, 5 and 6 slots (ported from the template test), a hidden panel or row draws nothing and the selected and dead row draw their bar, shade and countdown, and the shrunk template's node count and kept paths. Removed: the rich-text caption test (no rich text left). The template assertions of `columns_sit_16_px_apart_...` moved to the draw-list test.
+- `PropCache::text_keyed` has no caller now (the Tab panel was the last tree label written that way); it stays, marked `allow(dead_code)`, because `docs/modding.md` documents it.
+- `tools/compare_draw_review.cjs`: the Tab comment updated, review state Tab frame 7 added.
+- Docs: `docs/investigation-direct-draw-hud.md` section 3 (Tab's "stays in the tree" line marked superseded, with what moved), `docs/modding.md` (the drawn windows sent in `post_render`, and a line on drawing several-colour text run by run).
+
+### Choices made where the brief allowed two readings
+
+- The portrait frame, inset and shade and the countdown are drawn (the brief lists "the alive/dead shade if it is a drawn box"); only the portrait image stays.
+- Kept the `portrait` and `item{i}` containers so no kept path or write line changes (the node target of 70-80 is therefore not met: 83 in the test, about 93-113 in game).
+- The pixel base for this build is a new Tab-only fixture of 1.6.0 (`dev5`), not a re-export of this build: the comparison needs the tree panel as the base, and the dev3 set's Tab predates dev4's columns.
+
+### Not seen in game: what to look at
+
+- The K/D/A: its glyphs up to about 1.5 px inward at each end (above).
+- Equal z: the selected bar and the row line (both 1602) are sent in the template's order, as were the HUD's equal-z commands (accepted in game in 1.6.0).
+- The drawn corner against the tree root: the `DRAW origin tab panel` line in the first match's log.
+- The gold column right-aligned by the draw call's `Right` alignment (first use of it).
+- The frame rate while holding Tab.
+
+### Checks
+
+`cargo fmt`; `cargo clippy --offline --all-targets -- -D warnings` clean; `cargo test --offline --release`: 671 passed, 1 ignored (1.6.0: 667 and 1; 5 new, 1 removed). `python tools/build_dll.py`: DLL 5,678,080 bytes. `python tools/stage_package.py`: 124 files staged, public build. `python tools/verify_build.py --version 1.6.1-dev1 --probe-tests 671`: tables verified for game 0.6.4, 0.6.5 and 0.7.0b2 against their own executables, 621 native anchors, ABI 6 and null-host rejection; DLL SHA256 52dc2916…5f4942. `python tools/package_mod.py --version 1.6.1-dev1`: 124 matching files, SHA256 5f1d92e7…21c0e9. `python tools/check_source_size.py` passed (`team_status.rs` 719 → 687 lines; `team_draw.rs` new, 462 with its tests). `node tools/compare_draw_review.cjs --base=dev3` and `--base=dev5`: as above. The first verifier run refused `ui/probe_glyph.svg`: the working copy had been rewritten with Windows line endings at 02:08 (the 1.6.0 commit's time, before this build) while the committed file and its recorded digest are LF; it was written back with the committed bytes (`git show HEAD:probe/ui/probe_glyph.svg`, same blob hash) and the chain ran again. `.svg` files have no `eol=lf` rule in `.gitattributes`, so a later checkout can do this again (not changed here). Not run: the installer (the director installs after review).
+
 ## 1.6.0 — 2026-10-25
 
 Release of the performance overhaul and its tidy-up: 1.6.0-perf-dev1 to dev3 and 1.6.0-dev4 and dev5 below, as one DLL for game 0.6.4, 0.6.5 and 0.7.0 Beta 2. The author played the dev5 build on all three versions on 2026-10-25 ("works well"); nothing changed between dev5 and this build apart from the version number and this entry.

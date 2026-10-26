@@ -106,6 +106,18 @@ the few that need the game's runners.
   single colour: it can move).
 - The shop and Settings windows, the emote wheel, Tab (Tab is open only
   while held; it can move later if the per-node cost is confirmed).
+  *Superseded for Tab, 2026-10-25:* the author saw holding Tab drop the
+  frame rate from about 70 to about 50 on 1.6.0 (**seen in game**), so Tab
+  moved in **build 2c, 1.6.1-dev1** (**read from the code**; not yet seen
+  in game): the panel, its rules, headers, row tints, selected bars, row
+  lines, portrait frames, insets and dead shades, the respawn count,
+  level, K/D/A, CS and gold texts, and the item tiles' boxes, insets and
+  "?" marks are drawn (`team_draw.rs`). The K/D/A's colour runs became
+  five single-colour texts placed by the font's advance widths. The root,
+  side and row containers, the 10 portraits (in their `portrait`
+  containers) and the item icons (in their `item{i}` tiles) stay:
+  153 nodes instead of 379, 83 shown in the scripted test instead of
+  about 210 (CHANGELOG, 1.6.1-dev1).
 
 That leaves roughly 40-50 live nodes on a normal frame instead of
 350-400. **Guess:** 85-90 % of the 1.5 ms, less what the direct draw

@@ -417,6 +417,7 @@ impl Client {
                     &o.state_plate.list,
                     &o.stats_ui.list,
                     &o.session_ui.list,
+                    &o.team_ui.list,
                 ],
             );
         }
@@ -627,6 +628,8 @@ impl StableExtension for Client {
             &self.logger,
         );
         crate::draw_probe::configure(self.settings.hidden_switch("perf_draw_probe"), &self.logger);
+        self.timing
+            .configure_pacing_off(self.settings.hidden_switch("perf_pacing_off"), &self.logger);
         crate::input_delay::set_shown(self.settings.number("show_input_delay") == 1.);
         self.post_update_inner(ctx, dt_micros);
     }

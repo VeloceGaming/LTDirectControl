@@ -628,6 +628,7 @@ fn team_panel_writes_match_1_5_3() {
     let hud = HudUi::default();
     let mut ui = TeamUi::default();
     let mut out = Vec::new();
+    let mut draws = Vec::new();
     for i in 0..80usize {
         let active = (5..40).contains(&i) || (60..75).contains(&i);
         let roster: Vec<_> = if active {
@@ -643,10 +644,13 @@ fn team_panel_writes_match_1_5_3() {
         });
         out.push(format!("## frame {i}"));
         out.extend(fake_ui::take_log());
+        draws.push(format!("## {i}"));
+        draws.extend(drawn(&[&ui.list]));
         test_clock::advance(FRAME);
     }
     test_clock::release();
     check_record("team", &out);
+    check_draw_record("team", "team", &draws);
 }
 
 fn stats_unit(t: usize, champion: Option<&str>, friendly: bool) -> crate::stats_panel::Unit {

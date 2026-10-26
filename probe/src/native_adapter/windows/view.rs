@@ -358,15 +358,26 @@ pub(crate) struct PlaybackOverride {
     pub(crate) speed: u32,
     pub(crate) paused: u8,
 }
+/// The four playback fields as the game has them (sync, mode, speed bits,
+/// paused), read only.
+pub(crate) unsafe fn playback_fields(config: usize) -> (u8, u32, u32, u8) {
+    (
+        std::ptr::read(config as *const u8),
+        std::ptr::read_unaligned((config + 0x10) as *const u32),
+        std::ptr::read_unaligned((config + 0x14) as *const u32),
+        std::ptr::read((config + 0x48) as *const u8),
+    )
+}
 impl PlaybackOverride {
     pub(crate) unsafe fn apply(config: usize, plan: crate::native_timing::PlaybackPlan) -> Self {
+        let (sync, mode, speed, paused) = playback_fields(config);
         let snapshot = Self {
             config,
             plan,
-            sync: std::ptr::read(config as *const u8),
-            mode: std::ptr::read_unaligned((config + 0x10) as *const u32),
-            speed: std::ptr::read_unaligned((config + 0x14) as *const u32),
-            paused: std::ptr::read((config + 0x48) as *const u8),
+            sync,
+            mode,
+            speed,
+            paused,
         };
         // Sync off and mode 0 in every phase; mode 0 keeps the game's
         // highlight button dead in AI control (the author, 2026-10-22).
@@ -571,17 +582,22 @@ pub(crate) unsafe fn view_hook_body(
         );
         return;
     };
-    let snapshot = PlaybackOverride::apply(config, shared.timing.playback_plan());
+    // `perf_pacing_off` (a diagnosis switch, latched per match): a running
+    // frame goes to the game's update as the game has it, with no
+    // playback-field override, no frame-clock write and its own dt.
+    let untouched = shared.timing.untouched(mode);
+    let snapshot =
+        (!untouched).then(|| PlaybackOverride::apply(config, shared.timing.playback_plan()));
+    let (sync, playback_mode, speed, paused) = match &snapshot {
+        Some(s) => (s.sync, s.mode, s.speed, s.paused),
+        None => playback_fields(config),
+    };
     // AI control: the speed field becomes the pacing multiplier, and each
     // change of the four raw fields is logged at Verbose.
     if catch_unwind(AssertUnwindSafe(|| {
-        shared.timing.spectator_fields(
-            snapshot.sync,
-            snapshot.mode,
-            snapshot.speed,
-            snapshot.paused,
-            &shared.logger,
-        )
+        shared
+            .timing
+            .spectator_fields(sync, playback_mode, speed, paused, &shared.logger)
     }))
     .is_err()
     {
@@ -606,6 +622,12 @@ pub(crate) unsafe fn view_hook_body(
         ViewMode::Paused => {
             std::ptr::write_unaligned((view + VIEW_FRAME_CLOCK) as *mut f32, 0.0);
             0.0
+        }
+        // Untouched: the frame is only timed for the PACING line (the lead
+        // stays fixed); the clock and dt are the game's.
+        ViewMode::Running if untouched => {
+            shared.timing.frame_time(tps, &shared.logger);
+            dt
         }
         // The viewer plays what is queued; the worker's lead follows the
         // frame rate so that a slow client still plays every tick.

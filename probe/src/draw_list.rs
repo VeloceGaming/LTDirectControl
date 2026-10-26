@@ -43,18 +43,22 @@ impl Font {
 pub enum Align {
     Start,
     Center,
+    /// Right, or bottom (1.6.1-dev1, for the Tab panel's gold column).
+    End,
 }
 impl Align {
     fn x(self) -> TextAlignXV1 {
         match self {
             Align::Start => TextAlignXV1::Left,
             Align::Center => TextAlignXV1::Center,
+            Align::End => TextAlignXV1::Right,
         }
     }
     fn y(self) -> TextAlignYV1 {
         match self {
             Align::Start => TextAlignYV1::Top,
             Align::Center => TextAlignYV1::Center,
+            Align::End => TextAlignYV1::Bottom,
         }
     }
 }

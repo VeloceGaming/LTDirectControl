@@ -41,6 +41,9 @@ const PAYBACK: f32 = 0.25;
 const MAX_OWED: f32 = 2.;
 /// Frames whose played ticks are logged after a lead change.
 const TRACE_FRAMES: usize = 60;
+/// The fixed lead of a match bound with the hidden switch `perf_pacing_off`
+/// on: the lead the frame timing settles on under a 60-72 fps cap today.
+pub const PACING_OFF_LEAD: usize = 2;
 
 /// The game's viewer adds each frame's time to a clock and plays one queued
 /// tick per tick of it; when the queue runs empty the rest stays in the
@@ -222,6 +225,10 @@ struct State {
     fields_seen: Option<(u8, u32, u32, u8)>,
     field_lines: u32,
     window: SpectatorWindow,
+    /// `perf_pacing_off` as latched when this match was bound: running
+    /// viewer frames go to the game untouched and the worker keeps the
+    /// fixed [`PACING_OFF_LEAD`]. Never changes mid-match.
+    pacing_off: bool,
 }
 /// AI-phase playback over one [`SPECTATOR_WINDOW`].
 #[derive(Default)]
@@ -243,6 +250,9 @@ pub struct NativeTiming {
     state: Mutex<State>,
     wake: Condvar,
     enabled: bool,
+    /// The hidden switch `perf_pacing_off` as read this frame; it applies
+    /// from the next match bound ([`State::pacing_off`]).
+    pacing_off_wanted: std::sync::atomic::AtomicBool,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ViewMode {
@@ -283,6 +293,7 @@ impl NativeTiming {
     pub fn new(enabled: bool) -> Self {
         Self {
             enabled,
+            pacing_off_wanted: std::sync::atomic::AtomicBool::new(false),
             wake: Condvar::new(),
             state: Mutex::new(State {
                 generation: 0,
@@ -339,8 +350,38 @@ impl NativeTiming {
                 fields_seen: None,
                 field_lines: 0,
                 window: SpectatorWindow::default(),
+                pacing_off: false,
             }),
         }
+    }
+    /// Client, once per frame: the hidden switch `perf_pacing_off`. A change
+    /// is logged and applies from the next match, so no match is half paced.
+    /// Returns whether it changed.
+    pub fn configure_pacing_off(&self, on: bool, log: &Logger) -> bool {
+        use std::sync::atomic::Ordering::Relaxed;
+        if self.pacing_off_wanted.swap(on, Relaxed) == on {
+            return false;
+        }
+        log.write(&format!(
+            "PERF perf_pacing_off={on}: from the next match, {}",
+            if on {
+                "running viewer frames go to the game untouched and the worker stays at most 2 ticks ahead (start and pause holds unchanged)"
+            } else {
+                "pacing as usual"
+            }
+        ));
+        true
+    }
+    /// True while this match was bound with `perf_pacing_off` on.
+    pub fn pacing_off(&self) -> bool {
+        self.state.lock().is_ok_and(|s| s.pacing_off)
+    }
+    /// Viewer: whether a frame in `mode` goes to the game's update untouched
+    /// (no frame-clock write, no dt trim, no playback-field override). Only
+    /// running frames of a match bound with `perf_pacing_off` on; the
+    /// start hold and pause still hold the viewer as always.
+    pub fn untouched(&self, mode: ViewMode) -> bool {
+        mode == ViewMode::Running && self.pacing_off()
     }
     /// Ticks the worker may run ahead now: the frame lead, times the game's
     /// speed multiplier (rounded up) in the AI phase.
@@ -652,6 +693,7 @@ impl NativeTiming {
         s.fields_seen = None;
         s.field_lines = 0;
         s.window = SpectatorWindow::default();
+        s.pacing_off = false;
         s.played_tick = 0;
         s.startup_shop_pending = false;
         s.role_fallback = false;
@@ -818,6 +860,17 @@ impl NativeTiming {
             "NATIVE BIND key={key:?} worker_os={:?} SDK origin=ClientMatchView tick=1",
             s.worker
         ));
+        // The switch is latched here, once per match.
+        s.pacing_off = self
+            .pacing_off_wanted
+            .load(std::sync::atomic::Ordering::Relaxed);
+        if s.pacing_off {
+            s.lead = PACING_OFF_LEAD;
+            s.peak_lead = s.peak_lead.max(PACING_OFF_LEAD);
+            log.write(&format!(
+                "TIMING pacing off for this match (perf_pacing_off): running viewer frames go to the game untouched; the worker stays at most {PACING_OFF_LEAD} ticks ahead (times the speed in AI control); start and pause holds unchanged"
+            ));
+        }
     }
     /// Entrance evidence is recorded BEFORE scope checks and memory reads.
     /// Returns (accepted by scope, capture a bounded entrance stack).
@@ -1033,7 +1086,13 @@ impl NativeTiming {
         // that raises the lead; a lasting change still gets there.
         let ticks = (frame.as_secs_f32() * tps as f32).min(s.frame_ticks + FRAME_STEP);
         s.frame_ticks += (ticks - s.frame_ticks) * FRAME_WEIGHT;
-        let lead = lead_for(s.lead, s.frame_ticks);
+        // With `perf_pacing_off` the frame time is only measured for the
+        // PACING line; the lead stays fixed.
+        let lead = if s.pacing_off {
+            s.lead
+        } else {
+            lead_for(s.lead, s.frame_ticks)
+        };
         let frame_ms = s.frame_ticks * 1000. / tps as f32;
         if lead != s.lead {
             s.lead_changes += 1;
@@ -1070,10 +1129,12 @@ impl NativeTiming {
             let target = tps as f32 * s.spectator;
             let unsteady = std::mem::take(&mut s.rate_unsteady);
             let line = format!(
-                "playback {rate:.1} ticks/s of {target:.0} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms changes={} dropped={:.1} ticks this match{}",
+                "playback {rate:.1} ticks/s of {target:.0} over {:.0} s; lead={lead} average client frame {frame_ms:.1} ms owed={:.2} ticks changes={} dropped={:.1} ticks this match{}{}",
                 window.as_secs_f32(),
+                s.owed,
                 s.lead_changes,
                 s.dropped,
+                if s.pacing_off { "; pacing off (perf_pacing_off), the game's own frame clock" } else { "" },
                 if unsteady { "; speed changed or paused in this window, not judged" } else { "" }
             );
             if !unsteady && rate < target * 0.95 && s.slow_reports < REPORTS {
@@ -1418,6 +1479,8 @@ impl NativeTiming {
     }
 }
 
+#[cfg(test)]
+mod pacing_off_tests;
 #[cfg(test)]
 mod tests {
     use super::*;

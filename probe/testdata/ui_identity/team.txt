@@ -4,1100 +4,174 @@
 ## frame 3
 ## frame 4
 ## frame 5
-S ingame.lt_team_status len=54530 fnv=73555dbd9f21ce2e
+S ingame.lt_team_status len=15213 fnv=fdbf1e3423c56ae5
 P ingame.lt_team_status | visible: true; width: 1232px; height: 406px;
 P ingame.lt_team_status.side0 | x: 20px; width: 583px; height: 374px;
-T ingame.lt_team_status.side0.headers.level = LV
-T ingame.lt_team_status.side0.headers.kda = K / D / A
-T ingame.lt_team_status.side0.headers.cs = CS
-T ingame.lt_team_status.side0.headers.items = ITEMS
-T ingame.lt_team_status.side0.headers.gold = GOLD
-P ingame.lt_team_status.side0.headers.gold | x: 478px;
-P ingame.lt_team_status.side0.headers.items | visible: true;
 P ingame.lt_team_status.side0.lane0 | visible: true; y: 34px; width: 583px; height: 68px;
-P ingame.lt_team_status.side0.lane0.selected | visible: false;
-P ingame.lt_team_status.side0.lane0 | color: #00000000;
 P ingame.lt_team_status.side0.lane0.portrait.icon | visible: false;
-P ingame.lt_team_status.side0.lane0.portrait | color: #536979ff;
-P ingame.lt_team_status.side0.lane0.portrait.shade | visible: false;
-T ingame.lt_team_status.side0.lane0.portrait.timer = 
-T ingame.lt_team_status.side0.lane0.level = 1
-T ingame.lt_team_status.side0.lane0.cs = 5
-T ingame.lt_team_status.side0.lane0.gold = 535
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane0.gold | x: 478px;
 P ingame.lt_team_status.side0.lane0.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side0.lane0.item0.unknown | visible: false;
 P ingame.lt_team_status.side0.lane0.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item1.icon | visible: false;
-P ingame.lt_team_status.side0.lane0.item1.unknown | visible: false;
 P ingame.lt_team_status.side0.lane0.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item2.icon | visible: false;
-P ingame.lt_team_status.side0.lane0.item2.unknown | visible: false;
 P ingame.lt_team_status.side0.lane0.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item3.icon | visible: false;
-P ingame.lt_team_status.side0.lane0.item3.unknown | visible: false;
 P ingame.lt_team_status.side0.lane0.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side0.lane0.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane1 | visible: true; y: 102px; width: 583px; height: 68px;
-P ingame.lt_team_status.side0.lane1.selected | visible: true;
-P ingame.lt_team_status.side0.lane1 | color: #fdee0009;
 P ingame.lt_team_status.side0.lane1.portrait.icon | visible: false;
-P ingame.lt_team_status.side0.lane1.portrait | color: #536979ff;
-P ingame.lt_team_status.side0.lane1.portrait.shade | visible: false;
-T ingame.lt_team_status.side0.lane1.portrait.timer = 
-T ingame.lt_team_status.side0.lane1.level = 1
-T ingame.lt_team_status.side0.lane1.cs = 5
-T ingame.lt_team_status.side0.lane1.gold = 535
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane1.gold | x: 478px;
 P ingame.lt_team_status.side0.lane1.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side0.lane1.item0.unknown | visible: false;
 P ingame.lt_team_status.side0.lane1.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item1.icon | visible: false;
-P ingame.lt_team_status.side0.lane1.item1.unknown | visible: false;
 P ingame.lt_team_status.side0.lane1.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item2.icon | visible: false;
-P ingame.lt_team_status.side0.lane1.item2.unknown | visible: false;
 P ingame.lt_team_status.side0.lane1.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item3.icon | visible: false;
-P ingame.lt_team_status.side0.lane1.item3.unknown | visible: false;
 P ingame.lt_team_status.side0.lane1.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side0.lane1.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane2 | visible: true; y: 170px; width: 583px; height: 68px;
-P ingame.lt_team_status.side0.lane2.selected | visible: false;
-P ingame.lt_team_status.side0.lane2 | color: #00000000;
 P ingame.lt_team_status.side0.lane2.portrait.icon | visible: false;
-P ingame.lt_team_status.side0.lane2.portrait | color: #536979ff;
-P ingame.lt_team_status.side0.lane2.portrait.shade | visible: false;
-T ingame.lt_team_status.side0.lane2.portrait.timer = 
-T ingame.lt_team_status.side0.lane2.level = 1
-T ingame.lt_team_status.side0.lane2.cs = 5
-T ingame.lt_team_status.side0.lane2.gold = 535
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane2.gold | x: 478px;
 P ingame.lt_team_status.side0.lane2.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side0.lane2.item0.unknown | visible: false;
 P ingame.lt_team_status.side0.lane2.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item1.icon | visible: false;
-P ingame.lt_team_status.side0.lane2.item1.unknown | visible: false;
 P ingame.lt_team_status.side0.lane2.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item2.icon | visible: false;
-P ingame.lt_team_status.side0.lane2.item2.unknown | visible: false;
 P ingame.lt_team_status.side0.lane2.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item3.icon | visible: false;
-P ingame.lt_team_status.side0.lane2.item3.unknown | visible: false;
 P ingame.lt_team_status.side0.lane2.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side0.lane2.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane3 | visible: true; y: 238px; width: 583px; height: 68px;
-P ingame.lt_team_status.side0.lane3.selected | visible: false;
-P ingame.lt_team_status.side0.lane3 | color: #00000000;
 P ingame.lt_team_status.side0.lane3.portrait.icon | visible: false;
-P ingame.lt_team_status.side0.lane3.portrait | color: #536979ff;
-P ingame.lt_team_status.side0.lane3.portrait.shade | visible: false;
-T ingame.lt_team_status.side0.lane3.portrait.timer = 
-T ingame.lt_team_status.side0.lane3.level = 1
-T ingame.lt_team_status.side0.lane3.cs = 5
-T ingame.lt_team_status.side0.lane3.gold = 535
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane3.gold | x: 478px;
 P ingame.lt_team_status.side0.lane3.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side0.lane3.item0.unknown | visible: false;
 P ingame.lt_team_status.side0.lane3.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item1.icon | visible: false;
-P ingame.lt_team_status.side0.lane3.item1.unknown | visible: false;
 P ingame.lt_team_status.side0.lane3.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item2.icon | visible: false;
-P ingame.lt_team_status.side0.lane3.item2.unknown | visible: false;
 P ingame.lt_team_status.side0.lane3.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item3.icon | visible: false;
-P ingame.lt_team_status.side0.lane3.item3.unknown | visible: false;
 P ingame.lt_team_status.side0.lane3.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side0.lane3.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side0.lane4 | visible: true; y: 306px; width: 583px; height: 68px;
-P ingame.lt_team_status.side0.lane4.selected | visible: false;
-P ingame.lt_team_status.side0.lane4 | color: #00000000;
 P ingame.lt_team_status.side0.lane4.portrait.icon | visible: false;
-P ingame.lt_team_status.side0.lane4.portrait | color: #536979ff;
-P ingame.lt_team_status.side0.lane4.portrait.shade | visible: false;
-T ingame.lt_team_status.side0.lane4.portrait.timer = 
-T ingame.lt_team_status.side0.lane4.level = 1
-T ingame.lt_team_status.side0.lane4.cs = 5
-T ingame.lt_team_status.side0.lane4.gold = 535
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side0.lane4.gold | x: 478px;
 P ingame.lt_team_status.side0.lane4.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side0.lane4.item0.unknown | visible: false;
 P ingame.lt_team_status.side0.lane4.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item1.icon | visible: false;
-P ingame.lt_team_status.side0.lane4.item1.unknown | visible: false;
 P ingame.lt_team_status.side0.lane4.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item2.icon | visible: false;
-P ingame.lt_team_status.side0.lane4.item2.unknown | visible: false;
 P ingame.lt_team_status.side0.lane4.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item3.icon | visible: false;
-P ingame.lt_team_status.side0.lane4.item3.unknown | visible: false;
 P ingame.lt_team_status.side0.lane4.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side0.lane4.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1 | x: 629px; width: 583px; height: 374px;
-T ingame.lt_team_status.side1.headers.level = LV
-T ingame.lt_team_status.side1.headers.kda = K / D / A
-T ingame.lt_team_status.side1.headers.cs = CS
-T ingame.lt_team_status.side1.headers.items = ITEMS
-T ingame.lt_team_status.side1.headers.gold = GOLD
-P ingame.lt_team_status.side1.headers.gold | x: 478px;
-P ingame.lt_team_status.side1.headers.items | visible: true;
 P ingame.lt_team_status.side1.lane0 | visible: true; y: 34px; width: 583px; height: 68px;
-P ingame.lt_team_status.side1.lane0.selected | visible: false;
-P ingame.lt_team_status.side1.lane0 | color: #00000000;
 P ingame.lt_team_status.side1.lane0.portrait.icon | visible: false;
-P ingame.lt_team_status.side1.lane0.portrait | color: #79535dff;
-P ingame.lt_team_status.side1.lane0.portrait.shade | visible: false;
-T ingame.lt_team_status.side1.lane0.portrait.timer = 
-T ingame.lt_team_status.side1.lane0.level = 1
-T ingame.lt_team_status.side1.lane0.cs = 5
-T ingame.lt_team_status.side1.lane0.gold = 535
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane0.gold | x: 478px;
 P ingame.lt_team_status.side1.lane0.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side1.lane0.item0.unknown | visible: false;
 P ingame.lt_team_status.side1.lane0.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item1.icon | visible: false;
-P ingame.lt_team_status.side1.lane0.item1.unknown | visible: false;
 P ingame.lt_team_status.side1.lane0.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item2.icon | visible: false;
-P ingame.lt_team_status.side1.lane0.item2.unknown | visible: false;
 P ingame.lt_team_status.side1.lane0.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item3.icon | visible: false;
-P ingame.lt_team_status.side1.lane0.item3.unknown | visible: false;
 P ingame.lt_team_status.side1.lane0.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side1.lane0.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane1 | visible: true; y: 102px; width: 583px; height: 68px;
-P ingame.lt_team_status.side1.lane1.selected | visible: false;
-P ingame.lt_team_status.side1.lane1 | color: #00000000;
 P ingame.lt_team_status.side1.lane1.portrait.icon | visible: false;
-P ingame.lt_team_status.side1.lane1.portrait | color: #79535dff;
-P ingame.lt_team_status.side1.lane1.portrait.shade | visible: false;
-T ingame.lt_team_status.side1.lane1.portrait.timer = 
-T ingame.lt_team_status.side1.lane1.level = 1
-T ingame.lt_team_status.side1.lane1.cs = 5
-T ingame.lt_team_status.side1.lane1.gold = 535
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane1.gold | x: 478px;
 P ingame.lt_team_status.side1.lane1.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side1.lane1.item0.unknown | visible: false;
 P ingame.lt_team_status.side1.lane1.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item1.icon | visible: false;
-P ingame.lt_team_status.side1.lane1.item1.unknown | visible: false;
 P ingame.lt_team_status.side1.lane1.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item2.icon | visible: false;
-P ingame.lt_team_status.side1.lane1.item2.unknown | visible: false;
 P ingame.lt_team_status.side1.lane1.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item3.icon | visible: false;
-P ingame.lt_team_status.side1.lane1.item3.unknown | visible: false;
 P ingame.lt_team_status.side1.lane1.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side1.lane1.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane2 | visible: true; y: 170px; width: 583px; height: 68px;
-P ingame.lt_team_status.side1.lane2.selected | visible: false;
-P ingame.lt_team_status.side1.lane2 | color: #00000000;
 P ingame.lt_team_status.side1.lane2.portrait.icon | visible: false;
-P ingame.lt_team_status.side1.lane2.portrait | color: #79535dff;
-P ingame.lt_team_status.side1.lane2.portrait.shade | visible: true;
-T ingame.lt_team_status.side1.lane2.portrait.timer = 5
-T ingame.lt_team_status.side1.lane2.level = 1
-T ingame.lt_team_status.side1.lane2.cs = 5
-T ingame.lt_team_status.side1.lane2.gold = 535
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane2.gold | x: 478px;
 P ingame.lt_team_status.side1.lane2.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side1.lane2.item0.unknown | visible: false;
 P ingame.lt_team_status.side1.lane2.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item1.icon | visible: false;
-P ingame.lt_team_status.side1.lane2.item1.unknown | visible: false;
 P ingame.lt_team_status.side1.lane2.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item2.icon | visible: false;
-P ingame.lt_team_status.side1.lane2.item2.unknown | visible: false;
 P ingame.lt_team_status.side1.lane2.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item3.icon | visible: false;
-P ingame.lt_team_status.side1.lane2.item3.unknown | visible: false;
 P ingame.lt_team_status.side1.lane2.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side1.lane2.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane3 | visible: true; y: 238px; width: 583px; height: 68px;
-P ingame.lt_team_status.side1.lane3.selected | visible: false;
-P ingame.lt_team_status.side1.lane3 | color: #00000000;
 P ingame.lt_team_status.side1.lane3.portrait.icon | visible: false;
-P ingame.lt_team_status.side1.lane3.portrait | color: #79535dff;
-P ingame.lt_team_status.side1.lane3.portrait.shade | visible: false;
-T ingame.lt_team_status.side1.lane3.portrait.timer = 
-T ingame.lt_team_status.side1.lane3.level = 1
-T ingame.lt_team_status.side1.lane3.cs = 5
-T ingame.lt_team_status.side1.lane3.gold = 535
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane3.gold | x: 478px;
 P ingame.lt_team_status.side1.lane3.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side1.lane3.item0.unknown | visible: false;
 P ingame.lt_team_status.side1.lane3.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item1.icon | visible: false;
-P ingame.lt_team_status.side1.lane3.item1.unknown | visible: false;
 P ingame.lt_team_status.side1.lane3.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item2.icon | visible: false;
-P ingame.lt_team_status.side1.lane3.item2.unknown | visible: false;
 P ingame.lt_team_status.side1.lane3.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item3.icon | visible: false;
-P ingame.lt_team_status.side1.lane3.item3.unknown | visible: false;
 P ingame.lt_team_status.side1.lane3.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side1.lane3.item5 | visible: false; x: 502px; y: 18px;
 P ingame.lt_team_status.side1.lane4 | visible: true; y: 306px; width: 583px; height: 68px;
-P ingame.lt_team_status.side1.lane4.selected | visible: false;
-P ingame.lt_team_status.side1.lane4 | color: #00000000;
 P ingame.lt_team_status.side1.lane4.portrait.icon | visible: false;
-P ingame.lt_team_status.side1.lane4.portrait | color: #79535dff;
-P ingame.lt_team_status.side1.lane4.portrait.shade | visible: false;
-T ingame.lt_team_status.side1.lane4.portrait.timer = 
-T ingame.lt_team_status.side1.lane4.level = 1
-T ingame.lt_team_status.side1.lane4.cs = 5
-T ingame.lt_team_status.side1.lane4.gold = 535
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>1<>
-P ingame.lt_team_status.side1.lane4.gold | x: 478px;
 P ingame.lt_team_status.side1.lane4.item0 | visible: true; x: 322px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item0.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_0";
-P ingame.lt_team_status.side1.lane4.item0.unknown | visible: false;
 P ingame.lt_team_status.side1.lane4.item1 | visible: true; x: 358px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item1.icon | visible: false;
-P ingame.lt_team_status.side1.lane4.item1.unknown | visible: false;
 P ingame.lt_team_status.side1.lane4.item2 | visible: true; x: 394px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item2.icon | visible: false;
-P ingame.lt_team_status.side1.lane4.item2.unknown | visible: false;
 P ingame.lt_team_status.side1.lane4.item3 | visible: true; x: 430px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item3.icon | visible: false;
-P ingame.lt_team_status.side1.lane4.item3.unknown | visible: false;
 P ingame.lt_team_status.side1.lane4.item4 | visible: false; x: 466px; y: 18px;
 P ingame.lt_team_status.side1.lane4.item5 | visible: false; x: 502px; y: 18px;
 ## frame 6
-T ingame.lt_team_status.side0.lane0.cs = 6
-T ingame.lt_team_status.side0.lane0.gold = 542
 P ingame.lt_team_status.side0.lane0.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side0.lane1.cs = 6
-T ingame.lt_team_status.side0.lane1.gold = 542
 P ingame.lt_team_status.side0.lane1.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side0.lane2.cs = 6
-T ingame.lt_team_status.side0.lane2.gold = 542
 P ingame.lt_team_status.side0.lane2.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side0.lane3.cs = 6
-T ingame.lt_team_status.side0.lane3.gold = 542
 P ingame.lt_team_status.side0.lane3.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side0.lane4.cs = 6
-T ingame.lt_team_status.side0.lane4.gold = 542
 P ingame.lt_team_status.side0.lane4.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side1.lane0.cs = 6
-T ingame.lt_team_status.side1.lane0.gold = 542
 P ingame.lt_team_status.side1.lane0.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side1.lane1.cs = 6
-T ingame.lt_team_status.side1.lane1.gold = 542
 P ingame.lt_team_status.side1.lane1.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side1.lane2.cs = 6
-T ingame.lt_team_status.side1.lane2.gold = 542
 P ingame.lt_team_status.side1.lane2.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side1.lane3.cs = 6
-T ingame.lt_team_status.side1.lane3.gold = 542
 P ingame.lt_team_status.side1.lane3.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
-T ingame.lt_team_status.side1.lane4.cs = 6
-T ingame.lt_team_status.side1.lane4.gold = 542
 P ingame.lt_team_status.side1.lane4.item1.icon | visible: true; source: "asset/base/aseprite_resources/ingame/item_icons_18x18"; rect_tag: "t1_1";
 ## frame 7
-T ingame.lt_team_status.side0.lane0.cs = 7
-T ingame.lt_team_status.side0.lane0.gold = 549
-T ingame.lt_team_status.side0.lane1.cs = 7
-T ingame.lt_team_status.side0.lane1.gold = 549
-T ingame.lt_team_status.side0.lane2.cs = 7
-T ingame.lt_team_status.side0.lane2.gold = 549
-T ingame.lt_team_status.side0.lane3.cs = 7
-T ingame.lt_team_status.side0.lane3.gold = 549
-T ingame.lt_team_status.side0.lane4.cs = 7
-T ingame.lt_team_status.side0.lane4.gold = 549
-T ingame.lt_team_status.side1.lane0.cs = 7
-T ingame.lt_team_status.side1.lane0.gold = 549
-T ingame.lt_team_status.side1.lane1.cs = 7
-T ingame.lt_team_status.side1.lane1.gold = 549
-T ingame.lt_team_status.side1.lane2.cs = 7
-T ingame.lt_team_status.side1.lane2.gold = 549
-T ingame.lt_team_status.side1.lane3.cs = 7
-T ingame.lt_team_status.side1.lane3.gold = 549
-T ingame.lt_team_status.side1.lane4.cs = 7
-T ingame.lt_team_status.side1.lane4.gold = 549
 ## frame 8
-T ingame.lt_team_status.side0.lane0.cs = 8
-T ingame.lt_team_status.side0.lane0.gold = 556
-T ingame.lt_team_status.side0.lane1.cs = 8
-T ingame.lt_team_status.side0.lane1.gold = 556
-T ingame.lt_team_status.side0.lane2.cs = 8
-T ingame.lt_team_status.side0.lane2.gold = 556
-T ingame.lt_team_status.side0.lane3.cs = 8
-T ingame.lt_team_status.side0.lane3.gold = 556
-T ingame.lt_team_status.side0.lane4.cs = 8
-T ingame.lt_team_status.side0.lane4.gold = 556
-T ingame.lt_team_status.side1.lane0.cs = 8
-T ingame.lt_team_status.side1.lane0.gold = 556
-T ingame.lt_team_status.side1.lane1.cs = 8
-T ingame.lt_team_status.side1.lane1.gold = 556
-T ingame.lt_team_status.side1.lane2.cs = 8
-T ingame.lt_team_status.side1.lane2.gold = 556
-T ingame.lt_team_status.side1.lane3.cs = 8
-T ingame.lt_team_status.side1.lane3.gold = 556
-T ingame.lt_team_status.side1.lane4.cs = 8
-T ingame.lt_team_status.side1.lane4.gold = 556
 ## frame 9
-T ingame.lt_team_status.side0.lane0.cs = 9
-T ingame.lt_team_status.side0.lane0.gold = 563
-T ingame.lt_team_status.side0.lane1.cs = 9
-T ingame.lt_team_status.side0.lane1.gold = 563
-T ingame.lt_team_status.side0.lane2.cs = 9
-T ingame.lt_team_status.side0.lane2.gold = 563
-T ingame.lt_team_status.side0.lane3.cs = 9
-T ingame.lt_team_status.side0.lane3.gold = 563
-T ingame.lt_team_status.side0.lane4.cs = 9
-T ingame.lt_team_status.side0.lane4.gold = 563
-T ingame.lt_team_status.side1.lane0.cs = 9
-T ingame.lt_team_status.side1.lane0.gold = 563
-T ingame.lt_team_status.side1.lane1.cs = 9
-T ingame.lt_team_status.side1.lane1.gold = 563
-T ingame.lt_team_status.side1.lane2.cs = 9
-T ingame.lt_team_status.side1.lane2.gold = 563
-T ingame.lt_team_status.side1.lane3.cs = 9
-T ingame.lt_team_status.side1.lane3.gold = 563
-T ingame.lt_team_status.side1.lane4.cs = 9
-T ingame.lt_team_status.side1.lane4.gold = 563
 ## frame 10
-T ingame.lt_team_status.side0.lane0.level = 2
-T ingame.lt_team_status.side0.lane0.cs = 10
-T ingame.lt_team_status.side0.lane0.gold = 570
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side0.lane1.level = 2
-T ingame.lt_team_status.side0.lane1.cs = 10
-T ingame.lt_team_status.side0.lane1.gold = 570
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side0.lane2.level = 2
-T ingame.lt_team_status.side0.lane2.cs = 10
-T ingame.lt_team_status.side0.lane2.gold = 570
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side0.lane3.level = 2
-T ingame.lt_team_status.side0.lane3.cs = 10
-T ingame.lt_team_status.side0.lane3.gold = 570
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side0.lane4.level = 2
-T ingame.lt_team_status.side0.lane4.cs = 10
-T ingame.lt_team_status.side0.lane4.gold = 570
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side1.lane0.level = 2
-T ingame.lt_team_status.side1.lane0.cs = 10
-T ingame.lt_team_status.side1.lane0.gold = 570
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side1.lane1.level = 2
-T ingame.lt_team_status.side1.lane1.cs = 10
-T ingame.lt_team_status.side1.lane1.gold = 570
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>2<>
-P ingame.lt_team_status.side1.lane2.portrait.shade | visible: false;
-T ingame.lt_team_status.side1.lane2.portrait.timer = 
-T ingame.lt_team_status.side1.lane2.level = 2
-T ingame.lt_team_status.side1.lane2.cs = 10
-T ingame.lt_team_status.side1.lane2.gold = 570
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side1.lane3.level = 2
-T ingame.lt_team_status.side1.lane3.cs = 10
-T ingame.lt_team_status.side1.lane3.gold = 570
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>2<>
-T ingame.lt_team_status.side1.lane4.level = 2
-T ingame.lt_team_status.side1.lane4.cs = 10
-T ingame.lt_team_status.side1.lane4.gold = 570
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>2<>
 ## frame 11
-T ingame.lt_team_status.side0.lane0.cs = 11
-T ingame.lt_team_status.side0.lane0.gold = 577
-T ingame.lt_team_status.side0.lane1.cs = 11
-T ingame.lt_team_status.side0.lane1.gold = 577
-T ingame.lt_team_status.side0.lane2.cs = 11
-T ingame.lt_team_status.side0.lane2.gold = 577
-T ingame.lt_team_status.side0.lane3.cs = 11
-T ingame.lt_team_status.side0.lane3.gold = 577
-T ingame.lt_team_status.side0.lane4.cs = 11
-T ingame.lt_team_status.side0.lane4.gold = 577
-T ingame.lt_team_status.side1.lane0.cs = 11
-T ingame.lt_team_status.side1.lane0.gold = 577
-T ingame.lt_team_status.side1.lane1.cs = 11
-T ingame.lt_team_status.side1.lane1.gold = 577
-T ingame.lt_team_status.side1.lane2.cs = 11
-T ingame.lt_team_status.side1.lane2.gold = 577
-T ingame.lt_team_status.side1.lane3.cs = 11
-T ingame.lt_team_status.side1.lane3.gold = 577
-T ingame.lt_team_status.side1.lane4.cs = 11
-T ingame.lt_team_status.side1.lane4.gold = 577
 ## frame 12
-T ingame.lt_team_status.side0.lane0.cs = 12
-T ingame.lt_team_status.side0.lane0.gold = 584
-T ingame.lt_team_status.side0.lane1.cs = 12
-T ingame.lt_team_status.side0.lane1.gold = 584
-T ingame.lt_team_status.side0.lane2.cs = 12
-T ingame.lt_team_status.side0.lane2.gold = 584
-T ingame.lt_team_status.side0.lane3.cs = 12
-T ingame.lt_team_status.side0.lane3.gold = 584
-T ingame.lt_team_status.side0.lane4.cs = 12
-T ingame.lt_team_status.side0.lane4.gold = 584
-T ingame.lt_team_status.side1.lane0.cs = 12
-T ingame.lt_team_status.side1.lane0.gold = 584
-T ingame.lt_team_status.side1.lane1.cs = 12
-T ingame.lt_team_status.side1.lane1.gold = 584
-T ingame.lt_team_status.side1.lane2.cs = 12
-T ingame.lt_team_status.side1.lane2.gold = 584
-T ingame.lt_team_status.side1.lane3.cs = 12
-T ingame.lt_team_status.side1.lane3.gold = 584
-T ingame.lt_team_status.side1.lane4.cs = 12
-T ingame.lt_team_status.side1.lane4.gold = 584
 ## frame 13
-T ingame.lt_team_status.side0.lane0.cs = 13
-T ingame.lt_team_status.side0.lane0.gold = 591
-T ingame.lt_team_status.side0.lane1.cs = 13
-T ingame.lt_team_status.side0.lane1.gold = 591
-T ingame.lt_team_status.side0.lane2.cs = 13
-T ingame.lt_team_status.side0.lane2.gold = 591
-T ingame.lt_team_status.side0.lane3.cs = 13
-T ingame.lt_team_status.side0.lane3.gold = 591
-T ingame.lt_team_status.side0.lane4.cs = 13
-T ingame.lt_team_status.side0.lane4.gold = 591
-T ingame.lt_team_status.side1.lane0.cs = 13
-T ingame.lt_team_status.side1.lane0.gold = 591
-T ingame.lt_team_status.side1.lane1.cs = 13
-T ingame.lt_team_status.side1.lane1.gold = 591
-T ingame.lt_team_status.side1.lane2.cs = 13
-T ingame.lt_team_status.side1.lane2.gold = 591
-T ingame.lt_team_status.side1.lane3.cs = 13
-T ingame.lt_team_status.side1.lane3.gold = 591
-T ingame.lt_team_status.side1.lane4.cs = 13
-T ingame.lt_team_status.side1.lane4.gold = 591
 ## frame 14
-T ingame.lt_team_status.side0.lane0.cs = 14
-T ingame.lt_team_status.side0.lane0.gold = 598
-T ingame.lt_team_status.side0.lane1.cs = 14
-T ingame.lt_team_status.side0.lane1.gold = 598
-T ingame.lt_team_status.side0.lane2.cs = 14
-T ingame.lt_team_status.side0.lane2.gold = 598
-T ingame.lt_team_status.side0.lane3.cs = 14
-T ingame.lt_team_status.side0.lane3.gold = 598
-T ingame.lt_team_status.side0.lane4.cs = 14
-T ingame.lt_team_status.side0.lane4.gold = 598
-T ingame.lt_team_status.side1.lane0.cs = 14
-T ingame.lt_team_status.side1.lane0.gold = 598
-T ingame.lt_team_status.side1.lane1.cs = 14
-T ingame.lt_team_status.side1.lane1.gold = 598
-T ingame.lt_team_status.side1.lane2.cs = 14
-T ingame.lt_team_status.side1.lane2.gold = 598
-T ingame.lt_team_status.side1.lane3.cs = 14
-T ingame.lt_team_status.side1.lane3.gold = 598
-T ingame.lt_team_status.side1.lane4.cs = 14
-T ingame.lt_team_status.side1.lane4.gold = 598
 ## frame 15
-T ingame.lt_team_status.side0.lane0.cs = 15
-T ingame.lt_team_status.side0.lane0.gold = 605
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side0.lane1.cs = 15
-T ingame.lt_team_status.side0.lane1.gold = 605
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side0.lane2.cs = 15
-T ingame.lt_team_status.side0.lane2.gold = 605
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side0.lane3.cs = 15
-T ingame.lt_team_status.side0.lane3.gold = 605
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side0.lane4.cs = 15
-T ingame.lt_team_status.side0.lane4.gold = 605
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side1.lane0.cs = 15
-T ingame.lt_team_status.side1.lane0.gold = 605
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side1.lane1.cs = 15
-T ingame.lt_team_status.side1.lane1.gold = 605
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side1.lane2.cs = 15
-T ingame.lt_team_status.side1.lane2.gold = 605
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side1.lane3.cs = 15
-T ingame.lt_team_status.side1.lane3.gold = 605
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>3<>
-T ingame.lt_team_status.side1.lane4.cs = 15
-T ingame.lt_team_status.side1.lane4.gold = 605
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>3<>
 ## frame 16
-T ingame.lt_team_status.side0.lane0.cs = 16
-T ingame.lt_team_status.side0.lane0.gold = 612
-T ingame.lt_team_status.side0.lane1.cs = 16
-T ingame.lt_team_status.side0.lane1.gold = 612
-T ingame.lt_team_status.side0.lane2.cs = 16
-T ingame.lt_team_status.side0.lane2.gold = 612
-T ingame.lt_team_status.side0.lane3.cs = 16
-T ingame.lt_team_status.side0.lane3.gold = 612
-T ingame.lt_team_status.side0.lane4.cs = 16
-T ingame.lt_team_status.side0.lane4.gold = 612
-T ingame.lt_team_status.side1.lane0.cs = 16
-T ingame.lt_team_status.side1.lane0.gold = 612
-T ingame.lt_team_status.side1.lane1.cs = 16
-T ingame.lt_team_status.side1.lane1.gold = 612
-T ingame.lt_team_status.side1.lane2.cs = 16
-T ingame.lt_team_status.side1.lane2.gold = 612
-T ingame.lt_team_status.side1.lane3.cs = 16
-T ingame.lt_team_status.side1.lane3.gold = 612
-T ingame.lt_team_status.side1.lane4.cs = 16
-T ingame.lt_team_status.side1.lane4.gold = 612
 ## frame 17
-T ingame.lt_team_status.side0.lane0.cs = 17
-T ingame.lt_team_status.side0.lane0.gold = 619
-T ingame.lt_team_status.side0.lane1.cs = 17
-T ingame.lt_team_status.side0.lane1.gold = 619
-T ingame.lt_team_status.side0.lane2.cs = 17
-T ingame.lt_team_status.side0.lane2.gold = 619
-T ingame.lt_team_status.side0.lane3.cs = 17
-T ingame.lt_team_status.side0.lane3.gold = 619
-T ingame.lt_team_status.side0.lane4.cs = 17
-T ingame.lt_team_status.side0.lane4.gold = 619
-T ingame.lt_team_status.side1.lane0.cs = 17
-T ingame.lt_team_status.side1.lane0.gold = 619
-T ingame.lt_team_status.side1.lane1.cs = 17
-T ingame.lt_team_status.side1.lane1.gold = 619
-T ingame.lt_team_status.side1.lane2.cs = 17
-T ingame.lt_team_status.side1.lane2.gold = 619
-T ingame.lt_team_status.side1.lane3.cs = 17
-T ingame.lt_team_status.side1.lane3.gold = 619
-T ingame.lt_team_status.side1.lane4.cs = 17
-T ingame.lt_team_status.side1.lane4.gold = 619
 ## frame 18
-T ingame.lt_team_status.side0.lane0.cs = 18
-T ingame.lt_team_status.side0.lane0.gold = 626
-T ingame.lt_team_status.side0.lane1.cs = 18
-T ingame.lt_team_status.side0.lane1.gold = 626
-T ingame.lt_team_status.side0.lane2.cs = 18
-T ingame.lt_team_status.side0.lane2.gold = 626
-T ingame.lt_team_status.side0.lane3.cs = 18
-T ingame.lt_team_status.side0.lane3.gold = 626
-T ingame.lt_team_status.side0.lane4.cs = 18
-T ingame.lt_team_status.side0.lane4.gold = 626
-T ingame.lt_team_status.side1.lane0.cs = 18
-T ingame.lt_team_status.side1.lane0.gold = 626
-T ingame.lt_team_status.side1.lane1.cs = 18
-T ingame.lt_team_status.side1.lane1.gold = 626
-T ingame.lt_team_status.side1.lane2.cs = 18
-T ingame.lt_team_status.side1.lane2.gold = 626
-T ingame.lt_team_status.side1.lane3.cs = 18
-T ingame.lt_team_status.side1.lane3.gold = 626
-T ingame.lt_team_status.side1.lane4.cs = 18
-T ingame.lt_team_status.side1.lane4.gold = 626
 ## frame 19
-T ingame.lt_team_status.side0.lane0.cs = 19
-T ingame.lt_team_status.side0.lane0.gold = 633
-T ingame.lt_team_status.side0.lane1.cs = 19
-T ingame.lt_team_status.side0.lane1.gold = 633
-T ingame.lt_team_status.side0.lane2.cs = 19
-T ingame.lt_team_status.side0.lane2.gold = 633
-T ingame.lt_team_status.side0.lane3.cs = 19
-T ingame.lt_team_status.side0.lane3.gold = 633
-T ingame.lt_team_status.side0.lane4.cs = 19
-T ingame.lt_team_status.side0.lane4.gold = 633
-T ingame.lt_team_status.side1.lane0.cs = 19
-T ingame.lt_team_status.side1.lane0.gold = 633
-T ingame.lt_team_status.side1.lane1.cs = 19
-T ingame.lt_team_status.side1.lane1.gold = 633
-T ingame.lt_team_status.side1.lane2.cs = 19
-T ingame.lt_team_status.side1.lane2.gold = 633
-T ingame.lt_team_status.side1.lane3.cs = 19
-T ingame.lt_team_status.side1.lane3.gold = 633
-T ingame.lt_team_status.side1.lane4.cs = 19
-T ingame.lt_team_status.side1.lane4.gold = 633
 ## frame 20
-T ingame.lt_team_status.side0.lane0.level = 3
-T ingame.lt_team_status.side0.lane0.cs = 20
-T ingame.lt_team_status.side0.lane0.gold = 640
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side0.lane1.level = 3
-T ingame.lt_team_status.side0.lane1.cs = 20
-T ingame.lt_team_status.side0.lane1.gold = 640
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side0.lane2.level = 3
-T ingame.lt_team_status.side0.lane2.cs = 20
-T ingame.lt_team_status.side0.lane2.gold = 640
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side0.lane3.level = 3
-T ingame.lt_team_status.side0.lane3.cs = 20
-T ingame.lt_team_status.side0.lane3.gold = 640
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side0.lane4.level = 3
-T ingame.lt_team_status.side0.lane4.cs = 20
-T ingame.lt_team_status.side0.lane4.gold = 640
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side1.lane0.level = 3
-T ingame.lt_team_status.side1.lane0.cs = 20
-T ingame.lt_team_status.side1.lane0.gold = 640
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side1.lane1.level = 3
-T ingame.lt_team_status.side1.lane1.cs = 20
-T ingame.lt_team_status.side1.lane1.gold = 640
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side1.lane2.level = 3
-T ingame.lt_team_status.side1.lane2.cs = 20
-T ingame.lt_team_status.side1.lane2.gold = 640
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side1.lane3.level = 3
-T ingame.lt_team_status.side1.lane3.cs = 20
-T ingame.lt_team_status.side1.lane3.gold = 640
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>4<>
-T ingame.lt_team_status.side1.lane4.level = 3
-T ingame.lt_team_status.side1.lane4.cs = 20
-T ingame.lt_team_status.side1.lane4.gold = 640
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>4<>
 ## frame 21
-T ingame.lt_team_status.side0.lane0.cs = 21
-T ingame.lt_team_status.side0.lane0.gold = 647
-T ingame.lt_team_status.side0.lane1.cs = 21
-T ingame.lt_team_status.side0.lane1.gold = 647
-T ingame.lt_team_status.side0.lane2.cs = 21
-T ingame.lt_team_status.side0.lane2.gold = 647
-T ingame.lt_team_status.side0.lane3.cs = 21
-T ingame.lt_team_status.side0.lane3.gold = 647
-T ingame.lt_team_status.side0.lane4.cs = 21
-T ingame.lt_team_status.side0.lane4.gold = 647
-T ingame.lt_team_status.side1.lane0.cs = 21
-T ingame.lt_team_status.side1.lane0.gold = 647
-T ingame.lt_team_status.side1.lane1.cs = 21
-T ingame.lt_team_status.side1.lane1.gold = 647
-T ingame.lt_team_status.side1.lane2.cs = 21
-T ingame.lt_team_status.side1.lane2.gold = 647
-T ingame.lt_team_status.side1.lane3.cs = 21
-T ingame.lt_team_status.side1.lane3.gold = 647
-T ingame.lt_team_status.side1.lane4.cs = 21
-T ingame.lt_team_status.side1.lane4.gold = 647
 ## frame 22
-T ingame.lt_team_status.side0.lane0.cs = 22
-T ingame.lt_team_status.side0.lane0.gold = 654
-T ingame.lt_team_status.side0.lane1.cs = 22
-T ingame.lt_team_status.side0.lane1.gold = 654
-T ingame.lt_team_status.side0.lane2.cs = 22
-T ingame.lt_team_status.side0.lane2.gold = 654
-T ingame.lt_team_status.side0.lane3.cs = 22
-T ingame.lt_team_status.side0.lane3.gold = 654
-T ingame.lt_team_status.side0.lane4.cs = 22
-T ingame.lt_team_status.side0.lane4.gold = 654
-T ingame.lt_team_status.side1.lane0.cs = 22
-T ingame.lt_team_status.side1.lane0.gold = 654
-T ingame.lt_team_status.side1.lane1.cs = 22
-T ingame.lt_team_status.side1.lane1.gold = 654
-T ingame.lt_team_status.side1.lane2.cs = 22
-T ingame.lt_team_status.side1.lane2.gold = 654
-T ingame.lt_team_status.side1.lane3.cs = 22
-T ingame.lt_team_status.side1.lane3.gold = 654
-T ingame.lt_team_status.side1.lane4.cs = 22
-T ingame.lt_team_status.side1.lane4.gold = 654
 ## frame 23
-T ingame.lt_team_status.side0.lane0.cs = 23
-T ingame.lt_team_status.side0.lane0.gold = 661
-T ingame.lt_team_status.side0.lane1.cs = 23
-T ingame.lt_team_status.side0.lane1.gold = 661
-T ingame.lt_team_status.side0.lane2.cs = 23
-T ingame.lt_team_status.side0.lane2.gold = 661
-T ingame.lt_team_status.side0.lane3.cs = 23
-T ingame.lt_team_status.side0.lane3.gold = 661
-T ingame.lt_team_status.side0.lane4.cs = 23
-T ingame.lt_team_status.side0.lane4.gold = 661
-T ingame.lt_team_status.side1.lane0.cs = 23
-T ingame.lt_team_status.side1.lane0.gold = 661
-T ingame.lt_team_status.side1.lane1.cs = 23
-T ingame.lt_team_status.side1.lane1.gold = 661
-T ingame.lt_team_status.side1.lane2.cs = 23
-T ingame.lt_team_status.side1.lane2.gold = 661
-T ingame.lt_team_status.side1.lane3.cs = 23
-T ingame.lt_team_status.side1.lane3.gold = 661
-T ingame.lt_team_status.side1.lane4.cs = 23
-T ingame.lt_team_status.side1.lane4.gold = 661
 ## frame 24
-T ingame.lt_team_status.side0.lane0.cs = 24
-T ingame.lt_team_status.side0.lane0.gold = 668
-T ingame.lt_team_status.side0.lane1.cs = 24
-T ingame.lt_team_status.side0.lane1.gold = 668
-T ingame.lt_team_status.side0.lane2.cs = 24
-T ingame.lt_team_status.side0.lane2.gold = 668
-T ingame.lt_team_status.side0.lane3.cs = 24
-T ingame.lt_team_status.side0.lane3.gold = 668
-T ingame.lt_team_status.side0.lane4.cs = 24
-T ingame.lt_team_status.side0.lane4.gold = 668
-T ingame.lt_team_status.side1.lane0.cs = 24
-T ingame.lt_team_status.side1.lane0.gold = 668
-T ingame.lt_team_status.side1.lane1.cs = 24
-T ingame.lt_team_status.side1.lane1.gold = 668
-T ingame.lt_team_status.side1.lane2.cs = 24
-T ingame.lt_team_status.side1.lane2.gold = 668
-T ingame.lt_team_status.side1.lane3.cs = 24
-T ingame.lt_team_status.side1.lane3.gold = 668
-T ingame.lt_team_status.side1.lane4.cs = 24
-T ingame.lt_team_status.side1.lane4.gold = 668
 ## frame 25
-T ingame.lt_team_status.side0.lane0.cs = 25
-T ingame.lt_team_status.side0.lane0.gold = 675
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side0.lane1.cs = 25
-T ingame.lt_team_status.side0.lane1.gold = 675
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side0.lane2.cs = 25
-T ingame.lt_team_status.side0.lane2.gold = 675
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side0.lane3.cs = 25
-T ingame.lt_team_status.side0.lane3.gold = 675
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side0.lane4.cs = 25
-T ingame.lt_team_status.side0.lane4.gold = 675
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side1.lane0.cs = 25
-T ingame.lt_team_status.side1.lane0.gold = 675
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side1.lane1.cs = 25
-T ingame.lt_team_status.side1.lane1.gold = 675
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side1.lane2.cs = 25
-T ingame.lt_team_status.side1.lane2.gold = 675
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side1.lane3.cs = 25
-T ingame.lt_team_status.side1.lane3.gold = 675
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>5<>
-T ingame.lt_team_status.side1.lane4.cs = 25
-T ingame.lt_team_status.side1.lane4.gold = 675
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>5<>
 ## frame 26
-T ingame.lt_team_status.side0.lane0.cs = 26
-T ingame.lt_team_status.side0.lane0.gold = 682
-T ingame.lt_team_status.side0.lane1.cs = 26
-T ingame.lt_team_status.side0.lane1.gold = 682
-T ingame.lt_team_status.side0.lane2.cs = 26
-T ingame.lt_team_status.side0.lane2.gold = 682
-T ingame.lt_team_status.side0.lane3.cs = 26
-T ingame.lt_team_status.side0.lane3.gold = 682
-T ingame.lt_team_status.side0.lane4.cs = 26
-T ingame.lt_team_status.side0.lane4.gold = 682
-T ingame.lt_team_status.side1.lane0.cs = 26
-T ingame.lt_team_status.side1.lane0.gold = 682
-T ingame.lt_team_status.side1.lane1.cs = 26
-T ingame.lt_team_status.side1.lane1.gold = 682
-T ingame.lt_team_status.side1.lane2.cs = 26
-T ingame.lt_team_status.side1.lane2.gold = 682
-T ingame.lt_team_status.side1.lane3.cs = 26
-T ingame.lt_team_status.side1.lane3.gold = 682
-T ingame.lt_team_status.side1.lane4.cs = 26
-T ingame.lt_team_status.side1.lane4.gold = 682
 ## frame 27
-T ingame.lt_team_status.side0.lane0.cs = 27
-T ingame.lt_team_status.side0.lane0.gold = 689
-T ingame.lt_team_status.side0.lane1.cs = 27
-T ingame.lt_team_status.side0.lane1.gold = 689
-T ingame.lt_team_status.side0.lane2.cs = 27
-T ingame.lt_team_status.side0.lane2.gold = 689
-T ingame.lt_team_status.side0.lane3.cs = 27
-T ingame.lt_team_status.side0.lane3.gold = 689
-T ingame.lt_team_status.side0.lane4.cs = 27
-T ingame.lt_team_status.side0.lane4.gold = 689
-T ingame.lt_team_status.side1.lane0.cs = 27
-T ingame.lt_team_status.side1.lane0.gold = 689
-T ingame.lt_team_status.side1.lane1.cs = 27
-T ingame.lt_team_status.side1.lane1.gold = 689
-T ingame.lt_team_status.side1.lane2.cs = 27
-T ingame.lt_team_status.side1.lane2.gold = 689
-T ingame.lt_team_status.side1.lane3.cs = 27
-T ingame.lt_team_status.side1.lane3.gold = 689
-T ingame.lt_team_status.side1.lane4.cs = 27
-T ingame.lt_team_status.side1.lane4.gold = 689
 ## frame 28
-T ingame.lt_team_status.side0.lane0.cs = 28
-T ingame.lt_team_status.side0.lane0.gold = 696
-T ingame.lt_team_status.side0.lane1.cs = 28
-T ingame.lt_team_status.side0.lane1.gold = 696
-T ingame.lt_team_status.side0.lane2.cs = 28
-T ingame.lt_team_status.side0.lane2.gold = 696
-T ingame.lt_team_status.side0.lane3.cs = 28
-T ingame.lt_team_status.side0.lane3.gold = 696
-T ingame.lt_team_status.side0.lane4.cs = 28
-T ingame.lt_team_status.side0.lane4.gold = 696
-T ingame.lt_team_status.side1.lane0.cs = 28
-T ingame.lt_team_status.side1.lane0.gold = 696
-T ingame.lt_team_status.side1.lane1.cs = 28
-T ingame.lt_team_status.side1.lane1.gold = 696
-T ingame.lt_team_status.side1.lane2.cs = 28
-T ingame.lt_team_status.side1.lane2.gold = 696
-T ingame.lt_team_status.side1.lane3.cs = 28
-T ingame.lt_team_status.side1.lane3.gold = 696
-T ingame.lt_team_status.side1.lane4.cs = 28
-T ingame.lt_team_status.side1.lane4.gold = 696
 ## frame 29
-T ingame.lt_team_status.side0.lane0.cs = 29
-T ingame.lt_team_status.side0.lane0.gold = 703
-T ingame.lt_team_status.side0.lane1.cs = 29
-T ingame.lt_team_status.side0.lane1.gold = 703
-T ingame.lt_team_status.side0.lane2.cs = 29
-T ingame.lt_team_status.side0.lane2.gold = 703
-T ingame.lt_team_status.side0.lane3.cs = 29
-T ingame.lt_team_status.side0.lane3.gold = 703
-T ingame.lt_team_status.side0.lane4.cs = 29
-T ingame.lt_team_status.side0.lane4.gold = 703
-T ingame.lt_team_status.side1.lane0.cs = 29
-T ingame.lt_team_status.side1.lane0.gold = 703
-T ingame.lt_team_status.side1.lane1.cs = 29
-T ingame.lt_team_status.side1.lane1.gold = 703
-T ingame.lt_team_status.side1.lane2.cs = 29
-T ingame.lt_team_status.side1.lane2.gold = 703
-T ingame.lt_team_status.side1.lane3.cs = 29
-T ingame.lt_team_status.side1.lane3.gold = 703
-T ingame.lt_team_status.side1.lane4.cs = 29
-T ingame.lt_team_status.side1.lane4.gold = 703
 ## frame 30
-T ingame.lt_team_status.side0.lane0.level = 4
-T ingame.lt_team_status.side0.lane0.cs = 30
-T ingame.lt_team_status.side0.lane0.gold = 710
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side0.lane1.level = 4
-T ingame.lt_team_status.side0.lane1.cs = 30
-T ingame.lt_team_status.side0.lane1.gold = 710
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side0.lane2.level = 4
-T ingame.lt_team_status.side0.lane2.cs = 30
-T ingame.lt_team_status.side0.lane2.gold = 710
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side0.lane3.level = 4
-T ingame.lt_team_status.side0.lane3.cs = 30
-T ingame.lt_team_status.side0.lane3.gold = 710
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side0.lane4.level = 4
-T ingame.lt_team_status.side0.lane4.cs = 30
-T ingame.lt_team_status.side0.lane4.gold = 710
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side1.lane0.level = 4
-T ingame.lt_team_status.side1.lane0.cs = 30
-T ingame.lt_team_status.side1.lane0.gold = 710
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side1.lane1.level = 4
-T ingame.lt_team_status.side1.lane1.cs = 30
-T ingame.lt_team_status.side1.lane1.gold = 710
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side1.lane2.level = 4
-T ingame.lt_team_status.side1.lane2.cs = 30
-T ingame.lt_team_status.side1.lane2.gold = 710
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side1.lane3.level = 4
-T ingame.lt_team_status.side1.lane3.cs = 30
-T ingame.lt_team_status.side1.lane3.gold = 710
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>6<>
-T ingame.lt_team_status.side1.lane4.level = 4
-T ingame.lt_team_status.side1.lane4.cs = 30
-T ingame.lt_team_status.side1.lane4.gold = 710
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>6<>
 ## frame 31
-T ingame.lt_team_status.side0.lane0.cs = 31
-T ingame.lt_team_status.side0.lane0.gold = 717
-T ingame.lt_team_status.side0.lane1.cs = 31
-T ingame.lt_team_status.side0.lane1.gold = 717
-T ingame.lt_team_status.side0.lane2.cs = 31
-T ingame.lt_team_status.side0.lane2.gold = 717
-T ingame.lt_team_status.side0.lane3.cs = 31
-T ingame.lt_team_status.side0.lane3.gold = 717
-T ingame.lt_team_status.side0.lane4.cs = 31
-T ingame.lt_team_status.side0.lane4.gold = 717
-T ingame.lt_team_status.side1.lane0.cs = 31
-T ingame.lt_team_status.side1.lane0.gold = 717
-T ingame.lt_team_status.side1.lane1.cs = 31
-T ingame.lt_team_status.side1.lane1.gold = 717
-T ingame.lt_team_status.side1.lane2.cs = 31
-T ingame.lt_team_status.side1.lane2.gold = 717
-T ingame.lt_team_status.side1.lane3.cs = 31
-T ingame.lt_team_status.side1.lane3.gold = 717
-T ingame.lt_team_status.side1.lane4.cs = 31
-T ingame.lt_team_status.side1.lane4.gold = 717
 ## frame 32
-T ingame.lt_team_status.side0.lane0.cs = 32
-T ingame.lt_team_status.side0.lane0.gold = 724
-T ingame.lt_team_status.side0.lane1.cs = 32
-T ingame.lt_team_status.side0.lane1.gold = 724
-T ingame.lt_team_status.side0.lane2.cs = 32
-T ingame.lt_team_status.side0.lane2.gold = 724
-T ingame.lt_team_status.side0.lane3.cs = 32
-T ingame.lt_team_status.side0.lane3.gold = 724
-T ingame.lt_team_status.side0.lane4.cs = 32
-T ingame.lt_team_status.side0.lane4.gold = 724
-T ingame.lt_team_status.side1.lane0.cs = 32
-T ingame.lt_team_status.side1.lane0.gold = 724
-T ingame.lt_team_status.side1.lane1.cs = 32
-T ingame.lt_team_status.side1.lane1.gold = 724
-T ingame.lt_team_status.side1.lane2.cs = 32
-T ingame.lt_team_status.side1.lane2.gold = 724
-T ingame.lt_team_status.side1.lane3.cs = 32
-T ingame.lt_team_status.side1.lane3.gold = 724
-T ingame.lt_team_status.side1.lane4.cs = 32
-T ingame.lt_team_status.side1.lane4.gold = 724
 ## frame 33
-T ingame.lt_team_status.side0.lane0.cs = 33
-T ingame.lt_team_status.side0.lane0.gold = 731
-T ingame.lt_team_status.side0.lane1.cs = 33
-T ingame.lt_team_status.side0.lane1.gold = 731
-T ingame.lt_team_status.side0.lane2.cs = 33
-T ingame.lt_team_status.side0.lane2.gold = 731
-T ingame.lt_team_status.side0.lane3.cs = 33
-T ingame.lt_team_status.side0.lane3.gold = 731
-T ingame.lt_team_status.side0.lane4.cs = 33
-T ingame.lt_team_status.side0.lane4.gold = 731
-T ingame.lt_team_status.side1.lane0.cs = 33
-T ingame.lt_team_status.side1.lane0.gold = 731
-T ingame.lt_team_status.side1.lane1.cs = 33
-T ingame.lt_team_status.side1.lane1.gold = 731
-T ingame.lt_team_status.side1.lane2.cs = 33
-T ingame.lt_team_status.side1.lane2.gold = 731
-T ingame.lt_team_status.side1.lane3.cs = 33
-T ingame.lt_team_status.side1.lane3.gold = 731
-T ingame.lt_team_status.side1.lane4.cs = 33
-T ingame.lt_team_status.side1.lane4.gold = 731
 ## frame 34
-T ingame.lt_team_status.side0.lane0.cs = 34
-T ingame.lt_team_status.side0.lane0.gold = 738
-T ingame.lt_team_status.side0.lane1.cs = 34
-T ingame.lt_team_status.side0.lane1.gold = 738
-T ingame.lt_team_status.side0.lane2.cs = 34
-T ingame.lt_team_status.side0.lane2.gold = 738
-T ingame.lt_team_status.side0.lane3.cs = 34
-T ingame.lt_team_status.side0.lane3.gold = 738
-T ingame.lt_team_status.side0.lane4.cs = 34
-T ingame.lt_team_status.side0.lane4.gold = 738
-T ingame.lt_team_status.side1.lane0.cs = 34
-T ingame.lt_team_status.side1.lane0.gold = 738
-T ingame.lt_team_status.side1.lane1.cs = 34
-T ingame.lt_team_status.side1.lane1.gold = 738
-T ingame.lt_team_status.side1.lane2.cs = 34
-T ingame.lt_team_status.side1.lane2.gold = 738
-T ingame.lt_team_status.side1.lane3.cs = 34
-T ingame.lt_team_status.side1.lane3.gold = 738
-T ingame.lt_team_status.side1.lane4.cs = 34
-T ingame.lt_team_status.side1.lane4.gold = 738
 ## frame 35
-T ingame.lt_team_status.side0.lane0.cs = 35
-T ingame.lt_team_status.side0.lane0.gold = 745
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side0.lane1.cs = 35
-T ingame.lt_team_status.side0.lane1.gold = 745
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side0.lane2.cs = 35
-T ingame.lt_team_status.side0.lane2.gold = 745
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side0.lane3.cs = 35
-T ingame.lt_team_status.side0.lane3.gold = 745
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side0.lane4.cs = 35
-T ingame.lt_team_status.side0.lane4.gold = 745
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side1.lane0.cs = 35
-T ingame.lt_team_status.side1.lane0.gold = 745
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side1.lane1.cs = 35
-T ingame.lt_team_status.side1.lane1.gold = 745
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side1.lane2.cs = 35
-T ingame.lt_team_status.side1.lane2.gold = 745
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side1.lane3.cs = 35
-T ingame.lt_team_status.side1.lane3.gold = 745
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>7<>
-T ingame.lt_team_status.side1.lane4.cs = 35
-T ingame.lt_team_status.side1.lane4.gold = 745
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>7<>
 ## frame 36
-T ingame.lt_team_status.side0.lane0.cs = 36
-T ingame.lt_team_status.side0.lane0.gold = 752
-T ingame.lt_team_status.side0.lane1.cs = 36
-T ingame.lt_team_status.side0.lane1.gold = 752
-T ingame.lt_team_status.side0.lane2.cs = 36
-T ingame.lt_team_status.side0.lane2.gold = 752
-T ingame.lt_team_status.side0.lane3.cs = 36
-T ingame.lt_team_status.side0.lane3.gold = 752
-T ingame.lt_team_status.side0.lane4.cs = 36
-T ingame.lt_team_status.side0.lane4.gold = 752
-T ingame.lt_team_status.side1.lane0.cs = 36
-T ingame.lt_team_status.side1.lane0.gold = 752
-T ingame.lt_team_status.side1.lane1.cs = 36
-T ingame.lt_team_status.side1.lane1.gold = 752
-T ingame.lt_team_status.side1.lane2.cs = 36
-T ingame.lt_team_status.side1.lane2.gold = 752
-T ingame.lt_team_status.side1.lane3.cs = 36
-T ingame.lt_team_status.side1.lane3.gold = 752
-T ingame.lt_team_status.side1.lane4.cs = 36
-T ingame.lt_team_status.side1.lane4.gold = 752
 ## frame 37
-T ingame.lt_team_status.side0.lane0.cs = 37
-T ingame.lt_team_status.side0.lane0.gold = 759
-T ingame.lt_team_status.side0.lane1.cs = 37
-T ingame.lt_team_status.side0.lane1.gold = 759
-T ingame.lt_team_status.side0.lane2.cs = 37
-T ingame.lt_team_status.side0.lane2.gold = 759
-T ingame.lt_team_status.side0.lane3.cs = 37
-T ingame.lt_team_status.side0.lane3.gold = 759
-T ingame.lt_team_status.side0.lane4.cs = 37
-T ingame.lt_team_status.side0.lane4.gold = 759
-T ingame.lt_team_status.side1.lane0.cs = 37
-T ingame.lt_team_status.side1.lane0.gold = 759
-T ingame.lt_team_status.side1.lane1.cs = 37
-T ingame.lt_team_status.side1.lane1.gold = 759
-T ingame.lt_team_status.side1.lane2.cs = 37
-T ingame.lt_team_status.side1.lane2.gold = 759
-T ingame.lt_team_status.side1.lane3.cs = 37
-T ingame.lt_team_status.side1.lane3.gold = 759
-T ingame.lt_team_status.side1.lane4.cs = 37
-T ingame.lt_team_status.side1.lane4.gold = 759
 ## frame 38
-T ingame.lt_team_status.side0.lane0.cs = 38
-T ingame.lt_team_status.side0.lane0.gold = 766
-T ingame.lt_team_status.side0.lane1.cs = 38
-T ingame.lt_team_status.side0.lane1.gold = 766
-T ingame.lt_team_status.side0.lane2.cs = 38
-T ingame.lt_team_status.side0.lane2.gold = 766
-T ingame.lt_team_status.side0.lane3.cs = 38
-T ingame.lt_team_status.side0.lane3.gold = 766
-T ingame.lt_team_status.side0.lane4.cs = 38
-T ingame.lt_team_status.side0.lane4.gold = 766
-T ingame.lt_team_status.side1.lane0.cs = 38
-T ingame.lt_team_status.side1.lane0.gold = 766
-T ingame.lt_team_status.side1.lane1.cs = 38
-T ingame.lt_team_status.side1.lane1.gold = 766
-T ingame.lt_team_status.side1.lane2.cs = 38
-T ingame.lt_team_status.side1.lane2.gold = 766
-T ingame.lt_team_status.side1.lane3.cs = 38
-T ingame.lt_team_status.side1.lane3.gold = 766
-T ingame.lt_team_status.side1.lane4.cs = 38
-T ingame.lt_team_status.side1.lane4.gold = 766
 ## frame 39
-T ingame.lt_team_status.side0.lane0.cs = 39
-T ingame.lt_team_status.side0.lane0.gold = 773
-T ingame.lt_team_status.side0.lane1.cs = 39
-T ingame.lt_team_status.side0.lane1.gold = 773
-T ingame.lt_team_status.side0.lane2.cs = 39
-T ingame.lt_team_status.side0.lane2.gold = 773
-T ingame.lt_team_status.side0.lane3.cs = 39
-T ingame.lt_team_status.side0.lane3.gold = 773
-T ingame.lt_team_status.side0.lane4.cs = 39
-T ingame.lt_team_status.side0.lane4.gold = 773
-T ingame.lt_team_status.side1.lane0.cs = 39
-T ingame.lt_team_status.side1.lane0.gold = 773
-T ingame.lt_team_status.side1.lane1.cs = 39
-T ingame.lt_team_status.side1.lane1.gold = 773
-T ingame.lt_team_status.side1.lane2.cs = 39
-T ingame.lt_team_status.side1.lane2.gold = 773
-T ingame.lt_team_status.side1.lane3.cs = 39
-T ingame.lt_team_status.side1.lane3.gold = 773
-T ingame.lt_team_status.side1.lane4.cs = 39
-T ingame.lt_team_status.side1.lane4.gold = 773
 ## frame 40
 P ingame.lt_team_status | visible: false;
 ## frame 41
@@ -1121,370 +195,20 @@ P ingame.lt_team_status | visible: false;
 ## frame 59
 ## frame 60
 P ingame.lt_team_status | visible: true; width: 1232px; height: 406px;
-T ingame.lt_team_status.side0.lane0.level = 7
-T ingame.lt_team_status.side0.lane0.cs = 60
-T ingame.lt_team_status.side0.lane0.gold = 920
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side0.lane1.level = 7
-T ingame.lt_team_status.side0.lane1.cs = 60
-T ingame.lt_team_status.side0.lane1.gold = 920
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side0.lane2.level = 7
-T ingame.lt_team_status.side0.lane2.cs = 60
-T ingame.lt_team_status.side0.lane2.gold = 920
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side0.lane3.level = 7
-T ingame.lt_team_status.side0.lane3.cs = 60
-T ingame.lt_team_status.side0.lane3.gold = 920
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side0.lane4.level = 7
-T ingame.lt_team_status.side0.lane4.cs = 60
-T ingame.lt_team_status.side0.lane4.gold = 920
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side1.lane0.level = 7
-T ingame.lt_team_status.side1.lane0.cs = 60
-T ingame.lt_team_status.side1.lane0.gold = 920
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side1.lane1.level = 7
-T ingame.lt_team_status.side1.lane1.cs = 60
-T ingame.lt_team_status.side1.lane1.gold = 920
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side1.lane2.level = 7
-T ingame.lt_team_status.side1.lane2.cs = 60
-T ingame.lt_team_status.side1.lane2.gold = 920
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side1.lane3.level = 7
-T ingame.lt_team_status.side1.lane3.cs = 60
-T ingame.lt_team_status.side1.lane3.gold = 920
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>12<>
-T ingame.lt_team_status.side1.lane4.level = 7
-T ingame.lt_team_status.side1.lane4.cs = 60
-T ingame.lt_team_status.side1.lane4.gold = 920
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>12<>
 ## frame 61
-T ingame.lt_team_status.side0.lane0.cs = 61
-T ingame.lt_team_status.side0.lane0.gold = 927
-T ingame.lt_team_status.side0.lane1.cs = 61
-T ingame.lt_team_status.side0.lane1.gold = 927
-T ingame.lt_team_status.side0.lane2.cs = 61
-T ingame.lt_team_status.side0.lane2.gold = 927
-T ingame.lt_team_status.side0.lane3.cs = 61
-T ingame.lt_team_status.side0.lane3.gold = 927
-T ingame.lt_team_status.side0.lane4.cs = 61
-T ingame.lt_team_status.side0.lane4.gold = 927
-T ingame.lt_team_status.side1.lane0.cs = 61
-T ingame.lt_team_status.side1.lane0.gold = 927
-T ingame.lt_team_status.side1.lane1.cs = 61
-T ingame.lt_team_status.side1.lane1.gold = 927
-T ingame.lt_team_status.side1.lane2.cs = 61
-T ingame.lt_team_status.side1.lane2.gold = 927
-T ingame.lt_team_status.side1.lane3.cs = 61
-T ingame.lt_team_status.side1.lane3.gold = 927
-T ingame.lt_team_status.side1.lane4.cs = 61
-T ingame.lt_team_status.side1.lane4.gold = 927
 ## frame 62
-T ingame.lt_team_status.side0.lane0.cs = 62
-T ingame.lt_team_status.side0.lane0.gold = 934
-T ingame.lt_team_status.side0.lane1.cs = 62
-T ingame.lt_team_status.side0.lane1.gold = 934
-T ingame.lt_team_status.side0.lane2.cs = 62
-T ingame.lt_team_status.side0.lane2.gold = 934
-T ingame.lt_team_status.side0.lane3.cs = 62
-T ingame.lt_team_status.side0.lane3.gold = 934
-T ingame.lt_team_status.side0.lane4.cs = 62
-T ingame.lt_team_status.side0.lane4.gold = 934
-T ingame.lt_team_status.side1.lane0.cs = 62
-T ingame.lt_team_status.side1.lane0.gold = 934
-T ingame.lt_team_status.side1.lane1.cs = 62
-T ingame.lt_team_status.side1.lane1.gold = 934
-T ingame.lt_team_status.side1.lane2.cs = 62
-T ingame.lt_team_status.side1.lane2.gold = 934
-T ingame.lt_team_status.side1.lane3.cs = 62
-T ingame.lt_team_status.side1.lane3.gold = 934
-T ingame.lt_team_status.side1.lane4.cs = 62
-T ingame.lt_team_status.side1.lane4.gold = 934
 ## frame 63
-T ingame.lt_team_status.side0.lane0.cs = 63
-T ingame.lt_team_status.side0.lane0.gold = 941
-T ingame.lt_team_status.side0.lane1.cs = 63
-T ingame.lt_team_status.side0.lane1.gold = 941
-T ingame.lt_team_status.side0.lane2.cs = 63
-T ingame.lt_team_status.side0.lane2.gold = 941
-T ingame.lt_team_status.side0.lane3.cs = 63
-T ingame.lt_team_status.side0.lane3.gold = 941
-T ingame.lt_team_status.side0.lane4.cs = 63
-T ingame.lt_team_status.side0.lane4.gold = 941
-T ingame.lt_team_status.side1.lane0.cs = 63
-T ingame.lt_team_status.side1.lane0.gold = 941
-T ingame.lt_team_status.side1.lane1.cs = 63
-T ingame.lt_team_status.side1.lane1.gold = 941
-T ingame.lt_team_status.side1.lane2.cs = 63
-T ingame.lt_team_status.side1.lane2.gold = 941
-T ingame.lt_team_status.side1.lane3.cs = 63
-T ingame.lt_team_status.side1.lane3.gold = 941
-T ingame.lt_team_status.side1.lane4.cs = 63
-T ingame.lt_team_status.side1.lane4.gold = 941
 ## frame 64
-T ingame.lt_team_status.side0.lane0.cs = 64
-T ingame.lt_team_status.side0.lane0.gold = 948
-T ingame.lt_team_status.side0.lane1.cs = 64
-T ingame.lt_team_status.side0.lane1.gold = 948
-T ingame.lt_team_status.side0.lane2.cs = 64
-T ingame.lt_team_status.side0.lane2.gold = 948
-T ingame.lt_team_status.side0.lane3.cs = 64
-T ingame.lt_team_status.side0.lane3.gold = 948
-T ingame.lt_team_status.side0.lane4.cs = 64
-T ingame.lt_team_status.side0.lane4.gold = 948
-T ingame.lt_team_status.side1.lane0.cs = 64
-T ingame.lt_team_status.side1.lane0.gold = 948
-T ingame.lt_team_status.side1.lane1.cs = 64
-T ingame.lt_team_status.side1.lane1.gold = 948
-T ingame.lt_team_status.side1.lane2.cs = 64
-T ingame.lt_team_status.side1.lane2.gold = 948
-T ingame.lt_team_status.side1.lane3.cs = 64
-T ingame.lt_team_status.side1.lane3.gold = 948
-T ingame.lt_team_status.side1.lane4.cs = 64
-T ingame.lt_team_status.side1.lane4.gold = 948
 ## frame 65
-T ingame.lt_team_status.side0.lane0.cs = 65
-T ingame.lt_team_status.side0.lane0.gold = 955
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side0.lane1.cs = 65
-T ingame.lt_team_status.side0.lane1.gold = 955
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side0.lane2.cs = 65
-T ingame.lt_team_status.side0.lane2.gold = 955
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side0.lane3.cs = 65
-T ingame.lt_team_status.side0.lane3.gold = 955
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side0.lane4.cs = 65
-T ingame.lt_team_status.side0.lane4.gold = 955
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side1.lane0.cs = 65
-T ingame.lt_team_status.side1.lane0.gold = 955
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side1.lane1.cs = 65
-T ingame.lt_team_status.side1.lane1.gold = 955
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side1.lane2.cs = 65
-T ingame.lt_team_status.side1.lane2.gold = 955
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side1.lane3.cs = 65
-T ingame.lt_team_status.side1.lane3.gold = 955
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>13<>
-T ingame.lt_team_status.side1.lane4.cs = 65
-T ingame.lt_team_status.side1.lane4.gold = 955
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>13<>
 ## frame 66
-T ingame.lt_team_status.side0.lane0.cs = 66
-T ingame.lt_team_status.side0.lane0.gold = 962
-T ingame.lt_team_status.side0.lane1.cs = 66
-T ingame.lt_team_status.side0.lane1.gold = 962
-T ingame.lt_team_status.side0.lane2.cs = 66
-T ingame.lt_team_status.side0.lane2.gold = 962
-T ingame.lt_team_status.side0.lane3.cs = 66
-T ingame.lt_team_status.side0.lane3.gold = 962
-T ingame.lt_team_status.side0.lane4.cs = 66
-T ingame.lt_team_status.side0.lane4.gold = 962
-T ingame.lt_team_status.side1.lane0.cs = 66
-T ingame.lt_team_status.side1.lane0.gold = 962
-T ingame.lt_team_status.side1.lane1.cs = 66
-T ingame.lt_team_status.side1.lane1.gold = 962
-T ingame.lt_team_status.side1.lane2.cs = 66
-T ingame.lt_team_status.side1.lane2.gold = 962
-T ingame.lt_team_status.side1.lane3.cs = 66
-T ingame.lt_team_status.side1.lane3.gold = 962
-T ingame.lt_team_status.side1.lane4.cs = 66
-T ingame.lt_team_status.side1.lane4.gold = 962
 ## frame 67
-T ingame.lt_team_status.side0.lane0.cs = 67
-T ingame.lt_team_status.side0.lane0.gold = 969
-T ingame.lt_team_status.side0.lane1.cs = 67
-T ingame.lt_team_status.side0.lane1.gold = 969
-T ingame.lt_team_status.side0.lane2.cs = 67
-T ingame.lt_team_status.side0.lane2.gold = 969
-T ingame.lt_team_status.side0.lane3.cs = 67
-T ingame.lt_team_status.side0.lane3.gold = 969
-T ingame.lt_team_status.side0.lane4.cs = 67
-T ingame.lt_team_status.side0.lane4.gold = 969
-T ingame.lt_team_status.side1.lane0.cs = 67
-T ingame.lt_team_status.side1.lane0.gold = 969
-T ingame.lt_team_status.side1.lane1.cs = 67
-T ingame.lt_team_status.side1.lane1.gold = 969
-T ingame.lt_team_status.side1.lane2.cs = 67
-T ingame.lt_team_status.side1.lane2.gold = 969
-T ingame.lt_team_status.side1.lane3.cs = 67
-T ingame.lt_team_status.side1.lane3.gold = 969
-T ingame.lt_team_status.side1.lane4.cs = 67
-T ingame.lt_team_status.side1.lane4.gold = 969
 ## frame 68
-T ingame.lt_team_status.side0.lane0.cs = 68
-T ingame.lt_team_status.side0.lane0.gold = 976
-T ingame.lt_team_status.side0.lane1.cs = 68
-T ingame.lt_team_status.side0.lane1.gold = 976
-T ingame.lt_team_status.side0.lane2.cs = 68
-T ingame.lt_team_status.side0.lane2.gold = 976
-T ingame.lt_team_status.side0.lane3.cs = 68
-T ingame.lt_team_status.side0.lane3.gold = 976
-T ingame.lt_team_status.side0.lane4.cs = 68
-T ingame.lt_team_status.side0.lane4.gold = 976
-T ingame.lt_team_status.side1.lane0.cs = 68
-T ingame.lt_team_status.side1.lane0.gold = 976
-T ingame.lt_team_status.side1.lane1.cs = 68
-T ingame.lt_team_status.side1.lane1.gold = 976
-T ingame.lt_team_status.side1.lane2.cs = 68
-T ingame.lt_team_status.side1.lane2.gold = 976
-T ingame.lt_team_status.side1.lane3.cs = 68
-T ingame.lt_team_status.side1.lane3.gold = 976
-T ingame.lt_team_status.side1.lane4.cs = 68
-T ingame.lt_team_status.side1.lane4.gold = 976
 ## frame 69
-T ingame.lt_team_status.side0.lane0.cs = 69
-T ingame.lt_team_status.side0.lane0.gold = 983
-T ingame.lt_team_status.side0.lane1.cs = 69
-T ingame.lt_team_status.side0.lane1.gold = 983
-T ingame.lt_team_status.side0.lane2.cs = 69
-T ingame.lt_team_status.side0.lane2.gold = 983
-T ingame.lt_team_status.side0.lane3.cs = 69
-T ingame.lt_team_status.side0.lane3.gold = 983
-T ingame.lt_team_status.side0.lane4.cs = 69
-T ingame.lt_team_status.side0.lane4.gold = 983
-T ingame.lt_team_status.side1.lane0.cs = 69
-T ingame.lt_team_status.side1.lane0.gold = 983
-T ingame.lt_team_status.side1.lane1.cs = 69
-T ingame.lt_team_status.side1.lane1.gold = 983
-T ingame.lt_team_status.side1.lane2.cs = 69
-T ingame.lt_team_status.side1.lane2.gold = 983
-T ingame.lt_team_status.side1.lane3.cs = 69
-T ingame.lt_team_status.side1.lane3.gold = 983
-T ingame.lt_team_status.side1.lane4.cs = 69
-T ingame.lt_team_status.side1.lane4.gold = 983
 ## frame 70
-T ingame.lt_team_status.side0.lane0.level = 8
-T ingame.lt_team_status.side0.lane0.cs = 70
-T ingame.lt_team_status.side0.lane0.gold = 990
-T ingame.lt_team_status.side0.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side0.lane1.level = 8
-T ingame.lt_team_status.side0.lane1.cs = 70
-T ingame.lt_team_status.side0.lane1.gold = 990
-T ingame.lt_team_status.side0.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side0.lane2.level = 8
-T ingame.lt_team_status.side0.lane2.cs = 70
-T ingame.lt_team_status.side0.lane2.gold = 990
-T ingame.lt_team_status.side0.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side0.lane3.level = 8
-T ingame.lt_team_status.side0.lane3.cs = 70
-T ingame.lt_team_status.side0.lane3.gold = 990
-T ingame.lt_team_status.side0.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side0.lane4.level = 8
-T ingame.lt_team_status.side0.lane4.cs = 70
-T ingame.lt_team_status.side0.lane4.gold = 990
-T ingame.lt_team_status.side0.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>0<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side1.lane0.level = 8
-T ingame.lt_team_status.side1.lane0.cs = 70
-T ingame.lt_team_status.side1.lane0.gold = 990
-T ingame.lt_team_status.side1.lane0.kda = <#eeececff>0<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side1.lane1.level = 8
-T ingame.lt_team_status.side1.lane1.cs = 70
-T ingame.lt_team_status.side1.lane1.gold = 990
-T ingame.lt_team_status.side1.lane1.kda = <#eeececff>1<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side1.lane2.level = 8
-T ingame.lt_team_status.side1.lane2.cs = 70
-T ingame.lt_team_status.side1.lane2.gold = 990
-T ingame.lt_team_status.side1.lane2.kda = <#eeececff>2<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side1.lane3.level = 8
-T ingame.lt_team_status.side1.lane3.cs = 70
-T ingame.lt_team_status.side1.lane3.gold = 990
-T ingame.lt_team_status.side1.lane3.kda = <#eeececff>3<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>14<>
-T ingame.lt_team_status.side1.lane4.level = 8
-T ingame.lt_team_status.side1.lane4.cs = 70
-T ingame.lt_team_status.side1.lane4.gold = 990
-T ingame.lt_team_status.side1.lane4.kda = <#eeececff>4<#989694ff>/<#ff855bff>1<#989694ff>/<#eeececff>14<>
 ## frame 71
-T ingame.lt_team_status.side0.lane0.cs = 71
-T ingame.lt_team_status.side0.lane0.gold = 997
-T ingame.lt_team_status.side0.lane1.cs = 71
-T ingame.lt_team_status.side0.lane1.gold = 997
-T ingame.lt_team_status.side0.lane2.cs = 71
-T ingame.lt_team_status.side0.lane2.gold = 997
-T ingame.lt_team_status.side0.lane3.cs = 71
-T ingame.lt_team_status.side0.lane3.gold = 997
-T ingame.lt_team_status.side0.lane4.cs = 71
-T ingame.lt_team_status.side0.lane4.gold = 997
-T ingame.lt_team_status.side1.lane0.cs = 71
-T ingame.lt_team_status.side1.lane0.gold = 997
-T ingame.lt_team_status.side1.lane1.cs = 71
-T ingame.lt_team_status.side1.lane1.gold = 997
-T ingame.lt_team_status.side1.lane2.cs = 71
-T ingame.lt_team_status.side1.lane2.gold = 997
-T ingame.lt_team_status.side1.lane3.cs = 71
-T ingame.lt_team_status.side1.lane3.gold = 997
-T ingame.lt_team_status.side1.lane4.cs = 71
-T ingame.lt_team_status.side1.lane4.gold = 997
 ## frame 72
-T ingame.lt_team_status.side0.lane0.cs = 72
-T ingame.lt_team_status.side0.lane0.gold = 1004
-T ingame.lt_team_status.side0.lane1.cs = 72
-T ingame.lt_team_status.side0.lane1.gold = 1004
-T ingame.lt_team_status.side0.lane2.cs = 72
-T ingame.lt_team_status.side0.lane2.gold = 1004
-T ingame.lt_team_status.side0.lane3.cs = 72
-T ingame.lt_team_status.side0.lane3.gold = 1004
-T ingame.lt_team_status.side0.lane4.cs = 72
-T ingame.lt_team_status.side0.lane4.gold = 1004
-T ingame.lt_team_status.side1.lane0.cs = 72
-T ingame.lt_team_status.side1.lane0.gold = 1004
-T ingame.lt_team_status.side1.lane1.cs = 72
-T ingame.lt_team_status.side1.lane1.gold = 1004
-T ingame.lt_team_status.side1.lane2.cs = 72
-T ingame.lt_team_status.side1.lane2.gold = 1004
-T ingame.lt_team_status.side1.lane3.cs = 72
-T ingame.lt_team_status.side1.lane3.gold = 1004
-T ingame.lt_team_status.side1.lane4.cs = 72
-T ingame.lt_team_status.side1.lane4.gold = 1004
 ## frame 73
-T ingame.lt_team_status.side0.lane0.cs = 73
-T ingame.lt_team_status.side0.lane0.gold = 1011
-T ingame.lt_team_status.side0.lane1.cs = 73
-T ingame.lt_team_status.side0.lane1.gold = 1011
-T ingame.lt_team_status.side0.lane2.cs = 73
-T ingame.lt_team_status.side0.lane2.gold = 1011
-T ingame.lt_team_status.side0.lane3.cs = 73
-T ingame.lt_team_status.side0.lane3.gold = 1011
-T ingame.lt_team_status.side0.lane4.cs = 73
-T ingame.lt_team_status.side0.lane4.gold = 1011
-T ingame.lt_team_status.side1.lane0.cs = 73
-T ingame.lt_team_status.side1.lane0.gold = 1011
-T ingame.lt_team_status.side1.lane1.cs = 73
-T ingame.lt_team_status.side1.lane1.gold = 1011
-T ingame.lt_team_status.side1.lane2.cs = 73
-T ingame.lt_team_status.side1.lane2.gold = 1011
-T ingame.lt_team_status.side1.lane3.cs = 73
-T ingame.lt_team_status.side1.lane3.gold = 1011
-T ingame.lt_team_status.side1.lane4.cs = 73
-T ingame.lt_team_status.side1.lane4.gold = 1011
 ## frame 74
-T ingame.lt_team_status.side0.lane0.cs = 74
-T ingame.lt_team_status.side0.lane0.gold = 1018
-T ingame.lt_team_status.side0.lane1.cs = 74
-T ingame.lt_team_status.side0.lane1.gold = 1018
-T ingame.lt_team_status.side0.lane2.cs = 74
-T ingame.lt_team_status.side0.lane2.gold = 1018
-T ingame.lt_team_status.side0.lane3.cs = 74
-T ingame.lt_team_status.side0.lane3.gold = 1018
-T ingame.lt_team_status.side0.lane4.cs = 74
-T ingame.lt_team_status.side0.lane4.gold = 1018
-T ingame.lt_team_status.side1.lane0.cs = 74
-T ingame.lt_team_status.side1.lane0.gold = 1018
-T ingame.lt_team_status.side1.lane1.cs = 74
-T ingame.lt_team_status.side1.lane1.gold = 1018
-T ingame.lt_team_status.side1.lane2.cs = 74
-T ingame.lt_team_status.side1.lane2.gold = 1018
-T ingame.lt_team_status.side1.lane3.cs = 74
-T ingame.lt_team_status.side1.lane3.gold = 1018
-T ingame.lt_team_status.side1.lane4.cs = 74
-T ingame.lt_team_status.side1.lane4.gold = 1018
 ## frame 75
 P ingame.lt_team_status | visible: false;
 ## frame 76

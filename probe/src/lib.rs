@@ -103,6 +103,7 @@ mod state_plate;
 mod stats_draw;
 mod stats_panel;
 mod stats_ui;
+mod team_draw;
 mod team_info;
 mod team_status;
 mod test_cheats;

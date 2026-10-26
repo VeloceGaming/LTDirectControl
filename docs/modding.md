@@ -76,7 +76,8 @@ Rules that follow from this:
 3. `post_render`: the drawing probe while its hidden switch is on, then
    the drawn windows (1.6.0-perf-dev3: each window's draw list, built in
    `post_update`: screen effect, HUD strip, state plate, stats panels,
-   session strip; `draw_list::submit`), then battlefield drawing (skill
+   session strip, and since 1.6.1-dev1 the Tab panel; `draw_list::submit`),
+   then battlefield drawing (skill
    previews, minimap frame, attack range, target markers, click markers).
 
 `Simulation::think` (in `simulation.rs`): `bind_session` →
@@ -247,6 +248,7 @@ the drawn one unless the element needs what only the game's UI tree can do.
 |---|---|
 | A box, bar, hairline, tick, a single-colour text in one line, a glyph from the mod's own PNGs | **Drawn**: a few lines in the window's draw list |
 | An image cut from one of the game's sprite sheets (skill, item, stat icons), a champion portrait (`ui_set_champion_icon`), wrapped, scrolled or several-colour text (tooltips), a scaled or tint-animated image, the game's own widgets (text fields, sliders, the shop and Settings windows) | **A tree node**: a template and the write cache |
+| One short line of several colours in the mod's own fonts (the Tab panel's K/D/A) | **Drawn**, one text per colour run, placed with the font's advance widths (`team_draw::KdaView`); the advances are the medium weight's, so a numeric-font K/D/A comes out up to about 3 px narrower than the numeric weight's own advances (measured offline, CHANGELOG 1.6.1-dev1) |
 
 The design, the measured cost per draw command and the limits of the draw
 calls are in [investigation-direct-draw-hud.md](investigation-direct-draw-hud.md).
@@ -424,14 +426,20 @@ positions to the screen. `skill_preview::Drawing` collects lines and shapes
 and clips them against the HUD and minimap. What the game's drawing calls
 can and cannot do is in [preview-drawing.md](preview-drawing.md).
 
-Two hidden switches (controls.json only, no control in the Settings
+Three hidden switches (controls.json only, no control in the Settings
 window, default off, read with `Settings::hidden_switch`, a `PERF` line
 when they change) exist for performance measurements:
-`perf_hide_mod_ui` keeps every mod window hidden (`ui_root.rs`; since 1.6.0-perf-dev3 it also stops `draw_list::submit`, so the drawn windows hide too), and
+`perf_hide_mod_ui` keeps every mod window hidden (`ui_root.rs`; since 1.6.0-perf-dev3 it also stops `draw_list::submit`, so the drawn windows hide too),
 `perf_draw_probe` draws a measurement load, layering boxes, image samples
 and text samples directly in the UI map (`draw_probe.rs`, 1.6.0-perf-dev2;
 how to read it in `CHANGELOG.md`). With the probe off its function returns
-at its first check.
+at its first check. And `perf_pacing_off` (1.6.1-dev2) is read each frame
+into `NativeTiming::configure_pacing_off` and latched when the next match
+is bound: that match's running viewer frames go to the game's update
+untouched (`NativeTiming::untouched`, checked in `view_hook_body`: no
+playback-field override, no frame-clock write, the game's own dt) and the
+worker keeps a fixed lead of `PACING_OFF_LEAD` ticks; the start hold and
+pause work as usual.
 
 ### Change what a skill preview shows
 

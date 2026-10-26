@@ -99,12 +99,23 @@ fn slot(players: &[Player], side: usize, lane: usize) -> Option<&Player> {
     let first = matches.next()?;
     matches.next().is_none().then_some(first)
 }
+#[cfg(test)]
 fn caption(p: &Player) -> String {
+    let mut s = String::new();
+    write_caption(p, &mut s);
+    s
+}
+/// The respawn count over a portrait: nothing while alive, the seconds left
+/// while dead, a dash at zero, "?" when unknown.
+fn write_caption(p: &Player, out: &mut String) {
+    use std::fmt::Write;
     match p.alive {
-        Some(true) => String::new(),
-        Some(false) if p.respawn > 0 => p.respawn.div_ceil(60).to_string(),
-        Some(false) => "—".into(),
-        None => "?".into(),
+        Some(true) => {}
+        Some(false) if p.respawn > 0 => {
+            let _ = write!(out, "{}", p.respawn.div_ceil(60));
+        }
+        Some(false) => out.push('—'),
+        None => out.push('?'),
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -137,72 +148,62 @@ fn geometry(count: usize) -> Geometry {
 /// side's edge; 16 px between neighbouring boxes. (x, width) in the side.
 const GAP: usize = 16;
 const PORTRAIT_END: usize = 54;
-const LEVEL: (usize, usize) = (PORTRAIT_END + GAP, 40);
-const KDA: (usize, usize) = (LEVEL.0 + LEVEL.1 + GAP, 110);
-const CS: (usize, usize) = (KDA.0 + KDA.1 + GAP, 54);
-const ITEMS_X: usize = CS.0 + CS.1 + GAP;
+pub(crate) const LEVEL: (usize, usize) = (PORTRAIT_END + GAP, 40);
+pub(crate) const KDA: (usize, usize) = (LEVEL.0 + LEVEL.1 + GAP, 110);
+pub(crate) const CS: (usize, usize) = (KDA.0 + KDA.1 + GAP, 54);
+pub(crate) const ITEMS_X: usize = CS.0 + CS.1 + GAP;
 /// The items header's box: four tiles (the vanilla slot count).
-const ITEMS_HEADER_W: usize = 4 * 36 - 4;
-const GOLD_W: usize = 93;
+pub(crate) const ITEMS_HEADER_W: usize = 4 * 36 - 4;
+pub(crate) const GOLD_W: usize = 93;
 const GOLD_RIGHT: usize = 12;
 /// The gold column's left edge in a side `side_width` wide.
 fn gold_x(side_width: usize) -> usize {
     side_width - GOLD_RIGHT - GOLD_W
 }
 /// Item tile `i`'s place in a row.
-fn tile_at(i: usize) -> (usize, usize) {
+pub(crate) fn tile_at(i: usize) -> (usize, usize) {
     (
         ITEMS_X + i % crate::inventory::TAB_COLUMNS * 36,
         18 + i / crate::inventory::TAB_COLUMNS * 36,
     )
 }
-fn label(s: &mut String, id: &str, x: usize, w: usize, size: usize, color: &str, align: &str) {
-    s.push_str(&format!("#{id}:label {{ x: {x}px; width: {w}px; height: 100%; z: 1604; font: \"asset/lt_direct_control/font/numeric\"; size: {size}; color: #{color}; align_y: Center; align_x: {align}; ignore_event: true; }}\n"));
+#[cfg(test)]
+pub(crate) fn geometry_for_test(count: usize) -> (usize, usize, usize, usize) {
+    let g = geometry(count);
+    (g.width, g.height, g.side_width, g.row_height)
+}
+#[cfg(test)]
+pub(crate) fn gold_x_for_test(side_width: usize) -> usize {
+    gold_x(side_width)
 }
 #[cfg(test)]
 pub(crate) fn tile_for_test() -> String {
     item_tile(6)
 }
+/// An item tile's container (its box, inset and "?" are drawn,
+/// `team_draw.rs`) and the item's icon, a sprite-sheet image.
 fn item_tile(i: usize) -> String {
-    // Insets: background + 8.
-    let inset = crate::ui_theme::shade(8, 0xff);
-    format!("item{i}:color {{ width: 32px; height: 32px; z: 1603; color: #~4b4a49ff; rounding: Uniform {{ rounding: 2; }} ignore_event: true; #bg:color {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1604; color: #{inset}; ignore_event: true; }} #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1605; sample_linear: false; visible: false; ignore_event: true; }} #unknown:label {{ font: \"asset/lt_direct_control/font/numeric\"; width: 100%; height: 100%; z: 1606; size: 18; text: \"?\"; align_x: Center; align_y: Center; color: #eeececff; visible: false; ignore_event: true; }} }}")
+    format!("item{i}:empty {{ width: 32px; height: 32px; z: 1603; ignore_event: true; #icon:image {{ x: 1px; y: 1px; width: 30px; height: 30px; z: 1605; sample_linear: false; visible: false; ignore_event: true; }} }}")
 }
 #[cfg(test)]
 pub(crate) fn template_for_test() -> String {
     template()
 }
+/// What stays in the tree (1.6.1-dev1): the root (the panel's container,
+/// shown while Tab is held), the side and row containers, the portraits
+/// in their `portrait` containers and the item icons in their tiles. The
+/// rest is drawn (`team_draw.rs`) at the z values these nodes had.
 fn template() -> String {
-    let inset = crate::ui_theme::shade(8, 0xff);
-    let mut s = String::from("lt_team_status:color { anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; y: -80px; z: 1600; color: #~1e1e1df5; rounding: Uniform { rounding: 2; } ignore_event: true;\n#top:color { height: 1px; width: 100%; z: 1601; color: #~4b4a49ff; ignore_event: true; }\n#bottom:color { anchor_y: 1; pivot_y: 1; height: 1px; width: 100%; z: 1601; color: #~4b4a49ff; ignore_event: true; }\n");
-    s.push_str("#left:color { width: 1px; height: 100%; z: 1601; color: #~4b4a49ff; ignore_event: true; }\n#right:color { anchor_x: 1; pivot_x: 1; width: 1px; height: 100%; z: 1601; color: #~4b4a49ff; ignore_event: true; }\n");
+    let mut s = String::from("lt_team_status:empty { anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; y: -80px; z: 1600; ignore_event: true;\n");
     for side in 0..2 {
-        s.push_str(&format!("#side{side}:empty {{ y: 16px; ignore_event: true;\n#headers:empty {{ width: 100%; height: 34px; ignore_event: true;\n"));
-        // Gold's x follows the item columns (written each frame).
-        for (id, (x, w), align) in [
-            ("level", LEVEL, "Center"),
-            ("kda", KDA, "Center"),
-            ("cs", CS, "Center"),
-            ("items", (ITEMS_X, ITEMS_HEADER_W), "Left"),
-            ("gold", (555, GOLD_W), "Right"),
-        ] {
-            label(&mut s, id, x, w, 13, "989694ff", align);
-            // Header text is set once after spawning, using the host text API.
-        }
-        s.push_str("}\n");
+        s.push_str(&format!(
+            "#side{side}:empty {{ y: 16px; ignore_event: true;\n"
+        ));
         for lane in 0..5 {
-            s.push_str(&format!("#lane{lane}:color {{ color: #00000000; ignore_event: true; z: 1601;\n#selected:color {{ width: 2px; height: 100%; z: 1602; color: #fdee00ff; visible: false; ignore_event: true; }}\n#line:color {{ anchor_y: 1; pivot_y: 1; width: 100%; height: 1px; z: 1602; color: #~4b4a4973; ignore_event: true; }}\n#portrait:color {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1603; color: #~4b4a49ff; ignore_event: true; rounding: Uniform {{ rounding: 2; }} #bg:color {{ x: 1px; y: 1px; width: 46px; height: 50px; z: 1604; color: #{inset}; ignore_event: true; }} #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1605; sample_linear: false; visible: false; ignore_event: true; }} #shade:color {{ width: 100%; height: 100%; z: 1606; color: #00000099; visible: false; ignore_event: true; }} #timer:label {{ font: \"asset/lt_direct_control/font/numeric\"; width: 100%; height: 100%; z: 1607; size: 25; align_x: Center; align_y: Center; color: #ffffffff; outline: 1; outline_color: #000000ff; ignore_event: true; }} }}\n"));
-            for (id, (x, w), size, color, align) in [
-                ("level", LEVEL, 17, "cbc9c7ff", "Center"),
-                ("kda", KDA, 22, "eeececff", "Center"),
-                ("cs", CS, 21, "eeececff", "Center"),
-                ("gold", (555, GOLD_W), 21, "fdee00ff", "Right"),
-            ] {
-                label(&mut s, id, x, w, size, color, align);
-            }
+            s.push_str(&format!("#lane{lane}:empty {{ ignore_event: true; z: 1601;\n#portrait:empty {{ x: 6px; y: 8px; width: 48px; height: 52px; z: 1603; ignore_event: true; #icon:image {{ anchor_x: 0.5; pivot_x: 0.5; anchor_y: 0.5; pivot_y: 0.5; width: 44px; height: 48px; z: 1605; sample_linear: false; visible: false; ignore_event: true; }} }}\n"));
             for i in 0..6 {
                 s.push('#');
-                s.push_str(&crate::ui_theme::themed(&item_tile(i)));
+                s.push_str(&item_tile(i));
                 s.push('\n');
             }
             s.push_str("}\n");
@@ -212,27 +213,18 @@ fn template() -> String {
     s.push('}');
     s
 }
-/// One row of the panel: its nodes in the cache (1.6.0).
+/// One row of the panel: its tree nodes in the cache (1.6.1-dev1: the
+/// row's container, the portrait and the item icons in their tiles).
 struct Row {
     root: NodeId,
-    selected: NodeId,
     icon: NodeId,
     icon_path: String,
-    portrait: NodeId,
-    shade: NodeId,
-    timer: NodeId,
-    level: NodeId,
-    cs: NodeId,
-    gold: NodeId,
-    kda: NodeId,
-    /// (tile, icon, unknown) per inventory slot, grown with the panel.
-    items: Vec<(NodeId, NodeId, NodeId)>,
+    /// (tile, icon) per inventory slot, grown with the panel.
+    items: Vec<(NodeId, NodeId)>,
     path: String,
 }
 struct Side {
     root: NodeId,
-    /// level, kda, cs, items, gold
-    headers: [NodeId; 5],
     rows: [Row; 5],
 }
 struct Nodes {
@@ -246,21 +238,10 @@ impl Nodes {
             let side_path = format!("{PATH}.side{side}");
             Side {
                 root: c.node(&side_path),
-                headers: ["level", "kda", "cs", "items", "gold"]
-                    .map(|h| c.node(&format!("{side_path}.headers.{h}"))),
                 rows: std::array::from_fn(|lane| {
                     let path = format!("{side_path}.lane{lane}");
-                    let mut row = |node: &str| c.node(&format!("{path}.{node}"));
                     Row {
-                        selected: row("selected"),
-                        icon: row("portrait.icon"),
-                        portrait: row("portrait"),
-                        shade: row("portrait.shade"),
-                        timer: row("portrait.timer"),
-                        level: row("level"),
-                        cs: row("cs"),
-                        gold: row("gold"),
-                        kda: row("kda"),
+                        icon: c.node(&format!("{path}.portrait.icon")),
                         root: c.node(&path),
                         icon_path: format!("{path}.portrait.icon"),
                         items: Vec::new(),
@@ -276,11 +257,8 @@ impl Nodes {
             for r in s.rows.iter_mut() {
                 for i in r.items.len()..count {
                     let item = format!("{}.item{i}", r.path);
-                    r.items.push((
-                        c.node(&item),
-                        c.node(&format!("{item}.icon")),
-                        c.node(&format!("{item}.unknown")),
-                    ));
+                    r.items
+                        .push((c.node(&item), c.node(&format!("{item}.icon"))));
                 }
             }
         }
@@ -298,6 +276,12 @@ pub struct TeamUi {
     portraits: HashMap<String, (String, Instant, bool)>,
     layout: Option<Geometry>,
     failed: bool,
+    /// What the drawn elements show (1.6.1-dev1, `team_draw.rs`).
+    view: crate::team_draw::TeamView,
+    /// This frame's commands, sent in `post_render`.
+    pub(crate) list: crate::draw_list::DrawList,
+    /// `draw_list::check_origin`'s state.
+    origin_checked: u8,
 }
 impl TeamUi {
     #[allow(clippy::too_many_arguments)]
@@ -314,8 +298,22 @@ impl TeamUi {
             .nodes
             .take()
             .unwrap_or_else(|| Nodes::new(&mut self.cache));
+        self.view.shown = false;
         self.panel(ctx, &mut n, active, players, selected, artwork, log);
         self.nodes = Some(n);
+        // The draw list: only while the root shows this frame.
+        self.list.clear();
+        if self.view.shown {
+            let ingame = ctx.ui_node_rect("ingame");
+            crate::team_draw::build(&self.view, ingame, &mut self.list);
+            crate::draw_list::check_origin(
+                "tab panel",
+                crate::team_draw::origin(&self.view, ingame),
+                ctx.ui_node_rect(PATH),
+                &mut self.origin_checked,
+                log,
+            );
+        }
     }
     #[allow(clippy::too_many_arguments)]
     fn panel(
@@ -361,10 +359,8 @@ impl TeamUi {
             let mut ok = true;
             for side in 0..2 {
                 for lane in 0..5 {
-                    ok &= ctx.ui_spawn_source(
-                        &format!("{PATH}.side{side}.lane{lane}"),
-                        &crate::ui_theme::themed(&item_tile(i)),
-                    );
+                    ok &= ctx
+                        .ui_spawn_source(&format!("{PATH}.side{side}.lane{lane}"), &item_tile(i));
                 }
             }
             if !ok {
@@ -386,6 +382,21 @@ impl TeamUi {
                 format!("visible: true; width: {width}px; height: {height}px;")
             });
         self.refused(ok, PATH, log);
+        let gold_x = gold_x(g.side_width);
+        let v = &mut self.view;
+        v.shown = true;
+        v.size = (width as f32, height as f32);
+        v.side_width = g.side_width as f32;
+        v.row_height = g.row_height as f32;
+        v.gold_x = gold_x as f32;
+        v.headers = [
+            "LV",
+            "K / D / A",
+            "CS",
+            crate::lang::tr("ITEMS"),
+            crate::lang::tr("GOLD"),
+        ];
+        v.items_header = count > 0;
         for side in 0..2 {
             let s = &n.sides[side];
             let ok = self.cache.props_keyed(
@@ -402,26 +413,10 @@ impl TeamUi {
                 },
             );
             self.refused(ok, PATH, log);
-            let gold_x = gold_x(g.side_width);
-            for (k, text) in [
-                "LV",
-                "K / D / A",
-                "CS",
-                crate::lang::tr("ITEMS"),
-                crate::lang::tr("GOLD"),
-            ]
-            .into_iter()
-            .enumerate()
-            {
-                self.cache.text(ctx, s.headers[k], text);
-            }
-            self.cache
-                .props_keyed(ctx, s.headers[4], 1, (gold_x,), |(x,)| format!("x: {x}px;"));
-            self.cache
-                .props_keyed(ctx, s.headers[3], 0, (count > 0,), vis_source);
             for lane in 0..5 {
                 let r = &s.rows[lane];
                 let Some(p) = slot(players, side, lane) else {
+                    self.view.rows[side][lane].shown = false;
                     let ok = self.cache.props_keyed(ctx, r.root, 0, (false,), vis_source);
                     self.refused(ok, &r.path, log);
                     continue;
@@ -438,12 +433,6 @@ impl TeamUi {
                         )
                     },
                 );
-                let mine = selected == Some(p.id);
-                self.cache
-                    .props_keyed(ctx, r.selected, 0, (mine,), vis_source);
-                self.cache.props_keyed(ctx, r.root, 2, (mine,), |(mine,)| {
-                    format!("color: #{};", if mine { "fdee0009" } else { "00000000" })
-                });
                 let retry = self
                     .portraits
                     .get(&r.icon_path)
@@ -464,43 +453,34 @@ impl TeamUi {
                     .is_some_and(|(name, _, ok)| *ok && name == &p.champion);
                 self.cache
                     .props_keyed(ctx, r.icon, 0, (visible,), vis_source);
-                self.cache
-                    .props_keyed(ctx, r.portrait, 1, (side,), |(side,)| {
-                        format!(
-                            "color: #{};",
-                            if side == 0 { "536979ff" } else { "79535dff" }
-                        )
-                    });
-                self.cache
-                    .props_keyed(ctx, r.shade, 0, (p.alive != Some(true),), vis_source);
+                let row = &mut self.view.rows[side][lane];
+                row.shown = true;
+                row.mine = selected == Some(p.id);
+                row.frame = if side == 0 { 0x536979ff } else { 0x79535dff };
+                row.shade = p.alive != Some(true);
                 let alive = match p.alive {
                     Some(true) => 1u8,
                     Some(false) => 0,
                     None => 2,
                 };
-                self.cache
-                    .text_keyed(ctx, r.timer, (alive, p.respawn), |_| caption(p));
-                self.cache
-                    .text_keyed(ctx, r.level, (p.level,), |(v,)| v.to_string());
-                self.cache
-                    .text_keyed(ctx, r.cs, (p.cs,), |(v,)| v.to_string());
-                self.cache
-                    .text_keyed(ctx, r.gold, (p.gold,), |(v,)| v.to_string());
-                let (k, d, a) = p.kda;
-                self.cache
-                    .text_keyed(ctx, r.kda, (k, d, a), |(k, d, a)| kda_caption(k, d, a));
-                self.cache
-                    .props_keyed(ctx, r.gold, 1, (gold_x,), |(x,)| format!("x: {x}px;"));
+                row.timer.set((alive, p.respawn), |s| write_caption(p, s));
+                row.level.set(p.level);
+                row.cs.set(p.cs);
+                row.gold.set(p.gold);
+                row.kda.set(p.kda);
                 let capacity =
                     crate::inventory::slots(p.build.as_ref().map(Vec::len), p.items.len(), None);
+                row.tiles
+                    .resize(self.allocated, crate::team_draw::TileView::default());
                 for i in 0..self.allocated {
-                    let (tile, icon_node, unknown) = r.items[i];
+                    let (tile, icon_node) = r.items[i];
                     let visible = i < capacity;
                     self.cache
                         .props_keyed(ctx, tile, 1, (visible, i), |(visible, i)| {
                             let (x, y) = tile_at(i);
                             format!("visible: {visible}; x: {x}px; y: {y}px;")
                         });
+                    self.view.rows[side][lane].tiles[i].shown = visible;
                     if !visible {
                         continue;
                     }
@@ -510,13 +490,8 @@ impl TeamUi {
                         |icon| format!("visible: true; {}", icon.properties()),
                     );
                     self.cache.props(ctx, icon_node, &props);
-                    self.cache.props_keyed(
-                        ctx,
-                        unknown,
-                        0,
-                        (p.items.get(i).is_some() && icon.is_none(),),
-                        vis_source,
-                    );
+                    self.view.rows[side][lane].tiles[i].unknown =
+                        p.items.get(i).is_some() && icon.is_none();
                 }
             }
         }
@@ -531,13 +506,9 @@ impl TeamUi {
     }
 }
 
-fn kda_caption(kills: usize, deaths: usize, assists: usize) -> String {
-    format!("<#eeececff>{kills}<#989694ff>/<#ff855bff>{deaths}<#989694ff>/<#eeececff>{assists}<>")
-}
-
 impl TeamUi {
     fn spawn(&mut self, ctx: &mut StableClient<'_>, log: &Logger) -> bool {
-        let ok = ctx.ui_spawn_source("ingame", &crate::ui_theme::themed(&template()));
+        let ok = ctx.ui_spawn_source("ingame", &template());
         log.write(&format!(
             "TAB styled panel spawn={ok} exists={}",
             ctx.ui_exists(PATH)
@@ -575,11 +546,23 @@ impl crate::prewarm::Prespawn for TeamUi {
 mod tests {
     use super::*;
     #[test]
-    fn kda_uses_valid_native_rgba_runs_and_resets_colour() {
-        let text = kda_caption(12, 3, 24);
-        assert_eq!(crate::tooltips::rich(&text), text);
-        assert_eq!(crate::tooltips::plain(&text), "12/3/24");
-        assert!(text.ends_with("<>"));
+    fn the_template_keeps_only_containers_portraits_and_item_icons() {
+        let t = template();
+        // Root, 2 sides, 10 rows, each with a portrait container and its
+        // image and 6 item tiles with their icons: 153 nodes (1.6.0: 379).
+        let nodes = |kind: &str| t.matches(&format!(":{kind} {{")).count();
+        assert_eq!(nodes("empty"), 1 + 2 + 10 * (1 + 1 + 6));
+        assert_eq!(nodes("image"), 10 * (1 + 6));
+        assert_eq!(nodes("empty") + nodes("image"), 153);
+        assert_eq!(nodes("color") + nodes("label"), 0);
+        // The root's first line holds no visibility (the fake tree and the
+        // pixel tool read a root's spawn visibility from it).
+        assert!(!t.lines().next().unwrap().contains("visible"));
+        // Every kept path is still there for the code that writes it.
+        for path in ["#side1:", "#lane4:", "#portrait:", "#icon:", "#item5:"] {
+            assert!(t.contains(path), "{path}");
+        }
+        assert_eq!(tile_for_test().matches(":image {").count(), 1);
     }
     fn player(side: usize, lane: usize, alive: bool, respawn: usize) -> Player {
         Player {
@@ -613,7 +596,6 @@ mod tests {
         let source = template();
         assert!(!source.contains("Your team"));
         assert!(!source.contains("Opposing team"));
-        assert!(source.contains("size: 22"));
     }
     #[test]
     fn columns_sit_16_px_apart_centred_or_aligned_as_the_games_scoreboard() {
@@ -637,22 +619,8 @@ mod tests {
         assert!(fits("99/99/99", 22., KDA.1) && fits("K / D / A", 13., KDA.1));
         assert!(fits("999", 21., CS.1) && fits("CS", 13., CS.1));
         assert!(fits("99999", 21., GOLD_W) && fits("ЗОЛОТО", 13., GOLD_W));
-        // Headers and values share each column's box and alignment.
-        let t = template();
-        let numeric = "height: 100%; z: 1604; font: \"asset/lt_direct_control/font/numeric\";";
-        for (x, w) in [LEVEL, KDA, CS] {
-            let header = format!(
-                "x: {x}px; width: {w}px; {numeric} size: 13; color: #989694ff; align_y: Center; align_x: Center;"
-            );
-            assert_eq!(t.matches(&header).count(), 2, "{x}");
-            let value = format!("x: {x}px; width: {w}px; {numeric}");
-            assert_eq!(t.matches(&value).count(), 12, "{x}");
-        }
-        assert!(t.contains(&format!(
-            "#items:label {{ x: {ITEMS_X}px; width: {ITEMS_HEADER_W}px;"
-        )));
-        assert_eq!(t.matches("align_x: Left;").count(), 2);
-        assert_eq!(t.matches("align_x: Right;").count(), 12);
+        // Headers and values share each column's box and alignment:
+        // team_draw::tests::headers_and_values_share_each_columns_box_and_alignment.
         // The panel keeps its width.
         assert_eq!(geometry(4).width, 1232);
     }

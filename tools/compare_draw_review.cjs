@@ -76,7 +76,10 @@ const STATES=[
  ['stats',70,'own panel only (target cleared)'],
  ['effect',58,'low-health tint'],
  ['effect',80,'death veil'],
- // The Tab panel is a tree window (no draw list); only --base=dev3 has it.
+ // The Tab panel: a tree window in dev3, drawn since 1.6.1-dev1; only
+ // --base=dev3 and later sets have it. Frame 7: one row dead (shade and
+ // outlined countdown over the portrait).
+ ['team',7,'Tab open, one row dead (countdown)'],
  ['team',20,'Tab held open'],
  ['team',65,'Tab open again, values changed'],
 ];

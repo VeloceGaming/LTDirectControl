@@ -382,6 +382,7 @@ impl PropCache {
     }
     /// A typed text: `render(key)` formatted only when the values (or the
     /// language) changed since the last accepted text.
+    #[allow(dead_code)] // The documented way to write a tree label (docs/modding.md); no window has one since 1.6.1-dev1.
     pub fn text_keyed<K: Into<Key> + Copy>(
         &mut self,
         ctx: &mut StableClient<'_>,
