@@ -60,14 +60,18 @@ pub(crate) struct CameraLease {
 impl CameraLease {
     pub(crate) unsafe fn capture(view: usize, config: usize, ingame: usize) -> Self {
         let mut original = [0u8; 16];
-        std::ptr::copy_nonoverlapping((config + 0x18) as *const u8, original.as_mut_ptr(), 16);
+        std::ptr::copy_nonoverlapping(
+            (config + CONFIG_CAMERA) as *const u8,
+            original.as_mut_ptr(),
+            16,
+        );
         Self {
             view,
             config,
             ingame,
             original,
-            original_vision: std::ptr::read((config + 0x4b) as *const u8),
-            original_full_width: std::ptr::read((config + 0x45) as *const u8),
+            original_vision: std::ptr::read((config + CONFIG_VISION) as *const u8),
+            original_full_width: std::ptr::read((config + CONFIG_FULL_WIDTH) as *const u8),
             original_ui_full_width: std::ptr::read((ingame + 0x9234) as *const u8),
             effective_vision: u8::MAX,
             ai_camera: false,
@@ -86,19 +90,26 @@ impl CameraLease {
         // Native toggle 7b4de5..7b4df1 changes both flags. UI layout reads
         // +9234 separately to position announcements, kills and controls.
         std::ptr::write((ingame + 0x9234) as *mut u8, 1);
-        std::ptr::write((config + 0x45) as *mut u8, 1);
+        std::ptr::write((config + CONFIG_FULL_WIDTH) as *mut u8, 1);
         true
     }
     pub(crate) unsafe fn restore(&self, view: usize, config: usize, ingame: usize) -> bool {
         if !self.layout_matches(view, config, ingame) {
             return false;
         }
-        std::ptr::copy_nonoverlapping(self.original.as_ptr(), (config + 0x18) as *mut u8, 16);
-        std::ptr::write((config + 0x4b) as *mut u8, self.original_vision);
+        std::ptr::copy_nonoverlapping(
+            self.original.as_ptr(),
+            (config + CONFIG_CAMERA) as *mut u8,
+            16,
+        );
+        std::ptr::write((config + CONFIG_VISION) as *mut u8, self.original_vision);
         // Released from AI control: the layout is the spectator's already
         // (they may have toggled it, e.g. to reach "view result").
         if !self.ai_camera {
-            std::ptr::write((config + 0x45) as *mut u8, self.original_full_width);
+            std::ptr::write(
+                (config + CONFIG_FULL_WIDTH) as *mut u8,
+                self.original_full_width,
+            );
             std::ptr::write((ingame + 0x9234) as *mut u8, self.original_ui_full_width);
         }
         true
@@ -119,8 +130,8 @@ pub(crate) unsafe fn camera_frame(
         return None;
     }
     let f = |offset| std::ptr::read_unaligned((view + offset) as *const f32);
-    let wide = std::ptr::read((config + 0x45) as *const u8) != 0;
-    let left = std::ptr::read((config + 0x46) as *const u8) != 0;
+    let wide = std::ptr::read((config + CONFIG_FULL_WIDTH) as *const u8) != 0;
+    let left = std::ptr::read((config + CONFIG_COMPACT_SIDE) as *const u8) != 0;
     // Viewport follows 0.6.3 renderer 23228cd..2322ae2. Minimap geometry
     // matches the reviewed render/input operand plan, including custom placement.
     let viewport = if wide {
@@ -180,9 +191,9 @@ pub(crate) unsafe fn restore_camera(
 pub(crate) unsafe fn set_follow_config(config: usize, side: usize, lane: u32) {
     // CURRENT 1fcfd5d reads +20 team and +1c lane to look up its player map.
     // Native own-mid shortcut cb020e writes the same pair (team, lane=2).
-    std::ptr::write_unaligned((config + 0x18) as *mut u32, 2);
-    std::ptr::write_unaligned((config + 0x1c) as *mut u32, lane);
-    std::ptr::write_unaligned((config + 0x20) as *mut usize, side);
+    std::ptr::write_unaligned((config + CONFIG_CAMERA) as *mut u32, 2);
+    std::ptr::write_unaligned((config + CONFIG_CAMERA + 4) as *mut u32, lane);
+    std::ptr::write_unaligned((config + CONFIG_CAMERA + 8) as *mut usize, side);
 }
 pub(crate) unsafe fn prepare_camera(
     view: usize,
@@ -213,11 +224,14 @@ pub(crate) unsafe fn prepare_camera(
             if saved.layout_matches(view, config, ingame) && !saved.ai_camera {
                 std::ptr::copy_nonoverlapping(
                     saved.original.as_ptr(),
-                    (config + 0x18) as *mut u8,
+                    (config + CONFIG_CAMERA) as *mut u8,
                     16,
                 );
-                std::ptr::write((config + 0x4b) as *mut u8, saved.original_vision);
-                std::ptr::write((config + 0x45) as *mut u8, saved.original_full_width);
+                std::ptr::write((config + CONFIG_VISION) as *mut u8, saved.original_vision);
+                std::ptr::write(
+                    (config + CONFIG_FULL_WIDTH) as *mut u8,
+                    saved.original_full_width,
+                );
                 std::ptr::write((ingame + 0x9234) as *mut u8, saved.original_ui_full_width);
                 saved.ai_camera = true;
                 saved.effective_vision = u8::MAX;
@@ -265,13 +279,13 @@ pub(crate) unsafe fn prepare_camera(
                 ));
                 saved.effective_vision = value;
             }
-            std::ptr::write((config + 0x4b) as *mut u8, value);
+            std::ptr::write((config + CONFIG_VISION) as *mut u8, value);
         }
     } else {
         return;
     }
     std::ptr::write_unaligned((view + VIEW_PAN_VELOCITY) as *mut u64, 0);
-    let native_mode = std::ptr::read_unaligned((config + 0x18) as *const u32);
+    let native_mode = std::ptr::read_unaligned((config + CONFIG_CAMERA) as *const u32);
     let request = shared.camera.step(
         frame,
         native_mode,
@@ -284,9 +298,9 @@ pub(crate) unsafe fn prepare_camera(
     );
     match request {
         Some(crate::camera::Request::Free((x, y))) => {
-            std::ptr::write_unaligned((config + 0x18) as *mut u32, 1);
-            std::ptr::write_unaligned((config + 0x1c) as *mut f32, x);
-            std::ptr::write_unaligned((config + 0x20) as *mut f32, y);
+            std::ptr::write_unaligned((config + CONFIG_CAMERA) as *mut u32, 1);
+            std::ptr::write_unaligned((config + CONFIG_CAMERA + 4) as *mut f32, x);
+            std::ptr::write_unaligned((config + CONFIG_CAMERA + 8) as *mut f32, y);
         }
         Some(crate::camera::Request::Follow(player)) => {
             let Some(champion) = champion else { return };
@@ -294,8 +308,10 @@ pub(crate) unsafe fn prepare_camera(
                 return;
             }
             if native_mode != 2
-                || std::ptr::read_unaligned((config + 0x1c) as *const u32) != target.lane as u32
-                || std::ptr::read_unaligned((config + 0x20) as *const usize) != target.side
+                || std::ptr::read_unaligned((config + CONFIG_CAMERA + 4) as *const u32)
+                    != target.lane as u32
+                || std::ptr::read_unaligned((config + CONFIG_CAMERA + 8) as *const usize)
+                    != target.side
             {
                 // Recenter on entry even if playback dt is zero while held.
                 std::ptr::write_unaligned((view + 0x114) as *mut f32, champion.0 as f32 / 1000.);
@@ -365,7 +381,7 @@ pub(crate) unsafe fn playback_fields(config: usize) -> (u8, u32, u32, u8) {
         std::ptr::read(config as *const u8),
         std::ptr::read_unaligned((config + 0x10) as *const u32),
         std::ptr::read_unaligned((config + 0x14) as *const u32),
-        std::ptr::read((config + 0x48) as *const u8),
+        std::ptr::read((config + CONFIG_PAUSED) as *const u8),
     )
 }
 impl PlaybackOverride {
@@ -391,7 +407,7 @@ impl PlaybackOverride {
         // AI spectator pause remains usable. On reclaim, the coordinator's
         // own Running/Paused phase drives playback even if AI was paused.
         if plan.clear_pause {
-            std::ptr::write((config + 0x48) as *mut u8, 0);
+            std::ptr::write((config + CONFIG_PAUSED) as *mut u8, 0);
         }
         snapshot
     }
@@ -405,7 +421,7 @@ impl Drop for PlaybackOverride {
                 std::ptr::write_unaligned((self.config + 0x14) as *mut u32, self.speed);
             }
             if self.plan.clear_pause {
-                std::ptr::write((self.config + 0x48) as *mut u8, self.paused);
+                std::ptr::write((self.config + CONFIG_PAUSED) as *mut u8, self.paused);
             }
         }
     }

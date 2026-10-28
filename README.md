@@ -17,8 +17,8 @@ plays (mostly).
 
 ## Status
 
-- Version **1.5.1**, for game versions **0.6.4**, **0.6.5** and the **0.7.0
-  Beta 2** on Windows x64 only. The mod checks the game executable's
+- Version **1.7.0**, for game versions **0.6.5** and **0.7.0** on Windows
+  x64 only. The mod checks the game executable's
   fingerprint and stays inactive on any other build; a game update needs a
   mod update.
 - Single player; one controlled athlete per match.
@@ -177,7 +177,7 @@ stay in `%LOCALAPPDATA%\LTDirectControl`).
 | Area | Modules |
 |---|---|
 | Entry points | `lib.rs` (logger, start-up wiring), `client.rs` (`Client`: the SDK client extension, one named step per feature each frame), `simulation.rs` (`Simulation`: the per-player AI callback, one step per duty) |
-| Game hooks (game 0.6.3, 0.6.4 and 0.7.0) | `native_adapter/`: `mod.rs` (the safe API the rest of the mod calls), `windows/mod.rs` (patch installation), one file per hook family (`movement`, `combat`, `outline`, `view`, `input`, `shop`, `tooltips`, `preview`, `stats`), `v063/`, `v064/` and `v070/` (every address and byte pattern of one game version each, `stat_sites.rs` for the stat rules); `athlete_rules.rs` (the stat rules' arithmetic); `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `worker_watch.rs` (stall report), `ai_handback.rs` |
+| Game hooks (game 0.6.5 and 0.7.0) | `native_adapter/`: `mod.rs` (the safe API the rest of the mod calls), `windows/mod.rs` (patch installation), one file per hook family (`movement`, `combat`, `outline`, `view`, `input`, `shop`, `tooltips`, `preview`, `stats`), `v065/` and `v070/` (every address and byte pattern of one game version each, `stat_sites.rs` for the stat rules); `athlete_rules.rs` (the stat rules' arithmetic); `native_timing.rs` (session phases and frame pacing), `native_profile.rs`, `native_items.rs`, `worker_watch.rs` (stall report), `ai_handback.rs` |
 | Orders and input | `platform_input.rs` (keyboard/mouse), `movement.rs` (orders and movement), `combat.rs` (targets), `acquisition.rs`, `abilities.rs` (casting), `camera.rs`, `wheel.rs`, `map_path.rs` |
 | Picking | `sprite_picking.rs` (body sizes), `own_selection.rs` |
 | HUD and windows | `player_hud.rs`, `ground_ring.rs` (Ground ring), `ui_sound.rs`, `stats_panel.rs` / `stats_ui.rs`, `team_status.rs`, `team_info.rs`, `session_ui.rs`, `settings_ui.rs` (+ `settings_ui/`), `shop_ui.rs`, `emotes.rs` / `emote_library.rs`, `minimap.rs`, `screen_effect.rs`, `skill_preview.rs` / `preview_style.rs`, `cursor.rs`, `tooltips.rs`, `hud_*.rs`, `ui_graphics.rs`, `ui_theme.rs` (UI colour), `ui_click.rs` |

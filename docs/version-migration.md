@@ -214,6 +214,18 @@ happen to be the old function's. Check a drafted function by its callers,
 not its first bytes. The mod then builds such an event itself, the way the
 game does (`layout::CANCEL_RECALL_INLINE`, `movement::push_inline_cancel`).
 
+A hooked function can gain a caller without anything new in the game.
+0.7.0 gave one unit type its own identical copy of a shared draw method,
+so the unit renderer has 16 callers where Beta 2 had 15. Find what each
+extra caller draws (which method tables hold it) before hooking it, and
+hook it when it is the same drawing as before. No tool checks the outline
+constants against the executable; check them by script.
+
+A small method shared through the compiler cannot identify a table. The
+item key method (`+0x58`) is a two-instruction function that unrelated
+tables hold too; the method at `+0x60` is held by item tables only, which
+is how 0.7.0's 17 item tables were found.
+
 Values that identify a type change with the build, not only addresses: the
 in-game UI's Rust type id differs in Beta 2 (`layout::INGAME_UI_TYPE_ID`).
 Look for constants the shared code compares with, not only offsets.

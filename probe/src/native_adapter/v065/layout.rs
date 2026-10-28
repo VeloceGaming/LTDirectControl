@@ -33,6 +33,14 @@ pub(crate) const VIEW_ORIGINAL: usize = 0x87abe0;
 // accumulator the viewer adds each frame's dt to, and the camera's pan
 // velocity (x, y). 0.6.4 removed the viewer's fog cache, which sat before
 // them, so both moved down by 0x68.
+// The viewer's playback config (the view hook's fourth argument), where the
+// shared hook code reads and writes it (0.7.0 moved them: see its table).
+/// Camera target: mode (u32), then lane or x at +4, side or y at +8.
+pub(crate) const CONFIG_CAMERA: usize = 0x18;
+pub(crate) const CONFIG_FULL_WIDTH: usize = 0x45;
+pub(crate) const CONFIG_COMPACT_SIDE: usize = 0x46;
+pub(crate) const CONFIG_PAUSED: usize = 0x48;
+pub(crate) const CONFIG_VISION: usize = 0x4b;
 pub(crate) const VIEW_FRAME_CLOCK: usize = 0x2f0;
 pub(crate) const VIEW_PAN_VELOCITY: usize = 0x3f0;
 // Player record fields the shop reads: the owned items (pointer, length)

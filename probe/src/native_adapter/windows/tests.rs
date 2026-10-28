@@ -132,8 +132,8 @@ fn click_pulse_wins_once_then_settles_to_hover_or_target() {
 fn spectator_layout_lease_switches_and_restores_both_native_flags() {
     for (original_wide, original_ui_wide) in [(0, 0), (0, 1), (1, 0), (1, 1)] {
         let mut config = [0x55u8; 0x60];
-        config[0x45] = original_wide;
-        config[0x46] = 1;
+        config[CONFIG_FULL_WIDTH] = original_wide;
+        config[CONFIG_COMPACT_SIDE] = 1;
         let original = config;
         let addr = config.as_mut_ptr() as usize;
         let mut ui = vec![0x33u8; 0x9250];
@@ -144,9 +144,9 @@ fn spectator_layout_lease_switches_and_restores_both_native_flags() {
             let original_ui = ui.clone();
             let lease = CameraLease::capture(101, addr, live);
             assert!(lease.full_width(101, addr, live));
-            assert_eq!((config[0x45], ui[0x9234]), (1, 1));
-            config[0x18..0x28].fill(2);
-            config[0x4b] = 2;
+            assert_eq!((config[CONFIG_FULL_WIDTH], ui[0x9234]), (1, 1));
+            config[CONFIG_CAMERA..CONFIG_CAMERA + 16].fill(2);
+            config[CONFIG_VISION] = 2;
             ui[0x9234] = 0;
             assert!(lease.full_width(101, addr, live));
             let overridden = config;
@@ -179,7 +179,7 @@ fn spectator_layout_lease_switches_and_restores_both_native_flags() {
             assert!(lease.restore(101, addr, live));
             assert_eq!(config, original);
             assert_eq!(ui, original_ui);
-            other[0x45] = 1 - original_wide;
+            other[CONFIG_FULL_WIDTH] = 1 - original_wide;
             other_ui[0x9234] = 1 - original_ui_wide;
             std::ptr::write_unaligned((other_live + 0x9150) as *mut usize, other_addr - 0x18);
             let fresh_original = other;
@@ -723,20 +723,28 @@ fn follow_payload_uses_team_and_lane_instead_of_sdk_player_id() {
                 set_follow_config(addr, side, lane);
             }
             assert_eq!(
-                u32::from_le_bytes(config[0x18..0x1c].try_into().unwrap()),
+                u32::from_le_bytes(config[CONFIG_CAMERA..CONFIG_CAMERA + 4].try_into().unwrap()),
                 2
             );
             assert_eq!(
-                u32::from_le_bytes(config[0x1c..0x20].try_into().unwrap()),
+                u32::from_le_bytes(
+                    config[CONFIG_CAMERA + 4..CONFIG_CAMERA + 8]
+                        .try_into()
+                        .unwrap()
+                ),
                 lane
             );
             assert_eq!(
-                usize::from_le_bytes(config[0x20..0x28].try_into().unwrap()),
+                usize::from_le_bytes(
+                    config[CONFIG_CAMERA + 8..CONFIG_CAMERA + 16]
+                        .try_into()
+                        .unwrap()
+                ),
                 side
             );
-            assert!(config[..0x18]
+            assert!(config[..CONFIG_CAMERA]
                 .iter()
-                .chain(config[0x28..].iter())
+                .chain(config[CONFIG_CAMERA + 16..].iter())
                 .all(|b| *b == 0xcc));
         }
     }
@@ -1061,7 +1069,7 @@ fn recall_stop_emits_once_and_preserves_timer_effects_and_other_actions() {
 fn scoped_config_restores_every_overridden_bit() {
     let mut config = [0u8; 0x60];
     config[0] = 1;
-    config[0x48] = 1;
+    config[CONFIG_PAUSED] = 1;
     config[0x10..0x14].copy_from_slice(&1u32.to_le_bytes());
     config[0x14..0x18].copy_from_slice(&3.0f32.to_bits().to_le_bytes());
     let before = config;
@@ -1069,7 +1077,7 @@ fn scoped_config_restores_every_overridden_bit() {
     let control = playback_plan(Some(Phase::Running));
     let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, control) };
     assert_eq!(config[0], 0);
-    assert_eq!(config[0x48], 0);
+    assert_eq!(config[CONFIG_PAUSED], 0);
     assert_eq!(
         u32::from_le_bytes(config[0x14..0x18].try_into().unwrap()),
         1.0f32.to_bits()
@@ -1078,7 +1086,7 @@ fn scoped_config_restores_every_overridden_bit() {
     assert_eq!(config, before);
     let ai = playback_plan(Some(Phase::Ai));
     let snapshot = unsafe { PlaybackOverride::apply(config.as_mut_ptr() as usize, ai) };
-    assert_eq!(config[0x48], 1); // Spectator pause survives AI handoff.
+    assert_eq!(config[CONFIG_PAUSED], 1); // Spectator pause survives AI handoff.
     assert_eq!((config[0], config[0x10]), (0, 0)); // Sync and mode still forced.
     assert_eq!(snapshot.speed, 3.0f32.to_bits());
     // The game's speed field is left alone in AI control (1.5.1-dev1).
@@ -1103,10 +1111,10 @@ fn only_overwritten_playback_fields_are_put_back() {
         PlaybackOverride::apply(config.as_mut_ptr() as usize, playback_plan(Some(Phase::Ai)))
     };
     config[0x14..0x18].copy_from_slice(&2.0f32.to_bits().to_le_bytes());
-    config[0x48] = 1;
+    config[CONFIG_PAUSED] = 1;
     drop(snapshot);
     assert_eq!(speed(&config), 2.0);
-    assert_eq!(config[0x48], 1);
+    assert_eq!(config[CONFIG_PAUSED], 1);
     assert_eq!((config[0], config[0x10]), (1, 2)); // Forced fields restored.
                                                    // Control: a speed written during the viewer update is undone.
     let snapshot = unsafe {
@@ -1142,13 +1150,16 @@ fn an_inline_cancel_event_is_built_the_way_the_game_builds_it() {
     unsafe extern "system" fn append(events: usize, actor: usize) {
         let list = std::ptr::read_unaligned(events as *const usize);
         let length = std::ptr::read_unaligned((list + 0x10) as *const usize);
-        let entry = std::ptr::read_unaligned((list + 8) as *const usize) + length * 0x70;
+        let stride = CANCEL_RECALL_INLINE.map_or(0, |e| e.entry);
+        let entry = std::ptr::read_unaligned((list + 8) as *const usize) + length * stride;
         std::ptr::write(entry as *mut u8, 0x12);
         std::ptr::write_unaligned((entry + 4) as *mut u32, actor as u32);
         std::ptr::write_unaligned((list + 0x10) as *mut usize, length + 1);
     }
     unsafe extern "system" fn append_nothing(_: usize, _: usize) {}
-    assert_eq!(event.entry, 0x70);
+    // The event list's entry: 0x70 bytes on Beta 2, 0x90 on 0.7.0 (read
+    // from the stop event and the game's own inline builds).
+    assert_eq!((GAME, event.entry), ("0.7.0", 0x90));
     let mut entries = vec![0xabu8; 4 * event.entry];
     let mut list = [4usize, entries.as_mut_ptr() as usize, 1];
     let holder = list.as_mut_ptr() as usize;
@@ -1216,9 +1227,11 @@ fn the_assets_check_covers_the_fields_each_version_reads() {
     // much of the game's Assets context is readable. Beta 2's context grew:
     // its sheet getter reads +0x368..+0x388 and the callee up to +0x4b8
     // (0.6.4/0.6.5: +0x30..+0x50). Hand checks, docs/migration-0.7.0b2.md.
+    // 0.7.0: the getter and its callee are Beta 2's instruction for
+    // instruction, so the same fields (docs/migration-0.7.0.md).
     let furthest_getter_field = match GAME {
-        "0.6.4" | "0.6.5" => 0x50,
-        "0.7.0b2" => 0x4b8,
+        "0.6.5" => 0x50,
+        "0.7.0" => 0x4b8,
         other => panic!("no Assets measurement for {other}"),
     };
     let size = TOOLTIP_ASSETS_READ_SIZE;

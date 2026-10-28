@@ -22,8 +22,8 @@ one (see `CooldownHook`).
 
 On top of the SDK, `native_adapter/` hooks a few places inside the game
 executable (movement, combat, outlines, camera/pacing, hotkeys, the item
-buyer). Those hooks install only on the fingerprinted game builds (0.6.4 and
-0.6.5); on any other build the mod stays inactive.
+buyer). Those hooks install only on the fingerprinted game builds (0.6.5 and
+0.7.0); on any other build the mod stays inactive.
 
 `native_timing.rs` holds the session state machine shared by both sides:
 Loading → Ready (choose your athlete) → Running ⇄ Paused → Released (F12 or
@@ -550,7 +550,7 @@ test in `logging.rs` pins the level of the busiest tags.
 | File | Holds |
 |---|---|
 | `mod.rs` | the safe functions the rest of the mod calls; picks the hooks built for the running game version |
-| `v064/`, `v065/`, `v070b2/` | one folder per supported game version (0.6.4, 0.6.5, 0.7.0 Beta 2), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
+| `v065/`, `v070/` | one folder per supported game version (0.6.5, 0.7.0), holding everything that differs between versions: `layout.rs` (every code address, call site and expected byte pattern), `identity.rs` (executable fingerprint, layout guards, enabled hook families), `effects.rs` (skill effects the preview reader recognises), `items.rs` (item reader anchors) |
 | `windows/mod.rs` | fingerprint check, patch installation (`install`), runtime patch audit |
 | `windows/preview.rs` | skill effect tree reader (skill previews) |
 | `windows/movement.rs` | move, steering, stop, recall |
@@ -593,7 +593,7 @@ drafts the new version's tables. In short:
 1. Start from the two places that hold version knowledge. The hook code in
    `native_adapter/windows/` is built once per supported game version,
    each time against that version's tables, and names no address itself:
-   - `native_adapter/v064/` and `v065/` (copy the newest folder: hook sites and byte
+   - `native_adapter/v065/` and `v070/` (copy the newest folder: hook sites and byte
      patterns, executable identity and layout guards, effect and item
      addresses), with a block for the new folder at the end of
      `native_adapter/mod.rs`;

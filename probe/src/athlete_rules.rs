@@ -16,7 +16,8 @@
 //!   [`NEUTRAL_DODGING`], whatever the athlete's stat: the player dodges by
 //!   hand, so the stat neither shrinks nor grows the body enemy shots see.
 //! - Reaction: the enemy's reaction delay comes from the gap
-//!   (caster Accuracy - defender Dodging) in a human band
+//!   (caster Accuracy - defender Dodging) in a band shaped like the game's
+//!   own and stretched between the floor and ceiling settings
 //!   ([`reaction_gate`]) instead of the game's gate. Accuracy and Dodging
 //!   are the values the game itself uses there. Two gate shapes: one whose
 //!   final gate the hook replaces (`Capture`, `Complete`), and one whose
@@ -129,7 +130,10 @@ pub enum Kind {
     DodgingProducer { output: Register, entity: Register },
     /// The start of a reaction gate: remembers the inputs when the caster is
     /// the controlled athlete. `age_mixed` says the game also mixed the
-    /// projectile's age (bits 40 and up) into the seed.
+    /// projectile's age (bits 40 and up) into the seed. No supported version
+    /// has this gate shape since 0.6.4 was dropped (1.7.0); kept with
+    /// `Complete`, since the census and the verifier still know it.
+    #[allow(dead_code)]
     Capture {
         accuracy: Register,
         inverse_dodge: Source,
@@ -138,6 +142,7 @@ pub enum Kind {
     },
     /// The end of the same gate: `output` holds the game's gate, replaced
     /// when the matching capture remembered a controlled caster.
+    #[allow(dead_code)]
     Complete { capture: usize, output: Register },
     /// The start of a reaction gate that rolls its delay in a band (the
     /// shape without a place to replace the final gate): remembers the
@@ -192,27 +197,42 @@ pub fn splitmix(seed: u64) -> u64 {
     h ^ (h >> 31)
 }
 
+/// The floor and ceiling at which [`reaction_band`] gives the base game's
+/// own projectile gate: 2 ticks at the fastest (Dodging 100), 132 at the
+/// slowest (Dodging 0 against Accuracy 100).
+pub const VANILLA_FLOOR: u32 = 2;
+pub const VANILLA_CEILING: u32 = 132;
+
+/// The base game's projectile gate band `(low, high)`, extra delay included,
+/// where Accuracy + Dodging = 100, so that Accuracy - Dodging = `gap`
+/// (docs/investigation-stat-rules-0.6.4.md, section 2): with q = 100 - Dodging,
+/// low 2 + 58q²/10000, high 6 + 114q²/10000, both plus
+/// q·(12·Accuracy²/10000)/100, each step rounded down as the game does.
+/// Computed in halves so odd gaps fall between their neighbours.
+fn vanilla_band(gap: i64) -> (i64, i64) {
+    let h = gap.clamp(-100, 100) + 100; // 2q, 0..=200
+    let sq = h * h; // 4q²
+    let extra = h * (12 * sq / 40_000) / 200;
+    (2 + 58 * sq / 40_000 + extra, 6 + 114 * sq / 40_000 + extra)
+}
+
 /// The band `(low, high)` of reaction ticks for a gap in -100..=100 between
-/// the caster's Accuracy and the defender's Dodging. Through (-100: 6..9),
-/// (0: 10..14), (+100: 16..22) with the defaults; `floor` is the low end at
-/// -100 and `ceiling` the high end at +100, and the middle points keep their
-/// place between them (sixteenths of the span: low 0, 4, 10; high 3, 8, 16).
+/// the caster's Accuracy and the defender's Dodging. It has the base game's
+/// shape ([`vanilla_band`]): fast for most gaps, rising steeply as the gap
+/// nears +100. `floor` is the low end at -100 and `ceiling` the high end at
+/// +100; the curve is stretched between them, so [`VANILLA_FLOOR`] and
+/// [`VANILLA_CEILING`] give the game's own numbers. With the defaults
+/// (12, 35): -100 12..13, 0 15..18, +100 24..35.
 pub fn reaction_band(gap: i32, floor: u32, ceiling: u32) -> (u32, u32) {
-    let floor = floor.max(1);
-    let span = ceiling.max(floor) - floor;
-    let gap = i64::from(gap.clamp(-100, 100));
-    let point = |left: i64, right: i64, t: i64| left * (100 - t) + right * t;
-    let at = |points: [i64; 3]| {
-        let scaled = if gap < 0 {
-            point(points[0], points[1], gap + 100)
-        } else {
-            point(points[1], points[2], gap)
-        };
-        // Round half up to a whole tick.
-        let x1600 = i64::from(floor) * 1600 + i64::from(span) * scaled;
-        ((x1600 + 800) / 1600) as u32
-    };
-    let (low, high) = (at([0, 4, 10]), at([3, 8, 16]));
+    let floor = i64::from(floor.max(1));
+    let span = i64::from(ceiling).max(floor) - floor;
+    let base = i64::from(VANILLA_FLOOR);
+    let vanilla_span = i64::from(VANILLA_CEILING - VANILLA_FLOOR);
+    // Round half up to a whole tick.
+    let scale =
+        |v: i64| (floor + ((v - base) * span * 2 + vanilla_span) / (2 * vanilla_span)) as u32;
+    let (low, high) = vanilla_band(i64::from(gap));
+    let (low, high) = (scale(low), scale(high));
     (low, high.max(low))
 }
 
@@ -485,33 +505,64 @@ pub fn preview_margin() -> f32 {
 mod tests {
     use super::*;
 
+    /// The game's projectile gate written from the decoded formula
+    /// (docs/investigation-stat-rules-0.6.4.md, section 2), with its own
+    /// Dodging and Accuracy, independent of `vanilla_band`.
+    fn game_gate_band(accuracy: i64, dodging: i64) -> (i64, i64) {
+        let q = 100 - dodging;
+        let extra = q * (12 * accuracy * accuracy / 10_000) / 100;
+        (
+            2 + 58 * q * q / 10_000 + extra,
+            6 + 114 * q * q / 10_000 + extra,
+        )
+    }
+
     #[test]
-    fn defaults_reproduce_the_agreed_table() {
-        assert_eq!(reaction_band(-100, 6, 22), (6, 9));
-        assert_eq!(reaction_band(0, 6, 22), (10, 14));
-        assert_eq!(reaction_band(100, 6, 22), (16, 22));
+    fn the_vanilla_floor_and_ceiling_give_the_games_own_gate() {
+        // Every matchup with Accuracy + Dodging = 100, gap = A - D.
+        for accuracy in 0..=100 {
+            let dodging = 100 - accuracy;
+            let (low, high) = game_gate_band(accuracy, dodging);
+            assert_eq!(
+                reaction_band((accuracy - dodging) as i32, VANILLA_FLOOR, VANILLA_CEILING),
+                (low as u32, high as u32),
+                "accuracy {accuracy}"
+            );
+        }
+        assert_eq!(reaction_band(-100, 2, 132), (2, 6));
+        assert_eq!(reaction_band(0, 2, 132), (17, 35));
+        assert_eq!(reaction_band(100, 2, 132), (72, 132));
+    }
+
+    #[test]
+    fn the_defaults_follow_the_games_shape() {
+        assert_eq!(reaction_band(-100, 12, 35), (12, 13));
+        assert_eq!(reaction_band(0, 12, 35), (15, 18));
+        assert_eq!(reaction_band(100, 12, 35), (24, 35));
     }
 
     #[test]
     fn the_band_is_monotonic_and_ordered() {
-        let mut last = (0, 0);
-        for gap in -100..=100 {
-            let band = reaction_band(gap, 6, 22);
-            assert!(band.0 <= band.1);
-            assert!(band.0 >= last.0 && band.1 >= last.1, "gap {gap}");
-            last = band;
+        for (floor, ceiling) in [(12, 35), (2, 132), (6, 22), (1, 1)] {
+            let mut last = (0, 0);
+            for gap in -100..=100 {
+                let band = reaction_band(gap, floor, ceiling);
+                assert!(band.0 <= band.1);
+                assert!(band.0 >= last.0 && band.1 >= last.1, "gap {gap}");
+                assert!(band.0 >= floor && band.1 <= ceiling, "gap {gap}");
+                last = band;
+            }
+            // Out-of-range gaps clamp.
+            let ends = |g| reaction_band(g, floor, ceiling);
+            assert_eq!(ends(-500), ends(-100));
+            assert_eq!(ends(500), ends(100));
         }
-        // Out-of-range gaps clamp.
-        assert_eq!(reaction_band(-500, 6, 22), reaction_band(-100, 6, 22));
-        assert_eq!(reaction_band(500, 6, 22), reaction_band(100, 6, 22));
     }
 
     #[test]
     fn floor_and_ceiling_move_the_ends_and_scale_the_middle() {
         assert_eq!(reaction_band(-100, 10, 42).0, 10);
         assert_eq!(reaction_band(100, 10, 42).1, 42);
-        // Span 32 is twice the default: the middle points double their offset.
-        assert_eq!(reaction_band(0, 10, 42), (18, 26));
         // A ceiling below the floor collapses the band to the floor.
         for gap in [-100, 0, 100] {
             assert_eq!(reaction_band(gap, 12, 8), (12, 12));
@@ -532,7 +583,7 @@ mod tests {
         }
         // Different pairs spread over the band.
         let ticks: std::collections::BTreeSet<_> = (0..200u64)
-            .map(|seed| reaction_gate(seed << 20, 0, 6, 22))
+            .map(|seed| reaction_gate(seed << 20, 0, VANILLA_FLOOR, VANILLA_CEILING))
             .collect();
         assert!(ticks.len() >= 4);
     }

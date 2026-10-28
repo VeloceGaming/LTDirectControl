@@ -1,5 +1,5 @@
-//! Game 0.7.0 Beta 2: the skill effects the preview reader recognises.
-//! Not reviewed for Beta 2: the reader family (research builds only) is off
+//! Game 0.7.0: the skill effects the preview reader recognises.
+//! Not reviewed for 0.7.0: the reader family (research builds only) is off
 //! on this executable, so these are never read. Each holds a distinct value
 //! no apply address can have (`usize::MAX - n`), never another version's
 //! address.

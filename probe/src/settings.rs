@@ -130,7 +130,8 @@ pub static OPTIONS: &[OptionDef] = &[
         section: "Athlete stats",
         label: "Reaction ceiling",
         hint: "Testing: the slowest an enemy can react to your shots.",
-        control: Control::Slider(1., 60., 1., " ticks"),
+        // Up to the base game's slowest gate (athlete_rules::VANILLA_CEILING).
+        control: Control::Slider(1., 132., 1., " ticks"),
         default: 35.,
     },
     OptionDef {
@@ -1110,6 +1111,20 @@ mod tests {
         assert_eq!(fresh.number("stat_reaction_floor"), 12.);
         assert_eq!(fresh.number("stat_reaction_ceiling"), 35.);
         assert_eq!(fresh.number("stat_collision_margin"), 2.);
+        // The sliders reach the base game's own floor and ceiling.
+        for (key, value) in [
+            ("stat_reaction_floor", crate::athlete_rules::VANILLA_FLOOR),
+            (
+                "stat_reaction_ceiling",
+                crate::athlete_rules::VANILLA_CEILING,
+            ),
+        ] {
+            let def = OPTIONS.iter().find(|o| o.key == key).unwrap();
+            let Control::Slider(min, max, _, _) = def.control else {
+                panic!("{key} is not a slider");
+            };
+            assert!((min..=max).contains(&f64::from(value)), "{key}");
+        }
         // The window's defaults and the rules' own defaults agree.
         assert_eq!(
             fresh.number("stat_reaction_floor"),

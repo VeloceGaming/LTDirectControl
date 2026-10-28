@@ -28,7 +28,7 @@ divided by 1000).
 ## The game's own path
 
 The game's item panel (0.6.4 `0x2300390`, 0.6.5 `0x1f219a0`, Beta 2
-`0x2d81ea0`) receives the item key and the game's Assets context, and:
+`0x2d81ea0`, 0.7.0 `0x22e1ef0`) receives the item key and the game's Assets context, and:
 
 1. gets the item sheet from Assets (`asset/base/setting/item_setting`; the
    getter is the twin of the champion sheet getter the skill tooltips use,
@@ -42,8 +42,10 @@ The game's item panel (0.6.4 `0x2300390`, 0.6.5 `0x1f219a0`, Beta 2
 
 The method table holds the slots the mod's item reader already uses
 (`+0x50` enabled to `+0x80` next tiers) and `+0x90` after them. Reviewed
-item tables: 20 on 0.6.4, 17 on 0.6.5, 20 on Beta 2 (Workshop items
-included); one key method per version. Their key and text methods are
+item tables: 20 on 0.6.4, 17 on 0.6.5, 20 on Beta 2, 17 on 0.7.0
+(Workshop items included); one key method per version. The key method is
+shared with unrelated tables; the method at `+0x60` is held by item tables
+only (Beta 2 and 0.7.0), which is how 0.7.0's were found. Their key and text methods are
 guarded in each version's table.
 
 ## The one way it could stop the game
@@ -65,6 +67,11 @@ version), and every key it builds is in the same item text sheet (some
 are fixed keys, not the item's own). Not covered: an abort of a method's
 own that has nothing to do with text lookup; the game's item panel would
 hit it with the same arguments.
+
+0.7.0 (1.7.0-dev2, read from the code): every text method of the 17
+tables is a Beta 2 text method with the same code, strings and calls, and
+the item text sheet is Beta 2's byte for byte, so the Beta 2 check above
+carries over without being run again.
 
 ## What the mod does (1.5.0-dev29)
 

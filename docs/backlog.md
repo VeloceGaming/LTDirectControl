@@ -274,7 +274,13 @@ addition (not to be copied).
       Advanced settings while testing; defaults frozen afterwards. **Superseded 2026-10-21 (the author, after testing on 0.6.4):**
       defaults floor 12, ceiling 35 ticks (1.5.0-dev26), to follow the base
       game's reaction differences more closely. The
-      game's deterministic per-projectile choice is kept.
+      game's deterministic per-projectile choice is kept. **Superseded
+      2026-10-29 (the author, 1.7.0-dev3):** the curve takes the base
+      game's shape (fast for most gaps, rising steeply near +100),
+      stretched between floor and ceiling; floor 2 and ceiling 132 give the
+      game's own gate on the line Accuracy + Dodging = 100. The ceiling
+      slider goes to 132 ticks; defaults stay 12 and 35 (now -100 12..13,
+      0 15..18, +100 24..35).
     - **The player's Dodging** must still matter. The game already uses it
       in the AI aim roll (investigation, section 4); whether to replace that
       roll with the same gap is undecided. A telegraph of incoming enemy
