@@ -376,5 +376,7 @@
  "Unit highlight": "Evidenziazione delle unità",
  "Outline": "Contorno",
  "Ground ring": "Anello a terra",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Bersaglio indicato e bersaglio d'attacco; alleati in blu, nemici in rosso. L'anello a terra è l'opzione più compatibile con le mod che ridisegnano le unità; passare a questa opzione o lasciarla richiede il riavvio del gioco."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Bersaglio indicato e bersaglio d'attacco; alleati in blu, nemici in rosso. L'anello a terra è l'opzione più compatibile con le mod che ridisegnano le unità; passare a questa opzione o lasciarla richiede il riavvio del gioco.",
+ "Live rating": "Voto in diretta",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Il voto in partita del tuo giocatore, in piccolo nell'angolo in alto a destra, come lo calcola il gioco."
 }

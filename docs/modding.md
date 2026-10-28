@@ -78,7 +78,9 @@ Rules that follow from this:
    `post_update`: screen effect, HUD strip, state plate, stats panels,
    session strip, and since 1.6.1-dev1 the Tab panel; `draw_list::submit`),
    then battlefield drawing (skill
-   previews, minimap frame, attack range, target markers, click markers).
+   previews, minimap frame, attack range, target markers, click markers)
+   and the top-right readouts (input delay, and since 1.6.2-dev1 the live
+   rating: `live_rating.rs`, read in `sample_hud`).
 
 `Simulation::think` (in `simulation.rs`): `bind_session` →
 `sample_prepared_roster` → `sample_team` → `trace_purchases` →

@@ -376,5 +376,7 @@
  "Unit highlight": "單位高亮",
  "Outline": "輪廓",
  "Ground ring": "腳下光圈",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "滑鼠懸停與目前攻擊目標；友方為藍色，敵方為紅色。腳下光圈與會重繪單位的模組相容性更好；切換到它或從它切換走需要重新啟動遊戲。"
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "滑鼠懸停與目前攻擊目標；友方為藍色，敵方為紅色。腳下光圈與會重繪單位的模組相容性更好；切換到它或從它切換走需要重新啟動遊戲。",
+ "Live rating": "即時評分",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "在右上角以小字顯示你操控的選手本場評分，數值與遊戲計算的一致。"
 }

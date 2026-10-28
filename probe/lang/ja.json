@@ -376,5 +376,7 @@
  "Unit highlight": "ユニットの強調表示",
  "Outline": "輪郭線",
  "Ground ring": "足元のリング",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "マウスを合わせた対象と攻撃中の対象。味方は青、敵は赤。足元のリングはユニットの描画を変えるMODとの互換性が高い方式です。このリングへの切り替えやリングからの切り替えにはゲームの再起動が必要です。"
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "マウスを合わせた対象と攻撃中の対象。味方は青、敵は赤。足元のリングはユニットの描画を変えるMODとの互換性が高い方式です。このリングへの切り替えやリングからの切り替えにはゲームの再起動が必要です。",
+ "Live rating": "リアルタイム評価",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "操作する選手の試合評価を、ゲームの計算どおりに右上の隅に小さく表示します。"
 }

@@ -376,5 +376,7 @@
  "Unit highlight": "Eenheden markeren",
  "Outline": "Omtrek",
  "Ground ring": "Ring op de grond",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Aangewezen doel en aanvalsdoel; bondgenoten blauw, vijanden rood. De ring op de grond is de meest compatibele keuze met mods die eenheden anders tekenen; overschakelen naar of van deze keuze vraagt een herstart van het spel."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Aangewezen doel en aanvalsdoel; bondgenoten blauw, vijanden rood. De ring op de grond is de meest compatibele keuze met mods die eenheden anders tekenen; overschakelen naar of van deze keuze vraagt een herstart van het spel.",
+ "Live rating": "Live beoordeling",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "De wedstrijdbeoordeling van je speler, klein in de rechterbovenhoek, zoals het spel die berekent."
 }

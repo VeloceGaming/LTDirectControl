@@ -376,5 +376,7 @@
  "Unit highlight": "유닛 강조",
  "Outline": "외곽선",
  "Ground ring": "발밑 고리",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "마우스를 올린 대상과 공격 대상을 표시합니다. 아군은 파랑, 적은 빨강입니다. 발밑 고리는 유닛을 다시 그리는 모드와 더 잘 호환됩니다. 발밑 고리로 바꾸거나 다른 방식으로 바꾸려면 게임을 다시 시작해야 합니다."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "마우스를 올린 대상과 공격 대상을 표시합니다. 아군은 파랑, 적은 빨강입니다. 발밑 고리는 유닛을 다시 그리는 모드와 더 잘 호환됩니다. 발밑 고리로 바꾸거나 다른 방식으로 바꾸려면 게임을 다시 시작해야 합니다.",
+ "Live rating": "실시간 평점",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "조종하는 선수의 경기 평점을 게임이 계산한 그대로 오른쪽 위 구석에 작게 표시합니다."
 }

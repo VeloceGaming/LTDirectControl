@@ -11,7 +11,7 @@
 
 /// (glyph, size in px, tint 0xRRGGBBAA, asset). The tint is the node's
 /// image colour; white means none.
-pub const BAKED: [(&str, u32, u32, &str); 20] = [
+pub const BAKED: [(&str, u32, u32, &str); 22] = [
     (
         "ef_swords",
         26,
@@ -131,6 +131,19 @@ pub const BAKED: [(&str, u32, u32, &str); 20] = [
         32,
         0xeeececff,
         "asset/lt_direct_control/ui/drawn_ef_swap_32_eeecec",
+    ),
+    // The live rating's star and its shadow (1.6.2-dev1).
+    (
+        "ef_star",
+        18,
+        0xcbc9c7ff,
+        "asset/lt_direct_control/ui/drawn_ef_star_18_cbc9c7",
+    ),
+    (
+        "ef_star",
+        18,
+        0x000000c0,
+        "asset/lt_direct_control/ui/drawn_ef_star_18_000000",
     ),
 ];
 /// The baked PNG for `glyph` at `size` px tinted `tint`. A 32 px glyph with

@@ -376,5 +376,7 @@
  "Unit highlight": "Wyróżnienie jednostek",
  "Outline": "Obrys",
  "Ground ring": "Pierścień na ziemi",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Wskazany cel i cel ataku; sojusznicy na niebiesko, wrogowie na czerwono. Pierścień na ziemi to opcja najlepiej zgodna z modami, które inaczej rysują jednostki; przełączenie na nią lub z niej wymaga ponownego uruchomienia gry."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Wskazany cel i cel ataku; sojusznicy na niebiesko, wrogowie na czerwono. Pierścień na ziemi to opcja najlepiej zgodna z modami, które inaczej rysują jednostki; przełączenie na nią lub z niej wymaga ponownego uruchomienia gry.",
+ "Live rating": "Ocena na żywo",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Ocena meczowa twojego zawodnika, mała, w prawym górnym rogu, tak jak liczy ją gra."
 }

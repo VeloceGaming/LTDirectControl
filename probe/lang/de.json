@@ -376,5 +376,7 @@
  "Unit highlight": "Einheiten-Hervorhebung",
  "Outline": "Umriss",
  "Ground ring": "Bodenring",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Zeiger- und Angriffsziel; Verbündete blau, Gegner rot. Der Bodenring ist die verträglichere Wahl mit Mods, die Einheiten neu zeichnen; ein Wechsel zu ihm oder von ihm braucht einen Neustart des Spiels."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Zeiger- und Angriffsziel; Verbündete blau, Gegner rot. Der Bodenring ist die verträglichere Wahl mit Mods, die Einheiten neu zeichnen; ein Wechsel zu ihm oder von ihm braucht einen Neustart des Spiels.",
+ "Live rating": "Live-Bewertung",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Die Spielbewertung deines Spielers, klein in der oberen rechten Ecke, so wie das Spiel sie berechnet."
 }

@@ -100,6 +100,16 @@
       "glyph": "ef_swap",
       "size": 32,
       "tint": "eeececff"
+    },
+    {
+      "glyph": "ef_star",
+      "size": 18,
+      "tint": "cbc9c7ff"
+    },
+    {
+      "glyph": "ef_star",
+      "size": 18,
+      "tint": "000000c0"
     }
   ],
   "files": {
@@ -122,6 +132,8 @@
     "ui/drawn_ef_camera_26_cbc9c7.png": "8f67dadabf4c5d48082df4f97d880e98be25da50adfd72835250ca4957ad9bda",
     "ui/drawn_ef_settings_26_eeecec.png": "64f36d7bc369fff861b04806c8c45a2ef45db53e4a54596493c98eb817d7830f",
     "ui/drawn_ef_list_26_eeecec.png": "46ca8f60e63996bf036bf5100439951d6ba38f3fd46b01bd761584c0d8d06084",
-    "ui/drawn_ef_swap_32_eeecec.png": "6b88e14fcee774ad453c64c6eae043b72e201bafa7346c5d466e410732566031"
+    "ui/drawn_ef_swap_32_eeecec.png": "6b88e14fcee774ad453c64c6eae043b72e201bafa7346c5d466e410732566031",
+    "ui/drawn_ef_star_18_cbc9c7.png": "e6c7ca66bd55f3b90b6808fd55fb1f6f0822303294f3b4f0be102896335f3589",
+    "ui/drawn_ef_star_18_000000.png": "180fb87a7d4ec00ecd70fa185fba506f0c7099d8e967008348e2ddc9eb3e9a0e"
   }
 }

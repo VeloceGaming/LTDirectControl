@@ -23,7 +23,7 @@ if(process.argv.includes('--drawn')){(async()=>{
  record.files=files;fs.writeFileSync(recordFile,JSON.stringify(record,null,2)+'\n');
  console.log('Baked '+Object.keys(files).length+' drawn glyph variants.');
 })().catch(e=>{console.error(e);process.exitCode=1});return;}
-const names={camera:'camera',more:'ellipsis',pause:'pause',play:'play',cpu:'cpu',reset:'rotate-ccw',eye:'eye',skull:'skull',swords:'swords',coin:'coins',list:'list',clock:'clock',range:'scan-line',recall:'house',check:'check',unavailable:'circle-alert',swap:'arrow-left-right'};
+const names={camera:'camera',more:'ellipsis',pause:'pause',play:'play',cpu:'cpu',reset:'rotate-ccw',eye:'eye',skull:'skull',swords:'swords',coin:'coins',list:'list',clock:'clock',range:'scan-line',recall:'house',check:'check',unavailable:'circle-alert',swap:'arrow-left-right',star:'star'};
 (async()=>{const files={},sources={};for(const [name,sourceName] of Object.entries(names)){
  const raw=fs.readFileSync(path.join(source,sourceName+'.svg'),'utf8');
  // White masks let the native renderer apply the exact warm/accent tint.

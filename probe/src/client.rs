@@ -521,6 +521,16 @@ impl Client {
                 );
             }
         }
+        // The live rating, while its setting is on and you play: in the row
+        // under the input delay's place, whether that is shown or not.
+        if crate::live_rating::shown()
+            && matches!(
+                self.timing.ui_phase(),
+                Some(native_timing::Phase::Running | native_timing::Phase::Paused)
+            )
+        {
+            crate::live_rating::draw(ctx, self.movement.hud_identity());
+        }
         // The no-cooldown test option changes the real match: always shown.
         if test_cheats::active() {
             ctx.draw_rect("UI", 18., 150., 260., 32., 1000, 6., 0x8a1c1cff);
@@ -631,6 +641,7 @@ impl StableExtension for Client {
         self.timing
             .configure_pacing_off(self.settings.hidden_switch("perf_pacing_off"), &self.logger);
         crate::input_delay::set_shown(self.settings.number("show_input_delay") == 1.);
+        crate::live_rating::set_shown(self.settings.number("live_rating") == 1.);
         self.post_update_inner(ctx, dt_micros);
     }
     fn post_render(&self, ctx: &mut StableClient<'_>) {

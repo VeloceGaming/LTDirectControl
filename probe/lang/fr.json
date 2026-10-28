@@ -376,5 +376,7 @@
  "Unit highlight": "Mise en évidence des unités",
  "Outline": "Contour",
  "Ground ring": "Anneau au sol",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Cible survolée et cible d'attaque ; alliés en bleu, ennemis en rouge. L'anneau au sol est l'option la plus compatible avec les mods qui redessinent les unités ; passer à cette option ou la quitter demande de redémarrer le jeu."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Cible survolée et cible d'attaque ; alliés en bleu, ennemis en rouge. L'anneau au sol est l'option la plus compatible avec les mods qui redessinent les unités ; passer à cette option ou la quitter demande de redémarrer le jeu.",
+ "Live rating": "Évaluation en direct",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "L'évaluation de match de ton joueur, en petit dans le coin supérieur droit, telle que le jeu la calcule."
 }

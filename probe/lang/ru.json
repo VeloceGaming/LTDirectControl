@@ -376,5 +376,7 @@
  "Unit highlight": "Выделение юнитов",
  "Outline": "Контур",
  "Ground ring": "Кольцо на земле",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Цель под курсором и цель атаки; союзники синие, враги красные. Кольцо на земле лучше совместимо с модами, которые перерисовывают юнитов; переключение на него или с него требует перезапуска игры."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Цель под курсором и цель атаки; союзники синие, враги красные. Кольцо на земле лучше совместимо с модами, которые перерисовывают юнитов; переключение на него или с него требует перезапуска игры.",
+ "Live rating": "Рейтинг в реальном времени",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Рейтинг управляемого игрока в матче, мелко в правом верхнем углу, как его считает игра."
 }

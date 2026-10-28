@@ -376,5 +376,7 @@
  "Unit highlight": "ไฮไลต์ยูนิต",
  "Outline": "เส้นขอบ",
  "Ground ring": "วงแหวนบนพื้น",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "เป้าหมายที่ชี้และเป้าที่กำลังโจมตี ฝ่ายเราสีน้ำเงิน ศัตรูสีแดง วงแหวนบนพื้นเข้ากันได้ดีกว่ากับม็อดที่วาดยูนิตใหม่ การเปลี่ยนไปใช้หรือเลิกใช้ต้องเริ่มเกมใหม่"
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "เป้าหมายที่ชี้และเป้าที่กำลังโจมตี ฝ่ายเราสีน้ำเงิน ศัตรูสีแดง วงแหวนบนพื้นเข้ากันได้ดีกว่ากับม็อดที่วาดยูนิตใหม่ การเปลี่ยนไปใช้หรือเลิกใช้ต้องเริ่มเกมใหม่",
+ "Live rating": "คะแนนฟอร์มสด",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "คะแนนฟอร์มของนักกีฬาที่คุณควบคุมในแมตช์ แสดงเล็กๆ ที่มุมขวาบน ตามที่เกมคำนวณ"
 }

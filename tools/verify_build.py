@@ -126,9 +126,9 @@ bundled_emotes = load('bundled-emotes.json')
 assert digest(root / bundled_emotes['source']) == bundled_emotes['source_sha256']
 assert digest(root / bundled_emotes['catalogue']) == bundled_emotes['catalogue_sha256']
 assert len(bundled_emotes['entries']) == len(bundled_emotes['files']) == 4
-assert len(ui_art['files']) == 122  # 88 existing + five faces + optional sound + four bundled faces + the swap icon + the ready chime and denied cast clip + the drawing probe SVG (1.6.0-perf-dev2) + 20 drawn glyphs (1.6.0-perf-dev3)
+assert len(ui_art['files']) == 124  # 88 existing + five faces + optional sound + four bundled faces + the swap icon + the ready chime and denied cast clip + the drawing probe SVG (1.6.0-perf-dev2) + 20 drawn glyphs (1.6.0-perf-dev3) + the live rating's star and its shadow (1.6.2-dev1)
 drawn_glyphs = load('drawn-glyphs.json')
-assert len(drawn_glyphs['variants']) == len(drawn_glyphs['files']) == 20
+assert len(drawn_glyphs['variants']) == len(drawn_glyphs['files']) == 22
 assert set(drawn_glyphs['files']) <= set(ui_art['files'])
 stamp = load('shop-stamp.json')
 assert digest(root / stamp['source']) == stamp['source_sha256']

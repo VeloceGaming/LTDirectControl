@@ -376,5 +376,7 @@
  "Unit highlight": "Destaque de unidades",
  "Outline": "Contorno",
  "Ground ring": "Anel no chão",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Alvo sob o cursor e alvo do ataque; aliados em azul, inimigos em vermelho. O anel no chão é a opção mais compatível com mods que redesenham as unidades; mudar para ela ou sair dela exige reiniciar o jogo."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Alvo sob o cursor e alvo do ataque; aliados em azul, inimigos em vermelho. O anel no chão é a opção mais compatível com mods que redesenham as unidades; mudar para ela ou sair dela exige reiniciar o jogo.",
+ "Live rating": "Avaliação ao vivo",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "A avaliação da partida do seu jogador, pequena no canto superior direito, como o jogo calcula."
 }

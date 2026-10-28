@@ -55,6 +55,7 @@ mod inventory;
 mod key_cap;
 mod key_names;
 mod lang;
+mod live_rating;
 mod logging;
 mod map_path;
 mod minimap;

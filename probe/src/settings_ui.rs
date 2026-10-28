@@ -2422,8 +2422,9 @@ mod tests {
         // Emotes have a fixed body; Interface retains its scrolling viewport.
         // + 90 for the HUD tooltips row; + 238 for the Sounds section (a
         // heading and three switches); + 62 for the HUD motion switch (motion: switch);
-        // + 28 for Unit highlight, a three-way choice instead of a switch.
-        assert_eq!(max_scroll(3), 57. + 142. + 90. + 238. + 62. + 28.);
+        // + 28 for Unit highlight, a three-way choice instead of a switch;
+        // + 62 for the Live rating switch (1.6.2-dev1).
+        assert_eq!(max_scroll(3), 57. + 142. + 90. + 238. + 62. + 28. + 62.);
         assert_eq!(max_scroll(PAGE_EMOTES), 0.);
         let (camera, _) = layout(2);
         assert_eq!(camera[1].1, 34.);

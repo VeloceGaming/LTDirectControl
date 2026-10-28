@@ -122,7 +122,9 @@
     "ui/bundled/emote_clown_son.png": "29afbf836a506b8e8ff3ba40f68fb58149d04dd5168c65d8f4555a021f148291",
     "ui/bundled/emote_ghost_wajaja.png": "4a510c8bcb260d4bfc3ef836d991bd7b6ba232898ac477eab320b307e9495e11",
     "ui/bundled/emote_monk_no_kills.png": "9d0d165483789164c931e85e9915d20d9956d4c53e400de634b52bd767db1bea",
-    "ui/ef_swap.png": "92b8f1a26c362d0e75a41466d2e49c87efad39a1a3a424ed64994aa92fa89749"
+    "ui/ef_swap.png": "92b8f1a26c362d0e75a41466d2e49c87efad39a1a3a424ed64994aa92fa89749",
+    "ui/drawn_ef_star_18_cbc9c7.png": "e6c7ca66bd55f3b90b6808fd55fb1f6f0822303294f3b4f0be102896335f3589",
+    "ui/drawn_ef_star_18_000000.png": "180fb87a7d4ec00ecd70fa185fba506f0c7099d8e967008348e2ddc9eb3e9a0e"
   },
   "palette": "Endfield masks tinted by native UI; full-colour user shop stamp; previous cursor/glyph art retained",
   "rendering": "source paths, palette and typography assets verified; native rendering pending user test"

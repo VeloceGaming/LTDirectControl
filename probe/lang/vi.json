@@ -376,5 +376,7 @@
  "Unit highlight": "Làm nổi bật đơn vị",
  "Outline": "Viền",
  "Ground ring": "Vòng dưới chân",
- "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Mục tiêu được trỏ và đang tấn công; đồng minh màu xanh, kẻ địch màu đỏ. Vòng dưới chân là lựa chọn tương thích hơn với các mod vẽ lại đơn vị; chuyển sang hoặc bỏ lựa chọn này cần khởi động lại trò chơi."
+ "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Mục tiêu được trỏ và đang tấn công; đồng minh màu xanh, kẻ địch màu đỏ. Vòng dưới chân là lựa chọn tương thích hơn với các mod vẽ lại đơn vị; chuyển sang hoặc bỏ lựa chọn này cần khởi động lại trò chơi.",
+ "Live rating": "Điểm trực tiếp",
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Điểm trận đấu của tuyển thủ bạn điều khiển, hiển thị nhỏ ở góc trên bên phải, đúng như trò chơi tính."
 }

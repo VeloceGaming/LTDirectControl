@@ -284,6 +284,16 @@ pub static OPTIONS: &[OptionDef] = &[
         control: Control::Toggle,
         default: 1.,
     },
+    // Display only (live_rating.rs): the game's own match rating. Off by default.
+    OptionDef {
+        key: "live_rating",
+        page: 3,
+        section: "Appearance",
+        label: "Live rating",
+        hint: "Your athlete's match rating, small in the top-right corner, as the game calculates it.",
+        control: Control::Toggle,
+        default: 0.,
+    },
     OptionDef {
         key: "low_health_effect",
         page: 3,

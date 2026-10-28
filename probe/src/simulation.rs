@@ -770,6 +770,13 @@ impl Simulation {
         }) {
             if self.hud.needs_sample(hud_key, hud_player, tick) {
                 if let Some(player) = sim.get_player(hud_player) {
+                    // Live rating (display only): read while its setting is on.
+                    crate::live_rating::sample(
+                        key,
+                        hud_player,
+                        |path| player.statistics_json(path),
+                        &self.logger,
+                    );
                     let champion = player.champion();
                     let cooldowns = player.cooldowns().map_or([0; 3], |(_, q, w, r)| [q, w, r]);
                     if !player.is_alive() {
