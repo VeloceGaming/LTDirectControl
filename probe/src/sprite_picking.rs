@@ -77,7 +77,7 @@ fn report_unmatched(name: &str) {
 /// The base sheet name of a native non-champion unit name. Native names are
 /// generic ("tower", "bee_monster"); the renderer maps them to side-specific
 /// or differently named art, and both sides share body dimensions.
-fn sheet_name(name: &str) -> &str {
+pub(crate) fn sheet_name(name: &str) -> &str {
     let n = name
         .rsplit('/')
         .next()

@@ -10,8 +10,8 @@ pub(crate) const EXPECTED_SHA: &str =
 pub(crate) const PE_TIMESTAMP: u32 = 0x6ae1b2c7;
 pub(crate) const IMAGE_SIZE: u32 = 0x58f8000;
 /// The families reviewed for `EXPECTED_SHA`: the core ones in 1.7.0-dev1,
-/// the minimap, outline and tooltips in 1.7.0-dev2. Not yet: the research
-/// reader.
+/// the minimap, outline and tooltips in 1.7.0-dev2, the signal probe
+/// (research builds only) in 1.7.1-dev4. Not yet: the research reader.
 pub(crate) const ENABLED: u32 = family::SESSION
     | family::CAMERA
     | family::MINIMAP
@@ -20,7 +20,8 @@ pub(crate) const ENABLED: u32 = family::SESSION
     | family::SHOP
     | family::OUTLINE
     | family::TOOLTIPS
-    | family::STATS;
+    | family::STATS
+    | family::SIGNALS;
 /// The reviewed minimap operands (tools/native_profiles).
 pub(crate) const MINIMAP_PROFILE: &str =
     include_str!("../../../../tools/native_profiles/0.7.0.json");

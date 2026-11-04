@@ -378,5 +378,21 @@
  "Ground ring": "Yer halkası",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Üzerine gelinen ve saldırılan hedef; dostlar mavi, düşmanlar kırmızı. Yer halkası, birimleri yeniden çizen modlarla daha uyumlu seçenektir; ona geçmek ya da ondan çıkmak için oyunu yeniden başlatmak gerekir.",
  "Live rating": "Canlı değerlendirme",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Oyuncunun maç değerlendirmesi, oyunun hesapladığı şekilde sağ üst köşede küçük olarak."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Oyuncunun maç değerlendirmesi, oyunun hesapladığı şekilde sağ üst köşede küçük olarak.",
+ "Ping wheel (hold)": "Sinyal çarkı (basılı tut)",
+ "Retreat ping": "Geri çekil sinyali",
+ "Assist me": "Yardım et",
+ "On my way": "Geliyorum",
+ "Enemy missing": "Düşman kayıp",
+ "Retreat": "Geri çekil",
+ "Take here": "Burayı al",
+ "Defend here": "Burayı savun",
+ "Poke": "Dürt",
+ "All-in": "Topyekûn",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "üs",
+ "Top lane": "Üst koridor",
+ "Mid lane": "Orta koridor",
+ "Bottom lane": "Alt koridor"
 }

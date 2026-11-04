@@ -378,5 +378,21 @@
  "Ground ring": "Pierścień na ziemi",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Wskazany cel i cel ataku; sojusznicy na niebiesko, wrogowie na czerwono. Pierścień na ziemi to opcja najlepiej zgodna z modami, które inaczej rysują jednostki; przełączenie na nią lub z niej wymaga ponownego uruchomienia gry.",
  "Live rating": "Ocena na żywo",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Ocena meczowa twojego zawodnika, mała, w prawym górnym rogu, tak jak liczy ją gra."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Ocena meczowa twojego zawodnika, mała, w prawym górnym rogu, tak jak liczy ją gra.",
+ "Ping wheel (hold)": "Koło sygnałów (przytrzymaj)",
+ "Retreat ping": "Sygnał odwrotu",
+ "Assist me": "Pomóż mi",
+ "On my way": "Już idę",
+ "Enemy missing": "Wróg zniknął",
+ "Retreat": "Odwrót",
+ "Take here": "Zajmij tutaj",
+ "Defend here": "Broń tutaj",
+ "Poke": "Nękaj",
+ "All-in": "Wszystko albo nic",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "baza",
+ "Top lane": "Górna aleja",
+ "Mid lane": "Środkowa aleja",
+ "Bottom lane": "Dolna aleja"
 }

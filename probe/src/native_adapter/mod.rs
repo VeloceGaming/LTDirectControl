@@ -483,6 +483,31 @@ pub fn outline_installed() -> bool {
         false
     }
 }
+/// The ping orders can reach the teammates (1.7.1-dev13): the signal
+/// family's step hook is in on this game version (0.7.0; 0.6.5 keeps
+/// placeholders and the family off), and every brain's step has shown
+/// which one is the controlled athlete's. `calls`: inbox calls can be
+/// written; `objectives`: the game's objective setter passed its check too.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct PingReach {
+    pub calls: bool,
+    pub objectives: bool,
+}
+pub fn ping_reach() -> PingReach {
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    {
+        let resolved = signal_call::controlled_brain().is_some();
+        let reach: PingReach = hooks!(PingReach::default(), ping_reach());
+        PingReach {
+            calls: reach.calls && resolved,
+            objectives: reach.objectives && resolved,
+        }
+    }
+    #[cfg(not(all(windows, target_arch = "x86_64")))]
+    {
+        PingReach::default()
+    }
+}
 /// The minimap family is installed: the mod restyles the native minimap,
 /// and its frame (`minimap::draw_frame`) belongs to that look.
 pub fn minimap_installed() -> bool {
@@ -561,6 +586,11 @@ mod v065 {
     pub(super) mod identity;
     mod items;
     mod layout;
+    // The signal tables: the ping orders (1.7.1-dev13) and, in research
+    // builds, the signal probe (1.7.1-dev4), whose entries public builds
+    // leave unused.
+    #[cfg_attr(not(feature = "research"), allow(dead_code))]
+    mod signals;
     mod stat_sites;
     #[allow(clippy::duplicate_mod)]
     #[path = "../windows/mod.rs"]
@@ -575,6 +605,11 @@ mod v070 {
     pub(super) mod identity;
     mod items;
     mod layout;
+    // The signal tables: the ping orders (1.7.1-dev13) and, in research
+    // builds, the signal probe (1.7.1-dev4), whose entries public builds
+    // leave unused.
+    #[cfg_attr(not(feature = "research"), allow(dead_code))]
+    mod signals;
     mod stat_sites;
     #[allow(clippy::duplicate_mod)]
     #[path = "../windows/mod.rs"]
@@ -582,6 +617,19 @@ mod v070 {
 }
 #[cfg(all(windows, target_arch = "x86_64"))]
 mod host;
+// The ping system's native half (1.7.1-dev13; research builds since
+// 1.7.1-dev4): the fight call and the mapping (`signal_call`), the
+// delivery rules (`signal_fate`), the step memory (`signal_probe`, whose
+// queue dumps stay in research builds) and the orders (`ping_orders`).
+pub(crate) mod ping_orders;
+pub(crate) mod signal_call;
+#[cfg_attr(not(feature = "research"), allow(dead_code))]
+mod signal_fate;
+#[cfg_attr(not(feature = "research"), allow(dead_code))]
+mod signal_probe;
+// Superseded 2026-11-04 (1.7.1-dev21, the author's pings spec section
+// 14.2): the per-player lever tests (research builds, 1.7.1-dev10,
+// `team_order.rs`, keys F1 to F6) are removed.
 #[cfg(test)]
 mod fingerprint_tests {
     #[test]

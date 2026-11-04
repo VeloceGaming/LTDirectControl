@@ -11,7 +11,8 @@
   "shop",
   "outline",
   "tooltips",
-  "stats"
+  "stats",
+  "signals"
  ],
  "executable_sha256": "d678e01285b7a9edba2c7ee1067cea93a54f979d769eaae9f0d8309d18ff7d30",
  "timestamp": "0x6ae1b2c7",
@@ -345,6 +346,596 @@
   "STATS_SITE_34": {
    "rva": "0x1d69b20",
    "bytes": "483d89130000"
+  },
+  "SIGNAL_STEP_CALL": {
+   "rva": "0xf16de7",
+   "bytes": "e8b4f5ffff",
+   "target": "0xf163a0"
+  },
+  "SIGNAL_BROADCAST_PROLOGUE": {
+   "rva": "0xf163a0",
+   "bytes": "5541574156415541545657534881ec88010000"
+  },
+  "SIGNAL_STEP_ARGUMENTS": {
+   "rva": "0xf16dc4",
+   "bytes": "4c8b3e488b46084889851001000048894424204889d9488b95200100004989f84d89f9"
+  },
+  "SIGNAL_TICK_READ": {
+   "rva": "0xf16550",
+   "bytes": "498b85b8010000"
+  },
+  "SIGNAL_IDENTITY_READ": {
+   "rva": "0xf163d9",
+   "bytes": "498b9020080000"
+  },
+  "SIGNAL_INDEX_READ": {
+   "rva": "0xf166c1",
+   "bytes": "458bbfb0080000"
+  },
+  "SIGNAL_DELAY_READ": {
+   "rva": "0xe75c80",
+   "bytes": "498b442408488b80f81200004c01f0483b87b8010000"
+  },
+  "SIGNAL_QUEUE_A_GROW": {
+   "rva": "0xf16b69",
+   "bytes": "4c8bb8f81e00004c3bb8e81e0000"
+  },
+  "SIGNAL_QUEUE_A_APPEND": {
+   "rva": "0xf1671c",
+   "bytes": "488b82f01e00004b8d0cbf4c892cc8897cc808f30f6f45b0f30f6f4dbcf30f7f44c80cf30f7f4cc81849ffc74c89baf81e0000"
+  },
+  "SIGNAL_QUEUE_B_GROW": {
+   "rva": "0xf16af2",
+   "bytes": "4c8bb8b01e00004c3bb8a01e0000"
+  },
+  "SIGNAL_QUEUE_B_APPEND": {
+   "rva": "0xf16b15",
+   "bytes": "488b82a81e00004b8d0cbf4c892cc8897cc808f30f6f45b0f30f6f4dbcf30f7f44c80cf30f7f4cc81849ffc74c89bab01e0000"
+  },
+  "SIGNAL_LIST_C_GROW": {
+   "rva": "0xe3c30d",
+   "bytes": "498b9dc81e0000493b9db81e0000"
+  },
+  "SIGNAL_LIST_C_APPEND": {
+   "rva": "0xe3c338",
+   "bytes": "498b85c01e0000488d0c5bc604c80948c744c8080000000048ffc349899dc81e0000"
+  },
+  "SIGNAL_LATE_ARGUMENTS": {
+   "rva": "0xe75c21",
+   "bytes": "488b8da00000004c89f24189d84c8d4d50"
+  },
+  "SIGNAL_LATE_CALL": {
+   "rva": "0xe75c32",
+   "bytes": "e859040000",
+   "target": "0xe76090"
+  },
+  "SIGNAL_LATE_PROLOGUE": {
+   "rva": "0xe76090",
+   "bytes": "41574156415541545657555350488b81b01e0000"
+  },
+  "SIGNAL_GATE_ARGUMENTS": {
+   "rva": "0xe75cf3",
+   "bytes": "488b8d2801000048894c2440884424384c89742430895c2428488b852001000048894424204c89e9488b55404c8b45384c8b4d30"
+  },
+  "SIGNAL_GATE_CALL": {
+   "rva": "0xe75d27",
+   "bytes": "e88400ffff",
+   "target": "0xe65db0"
+  },
+  "SIGNAL_GATE_PROLOGUE": {
+   "rva": "0xe65db0",
+   "bytes": "5541574156415541545657534881ec88010000"
+  },
+  "SIGNAL_GATE_OWN": {
+   "rva": "0xe65dd6",
+   "bytes": "448bad78010000453ba9b0080000"
+  },
+  "SIGNAL_MODE_READ": {
+   "rva": "0xe65dfd",
+   "bytes": "4c8b6008410fb64c2438"
+  },
+  "SIGNAL_GATE_DISPATCH": {
+   "rva": "0xe65e0a",
+   "bytes": "4489ea4c8d055ca01a03496314904c01c2ffe2"
+  },
+  "SIGNAL_GATE_TABLE": {
+   "rva": "0x400fe70",
+   "bytes": "cd5fe5fc4062e5fcbd5fe5fcad5fe5fcad5fe5fc"
+  },
+  "SIGNAL_GATE_MASKS": {
+   "rva": "0xe65e1d",
+   "bytes": "80f9080f87cf020000b9ab010000eb1e83f8080f87bf020000b9b1010000eb0e83f8080f87af020000b9850100000fa3c1"
+  },
+  "SIGNAL_GATE_SLOT1": {
+   "rva": "0xe660b0",
+   "bytes": "8d41f83cf90f93c080f9060f95c184c10f848efdffff"
+  },
+  "SIGNAL_HEARD_CALL_1": {
+   "rva": "0xe65f25",
+   "bytes": "e8d6130000",
+   "target": "0xe67300"
+  },
+  "SIGNAL_HEARD_CALL_2": {
+   "rva": "0xe660ef",
+   "bytes": "e80c120000",
+   "target": "0xe67300"
+  },
+  "SIGNAL_HEARD_PROLOGUE": {
+   "rva": "0xe67300",
+   "bytes": "4157415641554154565755534881ec68040000"
+  },
+  "SIGNAL_HANDLER_SIGNAL": {
+   "rva": "0xe67316",
+   "bytes": "488b8424e0040000"
+  },
+  "SIGNAL_HELP_CASE": {
+   "rva": "0xe67538",
+   "bytes": "4c8b7008488b07488b08488b40084d89cf4889d54d89c4ff50404d89e04889ea4d89f9b102"
+  },
+  "SIGNAL_SCENE_CALL": {
+   "rva": "0xe67580",
+   "bytes": "e86bedffff",
+   "target": "0xe662f0"
+  },
+  "SIGNAL_SCENE_PROLOGUE": {
+   "rva": "0xe662f0",
+   "bytes": "5541574156415541545657534881ec88090000"
+  },
+  "SIGNAL_JOIN_FIRST": {
+   "rva": "0xe6635c",
+   "bytes": "48ff86c0120000"
+  },
+  "SIGNAL_JOIN_LAST": {
+   "rva": "0xe66f70",
+   "bytes": "48ff86f8120000"
+  },
+  "SIGNAL_ENV_40398E0_DROP": {
+   "rva": "0x40398e0",
+   "pointer_target": "0x100f910"
+  },
+  "SIGNAL_ENV_40398E0_LAYOUT": {
+   "rva": "0x40398e8",
+   "bytes": "a8000000000000000800000000000000"
+  },
+  "SIGNAL_ENV_40398E0_KIND": {
+   "rva": "0x4039920",
+   "pointer_target": "0x18ebb40"
+  },
+  "SIGNAL_ENV_40A2530_DROP": {
+   "rva": "0x40a2530",
+   "pointer_target": "0x1623840"
+  },
+  "SIGNAL_ENV_40A2530_LAYOUT": {
+   "rva": "0x40a2538",
+   "bytes": "10f40000000000000800000000000000"
+  },
+  "SIGNAL_ENV_40A2530_KIND": {
+   "rva": "0x40a2570",
+   "pointer_target": "0x16ab380"
+  },
+  "SIGNAL_ENV_40C9F28_DROP": {
+   "rva": "0x40c9f28",
+   "pointer_target": "0x185f4c0"
+  },
+  "SIGNAL_ENV_40C9F28_LAYOUT": {
+   "rva": "0x40c9f30",
+   "bytes": "10f40000000000000800000000000000"
+  },
+  "SIGNAL_ENV_40C9F28_KIND": {
+   "rva": "0x40c9f68",
+   "pointer_target": "0x16ab380"
+  },
+  "SIGNAL_ENV_40A33A0_DROP": {
+   "rva": "0x40a33a0",
+   "pointer_target": "0x1623830"
+  },
+  "SIGNAL_ENV_40A33A0_LAYOUT": {
+   "rva": "0x40a33a8",
+   "bytes": "58f00000000000000800000000000000"
+  },
+  "SIGNAL_ENV_40A33A0_KIND": {
+   "rva": "0x40a33e0",
+   "pointer_target": "0x16ca720"
+  },
+  "SIGNAL_ENV_40A3F98_DROP": {
+   "rva": "0x40a3f98",
+   "pointer_target": "0x1623830"
+  },
+  "SIGNAL_ENV_40A3F98_LAYOUT": {
+   "rva": "0x40a3fa0",
+   "bytes": "58f00000000000000800000000000000"
+  },
+  "SIGNAL_ENV_40A3F98_KIND": {
+   "rva": "0x40a3fd8",
+   "pointer_target": "0x16d9eb0"
+  },
+  "SIGNAL_ENV_40C9898_DROP": {
+   "rva": "0x40c9898",
+   "pointer_target": "0x185f4b0"
+  },
+  "SIGNAL_ENV_40C9898_LAYOUT": {
+   "rva": "0x40c98a0",
+   "bytes": "58f00000000000000800000000000000"
+  },
+  "SIGNAL_ENV_40C9898_KIND": {
+   "rva": "0x40c98d8",
+   "pointer_target": "0x16d9eb0"
+  },
+  "SIGNAL_ENV_KIND0_BODY": {
+   "rva": "0x16ab380",
+   "bytes": "488d9178f0000031c0c3"
+  },
+  "SIGNAL_ENV_KIND1_BODY": {
+   "rva": "0x16ca720",
+   "bytes": "488d9140f00000b801000000c3"
+  },
+  "SIGNAL_ENV_KIND2_BODY": {
+   "rva": "0x16d9eb0",
+   "bytes": "488d9140f00000b802000000c3"
+  },
+  "SIGNAL_ENV_WRAPPER_BODY": {
+   "rva": "0x18ebb40",
+   "bytes": "488b01488b51084889c148ff6240"
+  },
+  "SIGNAL_BATTLE_KIND_CHECK": {
+   "rva": "0xe673c2",
+   "bytes": "488b07488b08488b40084d89cf4889d54d89c4ff50404d89e04889ea4d89f9b1014885c00f857a010000"
+  },
+  "SIGNAL_DIVE_KIND_CHECK": {
+   "rva": "0xe674e0",
+   "bytes": "488b07488b08488b40084d89cf4889d54d89c4ff50404d89e04889ea4d89f9b1034885c07560"
+  },
+  "SIGNAL_HELP_KIND_CHECK": {
+   "rva": "0xe6753c",
+   "bytes": "488b07488b08488b40084d89cf4889d54d89c4ff50404d89e04889ea4d89f9b1024885c00f8422030000"
+  },
+  "SIGNAL_SCENE_KIND_READ": {
+   "rva": "0xe664c8",
+   "bytes": "488b86a0160000418b8fb00800004f8d0492488b95d80800004a8d14c24c8bb4ca38020000"
+  },
+  "SIGNAL_IN_BATTLE_WRITE": {
+   "rva": "0xe6655f",
+   "bytes": "488b87b805000048c786a016000001000000488986a8160000"
+  },
+  "SIGNAL_UNIT_POS_READ": {
+   "rva": "0xe6650f",
+   "bytes": "488b8758060000488b8f60060000498b96580600004d8b8660060000"
+  },
+  "SIGNAL_UNIT_HP_READ": {
+   "rva": "0xe668c8",
+   "bytes": "498b8e380600004885c90f84920900004c89d04809c848c1e8200f84d50000004c89d031d248f7f14989c0498b8e200600004885c90f84d4000000496b8668060000644889c24809ca48c1ea200f84ca00000031d248f7f1"
+  },
+  "SIGNAL_REPLY_OK_PUSH": {
+   "rva": "0xe66f2a",
+   "bytes": "488b9ec81e0000483b9eb81e00007514488d8eb81e0000c685ff08000001e873e9fe0290488b86c01e0000488d0c5bc604c80948c744c8080000000048ffc348899ec81e000048ff86f8120000"
+  },
+  "SIGNAL_SCENE_WRITE": {
+   "rva": "0xe729ee",
+   "bytes": "48c786f0150000010000004c89bef815000048c786001600000000000048c7861816000000000000488986301600004c89b63816000048898640160000488b8c244801000048898e48160000488b842450010000488986501600004889be5816000048c786601600000000000048898e68160000488986701600000f57c00f118678160000889e88160000c786891600000000ff04"
+  },
+  "SIGNAL_HELP_TARGET_READ": {
+   "rva": "0xe67538",
+   "bytes": "4c8b7008"
+  },
+  "SIGNAL_OBJECTIVE_PROLOGUE": {
+   "rva": "0xec3820",
+   "bytes": "55415741565657534881ec08010000488dac248000000048c78580000000"
+  },
+  "SIGNAL_OBJECTIVE_TRACE_TEST": {
+   "rva": "0xec3851",
+   "bytes": "80b948070000000f84ca010000"
+  },
+  "SIGNAL_OBJECTIVE_STORES": {
+   "rva": "0xec3a28",
+   "bytes": "80fa0274150fb6c23dff000000754948c7867807000000000000c686580d000000c6865b0d0000ff48c78698070000000000000fb6457e88865f0d00000fb7457c6689865d0d00004881c4080100005b5f5e415e415f5dc348c786780700000000000080fa0874b9c686580d00000080fa0575adebbd"
+  },
+  "SIGNAL_HANDLER_DISPATCH": {
+   "rva": "0xe6731e",
+   "bytes": "0fb608ffc983f90a0f875c0500004c8bac24e80400008b9c24d8040000488bbc24d00400004c8d15628b1a0349630c8a4c01d1ffe1"
+  },
+  "SIGNAL_HANDLER_TAGS": {
+   "rva": "0x400feac",
+   "bytes": "5f76e5fc1275e5fc3076e5fc8c76e5fcde76e5fca774e5fca774e5fcdc79e5fcdc79e5fcdc79e5fc4575e5fc"
+  },
+  "SIGNAL_HIDE_CASE": {
+   "rva": "0xe67353",
+   "bytes": "0fb6580183bea016000003"
+  },
+  "SIGNAL_HIDE_OBJECTIVE": {
+   "rva": "0xe6782d",
+   "bytes": "80be450e0000ff7552418b89b0080000b81d0000000fa3c87341c1e10348b8000001020200000048d3e838c3752d488d8ee80000000fb6d3c1e20883ca064c8d05c62b1a03e8a9bf0500488b07488b80b8010000488986280d0000"
+  },
+  "SIGNAL_VISION_BASE": {
+   "rva": "0xecbd55",
+   "bytes": "488b85f00200004c8db8080b00004c89bdd0020000"
+  },
+  "SIGNAL_VISION_STORES": {
+   "rva": "0xecbf86",
+   "bytes": "458b88b0080000488d0489488d9738020000488d04c24a8b04c84885c00f84d700000041803c2400751f498b4c24084883f9010f8788170000488d0c4948837cc838000f85610100004c89ee488b8fb80100004c8bbdf00200004b898ccf800b00004b898ccfa80b0000488b8858060000488b90600600004d8b9424580600004989cb4d29d34929ca4d0f42d34d89e54d8b9c24600600004989d44d29dc4929d34d0f42dc4d0fafd24d0fafdb4d01d34f899ccfd00b00004c8bbdd00200004589ca41c1e2044b890c174b89541708"
+  },
+  "SIGNAL_REASON_MODE_GATE": {
+   "rva": "0xeb72d0",
+   "bytes": "41c685c800000020"
+  },
+  "SIGNAL_REASON_SERPEN": {
+   "rva": "0xeb74a7",
+   "bytes": "488b4c2448c681c800000021"
+  },
+  "SIGNAL_PLAN_DISPATCH": {
+   "rva": "0xe766cb",
+   "bytes": "488b014883e80241b8070000004c0f43c04889d6488d052e9a19034a6314804801c2ffe2"
+  },
+  "SIGNAL_PLAN_TABLE": {
+   "rva": "0x4010114",
+   "bytes": "db65e6fcd568e6fca167e6fc0968e6fc6966e6fc3d69e6fca569e6fc7168e6fc756ae6fc3967e6fc0d6ae6fc0166e6fcd166e6fc"
+  },
+  "SIGNAL_PLAN_CASE_PASSIVE_LINE": {
+   "rva": "0xe769e9",
+   "bytes": "4883c10848894c2428488b3e4c8b76084d8b7e18488d158c2f190341b80b0000004889f941ffd7b30184c00f85de060000f64612800f859e040000488d15b6bd080341b8010000004889f941ffd784c00f85b9060000488d4c24284889f2e8c40c2b00"
+  },
+  "SIGNAL_PLAN_CASE_SINGLE_LINE": {
+   "rva": "0xe768b5",
+   "bytes": "4883c10848894c2428488b3e4c8b76084d8b7e18488d159c69190341b80e0000004889f941ffd7b30184c00f8512080000f64612800f859d040000488d15eabe080341b8010000004889f941ffd784c00f85ed070000488d4c24284889f2e8284c1900"
+  },
+  "SIGNAL_PLAN_CASE_LINE_GANKER": {
+   "rva": "0xe76b89",
+   "bytes": "4883c10848894c2428488b3e4c8b76084d8b7e18488d157a41190341b80a0000004889f941ffd7b30184c00f853e050000f64612800f8597040000488d1516bc080341b8010000004889f941ffd784c00f8519050000488d4c24284889f2e834072700"
+  },
+  "SIGNAL_PLAN_CASE_ATTACK_NEXUS": {
+   "rva": "0xe76715",
+   "bytes": "4883c10848894c2428488b3e4c8b76084d8b7e18488d153641190341b80b0000004889f941ffd7b30184c00f85b2090000f64612800f85a1040000488d158ac0080341b8010000004889f941ffd784c00f858d090000488d4c24284889f2e8a80e2b00"
+  },
+  "SIGNAL_LANE_PASSIVE_LINE": {
+   "rva": "0x1127710",
+   "bytes": "4157415641554154565755534881ecb80100004989d6488b114c8d921c010000488d7a18"
+  },
+  "SIGNAL_LANE_SINGLE_LINE": {
+   "rva": "0x100b540",
+   "bytes": "5657534883ec404889d7488b31488d5e19"
+  },
+  "SIGNAL_LANE_LINE_GANKER": {
+   "rva": "0x10e7320",
+   "bytes": "4157415641554154565755534881ece80000004989d7488b114c8d42334c8d4a18"
+  },
+  "SIGNAL_LANE_ATTACK_NEXUS": {
+   "rva": "0x1127620",
+   "bytes": "56574883ec484889d6488b39488d4708"
+  },
+  "SIGNAL_REASON_TICK_MODE_GATE": {
+   "rva": "0xeb72d8",
+   "bytes": "498985d0000000"
+  },
+  "SIGNAL_REASON_TICK_SERPEN": {
+   "rva": "0xeb74b3",
+   "bytes": "488981d0000000"
+  },
+  "SIGNAL_MIA_CASE": {
+   "rva": "0xe6750b",
+   "bytes": "8b5804488b3f488b0f488b4708ff50404885c00f8464030000488b87b8010000488984de400c0000"
+  },
+  "SIGNAL_STOP_CASE": {
+   "rva": "0xe6758a",
+   "bytes": "488b3f488b0f488b4708ff50404885c00f84e802000089d8488b8fb801000048c1e00448c78406900800000100000048898c0698080000"
+  },
+  "SIGNAL_OBJECTIVE_FIELDS": {
+   "rva": "0xed9192",
+   "bytes": "488d78014883c0024889442448"
+  },
+  "SIGNAL_OBJECTIVE_FIELD_NAMES": {
+   "rva": "0xed93b2",
+   "bytes": "488d059fec13034889442420488d15d3ec1303488d74243041b8050000004889f14989f9e8459c18ff488d0596ec13034889442420488d15afec13034c8d4c244841b80b000000"
+  },
+  "SIGNAL_OBJECTIVE_NAME_STRINGS": {
+   "rva": "0x4018098",
+   "bytes": "7068617365776974685f626174746c65"
+  },
+  "SIGNAL_REGROUP_READ": {
+   "rva": "0x1106003",
+   "bytes": "80ba1a01000000"
+  },
+  "SIGNAL_HOLD_READ": {
+   "rva": "0x110601c",
+   "bytes": "80ba1601000000"
+  },
+  "SIGNAL_HOLD_BUILDER_WRITE": {
+   "rva": "0xe56886",
+   "bytes": "66c786160100000101"
+  },
+  "SIGNAL_PUSH_BASIS_WRITE": {
+   "rva": "0xe568a8",
+   "bytes": "c6861f01000005"
+  },
+  "SIGNAL_SUPPORT_SLOT": {
+   "rva": "0xe40a6b",
+   "bytes": "83bd901b000004"
+  },
+  "SIGNAL_SUPPORT_MODE_READ": {
+   "rva": "0xe40aa6",
+   "bytes": "0fb65138"
+  },
+  "SIGNAL_SUPPORT_MODE_MASK": {
+   "rva": "0xe40b49",
+   "bytes": "b8ab010000"
+  },
+  "SIGNAL_SUPPORT_SIM_A": {
+   "rva": "0xe40b5e",
+   "bytes": "4883b81802000000"
+  },
+  "SIGNAL_SUPPORT_SIM_B": {
+   "rva": "0xe40b6f",
+   "bytes": "4883b82002000000"
+  },
+  "SIGNAL_SUPPORT_PLAN": {
+   "rva": "0xe40b7d",
+   "bytes": "4183baa016000003"
+  },
+  "SIGNAL_SUPPORT_SPLIT": {
+   "rva": "0xe40ba8",
+   "bytes": "4180bac017000000"
+  },
+  "SIGNAL_SUPPORT_OBJECTIVE": {
+   "rva": "0xe40bb6",
+   "bytes": "410fb68a450e0000410fb682460e0000"
+  },
+  "SIGNAL_SUPPORT_LANE": {
+   "rva": "0xe40bd0",
+   "bytes": "413a82c4170000"
+  },
+  "SIGNAL_SUPPORT_HOLD_WRITE": {
+   "rva": "0xe40d9a",
+   "bytes": "4188b2be170000"
+  },
+  "SIGNAL_SUPPORT_WAIT_WRITE": {
+   "rva": "0xe40dd3",
+   "bytes": "418882bf170000"
+  },
+  "SIGNAL_RUNAWAY_SET": {
+   "rva": "0xefcde7",
+   "bytes": "488b80f8120000488d0480480386b801000048c747200100000048894728"
+  },
+  "SIGNAL_RUNAWAY_TAG_READ": {
+   "rva": "0xefd014",
+   "bytes": "807f2000"
+  },
+  "SIGNAL_RUNAWAY_TICK_READ": {
+   "rva": "0xefd01e",
+   "bytes": "488b86b8010000483b4728"
+  },
+  "SIGNAL_RUNAWAY_CLEAR": {
+   "rva": "0xefd8ae",
+   "bytes": "48c7472000000000"
+  },
+  "SIGNAL_BATTLE_DONE": {
+   "rva": "0xf15928",
+   "bytes": "83b9e000000004"
+  },
+  "SIGNAL_PLAY_PUBLISHER_CALL": {
+   "rva": "0xec45a5",
+   "bytes": "e8a6a50000"
+  },
+  "SIGNAL_PLAY_FOLLOWER_WRITE": {
+   "rva": "0xec45cb",
+   "bytes": "88865a0d0000"
+  },
+  "SIGNAL_PLAY_SHARED": {
+   "rva": "0xec45db",
+   "bytes": "488b5f104969cea00e0000"
+  },
+  "SIGNAL_PLAY_MIRROR": {
+   "rva": "0xec45f8",
+   "bytes": "4c8b940bd8000000"
+  },
+  "SIGNAL_PLAY_PICK_SHARED": {
+   "rva": "0xeceb5e",
+   "bytes": "488b42104c69c9a00e0000"
+  },
+  "SIGNAL_PLAY_PICK_UNIT": {
+   "rva": "0xeceb98",
+   "bytes": "4883bcd03802000000"
+  },
+  "SIGNAL_PLAY_SERPEN_RECORD": {
+   "rva": "0xec7081",
+   "bytes": "80be8b0a000002"
+  },
+  "SIGNAL_PLAY_MORGARD_RECORD": {
+   "rva": "0xec7212",
+   "bytes": "80beab0a000002"
+  },
+  "SIGNAL_PLAY_SYNC_TEST": {
+   "rva": "0xe3cfd5",
+   "bytes": "4983bc24d8000000ff"
+  },
+  "SIGNAL_PLAY_SYNC_RECORD": {
+   "rva": "0xe3d004",
+   "bytes": "80b89b00000002"
+  },
+  "SIGNAL_REPLACE_TRACE": {
+   "rva": "0xec3bc6",
+   "bytes": "80b94807000000"
+  },
+  "SIGNAL_REPLACE_DROP": {
+   "rva": "0xec3ed0",
+   "bytes": "e85bf1fdff"
+  },
+  "SIGNAL_REPLACE_COPY": {
+   "rva": "0xec3ed5",
+   "bytes": "41b8000400004889f14c89f2e8ad16f902"
+  },
+  "SIGNAL_HUNT_PLAN_TEST": {
+   "rva": "0xeb7694",
+   "bytes": "833a0c"
+  },
+  "SIGNAL_FORCE_PASSIVE_ARG": {
+   "rva": "0xeb7699",
+   "bytes": "48c744247802000000"
+  },
+  "SIGNAL_HANDLER_REPLACE_CALL": {
+   "rva": "0xeb76b1",
+   "bytes": "e8eac40000"
+  },
+  "SIGNAL_WALK_WORLD": {
+   "rva": "0xed46e4",
+   "bytes": "4d8b6220418b842468710000"
+  },
+  "SIGNAL_WALK_RALLY": {
+   "rva": "0xed46fc",
+   "bytes": "4f8bb42c087100004f8ba42c10710000"
+  },
+  "SIGNAL_WALK_SPAWN": {
+   "rva": "0xed4726",
+   "bytes": "4c8b9ae00100004531d24c2b9eb8010000"
+  },
+  "SIGNAL_WALK_SPEED": {
+   "rva": "0xed47fc",
+   "bytes": "498b8d38060000"
+  },
+  "SIGNAL_WALK_RULE": {
+   "rva": "0xed4a4e",
+   "bytes": "488b89f8120000488d04484939c3"
+  },
+  "SIGNAL_WALK_HUNT": {
+   "rva": "0xed4ac3",
+   "bytes": "49c704240c000000"
+  },
+  "SIGNAL_WALK_ALIVE": {
+   "rva": "0xed4ad0",
+   "bytes": "4883bad801000000"
+  },
+  "SIGNAL_WALK_MORGARD_WORLD": {
+   "rva": "0xed1bde",
+   "bytes": "4d8b6e20418b8568710000"
+  },
+  "SIGNAL_WALK_MORGARD_RALLY": {
+   "rva": "0xed1bf8",
+   "bytes": "4d8ba405e87000004d8bac05f0700000"
+  },
+  "SIGNAL_WALK_MORGARD_SPAWN": {
+   "rva": "0xed1c22",
+   "bytes": "488bbab0010000"
+  },
+  "SIGNAL_WALK_MORGARD_RULE": {
+   "rva": "0xed1ef4",
+   "bytes": "488b89f8120000488d04484839c7"
+  },
+  "SIGNAL_WALK_MORGARD_HUNT": {
+   "rva": "0xed2442",
+   "bytes": "48c7060b000000"
+  },
+  "SIGNAL_ENV_KIND0_OBJECT": {
+   "rva": "0x16ab380",
+   "bytes": "488d9178f00000"
+  },
+  "SIGNAL_PLAN_REPLACE_PROLOGUE": {
+   "rva": "0xec3ba0",
+   "bytes": "5541565657534881ec40010000488dac248000000048c785b8000000feffffff4d89c64889d680b948070000000f84fa020000"
+  },
+  "SIGNAL_HANDLER_PLAN": {
+   "rva": "0xe3c052",
+   "bytes": "498d85a0160000"
+  },
+  "SIGNAL_REBUILD_TEST": {
+   "rva": "0xe407c4",
+   "bytes": "833802"
   }
  },
  "layout_anchors": {
@@ -2277,7 +2868,17 @@
  },
  "review_notes": [
   "Drafted from 0.7.0b2 (tools/draft_version.py, function map seeded with the exact whole-function placements and the worker send found by hand), reviewed by hand 2026-10-28 for the session, camera, movement, combat, shop and stats families (1.7.0-dev1) and 2026-10-29 for the minimap, outline and tooltips (1.7.0-dev2): docs/migration-0.7.0.md.",
-  "The research reader is not reviewed on 0.7.0: no anchors, its table holds values no address can have."
+  "The research reader is not reviewed on 0.7.0: no anchors, its table holds values no address can have.",
+  "Signal probe (research builds only, 1.7.1-dev4, 2026-11-02): the per-player AI step's call to the team broadcast and the queue, player and tick fields, read from the code (SIGNAL_* anchors); not yet seen in game.",
+  "Signal delivery probe (research builds only, 1.7.1-dev6, 2026-11-03): five call sites in the delivery (late drop, gate, two receive-handler calls, the scene opener), the gate rules per sender slot, the receiver mode and delay and the call-join counters, read from the code (SIGNAL_* anchors); not yet seen in game.",
+  "Signal probe 1.7.1-dev7 (research builds only, 2026-11-03): the AI environment vtables and their kind method (slot 0x40), the receive handler's kind check before each scene (Battle reason 1, BattleHelp 2, BattleDive 3), read from the code; the owner entity at player state + 0x8 is seen in game (dev6 log), not anchored.",
+  "Signal probe 1.7.1-dev8 (research builds only, 2026-11-03): the scene opener's reads and writes around a call (scene kind and argument, the units table, a unit's position, speed and hp, the Ok reply onto list C and join) and the set-scene block, read from the code. The mod's mark at entry + 0x14 is the mod's own value; that the word is free for BattleHelp is read from the code (only tag 1 reads it), not anchored beyond the BattleHelp case's target read.",
+  "Signal probe 1.7.1-dev10 (research builds only, 2026-11-03): the per-player levers, read from the code: the objective setter 0xec3820 (trace test, the side fields it clears by tag, the 3 bytes it writes; with tracing off it calls nothing), the receive handler's HideLine case and its path to Gank(lane) through the setter (no environment kind check), and the vision update's position, tick and squared-distance stores. The probe calls the setter and writes one inbox entry and four vision fields from the step hook; no new hook site.",
+  "Signal probe 1.7.1-dev12 (research builds only, 2026-11-03): two read-only fields, read from the code: the objective handlers' drop reason byte at team_plan + 0xc8 (the mode gate's 0x20 and the Serpen respawn rule's 0x21 stores anchored), and the big plan's lane by tag through its Debug formatter 0xe766c0 (table 0x4010114 by tag - 2, payload at plan + 8) into the PassiveLine, SinglePlanLine, LineGanker and AttackNexus payload formatters' line fields; the Line enum's name tables give 0 Top, 1 Mid, 2 Bottom. The standing request calls the dev10 setter again from the step hook; no new hook site.",
+  "Ping orders 1.7.1-dev13 (every build, 2026-11-04): the dev10 to dev12 levers become the ping system's, read from the code. The drop reason's tick at team_plan + 0xd0 (its stores after the mode gate's 0x20 and the Serpen rule's 0x21 anchored), read so a standing request stops only on a reason written after its own write. The receive handler's Mia (tag 1, 0xe6750b: the enemy index from the signal's word at +4) and BattleStop (tag 5, 0xe6758a) cases end at the AI environment's kind check in kind 0, the viewed match: both are heard and do nothing there. The objective's byte 1 is the phase and byte 2 with_battle (the Debug formatter 0xed9170, case 0xed9192, names at 0x4018098). Public builds put in the step hook and the two heard sites only, and call the scene opener (its prologue checked) without hooking it; no new hook site.",
+  "Back-off probe 1.7.1-dev15 (research builds only, 2026-11-04): the BattleStop case's record, read from the code at the anchored SIGNAL_STOP_CASE (0xe6758a): mov eax, ebx (the handler's sixth argument, the sender's roster index, which the receive gate compares with the receiver's own at player + 0x8b0, 0xe65ddd); mov rcx, [rdi + 0x1b8] (the AI environment's world tick); shl rax, 4; mov qword [rsi + rax + 0x890], 1; mov [rsi + rax + 0x898], rcx. So 16 bytes per sender at brain + 0x890: a u64 1, then the u64 tick. The verifier now takes 0x890 and the stride 16 from SIGNAL_STOP_RECORD and SIGNAL_STOP_RECORD_STRIDE. No new hook site or anchor; the record is written only by the research key F10.",
+  "Driven windows 1.7.1-dev17 (2026-11-04, read from the code; docs/investigation-team-ai.md sections 20 to 26): 20 new anchors. PassiveLine's regroup_now and hold_wave reads in the sub plan choice (SIGNAL_REGROUP_READ 0x1106003, SIGNAL_HOLD_READ 0x110601c, payload + 0x11a and + 0x116 with the payload at brain + 0x16a8), the builder's hold_wave/waiting pair and push_basis (0xe56886, 0xe568a8); the handler's bottom-support rule: the roster slot 4 (0xe40a6b), in AI kind 0 the receiver's mode byte + 0x38 (0xe40aa6) in mask 0x1ab (0xe40b49) and the simulation words + 0x218 / + 0x220 (0xe40b5e, 0xe40b6f; the kind-0 branch: the section 21 reading of mask 0x1a1 and the first Serpen time is the branch for the other kinds), the plan PassiveLine (0xe40b7d), split_role + 0x17c0 (0xe40ba8), the objective against the plan's line (0xe40bb6, 0xe40bd0) and its writes of hold_wave and waiting (0xe40d9a, 0xe40dd3); the fight plan's well_runaway latch at plan + 0x20 / + 0x28 (brain + 0x16c0 / + 0x16c8): the fountain exit's (1, now + 5 x [[receiver + 8] + 0x12f8]) (0xefcde7), the read and compare with the world tick (0xefd014, 0xefd01e), the self-clear (0xefd8ae); the Battle done test at sub goal End only (0xf15928). The verifier checks every SIGNAL_PLAN_*, SIGNAL_BATTLE_RUNAWAY* and SIGNAL_SUPPORT_* constant against them. Superseded: dev15's BattleStop record constants (SIGNAL_STOP_RECORD, its stride) and the inbox tags SIGNAL_STOP and SIGNAL_MIA are gone from the tables; their case anchors stay.",
+  "Take order and the team's play 1.7.1-dev18 (2026-11-04, read from the code; docs/investigation-team-ai.md sections 27 to 31): 29 new anchors. The publisher pick (call 0xeceb50 at 0xec45a5; its shared block [context + 0x10] + side * 0xea0 at 0xeceb5e and its unit test [context] + 0x238 at 0xeceb98), sync_follower at team plan + 0xd5a (0xec45cb), the cascade's shared block and its ObjSceneSync at + 0xd8 (0xec45db, 0xec45f8), the brain's Serpen and Morgard record None bytes (0xec7081, 0xec7212), the relay's sync test and Serpen record byte (sync + 0x9b, shared + 0x173; 0xe3cfd5, 0xe3d004); the plan replace helper 0xec3ba0: its trace test at + 0x748 (0xec3bc6), the old plan's drop (0xec3ed0) and the 0x400-byte copy (0xec3ed5), and the Serpen handler's own call with ForcePassive 2 (0xeb7699, 0xeb76b1) after its SerpenHuntAndPoke test (0xeb7694); the builder's walk rule for Serpen (world at receiver + 0x20 and its + 0x7168 branch 0xed46e4, the rally point + 0x7108 0xed46fc, the spawn tick at the kind-0 object + 0x1e0 against the world tick 0xed4726, the speed 0xed47fc, travel + 2 x the clock word 0xed4a4e, SerpenHuntAndPoke 12 0xed4ac3, alive at + 0x1d8 0xed4ad0) and Morgard (0xed1bde, rally + 0x70e8 0xed1bf8, spawn + 0x1b0 0xed1c22, 0xed1ef4, EpicHuntAndPoke 11 0xed2442), and the kind-0 environment's kind method returning its object at + 0xf078 (0x16ab380). The step hook reads these and calls the helper at most once per teammate and order, never on a Battle plan or with tracing on; no new hook site."
  ],
  "native_game_test": "seen in game: 1.7.0-dev1 core families, the author, 2026-10-29; pending: 1.7.0-dev2 minimap, outline, tooltips",
  "minimap": {

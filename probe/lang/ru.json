@@ -378,5 +378,21 @@
  "Ground ring": "Кольцо на земле",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Цель под курсором и цель атаки; союзники синие, враги красные. Кольцо на земле лучше совместимо с модами, которые перерисовывают юнитов; переключение на него или с него требует перезапуска игры.",
  "Live rating": "Рейтинг в реальном времени",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Рейтинг управляемого игрока в матче, мелко в правом верхнем углу, как его считает игра."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Рейтинг управляемого игрока в матче, мелко в правом верхнем углу, как его считает игра.",
+ "Ping wheel (hold)": "Колесо сигналов (удерживать)",
+ "Retreat ping": "Сигнал отступления",
+ "Assist me": "Помоги мне",
+ "On my way": "Иду к тебе",
+ "Enemy missing": "Враг пропал",
+ "Retreat": "Отступаем",
+ "Take here": "Захватить здесь",
+ "Defend here": "Защищать здесь",
+ "Poke": "Пок",
+ "All-in": "Ва-банк",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "база",
+ "Top lane": "Верхняя линия",
+ "Mid lane": "Средняя линия",
+ "Bottom lane": "Нижняя линия"
 }

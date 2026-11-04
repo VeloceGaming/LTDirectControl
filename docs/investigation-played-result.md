@@ -9,6 +9,31 @@ second, AI-only simulation of the same game.
 
 Each finding says what kind of claim it is (see `AGENTS.md`).
 
+## Superseded 2026-11-02: the game fixed it; the mod's repair is removed
+
+Every finding below is kept as it was found. What changed since:
+
+- **Read from the game's patch notes (the author's wording):** the game's
+  0.6.5 update says "Fixed an issue where the recorded stats doesn't align
+  with spectated games"; the fix is carried into 0.7.0. The "game 0.7.0"
+  of 2026-10-14 below was the 0.7.0 beta 1, older than that fix.
+- **Read from the author's logs** (game 0.7.0 release, builds 1.7.1-dev1,
+  2026-10-29 to 31): in 11 finished series the mod's check found all 110
+  athlete records unchanged, meaning the season record had already moved
+  by exactly the played games, and the mod wrote no correction and no
+  repair. Logs of game 0.6.5 were not checked: no finished series on 0.6.5
+  is in the kept logs.
+- **Guess:** 0.6.5 records the played games too, since the patch note
+  belongs to that update; not checked in game or in logs.
+- **Read from the code:** the per-series correction and the repair of the
+  past (`probe/src/season_fix.rs` and its calls) were removed in
+  1.7.1-dev3, the author's decision of 2026-11-02 ("remove it"). The code
+  is in git history: the last commit that has it is 9381e4b (1.7.0); the
+  1.7.1-dev2 changes to it were never committed and are described only
+  in `CHANGELOG.md`. Saves keep the mod's
+  value `season_repair_v1` written by earlier builds; nothing reads it any
+  more.
+
 ## What the game does
 
 **Read from the SDK and the official documentation.** A fixture is

@@ -5,11 +5,16 @@
 //! replaces it (`save_to`, the same code a synchronous save runs). Only the
 //! newest queued values are written (last write wins), and `WRITE` keeps a
 //! synchronous save (the forced flush when the Settings window applies or
-//! the mod shuts down) and the thread from writing at the same time; a
-//! forced flush first waits for the thread to finish, so an older write can
-//! never land after it.
+//! the mod shuts down) and the thread from writing at the same time. A
+//! forced flush first waits (at most 2 s) for the thread to finish; each
+//! job also carries a save number taken with its values, and a job older
+//! than the last one written to its folder is dropped (1.7.1-dev2), so an
+//! older write can never land after a newer one, even after that wait ran
+//! out.
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{mpsc, Condvar, Mutex, OnceLock};
 use std::time::Duration;
 
@@ -19,6 +24,13 @@ pub struct Job {
     pub values: Value,
     pub cursor_size: u32,
     pub low_health: bool,
+    /// From `next_generation`, taken when the values were taken.
+    pub generation: u64,
+}
+static GENERATION: AtomicU64 = AtomicU64::new(1);
+/// A new save number, larger than every earlier one.
+pub fn next_generation() -> u64 {
+    GENERATION.fetch_add(1, Ordering::Relaxed)
 }
 #[derive(Default)]
 struct Progress {
@@ -26,7 +38,7 @@ struct Progress {
     queued: u64,
     finished: u64,
     /// Results the client thread has not logged yet.
-    results: Vec<Result<(), String>>,
+    results: Vec<Result<Saved, String>>,
 }
 static PROGRESS: Mutex<Progress> = Mutex::new(Progress {
     queued: 0,
@@ -34,14 +46,30 @@ static PROGRESS: Mutex<Progress> = Mutex::new(Progress {
     results: Vec::new(),
 });
 static IDLE: Condvar = Condvar::new();
-/// Held while controls.json is written, by the thread or a forced flush.
-static WRITE: Mutex<()> = Mutex::new(());
+/// Held while controls.json is written, by the thread or a forced flush;
+/// the save number last written to each folder.
+static WRITE: Mutex<BTreeMap<PathBuf, u64>> = Mutex::new(BTreeMap::new());
 
+/// What a save did.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Saved {
+    Written,
+    /// Not written: newer values were already written to that folder.
+    Stale,
+}
 /// Merge `job` into its controls.json and replace the file (a temporary
 /// file, then a rename). Keys other mods or older versions wrote survive.
-pub fn save_to(job: &Job) -> std::io::Result<()> {
-    let _write = WRITE.lock().unwrap_or_else(|e| e.into_inner());
-    merge_and_write(&job.root, &job.values, job.cursor_size, job.low_health)
+pub fn save_to(job: &Job) -> std::io::Result<Saved> {
+    let mut written = WRITE.lock().unwrap_or_else(|e| e.into_inner());
+    if written
+        .get(&job.root)
+        .is_some_and(|newest| *newest > job.generation)
+    {
+        return Ok(Saved::Stale);
+    }
+    merge_and_write(&job.root, &job.values, job.cursor_size, job.low_health)?;
+    written.insert(job.root.clone(), job.generation);
+    Ok(Saved::Written)
 }
 fn merge_and_write(
     root: &Path,
@@ -125,7 +153,7 @@ pub fn settle(limit: Duration) {
     let _ = IDLE.wait_timeout_while(p, limit, |p| p.finished < p.queued);
 }
 /// Results of finished background saves since the last call, oldest first.
-pub fn take_results() -> Vec<Result<(), String>> {
+pub fn take_results() -> Vec<Result<Saved, String>> {
     let mut p = PROGRESS.lock().unwrap_or_else(|e| e.into_inner());
     if p.results.is_empty() {
         return Vec::new();
@@ -151,6 +179,7 @@ mod tests {
                 values: json!({ "n": n }),
                 cursor_size: 40,
                 low_health: n % 2 == 0,
+                generation: next_generation(),
             })
             .is_ok());
         }
@@ -166,6 +195,7 @@ mod tests {
             values: json!({ "n": 20 }),
             cursor_size: 41,
             low_health: true,
+            generation: next_generation(),
         })
         .unwrap();
         let saved: Value =
@@ -174,6 +204,36 @@ mod tests {
             (saved["n"].as_i64(), saved["cursor_size"].as_i64()),
             (Some(20), Some(41))
         );
+        let _ = std::fs::remove_dir_all(&root);
+    }
+    #[test]
+    fn an_older_save_that_runs_late_does_not_overwrite_a_newer_one() {
+        let root = std::env::temp_dir().join(format!(
+            "lt-settings-stale-{}-{}",
+            std::process::id(),
+            crate::platform_input::thread_id()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let job = |n: i64, generation: u64| Job {
+            root: root.clone(),
+            values: json!({ "n": n }),
+            cursor_size: 40,
+            low_health: false,
+            generation,
+        };
+        // Values taken in this order: the queued (older) save, then Apply.
+        let older = job(1, next_generation());
+        let newer = job(2, next_generation());
+        assert_eq!(save_to(&newer).unwrap(), Saved::Written);
+        assert_eq!(save_to(&older).unwrap(), Saved::Stale);
+        let saved: Value =
+            serde_json::from_slice(&std::fs::read(root.join("controls.json")).unwrap()).unwrap();
+        assert_eq!(saved["n"], 2);
+        // Another folder keeps its own count.
+        let other = root.join("other");
+        let mut elsewhere = job(3, older.generation);
+        elsewhere.root = other.clone();
+        assert_eq!(save_to(&elsewhere).unwrap(), Saved::Written);
         let _ = std::fs::remove_dir_all(&root);
     }
 }

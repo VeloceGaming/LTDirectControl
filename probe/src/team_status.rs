@@ -282,6 +282,8 @@ pub struct TeamUi {
     pub(crate) list: crate::draw_list::DrawList,
     /// `draw_list::check_origin`'s state.
     origin_checked: u8,
+    /// (player, side, portrait box on screen) while the panel shows (pings.rs).
+    pub(crate) portrait_rects: Vec<(usize, usize, crate::draw_list::Rect)>,
 }
 impl TeamUi {
     #[allow(clippy::too_many_arguments)]
@@ -303,9 +305,21 @@ impl TeamUi {
         self.nodes = Some(n);
         // The draw list: only while the root shows this frame.
         self.list.clear();
+        self.portrait_rects.clear();
         if self.view.shown {
             let ingame = ctx.ui_node_rect("ingame");
             crate::team_draw::build(&self.view, ingame, &mut self.list);
+            self.portrait_rects = (0..10)
+                .filter_map(|i| Some((slot(players, i / 5, i % 5)?.id, i / 5, i % 5)))
+                .filter(|&(_, side, lane)| self.view.rows[side][lane].shown)
+                .map(|(id, side, lane)| {
+                    (
+                        id,
+                        side,
+                        crate::team_draw::portrait_rect(&self.view, ingame, side, lane),
+                    )
+                })
+                .collect();
             crate::draw_list::check_origin(
                 "tab panel",
                 crate::team_draw::origin(&self.view, ingame),

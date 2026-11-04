@@ -378,5 +378,21 @@
  "Ground ring": "Bodenring",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Zeiger- und Angriffsziel; Verbündete blau, Gegner rot. Der Bodenring ist die verträglichere Wahl mit Mods, die Einheiten neu zeichnen; ein Wechsel zu ihm oder von ihm braucht einen Neustart des Spiels.",
  "Live rating": "Live-Bewertung",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Die Spielbewertung deines Spielers, klein in der oberen rechten Ecke, so wie das Spiel sie berechnet."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Die Spielbewertung deines Spielers, klein in der oberen rechten Ecke, so wie das Spiel sie berechnet.",
+ "Ping wheel (hold)": "Ping-Rad (halten)",
+ "Retreat ping": "Rückzug-Ping",
+ "Assist me": "Hilf mir",
+ "On my way": "Bin unterwegs",
+ "Enemy missing": "Gegner fehlt",
+ "Retreat": "Rückzug",
+ "Take here": "Hier nehmen",
+ "Defend here": "Hier verteidigen",
+ "Poke": "Poken",
+ "All-in": "All-in",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "Basis",
+ "Top lane": "Top-Lane",
+ "Mid lane": "Mid-Lane",
+ "Bottom lane": "Bot-Lane"
 }

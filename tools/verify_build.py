@@ -106,7 +106,7 @@ for folder in (Path.home(), root):
 # Cursor artwork embedded in the DLL.
 cursor_art = load('cursor-assets.json')
 assert digest(root / cursor_art['source']) == cursor_art['source_sha256']
-assert len(cursor_art['files']) == 14
+assert len(cursor_art['files']) == 16  # the two ping cursors since 1.7.1-dev15
 for name, asset in cursor_art['files'].items():
     pixels = (root / 'probe/cursor' / f'{name}.bgra').read_bytes()
     assert len(pixels) == asset['bytes'] == 64 * 64 * 4, name
@@ -126,7 +126,13 @@ bundled_emotes = load('bundled-emotes.json')
 assert digest(root / bundled_emotes['source']) == bundled_emotes['source_sha256']
 assert digest(root / bundled_emotes['catalogue']) == bundled_emotes['catalogue_sha256']
 assert len(bundled_emotes['entries']) == len(bundled_emotes['files']) == 4
-assert len(ui_art['files']) == 124  # 88 existing + five faces + optional sound + four bundled faces + the swap icon + the ready chime and denied cast clip + the drawing probe SVG (1.6.0-perf-dev2) + 20 drawn glyphs (1.6.0-perf-dev3) + the live rating's star and its shadow (1.6.2-dev1)
+assert len(ui_art['files']) == 177  # 88 existing + five faces + optional sound + four bundled faces + the swap icon + the ready chime and denied cast clip + the drawing probe SVG (1.6.0-perf-dev2) + 20 drawn glyphs (1.6.0-perf-dev3) + the live rating's star and its shadow (1.6.2-dev1) + 53 ping pictures (1.7.1-dev17, tools/generate_ping_assets.py: 14 pixel glyphs at three sizes, the two markers at 39 px, the two halves, the hub and the fan slot with their hovered pictures, the pins; dev16's four sectors and disc removed)
+ping_art = load('ping-assets.json')
+assert set(ping_art['files']) <= set(ui_art['files']) and len(ping_art['files']) == 53
+# The author's design files are not in git: checked where they are.
+for name, value in ping_art['sources'].items():
+    if (root / 'design/pings' / name).is_file():
+        assert digest(root / 'design/pings' / name) == value, name
 drawn_glyphs = load('drawn-glyphs.json')
 assert len(drawn_glyphs['variants']) == len(drawn_glyphs['files']) == 22
 assert set(drawn_glyphs['files']) <= set(ui_art['files'])

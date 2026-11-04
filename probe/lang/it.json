@@ -378,5 +378,21 @@
  "Ground ring": "Anello a terra",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Bersaglio indicato e bersaglio d'attacco; alleati in blu, nemici in rosso. L'anello a terra è l'opzione più compatibile con le mod che ridisegnano le unità; passare a questa opzione o lasciarla richiede il riavvio del gioco.",
  "Live rating": "Voto in diretta",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Il voto in partita del tuo giocatore, in piccolo nell'angolo in alto a destra, come lo calcola il gioco."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "Il voto in partita del tuo giocatore, in piccolo nell'angolo in alto a destra, come lo calcola il gioco.",
+ "Ping wheel (hold)": "Ruota dei segnali (tieni premuto)",
+ "Retreat ping": "Segnale di ritirata",
+ "Assist me": "Aiutami",
+ "On my way": "Sto arrivando",
+ "Enemy missing": "Nemico sparito",
+ "Retreat": "Ritirata",
+ "Take here": "Prendi qui",
+ "Defend here": "Difendi qui",
+ "Poke": "Punzecchia",
+ "All-in": "All-in",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "base",
+ "Top lane": "Corsia alta",
+ "Mid lane": "Corsia centrale",
+ "Bottom lane": "Corsia bassa"
 }

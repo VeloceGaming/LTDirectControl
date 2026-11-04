@@ -37,6 +37,11 @@ pub enum Style {
     SkillValidChampion,
     SkillInvalid,
     SkillInvalidChampion,
+    /// The ping is armed (1.7.1-dev15, design/cursor/index_ping.html
+    /// `ping`): the next left click pings.
+    Ping,
+    /// Armed over a unit the click would ping (`pingLock`).
+    PingTarget,
 }
 impl Style {
     pub fn choose(champion: bool, attack: bool, enemy: bool, skill: Option<SkillCursor>) -> Self {
@@ -73,7 +78,7 @@ impl Style {
         )
     }
 }
-const STYLES: [Style; 14] = [
+const STYLES: [Style; 16] = [
     Style::Normal,
     Style::Hostile,
     Style::Attack,
@@ -88,8 +93,10 @@ const STYLES: [Style; 14] = [
     Style::SkillValidChampion,
     Style::SkillInvalid,
     Style::SkillInvalidChampion,
+    Style::Ping,
+    Style::PingTarget,
 ];
-const PIXELS: [&[u8]; 14] = [
+const PIXELS: [&[u8]; 16] = [
     include_bytes!("../cursor/normal.bgra"),
     include_bytes!("../cursor/hostile.bgra"),
     include_bytes!("../cursor/amove.bgra"),
@@ -104,6 +111,8 @@ const PIXELS: [&[u8]; 14] = [
     include_bytes!("../cursor/skillValidChamp.bgra"),
     include_bytes!("../cursor/skillInvalid.bgra"),
     include_bytes!("../cursor/skillInvalidChamp.bgra"),
+    include_bytes!("../cursor/ping.bgra"),
+    include_bytes!("../cursor/pingLock.bgra"),
 ];
 fn pixels(style: Style, size: u32) -> Vec<u8> {
     let size = size.clamp(24, 64) as usize;
@@ -589,7 +598,7 @@ mod windows {
     }
     #[derive(Default)]
     pub struct Backend {
-        cache: std::collections::HashMap<u32, [isize; 14]>,
+        cache: std::collections::HashMap<u32, [isize; 16]>,
         hook: isize,
         saved: isize,
         owned: bool,
@@ -846,6 +855,12 @@ mod tests {
     }
     #[test]
     fn sizes_hotspots_and_scaled_alpha_keep_the_pointer_click_point() {
+        // Each style's picture is the one at its own index.
+        for (i, style) in STYLES.iter().enumerate() {
+            assert_eq!(*style as usize, i);
+        }
+        assert_eq!(Style::Ping.hotspot(32), (16, 16));
+        assert_eq!(Style::PingTarget.hotspot(64), (32, 32));
         assert_eq!(size_from_ratio(f64::NAN), 32);
         assert_eq!(size_from_ratio(-1.), 24);
         assert_eq!(size_from_ratio(2.), 64);

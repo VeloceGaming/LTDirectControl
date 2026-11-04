@@ -26,6 +26,9 @@ pub mod family {
     /// Athlete stat rules for manually played matches (separate from `ALL`:
     /// a family is enabled by name, and the guards fall back to `ALL`).
     pub const STATS: u32 = 1 << 9;
+    /// The signal probe (research builds only, separate from `ALL` like
+    /// `STATS`): logs the AI team's signal queues, read-only.
+    pub const SIGNALS: u32 = 1 << 10;
     /// Families another mod may already hold: their hooks only draw, so
     /// the others install without them (2026-10-18: a champion pack's
     /// high-definition frames hook the unit renderer on game 0.6.4).

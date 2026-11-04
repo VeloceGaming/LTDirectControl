@@ -70,6 +70,8 @@ mod own_selection;
 #[cfg(feature = "research")]
 mod patch_fields;
 mod perf;
+mod pings;
+mod plan_call;
 mod plate_draw;
 mod platform_input;
 mod player_hud;
@@ -82,7 +84,6 @@ mod purchase_tracker;
 mod result_audit;
 mod runtime_storage;
 mod screen_effect;
-mod season_fix;
 mod session_draw;
 mod session_ui;
 mod settings;
@@ -104,6 +105,8 @@ mod state_plate;
 mod stats_draw;
 mod stats_panel;
 mod stats_ui;
+#[cfg(feature = "research")]
+mod strategy_probe;
 mod team_draw;
 mod team_info;
 mod team_status;
@@ -355,10 +358,6 @@ fn init(host: &StableHost) -> StableMod {
         management_seen: AtomicBool::new(false),
         session_gate: session_gate.clone(),
         rings: Mutex::default(),
-    });
-    // Season statistics follow the played match (season_fix.rs).
-    declaration.set_server_extension(season_fix::SeasonServer {
-        logger: logger.clone(),
     });
     declaration.set_match_hook(test_cheats::CooldownHook {
         movement: movement.clone(),

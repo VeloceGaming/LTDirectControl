@@ -101,10 +101,19 @@ pub struct Context {
 }
 #[derive(Clone, Copy)]
 struct Wheel {
+    /// Where the wheel is drawn (and, once the cursor moved, the slot
+    /// measured from): the press point, moved inward near the screen edges.
     center: (f32, f32),
-    origin: (f32, f32),
+    /// The press point, and whether the cursor has left it (1.7.1-dev5:
+    /// until then the slot is measured from the press, so a quick press
+    /// and release near an edge is the centre emote, as before 1.7.1-dev2).
+    press: (f32, f32),
+    moved: bool,
     slot: usize,
 }
+/// The cursor has moved once it is this far from the press (screen pixels;
+/// the ping wheel's `MOVE_PX`).
+const MOVE_PX: f32 = crate::pings::MOVE_PX;
 #[derive(Clone, Copy)]
 struct Active {
     slot: usize,
@@ -197,14 +206,23 @@ impl State {
             if let Some(p) = k.cursor.filter(|p| finite_point(*p)) {
                 self.wheel = Some(Wheel {
                     center: wheel_center(p),
-                    origin: p,
+                    press: p,
+                    moved: false,
                     slot: 0,
                 });
             }
         }
         if let Some(wheel) = self.wheel.as_mut() {
             if let Some(p) = k.cursor.filter(|p| finite_point(*p)) {
-                wheel.slot = pick(wheel.origin, p);
+                wheel.moved |= (p.0 - wheel.press.0).hypot(p.1 - wheel.press.1) > MOVE_PX;
+                wheel.slot = pick(
+                    if wheel.moved {
+                        wheel.center
+                    } else {
+                        wheel.press
+                    },
+                    p,
+                );
             } else {
                 self.wheel = None;
             }
@@ -628,6 +646,33 @@ mod tests {
         let mut s = ready();
         s.input(keys(true, (f32::NAN, 10.)), context(2));
         assert!(s.wheel.is_none());
+    }
+    #[test]
+    fn near_the_left_edge_the_press_point_rules_until_the_cursor_moves() {
+        // Pressed 10 px from the left edge: the wheel is drawn at x 160.
+        let press = (10., 500.);
+        assert_eq!(wheel_center(press), (HALF + 8., 500.));
+        // Released where it was pressed, without moving: the centre emote
+        // (1.7.1-dev5; 1.7.1-dev2 sent the left emote here).
+        let mut s = ready();
+        s.input(keys(true, press), context(2));
+        assert_eq!(s.input(keys(false, press), context(2)).1, Some(0));
+        // A move within MOVE_PX still counts as not moved.
+        let mut s = ready();
+        s.input(keys(true, press), context(2));
+        assert_eq!(s.input(keys(false, (11., 501.)), context(2)).1, Some(0));
+        // Once moved, the slot is measured from the drawn centre: released
+        // over it, the centre emote; back at the press point, the left one.
+        let mut s = ready();
+        s.input(keys(true, press), context(2));
+        assert_eq!(
+            s.input(keys(false, (HALF + 8., 500.)), context(2)).1,
+            Some(0)
+        );
+        let mut s = ready();
+        s.input(keys(true, press), context(2));
+        s.input(keys(true, (60., 500.)), context(2));
+        assert_eq!(s.input(keys(false, press), context(2)).1, Some(4));
     }
     #[test]
     fn animation_is_bounded_and_settles_without_catch_up_steps() {

@@ -292,6 +292,20 @@ fn row(view: &TeamView, row: &RowView, r: (f32, f32), inset: u32, list: &mut Dra
         }
     }
 }
+/// A portrait's box on screen (pings.rs: the reply glyphs and targeting).
+pub fn portrait_rect(
+    view: &TeamView,
+    ingame: Option<crate::draw_list::Rect>,
+    side: usize,
+    lane: usize,
+) -> crate::draw_list::Rect {
+    let o = origin(view, ingame);
+    let row = (
+        o.0 + side_x(view, side),
+        o.1 + 16. + HEADERS_H + lane as f32 * view.row_height,
+    );
+    at(row, PORTRAIT)
+}
 /// The portrait's box in a row (its frame; the image sits 2 px inside).
 pub const PORTRAIT: crate::draw_list::Rect = (6., 8., 48., 52.);
 

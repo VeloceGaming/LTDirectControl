@@ -265,8 +265,8 @@ pub fn worker_thread() {
         WORKER_THREAD.store(id, Relaxed);
     }
 }
-/// True on the viewed match's simulation worker (the research inventory).
-#[cfg(feature = "research")]
+/// True on the viewed match's simulation worker (the research inventory;
+/// the ping hooks since 1.7.1-dev13).
 pub fn on_worker_thread() -> bool {
     crate::platform_input::thread_id() == WORKER_THREAD.load(Relaxed)
 }

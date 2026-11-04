@@ -532,6 +532,8 @@ pub static BINDINGS: &[BindingDef] = &[
     bind!("tab", "Control & camera", "Team details (hold)", 9, 0),
     bind!("shop", "Control & camera", "Shop", 0x50, 0),
     bind!("emote", "Control & camera", "Emote wheel (hold)", 0x54, 0),
+    bind!("ping", "Control & camera", "Ping wheel (hold)", 0x47, 0),
+    bind!("ping_retreat", "Control & camera", "Retreat ping", 0x56, 0),
     bind!(
         "stats_panel",
         "Control & camera",
@@ -897,12 +899,13 @@ impl Settings {
             values: self.snapshot().0,
             cursor_size: self.size(),
             low_health: self.low_health(),
+            generation: crate::settings_writer::next_generation(),
         })
     }
     /// Save now, on this thread (tests).
     #[cfg(test)]
     pub(crate) fn save(&self) -> std::io::Result<()> {
-        crate::settings_writer::save_to(&self.save_job()?)
+        crate::settings_writer::save_to(&self.save_job()?).map(|_| ())
     }
     /// Once per frame (`force`: now, synchronously; the Settings window's
     /// Apply and shutdown). A change is saved 300 ms after it was made, on
@@ -917,7 +920,8 @@ impl Settings {
             .lock()
             .is_ok_and(|at| at.is_some_and(|t| force || t.elapsed() >= Duration::from_millis(300)));
         if force {
-            // A queued save must not land after this one.
+            // A queued save must not land after this one: wait for it here,
+            // and if it runs later anyway, its older save number drops it.
             crate::settings_writer::settle(Duration::from_secs(2));
             for result in crate::settings_writer::take_results() {
                 self.saved(result.map_err(std::io::Error::other), false, log);
@@ -945,9 +949,19 @@ impl Settings {
     /// Log a save's result. `clear`: a synchronous save of the current
     /// values, so nothing is left to save; a background save leaves alone
     /// a change made after its values were taken.
-    fn saved(&self, result: std::io::Result<()>, clear: bool, log: &Logger) {
+    fn saved(
+        &self,
+        result: std::io::Result<crate::settings_writer::Saved>,
+        clear: bool,
+        log: &Logger,
+    ) {
         match result {
-            Ok(()) => {
+            Ok(crate::settings_writer::Saved::Stale) => {
+                log.write(
+                    "SETTINGS an older save skipped: newer values are already in controls.json",
+                );
+            }
+            Ok(crate::settings_writer::Saved::Written) => {
                 if clear {
                     if let Ok(mut at) = self.dirty.lock() {
                         *at = None;

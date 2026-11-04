@@ -63,6 +63,15 @@ impl Grid {
                 u128::from(p.0.abs_diff(point.0)).pow(2) + u128::from(p.1.abs_diff(point.1)).pow(2)
             })
     }
+    /// The point itself when its cell is open, else the nearest open cell's
+    /// centre; a point off the map is first clamped onto it (pings.rs).
+    pub fn nearest_open(&self, p: (u64, u64)) -> Option<(u64, u64)> {
+        let p = (p.0.min(959_999), p.1.min(959_999));
+        if !self.blocked[Self::cell(p)] {
+            return Some(p);
+        }
+        Some(Self::point(self.nearest(p)?))
+    }
     pub fn clear(&self, a: (u64, u64), b: (u64, u64)) -> bool {
         let n = (a.0.abs_diff(b.0).max(a.1.abs_diff(b.1)) / 2_000).max(1);
         let mut previous = Self::cell(a);

@@ -19,11 +19,15 @@ mod combat;
 mod input;
 mod movement;
 mod outline;
+mod ping_step;
 #[cfg(feature = "research")]
 mod preview;
 #[cfg(feature = "research")]
 mod research;
 mod shop;
+mod signal_fate;
+mod signal_hook;
+mod signal_send;
 mod skill_numbers;
 mod stack;
 mod stats;
@@ -42,11 +46,13 @@ pub(in crate::native_adapter) use outline::SPRITE_DRAWS;
 pub(in crate::native_adapter) use outline::{
     clear_outline_targets, outline_status, set_outline_targets,
 };
+pub(in crate::native_adapter) use ping_step::ping_reach;
 use shop::*;
 pub(in crate::native_adapter) use shop::{
     buyer_anchor_report, item_slot_capacity, native_player, player_build, player_owned_len,
     shop_ready,
 };
+use signal_hook::signal_probe_intact;
 pub(in crate::native_adapter) use stack::{thread_alive, thread_stack};
 use stats::{allow_stats, stats_intact};
 pub(in crate::native_adapter) use stats::{
@@ -155,6 +161,7 @@ pub(in crate::native_adapter) fn audit_patches() -> Option<bool> {
         }) && p.constants.as_ref().is_none_or(|(address, bytes)| {
             std::slice::from_raw_parts(*address as *const u8, bytes.len()) == bytes
         }) && stats_intact().unwrap_or(true)
+            && signal_probe_intact().unwrap_or(true)
     })
 }
 fn relative_call(site: usize, destination: usize) -> Result<[u8; 5], String> {
@@ -230,6 +237,8 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
         let enabled = ENABLED & !skip;
         // Public builds carry no live skill reader (stage C of the preview
         // plan), so its family and its guards stay out.
+        // The signal family is in both since 1.7.1-dev13 (the ping orders;
+        // its probe lines stay in research builds).
         #[cfg(not(feature = "research"))]
         let enabled = enabled & !family::READERS;
         let on = |family: u32| enabled & family != 0;
@@ -639,6 +648,13 @@ pub(in crate::native_adapter) fn install(sha: &str, skip: u32) -> Result<u32, St
         // this or a later visit to the title screen (`install_stat_rules`).
         if on(family::STATS) {
             allow_stats();
+        }
+        // The signal family (the ping orders; in research builds the
+        // probe too), on its own: a differing site turns only it off.
+        if on(family::SIGNALS) {
+            if let Some(shared) = SHARED.get() {
+                signal_hook::install_signal_probe(base, &shared.logger);
+            }
         }
         Ok(families)
     }

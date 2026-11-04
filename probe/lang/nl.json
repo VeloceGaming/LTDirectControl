@@ -378,5 +378,21 @@
  "Ground ring": "Ring op de grond",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "Aangewezen doel en aanvalsdoel; bondgenoten blauw, vijanden rood. De ring op de grond is de meest compatibele keuze met mods die eenheden anders tekenen; overschakelen naar of van deze keuze vraagt een herstart van het spel.",
  "Live rating": "Live beoordeling",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "De wedstrijdbeoordeling van je speler, klein in de rechterbovenhoek, zoals het spel die berekent."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "De wedstrijdbeoordeling van je speler, klein in de rechterbovenhoek, zoals het spel die berekent.",
+ "Ping wheel (hold)": "Pingwiel (ingedrukt houden)",
+ "Retreat ping": "Terugtrekping",
+ "Assist me": "Help me",
+ "On my way": "Ik kom eraan",
+ "Enemy missing": "Vijand vermist",
+ "Retreat": "Terugtrekken",
+ "Take here": "Hier nemen",
+ "Defend here": "Hier verdedigen",
+ "Poke": "Poken",
+ "All-in": "All-in",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "basis",
+ "Top lane": "Toplane",
+ "Mid lane": "Midlane",
+ "Bottom lane": "Botlane"
 }

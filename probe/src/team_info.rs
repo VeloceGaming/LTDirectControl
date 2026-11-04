@@ -1,4 +1,13 @@
 //! Temporary visibility override; native preference is restored on release.
+//!
+//! Research builds log the children of the game's centre log,
+//! `CENTER_LOG`, while the player controls (`PING center_log children`).
+//!
+//! Superseded 2026-11-04 (1.7.1-dev19, the author's pings spec section
+//! 12.1): dev18 hid that container while controlling (spec 11.7). Seen in
+//! game (dev18): it held only the deathmatch counter and the kill message;
+//! the panel over the ping stack was the mod's own research dev panel. No
+//! game node is hidden for it any more.
 #[derive(Default)]
 pub struct TeamInfo {
     original: Option<bool>,
@@ -13,7 +22,15 @@ pub struct TeamInfo {
     reported_visibility: Option<bool>,
     /// The centred scoreboard layout was written since engaging.
     layout_written: bool,
+    /// Research builds: the centre log's children last logged, and how
+    /// many times.
+    #[cfg(feature = "research")]
+    center_children: (Vec<String>, usize),
 }
+/// The game's centre log (`ingame.center_log`, x 18, y 64, 960 x 960 in
+/// the 0.6.5 and 0.7.0 layouts): read only, research builds.
+#[cfg(feature = "research")]
+pub const CENTER_LOG: &str = "ingame.center_log";
 /// The scoreboard panel is centred on its parent (within a pixel): the
 /// layout the mod writes. Rectangles are (x, y, width, height).
 fn scoreboard_centred(panel: (f32, f32, f32, f32), parent: (f32, f32, f32, f32)) -> bool {
@@ -102,6 +119,8 @@ impl TeamInfo {
                     ctx.ui_set_visible(path, false);
                 }
             }
+            #[cfg(feature = "research")]
+            self.log_center_children(ctx, log);
             // Native hover code can republish tooltips after its UI update.
             // Suppress only spectator tooltips; the player's HUD owns its own.
             // This larger popup is separate from the short champion_tooltip.
@@ -157,6 +176,10 @@ impl TeamInfo {
                 ctx.ui_set_visible(path, visible);
             }
             self.layout_written = false;
+            #[cfg(feature = "research")]
+            {
+                self.center_children = Default::default();
+            }
             if let Some((x, y)) = self.original_position.take() {
                 ctx.ui_set_properties(PANEL, &format!("x: {x}px; y: {y}px; anchor_x: 0; pivot_x: 0; anchor_y: 0; pivot_y: 0; ignore_event: false; color: #161721ff;"));
             }
@@ -179,6 +202,40 @@ impl TeamInfo {
                 }
             }
         }
+    }
+    /// Research builds: the centre log's runtime children (two levels), each
+    /// time the set changes, at most 12 times per control (spec section
+    /// 11.7: which node holds the log entries alone, for a later build).
+    #[cfg(feature = "research")]
+    fn log_center_children(&mut self, ctx: &mod_api_stable::StableClient<'_>, log: &crate::Logger) {
+        let (last, logged) = (&self.center_children.0, self.center_children.1);
+        // The count first, cheaply: the names only when it changed.
+        if logged >= 12 || (logged > 0 && ctx.ui_child_count(CENTER_LOG) == Some(last.len())) {
+            return;
+        }
+        let names = ctx.ui_child_names(CENTER_LOG);
+        if logged > 0 && names == *last {
+            return;
+        }
+        let detail: Vec<String> = names
+            .iter()
+            .take(24)
+            .map(|n| {
+                let path = format!("{CENTER_LOG}.{n}");
+                let inner = ctx.ui_child_names(&path);
+                format!(
+                    "{n}(visible={:?} children={})",
+                    ctx.ui_visible(&path),
+                    inner.into_iter().take(8).collect::<Vec<_>>().join("|")
+                )
+            })
+            .collect();
+        log.write(&format!(
+            "PING center_log children n={} [{}]",
+            names.len(),
+            detail.join(", ")
+        ));
+        self.center_children = (names, self.center_children.1 + 1);
     }
     pub fn visibility(
         &mut self,

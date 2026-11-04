@@ -63,6 +63,9 @@ impl StablePlayerAi for Simulation {
 
     fn think(&mut self, ctx: &mut StableAiContext<'_>, base: Option<InputV1>) -> Option<InputV1> {
         let input = self.decide(ctx, base);
+        // A take at a pit walks the teammates (1.7.1-dev22, pings/walk.rs):
+        // only for a player the controlled athlete's step left alone.
+        let input = input.or_else(|| crate::pings::walk::think(ctx, base, &self.logger));
         // Practice tool: enemies of the match on screen hold still. Asked
         // after the normal step, which also paces every player's tick.
         crate::practice::hold(ctx, &self.movement).or(input)
@@ -124,10 +127,6 @@ impl Simulation {
                     })
                     .collect()
             });
-            // Athletes of the match on screen, for the season correction.
-            if origin.kind == 2 && tick <= 60 {
-                season_fix::observe_athlete(key, player_id, athlete);
-            }
             // Diagnostic (Verbose only): the latest numbers of the server
             // pre-simulation (1) and of the match on screen (2).
             if matches!(origin.kind, 1 | 2)
@@ -177,6 +176,21 @@ impl Simulation {
                 .flatten();
             if selected {
                 self.observe_controlled(&sim, key, call, &current_champion);
+            }
+            // The roster for the pings' native mapping and the pits'
+            // positions (1.7.1-dev13); research builds also the watch after
+            // a fight call (pings/battle_help.rs).
+            // 1.7.1-dev16: from any living actor of the viewed match, once a
+            // tick, so the pings keep their team's sight while the
+            // controlled champion is dead (his own think is off then).
+            if let Some((_, hud_player)) = self.movement.hud_identity().filter(|(hud_key, _)| {
+                origin.kind == 2 && *hud_key == key && self.timing.owns_worker(key)
+            }) {
+                crate::pings::observe(&sim, tick, hud_player, &self.logger);
+            }
+            if selected {
+                #[cfg(feature = "research")]
+                crate::pings::battle_help::observe(&sim, tick, player_id, &self.logger);
             }
             step(Step::Units);
             let collect_units = selected
@@ -427,13 +441,27 @@ impl Simulation {
 /// skill aiming).
 fn visible_units(sim: &StableSim<'_>, side: usize) -> Vec<combat::Unit> {
     let vision = crate::camera::shown_vision();
+    units_where(sim, side, |team, id| {
+        vision.shows(side, team, |s| sim.is_visible(s, id))
+    })
+}
+/// Every living, targetable unit the controlled athlete's TEAM sees: its
+/// own and every other the game shows to that side, whatever the player's
+/// vision choice (1.7.1-dev16: the pings' targets, also while he is dead).
+pub(crate) fn team_units(sim: &StableSim<'_>, side: usize) -> Vec<combat::Unit> {
+    units_where(sim, side, |team, id| {
+        team == side || sim.is_visible(side, id)
+    })
+}
+fn units_where(
+    sim: &StableSim<'_>,
+    side: usize,
+    shows: impl Fn(usize, usize) -> bool,
+) -> Vec<combat::Unit> {
     (0..sim.entity_count())
         .filter_map(|index| {
             let unit = sim.entity_at(index)?;
-            (unit.is_alive()
-                && unit.is_targetable()
-                && vision.shows(side, unit.team(), |s| sim.is_visible(s, unit.id())))
-            .then(|| {
+            (unit.is_alive() && unit.is_targetable() && shows(unit.team(), unit.id())).then(|| {
                 let name = unit.name();
                 combat::Unit {
                     id: unit.id(),

@@ -1,6 +1,6 @@
 {
-  "source": "design/cursor/index.html",
-  "source_sha256": "6e3cbf7cb93d083810d02492c05afae6950c6742c4eac7e9d70758ba00fe3965",
+  "source": "design/cursor/index_ping.html",
+  "source_sha256": "2295ef38342acb6d8a524d812fed43aa563e7d3cd60d52e040baa79d0c6e2a4f",
   "format": "64x64 premultiplied BGRA, top-down; embedded in DLL",
   "files": {
     "normal": {
@@ -49,6 +49,22 @@
         2
       ],
       "sha256": "3ca032fa442dd1661afbfd6c9e52426157050f4c9660d5e3f7b80df392f8b917",
+      "bytes": 16384
+    },
+    "ping": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "4a190501d5a4d787f6ff26ca32add336a7e93def96a03307896421d451011392",
+      "bytes": 16384
+    },
+    "pingLock": {
+      "hotspot_32": [
+        16,
+        16
+      ],
+      "sha256": "b178bed46a3c1037bd36e222f9b76ee295664b659877ef27479f482bb59d74c8",
       "bytes": 16384
     },
     "achamp": {

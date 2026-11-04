@@ -778,6 +778,10 @@ impl Movement {
             position: s.champion_position,
         })
     }
+    /// A copy of the live match's wall grid (pings.rs).
+    pub fn navigation(&self) -> Option<crate::map_path::Grid> {
+        self.state.lock().ok()?.navigation.clone()
+    }
     pub fn set_navigation(&self, grid: Option<crate::map_path::Grid>) {
         if let Ok(mut s) = self.state.lock() {
             // Map callbacks also run for background simulations. Once the live

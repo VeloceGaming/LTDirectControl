@@ -41,6 +41,11 @@ pub struct Keys {
     /// Stats panel toggle (crate::stats_ui).
     pub stats_panel: bool,
     pub emote: bool,
+    /// Ping wheel key held (pings.rs).
+    pub ping: bool,
+    /// The retreat ping key held (1.7.1-dev19, V): ping mode whose click
+    /// is Retreat at the point.
+    pub ping_retreat: bool,
     /// Cosmetic wheel owns physical edges; existing world orders continue.
     pub emote_capture: bool,
     /// Home and End held together (test_cheats; not rebindable).
@@ -224,9 +229,16 @@ pub fn poll() -> Keys {
 }
 
 /// Keys read even when no binding uses them: mouse buttons, modifiers, Esc,
-/// and the keys of the fixed test chords (Home+End, Home+Insert). A chord
-/// key missing here is never seen pressed (1.2.8 shipped without Insert).
+/// and the keys of the fixed test chords (Home+End, Home+Insert; research
+/// builds also F1 to F10). A chord key missing here is never seen pressed
+/// (1.2.8 shipped without Insert).
+#[cfg(not(feature = "research"))]
 const ALWAYS_POLLED: [usize; 10] = [1, 2, 4, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24, 0x2d];
+#[cfg(feature = "research")]
+const ALWAYS_POLLED: [usize; 20] = [
+    1, 2, 4, 0x10, 0x11, 0x12, 0x1b, 0x23, 0x24, 0x2d, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76,
+    0x77, 0x78, 0x79,
+];
 
 pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
     let v = crate::settings::current_shared();
@@ -281,6 +293,8 @@ pub fn mapped(raw: Raw, focused: bool, cursor: Option<(f32, f32)>) -> Keys {
         shop: pressed("shop"),
         stats_panel: pressed("stats_panel"),
         emote: pressed("emote"),
+        ping: pressed("ping"),
+        ping_retreat: pressed("ping_retreat"),
         emote_capture: crate::ui_state::EMOTE_CAPTURE.load(std::sync::atomic::Ordering::Relaxed),
         champion_toggle: std::array::from_fn(|i| {
             v.binding("champion_only")[i].is_some_and(|c| {

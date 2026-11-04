@@ -378,5 +378,21 @@
  "Ground ring": "발밑 고리",
  "Hover and attack target; blue allies, red hostiles. Ground ring is the more compatible option with mods that redraw units; switching to or from it needs a game restart.": "마우스를 올린 대상과 공격 대상을 표시합니다. 아군은 파랑, 적은 빨강입니다. 발밑 고리는 유닛을 다시 그리는 모드와 더 잘 호환됩니다. 발밑 고리로 바꾸거나 다른 방식으로 바꾸려면 게임을 다시 시작해야 합니다.",
  "Live rating": "실시간 평점",
- "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "조종하는 선수의 경기 평점을 게임이 계산한 그대로 오른쪽 위 구석에 작게 표시합니다."
+ "Your athlete's match rating, small in the top-right corner, as the game calculates it.": "조종하는 선수의 경기 평점을 게임이 계산한 그대로 오른쪽 위 구석에 작게 표시합니다.",
+ "Ping wheel (hold)": "핑 휠 (누르고 있기)",
+ "Retreat ping": "후퇴 핑",
+ "Assist me": "도와줘",
+ "On my way": "가는 중",
+ "Enemy missing": "적 미아",
+ "Retreat": "후퇴",
+ "Take here": "여기 점령",
+ "Defend here": "여기 방어",
+ "Poke": "견제",
+ "All-in": "총공격",
+ "Serpen": "Serpen",
+ "Morgard": "Morgard",
+ "base": "본진",
+ "Top lane": "탑 라인",
+ "Mid lane": "미드 라인",
+ "Bottom lane": "바텀 라인"
 }

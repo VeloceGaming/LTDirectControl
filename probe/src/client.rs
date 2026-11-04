@@ -18,12 +18,12 @@ pub(crate) struct ClientObservations {
     pub(crate) shop_ui: shop_ui::ShopUi,
     pub(crate) stats_ui: stats_ui::StatsUi,
     pub(crate) result_audit: result_audit::ResultAudit,
-    pub(crate) season_fix: season_fix::SeasonFix,
     pub(crate) team_ui: team_status::TeamUi,
     pub(crate) early_input: Option<(u64, platform_input::Keys)>,
     pub(crate) screen_effect: screen_effect::Effect,
     pub(crate) ai_handback: ai_handback::AiHandback,
     pub(crate) emotes: emotes::Emotes,
+    pub(crate) pings: pings::Pings,
     pub(crate) sounds: ui_sound::Sounds,
     pub(crate) language: lang::Probe,
     /// Windows built hidden before the match (1.6.0, prewarm.rs).
@@ -120,7 +120,8 @@ impl Client {
             active,
             &self.camera,
             &self.logger,
-            action.left_reserved,
+            // An armed ping owns the left click (1.7.1-dev15).
+            action.left_reserved || crate::pings::left_reserved(),
             paused,
         );
     }
@@ -149,7 +150,8 @@ impl Client {
             enabled: self.settings.number("emotes") == 1.,
             cooldown_ticks: emotes::Config::from_values(&settings::current_shared()).cooldown_ticks,
             blocked: ui_state::SETTINGS_OPEN.load(Ordering::Relaxed)
-                || ui_state::SHOP_OPEN.load(Ordering::Relaxed),
+                || ui_state::SHOP_OPEN.load(Ordering::Relaxed)
+                || pings::wheel_open(),
             aiming: self.abilities.interaction_busy() || self.movement.attack_move_armed(),
             may_open: keys.emote
                 && keys.cursor.is_some_and(|p| {
@@ -189,6 +191,7 @@ impl Client {
         // what the user clicked, before the host advances camera/playback.
         let mut keys = platform_input::poll();
         self.emote_input(&mut keys, true, self.timing.client_running());
+        self.ping_early(&mut keys);
         self.resolve_targeting(&mut keys, true);
         self.movement.update(keys, true, false, &self.logger);
         self.gameplay_input(keys, true, false);
@@ -230,6 +233,7 @@ impl Client {
                 stats_ui::OWN,
                 stats_ui::TARGET,
                 emotes::PATH,
+                pings::PATH,
             ],
         );
         self.install_once(ctx);
@@ -418,6 +422,7 @@ impl Client {
                     &o.stats_ui.list,
                     &o.session_ui.list,
                     &o.team_ui.list,
+                    &o.pings.list,
                 ],
             );
         }
@@ -1039,6 +1044,8 @@ impl Client {
                 emotes::Config::from_values(&settings::current_shared()),
                 &self.logger,
             );
+            let ping_keys = &mut frame.keys;
+            hud_bounds.extend(self.ping_frame(ctx, &mut observations, ping_keys, battlefield));
             observations.screen_effect.update(
                 self.settings.low_health(),
                 controls && battlefield,
@@ -1056,9 +1063,6 @@ impl Client {
             let _t = perf::time(perf::Section::Audit);
             let last_player = self.hud.snapshot(self.movement.hud_identity());
             let own_athletes = own_players.iter().map(|p| p.athlete).collect::<Vec<_>>();
-            observations
-                .season_fix
-                .update(ctx, self.timing.match_key(), battlefield, &self.logger);
             observations.result_audit.update(
                 ctx,
                 self.timing.match_key(),
@@ -1084,11 +1088,20 @@ impl Client {
                     shop_ui,
                     settings_ui,
                     emotes,
+                    pings,
                     ..
                 } = &mut *observations;
                 prespawn.step(
                     ctx,
-                    &mut [stats_ui, state_plate, team_ui, shop_ui, settings_ui, emotes],
+                    &mut [
+                        stats_ui,
+                        state_plate,
+                        team_ui,
+                        shop_ui,
+                        settings_ui,
+                        emotes,
+                        pings,
+                    ],
                     &self.logger,
                 );
             }
@@ -1183,6 +1196,15 @@ impl Client {
             }
             let point = keys.cursor.ok_or("no_cursor_point")?;
             let frame = self.camera.frame().ok_or("no_camera_frame")?;
+            // An armed ping (1.7.1-dev15): its ring wherever the click pings,
+            // the minimap too; the on-target ring over a unit it names.
+            if let Some(target) = crate::pings::armed_cursor() {
+                return Ok(if target {
+                    cursor::Style::PingTarget
+                } else {
+                    cursor::Style::Ping
+                });
+            }
             if self.camera.command_blocked(point) {
                 return Err("over_hud_or_minimap");
             }

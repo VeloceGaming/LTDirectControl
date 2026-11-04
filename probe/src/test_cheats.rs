@@ -51,6 +51,12 @@ pub struct CooldownHook {
 }
 impl StableMatchHook for CooldownHook {
     fn on_match_tick(&self, sim: &mut StableSim<'_>, _rng_seed: u64) {
+        // The pings' team strategy windows (Poke, All-in; plan_call.rs).
+        crate::plan_call::observe(sim, &self.movement, &self.logger);
+        // Research builds: the strategy probe (strategy_probe.rs) uses this
+        // hook for its changeable simulation.
+        #[cfg(feature = "research")]
+        crate::strategy_probe::observe(sim, &self.movement, &self.logger);
         let on = active();
         let Ok(mut applied) = self.applied.lock() else {
             return;
